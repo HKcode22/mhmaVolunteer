@@ -1,8 +1,4 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_WORDPRESS_API_URL": "http://167.234.220.121/wp-json"
-  }
+  "framework": "nextjs"
 }
