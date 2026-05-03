@@ -298,27 +298,22 @@ const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
 const fetchQuranVerse = async (): Promise<QuranVerse> => {
   try {
-    const response = await fetch('/quran-data.json');
+    // Use pre-filtered included verses (much faster - no filtering needed)
+    const response = await fetch('/quran-data-included.json');
     if (!response.ok) throw new Error('Failed to load Quran data');
     const data = await response.json();
 
-    const allVerses: any[] = [];
-    data.suras.forEach((sura: any) => {
-      sura.verses.forEach((verse: any) => {
-        allVerses.push({
-          text: verse.english,
-          translation: verse.english,
-          reference: `[Quran, ${sura.number}:${verse.aya}]`,
-          arabic: verse.arabic
-        });
-      });
-    });
-
-    const filteredVerses = filterVerses(allVerses, true); // Enable statistics logging
-    if (filteredVerses.length === 0) throw new Error('No verses passed filtering');
+    const verses = data.suras || [];
+    if (verses.length === 0) throw new Error('No verses available');
     
-    const randomIndex = Math.floor(Math.random() * filteredVerses.length);
-    return filteredVerses[randomIndex];
+    const randomIndex = Math.floor(Math.random() * verses.length);
+    const verse = verses[randomIndex];
+    return {
+      text: verse.text,
+      translation: verse.translation,
+      reference: verse.reference,
+      arabic: verse.arabic
+    };
   } catch (error) {
     return {
       text: "And hold fast by the covenant of Allah all together and be not disunited",
@@ -392,16 +387,7 @@ function filterVerses(verses: any[], logStats = false): any[] {
   });
 
   if (logStats) {
-    console.log('=== QURAN VERSE FILTERING STATISTICS ===');
-    console.log(`Total verses: ${stats.total}`);
-    console.log(`Passed filter: ${stats.passed} (${((stats.passed/stats.total)*100).toFixed(1)}%)`);
-    console.log(`Excluded: ${stats.excluded} (${((stats.excluded/stats.total)*100).toFixed(1)}%)`);
-    console.log('  - Too short (<30 chars):', stats.tooShort);
-    console.log('  - Too long (>280 chars):', stats.tooLong);
-    console.log('  - By combinations:', stats.excludedByCombo);
-    console.log('Excluded by category:', stats.excludedByCategory);
-    console.log('Available verses for display:', filtered.length);
-    console.log('========================================');
+    // Stats logging disabled for production performance
   }
 
   return filtered;
