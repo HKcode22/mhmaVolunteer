@@ -2,7 +2,7 @@
   "suras": [
     {
       "number": 1,
-      "name": "Al-Fatihah",
+      "sura": "Al-Fatihah",
       "verses": [
         {
           "aya": 1,
@@ -38,7 +38,7 @@
     },
     {
       "number": 2,
-      "name": "Al-Baqarah",
+      "sura": "Al-Baqarah",
       "verses": [
         {
           "aya": 2,
@@ -294,7 +294,7 @@
     },
     {
       "number": 3,
-      "name": "Ali 'Imran",
+      "sura": "Ali 'Imran",
       "verses": [
         {
           "aya": 2,
@@ -515,7 +515,7 @@
     },
     {
       "number": 4,
-      "name": "An-Nisa",
+      "sura": "An-Nisa",
       "verses": [
         {
           "aya": 1,
@@ -661,7 +661,7 @@
     },
     {
       "number": 5,
-      "name": "Al-Ma'idah",
+      "sura": "Al-Ma'idah",
       "verses": [
         {
           "aya": 16,
@@ -727,7 +727,7 @@
     },
     {
       "number": 6,
-      "name": "Al-An'am",
+      "sura": "Al-An'am",
       "verses": [
         {
           "aya": 2,
@@ -918,7 +918,7 @@
     },
     {
       "number": 7,
-      "name": "Al-A'raf",
+      "sura": "Al-A'raf",
       "verses": [
         {
           "aya": 10,
@@ -1224,7 +1224,7 @@
     },
     {
       "number": 8,
-      "name": "Al-Anfal",
+      "sura": "Al-Anfal",
       "verses": [
         {
           "aya": 3,
@@ -1335,7 +1335,7 @@
     },
     {
       "number": 9,
-      "name": "At-Tawbah",
+      "sura": "At-Tawbah",
       "verses": [
         {
           "aya": 8,
@@ -1481,7 +1481,7 @@
     },
     {
       "number": 10,
-      "name": "Yunus",
+      "sura": "Yunus",
       "verses": [
         {
           "aya": 1,
@@ -1642,7 +1642,7 @@
     },
     {
       "number": 11,
-      "name": "Hud",
+      "sura": "Hud",
       "verses": [
         {
           "aya": 1,
@@ -1843,7 +1843,7 @@
     },
     {
       "number": 12,
-      "name": "Yusuf",
+      "sura": "Yusuf",
       "verses": [
         {
           "aya": 1,
@@ -2044,7 +2044,7 @@
     },
     {
       "number": 13,
-      "name": "Ar-Ra'd",
+      "sura": "Ar-Ra'd",
       "verses": [
         {
           "aya": 3,
@@ -2080,7 +2080,7 @@
     },
     {
       "number": 14,
-      "name": "Ibrahim",
+      "sura": "Ibrahim",
       "verses": [
         {
           "aya": 3,
@@ -2176,7 +2176,7 @@
     },
     {
       "number": 15,
-      "name": "Al-Hijr",
+      "sura": "Al-Hijr",
       "verses": [
         {
           "aya": 1,
@@ -2472,7 +2472,7 @@
     },
     {
       "number": 16,
-      "name": "An-Nahl",
+      "sura": "An-Nahl",
       "verses": [
         {
           "aya": 1,
@@ -2753,7 +2753,7 @@
     },
     {
       "number": 17,
-      "name": "Al-Isra",
+      "sura": "Al-Isra",
       "verses": [
         {
           "aya": 11,
@@ -2964,7 +2964,7 @@
     },
     {
       "number": 18,
-      "name": "Al-Kahf",
+      "sura": "Al-Kahf",
       "verses": [
         {
           "aya": 1,
@@ -3165,7 +3165,7 @@
     },
     {
       "number": 19,
-      "name": "Maryam",
+      "sura": "Maryam",
       "verses": [
         {
           "aya": 2,
@@ -3356,7 +3356,7 @@
     },
     {
       "number": 20,
-      "name": "Ta-Ha",
+      "sura": "Ta-Ha",
       "verses": [
         {
           "aya": 2,
@@ -3627,7 +3627,7 @@
     },
     {
       "number": 21,
-      "name": "Al-Anbiya",
+      "sura": "Al-Anbiya",
       "verses": [
         {
           "aya": 2,
@@ -3873,7 +3873,7 @@
     },
     {
       "number": 22,
-      "name": "Al-Hajj",
+      "sura": "Al-Hajj",
       "verses": [
         {
           "aya": 1,
@@ -4034,7 +4034,7 @@
     },
     {
       "number": 23,
-      "name": "Al-Mu'minun",
+      "sura": "Al-Mu'minun",
       "verses": [
         {
           "aya": 2,
@@ -4340,7 +4340,7 @@
     },
     {
       "number": 24,
-      "name": "An-Nur",
+      "sura": "An-Nur",
       "verses": [
         {
           "aya": 5,
@@ -4401,7 +4401,7 @@
     },
     {
       "number": 25,
-      "name": "Al-Furqan",
+      "sura": "Al-Furqan",
       "verses": [
         {
           "aya": 1,
@@ -4532,7 +4532,7 @@
     },
     {
       "number": 26,
-      "name": "Ash-Shu'ara",
+      "sura": "Ash-Shu'ara",
       "verses": [
         {
           "aya": 2,
@@ -5108,7 +5108,7 @@
     },
     {
       "number": 27,
-      "name": "An-Naml",
+      "sura": "An-Naml",
       "verses": [
         {
           "aya": 1,
@@ -5314,7 +5314,7 @@
     },
     {
       "number": 28,
-      "name": "Al-Qasas",
+      "sura": "Al-Qasas",
       "verses": [
         {
           "aya": 2,
@@ -5410,7 +5410,7 @@
     },
     {
       "number": 29,
-      "name": "Al-Ankabut",
+      "sura": "Al-Ankabut",
       "verses": [
         {
           "aya": 5,
@@ -5486,7 +5486,7 @@
     },
     {
       "number": 30,
-      "name": "Ar-Rum",
+      "sura": "Ar-Rum",
       "verses": [
         {
           "aya": 2,
@@ -5557,7 +5557,7 @@
     },
     {
       "number": 31,
-      "name": "Luqman",
+      "sura": "Luqman",
       "verses": [
         {
           "aya": 2,
@@ -5623,7 +5623,7 @@
     },
     {
       "number": 32,
-      "name": "As-Sajdah",
+      "sura": "As-Sajdah",
       "verses": [
         {
           "aya": 7,
@@ -5674,7 +5674,7 @@
     },
     {
       "number": 33,
-      "name": "Al-Ahzab",
+      "sura": "Al-Ahzab",
       "verses": [
         {
           "aya": 3,
@@ -5760,7 +5760,7 @@
     },
     {
       "number": 34,
-      "name": "Saba",
+      "sura": "Saba",
       "verses": [
         {
           "aya": 10,
@@ -5831,7 +5831,7 @@
     },
     {
       "number": 35,
-      "name": "Fatir",
+      "sura": "Fatir",
       "verses": [
         {
           "aya": 2,
@@ -5902,7 +5902,7 @@
     },
     {
       "number": 36,
-      "name": "Ya-Sin",
+      "sura": "Ya-Sin",
       "verses": [
         {
           "aya": 6,
@@ -6078,7 +6078,7 @@
     },
     {
       "number": 37,
-      "name": "As-Saffat",
+      "sura": "As-Saffat",
       "verses": [
         {
           "aya": 1,
@@ -6569,7 +6569,7 @@
     },
     {
       "number": 38,
-      "name": "Sad",
+      "sura": "Sad",
       "verses": [
         {
           "aya": 1,
@@ -6790,7 +6790,7 @@
     },
     {
       "number": 39,
-      "name": "Az-Zumar",
+      "sura": "Az-Zumar",
       "verses": [
         {
           "aya": 12,
@@ -6876,7 +6876,7 @@
     },
     {
       "number": 40,
-      "name": "Ghafir",
+      "sura": "Ghafir",
       "verses": [
         {
           "aya": 23,
@@ -6952,7 +6952,7 @@
     },
     {
       "number": 41,
-      "name": "Fussilat",
+      "sura": "Fussilat",
       "verses": [
         {
           "aya": 3,
@@ -7048,7 +7048,7 @@
     },
     {
       "number": 42,
-      "name": "Ash-Shura",
+      "sura": "Ash-Shura",
       "verses": [
         {
           "aya": 6,
@@ -7119,7 +7119,7 @@
     },
     {
       "number": 43,
-      "name": "Az-Zukhruf",
+      "sura": "Az-Zukhruf",
       "verses": [
         {
           "aya": 3,
@@ -7320,7 +7320,7 @@
     },
     {
       "number": 44,
-      "name": "Ad-Dukhan",
+      "sura": "Ad-Dukhan",
       "verses": [
         {
           "aya": 4,
@@ -7461,7 +7461,7 @@
     },
     {
       "number": 45,
-      "name": "Al-Jathiyah",
+      "sura": "Al-Jathiyah",
       "verses": [
         {
           "aya": 4,
@@ -7492,7 +7492,7 @@
     },
     {
       "number": 46,
-      "name": "Al-Ahqaf",
+      "sura": "Al-Ahqaf",
       "verses": [
         {
           "aya": 22,
@@ -7508,7 +7508,7 @@
     },
     {
       "number": 47,
-      "name": "Muhammad",
+      "sura": "Muhammad",
       "verses": [
         {
           "aya": 14,
@@ -7544,7 +7544,7 @@
     },
     {
       "number": 48,
-      "name": "Al-Fath",
+      "sura": "Al-Fath",
       "verses": [
         {
           "aya": 1,
@@ -7585,7 +7585,7 @@
     },
     {
       "number": 49,
-      "name": "Al-Hujurat",
+      "sura": "Al-Hujurat",
       "verses": [
         {
           "aya": 2,
@@ -7621,7 +7621,7 @@
     },
     {
       "number": 50,
-      "name": "Qaf",
+      "sura": "Qaf",
       "verses": [
         {
           "aya": 1,
@@ -7707,7 +7707,7 @@
     },
     {
       "number": 51,
-      "name": "Adh-Dhariyat",
+      "sura": "Adh-Dhariyat",
       "verses": [
         {
           "aya": 2,
@@ -7878,7 +7878,7 @@
     },
     {
       "number": 52,
-      "name": "At-Tur",
+      "sura": "At-Tur",
       "verses": [
         {
           "aya": 6,
@@ -7979,7 +7979,7 @@
     },
     {
       "number": 53,
-      "name": "An-Najm",
+      "sura": "An-Najm",
       "verses": [
         {
           "aya": 2,
@@ -8210,7 +8210,7 @@
     },
     {
       "number": 54,
-      "name": "Al-Qamar",
+      "sura": "Al-Qamar",
       "verses": [
         {
           "aya": 1,
@@ -8326,7 +8326,7 @@
     },
     {
       "number": 55,
-      "name": "Ar-Rahman",
+      "sura": "Ar-Rahman",
       "verses": [
         {
           "aya": 5,
@@ -8622,7 +8622,7 @@
     },
     {
       "number": 56,
-      "name": "Al-Waqi'ah",
+      "sura": "Al-Waqi'ah",
       "verses": [
         {
           "aya": 2,
@@ -8913,7 +8913,7 @@
     },
     {
       "number": 57,
-      "name": "Al-Hadid",
+      "sura": "Al-Hadid",
       "verses": [
         {
           "aya": 3,
@@ -8939,7 +8939,7 @@
     },
     {
       "number": 59,
-      "name": "Al-Hashr",
+      "sura": "Al-Hashr",
       "verses": [
         {
           "aya": 5,
@@ -8970,7 +8970,7 @@
     },
     {
       "number": 60,
-      "name": "Al-Mumtahanah",
+      "sura": "Al-Mumtahanah",
       "verses": [
         {
           "aya": 2,
@@ -8986,7 +8986,7 @@
     },
     {
       "number": 61,
-      "name": "As-Saff",
+      "sura": "As-Saff",
       "verses": [
         {
           "aya": 2,
@@ -9007,7 +9007,7 @@
     },
     {
       "number": 62,
-      "name": "Al-Jumu'ah",
+      "sura": "Al-Jumu'ah",
       "verses": [
         {
           "aya": 3,
@@ -9028,7 +9028,7 @@
     },
     {
       "number": 63,
-      "name": "Al-Munafiqun",
+      "sura": "Al-Munafiqun",
       "verses": [
         {
           "aya": 3,
@@ -9044,7 +9044,7 @@
     },
     {
       "number": 64,
-      "name": "At-Taghabun",
+      "sura": "At-Taghabun",
       "verses": [
         {
           "aya": 2,
@@ -9065,7 +9065,7 @@
     },
     {
       "number": 65,
-      "name": "At-Talaq",
+      "sura": "At-Talaq",
       "verses": [
         {
           "aya": 9,
@@ -9076,7 +9076,7 @@
     },
     {
       "number": 66,
-      "name": "At-Tahrim",
+      "sura": "At-Tahrim",
       "verses": [
         {
           "aya": 6,
@@ -9087,7 +9087,7 @@
     },
     {
       "number": 67,
-      "name": "Al-Mulk",
+      "sura": "Al-Mulk",
       "verses": [
         {
           "aya": 1,
@@ -9163,7 +9163,7 @@
     },
     {
       "number": 68,
-      "name": "Al-Qalam",
+      "sura": "Al-Qalam",
       "verses": [
         {
           "aya": 1,
@@ -9309,7 +9309,7 @@
     },
     {
       "number": 69,
-      "name": "Al-Haqqah",
+      "sura": "Al-Haqqah",
       "verses": [
         {
           "aya": 2,
@@ -9440,7 +9440,7 @@
     },
     {
       "number": 70,
-      "name": "Al-Ma'arij",
+      "sura": "Al-Ma'arij",
       "verses": [
         {
           "aya": 3,
@@ -9556,7 +9556,7 @@
     },
     {
       "number": 71,
-      "name": "Nuh",
+      "sura": "Nuh",
       "verses": [
         {
           "aya": 2,
@@ -9652,7 +9652,7 @@
     },
     {
       "number": 72,
-      "name": "Al-Jinn",
+      "sura": "Al-Jinn",
       "verses": [
         {
           "aya": 4,
@@ -9708,7 +9708,7 @@
     },
     {
       "number": 73,
-      "name": "Al-Muzzammil",
+      "sura": "Al-Muzzammil",
       "verses": [
         {
           "aya": 1,
@@ -9769,7 +9769,7 @@
     },
     {
       "number": 74,
-      "name": "Al-Muddaththir",
+      "sura": "Al-Muddaththir",
       "verses": [
         {
           "aya": 1,
@@ -9895,7 +9895,7 @@
     },
     {
       "number": 75,
-      "name": "Al-Qiyamah",
+      "sura": "Al-Qiyamah",
       "verses": [
         {
           "aya": 4,
@@ -9981,7 +9981,7 @@
     },
     {
       "number": 76,
-      "name": "Al-Insan",
+      "sura": "Al-Insan",
       "verses": [
         {
           "aya": 1,
@@ -10032,7 +10032,7 @@
     },
     {
       "number": 77,
-      "name": "Al-Mursalat",
+      "sura": "Al-Mursalat",
       "verses": [
         {
           "aya": 1,
@@ -10193,7 +10193,7 @@
     },
     {
       "number": 78,
-      "name": "An-Naba",
+      "sura": "An-Naba",
       "verses": [
         {
           "aya": 1,
@@ -10284,7 +10284,7 @@
     },
     {
       "number": 79,
-      "name": "An-Nazi'at",
+      "sura": "An-Nazi'at",
       "verses": [
         {
           "aya": 1,
@@ -10410,7 +10410,7 @@
     },
     {
       "number": 80,
-      "name": "Abasa",
+      "sura": "Abasa",
       "verses": [
         {
           "aya": 1,
@@ -10526,7 +10526,7 @@
     },
     {
       "number": 81,
-      "name": "At-Takwir",
+      "sura": "At-Takwir",
       "verses": [
         {
           "aya": 1,
@@ -10577,7 +10577,7 @@
     },
     {
       "number": 82,
-      "name": "Al-Infitar",
+      "sura": "Al-Infitar",
       "verses": [
         {
           "aya": 6,
@@ -10603,7 +10603,7 @@
     },
     {
       "number": 83,
-      "name": "Al-Mutaffifin",
+      "sura": "Al-Mutaffifin",
       "verses": [
         {
           "aya": 1,
@@ -10689,7 +10689,7 @@
     },
     {
       "number": 84,
-      "name": "Al-Inshiqaq",
+      "sura": "Al-Inshiqaq",
       "verses": [
         {
           "aya": 2,
@@ -10770,7 +10770,7 @@
     },
     {
       "number": 85,
-      "name": "Al-Buruj",
+      "sura": "Al-Buruj",
       "verses": [
         {
           "aya": 1,
@@ -10836,7 +10836,7 @@
     },
     {
       "number": 86,
-      "name": "At-Tariq",
+      "sura": "At-Tariq",
       "verses": [
         {
           "aya": 1,
@@ -10897,7 +10897,7 @@
     },
     {
       "number": 87,
-      "name": "Al-A'la",
+      "sura": "Al-A'la",
       "verses": [
         {
           "aya": 1,
@@ -10953,7 +10953,7 @@
     },
     {
       "number": 88,
-      "name": "Al-Ghashiyah",
+      "sura": "Al-Ghashiyah",
       "verses": [
         {
           "aya": 1,
@@ -11024,7 +11024,7 @@
     },
     {
       "number": 89,
-      "name": "Al-Fajr",
+      "sura": "Al-Fajr",
       "verses": [
         {
           "aya": 3,
@@ -11100,7 +11100,7 @@
     },
     {
       "number": 90,
-      "name": "Al-Balad",
+      "sura": "Al-Balad",
       "verses": [
         {
           "aya": 2,
@@ -11166,7 +11166,7 @@
     },
     {
       "number": 91,
-      "name": "Ash-Shams",
+      "sura": "Ash-Shams",
       "verses": [
         {
           "aya": 2,
@@ -11217,7 +11217,7 @@
     },
     {
       "number": 92,
-      "name": "Al-Layl",
+      "sura": "Al-Layl",
       "verses": [
         {
           "aya": 3,
@@ -11283,7 +11283,7 @@
     },
     {
       "number": 93,
-      "name": "Ad-Duhaa",
+      "sura": "Ad-Duhaa",
       "verses": [
         {
           "aya": 3,
@@ -11329,7 +11329,7 @@
     },
     {
       "number": 94,
-      "name": "Ash-Sharh",
+      "sura": "Ash-Sharh",
       "verses": [
         {
           "aya": 2,
@@ -11350,7 +11350,7 @@
     },
     {
       "number": 95,
-      "name": "At-Tin",
+      "sura": "At-Tin",
       "verses": [
         {
           "aya": 3,
@@ -11376,7 +11376,7 @@
     },
     {
       "number": 96,
-      "name": "Al-Alaq",
+      "sura": "Al-Alaq",
       "verses": [
         {
           "aya": 1,
@@ -11447,7 +11447,7 @@
     },
     {
       "number": 97,
-      "name": "Al-Qadr",
+      "sura": "Al-Qadr",
       "verses": [
         {
           "aya": 2,
@@ -11473,7 +11473,7 @@
     },
     {
       "number": 98,
-      "name": "Al-Bayyinah",
+      "sura": "Al-Bayyinah",
       "verses": [
         {
           "aya": 3,
@@ -11484,7 +11484,7 @@
     },
     {
       "number": 99,
-      "name": "Az-Zalzalah",
+      "sura": "Az-Zalzalah",
       "verses": [
         {
           "aya": 1,
@@ -11505,7 +11505,7 @@
     },
     {
       "number": 100,
-      "name": "Al-Adiyat",
+      "sura": "Al-Adiyat",
       "verses": [
         {
           "aya": 2,
@@ -11546,7 +11546,7 @@
     },
     {
       "number": 101,
-      "name": "Al-Qari'ah",
+      "sura": "Al-Qari'ah",
       "verses": [
         {
           "aya": 2,
@@ -11572,7 +11572,7 @@
     },
     {
       "number": 102,
-      "name": "At-Takathur",
+      "sura": "At-Takathur",
       "verses": [
         {
           "aya": 1,
@@ -11598,7 +11598,7 @@
     },
     {
       "number": 104,
-      "name": "Al-Humazah",
+      "sura": "Al-Humazah",
       "verses": [
         {
           "aya": 1,
@@ -11629,7 +11629,7 @@
     },
     {
       "number": 105,
-      "name": "Al-Fil",
+      "sura": "Al-Fil",
       "verses": [
         {
           "aya": 2,
@@ -11650,7 +11650,7 @@
     },
     {
       "number": 106,
-      "name": "Quraysh",
+      "sura": "Quraysh",
       "verses": [
         {
           "aya": 1,
@@ -11676,7 +11676,7 @@
     },
     {
       "number": 107,
-      "name": "Al-Ma'un",
+      "sura": "Al-Ma'un",
       "verses": [
         {
           "aya": 1,
@@ -11712,7 +11712,7 @@
     },
     {
       "number": 108,
-      "name": "Al-Kawthar",
+      "sura": "Al-Kawthar",
       "verses": [
         {
           "aya": 1,
@@ -11723,7 +11723,7 @@
     },
     {
       "number": 109,
-      "name": "Al-Kafirun",
+      "sura": "Al-Kafirun",
       "verses": [
         {
           "aya": 2,
@@ -11744,7 +11744,7 @@
     },
     {
       "number": 110,
-      "name": "An-Nasr",
+      "sura": "An-Nasr",
       "verses": [
         {
           "aya": 1,
@@ -11765,7 +11765,7 @@
     },
     {
       "number": 111,
-      "name": "Al-Masad",
+      "sura": "Al-Masad",
       "verses": [
         {
           "aya": 1,
@@ -11781,7 +11781,7 @@
     },
     {
       "number": 112,
-      "name": "Al-Ikhlas",
+      "sura": "Al-Ikhlas",
       "verses": [
         {
           "aya": 1,
@@ -11802,7 +11802,7 @@
     },
     {
       "number": 113,
-      "name": "Al-Falaq",
+      "sura": "Al-Falaq",
       "verses": [
         {
           "aya": 1,
@@ -11833,7 +11833,7 @@
     },
     {
       "number": 114,
-      "name": "An-Nas",
+      "sura": "An-Nas",
       "verses": [
         {
           "aya": 1,
