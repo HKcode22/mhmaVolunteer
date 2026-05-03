@@ -103,17 +103,52 @@ const EXCLUSION_CATEGORIES = {
 // Build combinations
 const buildExclusionCombinations = () => {
   const combinations = [
+    // Original combinations that were deleted - ADDING THEM BACK
     'people of abraham', 'people of lot', 'people of noah', 'people of moses',
     'people of pharaoh', 'people of ad', 'people of thamud', 'people of madyan',
     'children of israel', 'pharaoh and his people', 'the people of the town',
     'dwellers of the town', 'inhabitants of the city', 'companions of the cave',
     'companions of the elephant', 'people of the ditch', 'dwellers of the wood',
+    'fellowship of the cave', 'the cave', 'the ditch', 'the elephant',
     'bring four witnesses', 'produce four witnesses', 'four witnesses testify',
     'cut off the hand', 'cut off his hand', 'cut off her hand', 'lash them with',
-    'flog them with', 'fight them in', 'fight the way', 'kill them wherever',
-    'slay them wherever', 'sexual intercourse', 'your ancient',
-    'your forefathers', 'the sperm', 'the semen', 'prophet muhammad came',
-    'prophet muhammad went', 'prophet moses went', 'prophet moses came'
+    'flog them with', 'the punishment for', 'the penalty for', 'the retribution for',
+    'fight them in', 'fight the way', 'kill them wherever', 'slay them wherever',
+    'when you meet', 'when you encounter', 'strike their necks', 'strike the necks',
+    'wage war', 'wage war against', 'battle of the', 'sword of allah',
+    'sexual intercourse', 'unlawful sexual', 'accuse chaste', 'bring four',
+    'unmarried woman', 'unmarried man', 'private parts', 'when women menstruate',
+    'people of the book', 'the people of the book', 'disbelievers will',
+    'hypocrites will', 'polytheists will', 'those who disbelieve', 'those who reject',
+    'an eye for an eye', 'tooth for tooth', 'life for life', 'blood money for',
+    'in days of old', 'in ancient times', 'in bygone eras', 'in former times',
+    'in past generations', 'in times of ignorance', 'before the coming',
+    'the day of battle', 'the day of war', 'the day of judgement',
+    'when the earthquake', 'when the flood', 'when the storm', 'when the fire',
+    'when the plague', 'when the drought', 'when the famine', 'when he drowned',
+    'then we sent', 'sent after them', 'moses and aaron', 'to pharaoh',
+    'then the fish', 'the fish swallowed', 'while he was', 'jonah was',
+    'they planned a plan', 'we planned a plan', 'while they perceived not',
+    'no headache', 'they will have therefrom', 'rivers of wine', 'rivers of milk',
+    'rivers of honey', 'pure spouses', 'chaste spouses', 'couches',
+    'green cushions', 'beautiful carpets', 'will be married', 'virgin',
+    'when they came', 'when they said', 'when he said', 'when she said',
+    'they said to them', 'they said to him', 'he said to them',
+    'in the city', 'in the town', 'in the village', 'at the sea',
+    'so when', 'and when', 'then when', 'therefore when',
+    'so he was', 'so they were', 'thus he was', 'thus they were',
+    'so we saved', 'so we rescued', 'thus we saved', 'therefore we saved',
+    'so we destroyed', 'thus we destroyed', 'therefore we destroyed',
+    'the fish swallowed', 'the whale swallowed',
+    'answered him', 'replied to him', 'responded to him',
+    'have you not', 'did you not', 'do you not see', 'do you not know',
+    'they disputed', 'they argued', 'they disagreed',
+    'we appointed him', 'we chose him', 'we selected him', 'we made him',
+    'when he migrated', 'when they migrated', 'when he left',
+    'the day of', 'on the day', 'during the battle',
+    'defeated them', 'conquered them', 'was given victory',
+    'they broke', 'he broke', 'the covenant', 'the pledge',
+    'they rejected', 'he rejected', 'they denied', 'he denied'
   ];
   
   const prophets = ['muhammad', 'moses', 'abraham', 'noah', 'lot', 'adam', 'isaac', 'jacob',
@@ -134,71 +169,73 @@ const buildExclusionCombinations = () => {
 
 const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
-// Collect all verses
-const allVerses = [];
-quranData.suras.forEach((sura) => {
-  sura.verses.forEach((verse) => {
-    allVerses.push({
-      text: verse.english,
-      translation: verse.english,
-      reference: `[Quran, ${sura.number}:${verse.aya}]`,
-      arabic: verse.arabic
-    });
-  });
-});
-
-console.log(`Total verses in Quran: ${allVerses.length}`);
-
+// Collect all verses but keep original structure
 const included = [];
 const excluded = [];
 
-allVerses.forEach((verse) => {
-  const english = (verse.translation || "").toLowerCase();
+quranData.suras.forEach((sura) => {
+  const includedVerses = [];
   
-  // Length check
-  if (english.length < 30 || english.length > 280) {
-    excluded.push(verse);
-    return;
-  }
-  
-  // Check categories
-  let shouldExclude = false;
-  for (const cat in EXCLUSION_CATEGORIES) {
-    for (const kw of EXCLUSION_CATEGORIES[cat]) {
-      if (english.includes(kw)) {
-        shouldExclude = true;
-        break;
-      }
-    }
-    if (shouldExclude) break;
-  }
-  
-  if (shouldExclude) {
-    excluded.push(verse);
-    return;
-  }
-  
-  // Check combinations
-  for (const combo of EXCLUSION_COMBINATIONS) {
-    if (english.includes(combo)) {
-      excluded.push(verse);
+  sura.verses.forEach((verse) => {
+    const verseText = verse.english || '';
+    const english = verseText.toLowerCase();
+    
+    // Length check
+    if (english.length < 30 || english.length > 280) {
+      excluded.push({ sura: sura.number, aya: verse.aya, text: verseText });
       return;
     }
-  }
+    
+    // Check categories
+    let shouldExclude = false;
+    for (const cat in EXCLUSION_CATEGORIES) {
+      for (const kw of EXCLUSION_CATEGORIES[cat]) {
+        if (english.includes(kw)) {
+          shouldExclude = true;
+          break;
+        }
+      }
+      if (shouldExclude) break;
+    }
+    
+    if (shouldExclude) {
+      excluded.push({ sura: sura.number, aya: verse.aya, text: verseText });
+      return;
+    }
+    
+    // Check combinations
+    for (const combo of EXCLUSION_COMBINATIONS) {
+      if (english.includes(combo)) {
+        excluded.push({ sura: sura.number, aya: verse.aya, text: verseText });
+        return;
+      }
+    }
+    
+    includedVerses.push(verse);
+  });
   
-  included.push(verse);
+  // Only add sura if it has included verses
+  if (includedVerses.length > 0) {
+    included.push({
+      number: sura.number,
+      name: sura.name,
+      verses: includedVerses
+    });
+  }
 });
 
 console.log(`Included verses: ${included.length}`);
 console.log(`Excluded verses: ${excluded.length}`);
 
-// Save included verses
+// Save included verses with original structure
 fs.writeFileSync(
   path.join(__dirname, '..', 'public', 'quran-data-included.json'),
   JSON.stringify({ suras: included }, null, 2)
 );
 
-console.log('Created: public/quran-data-included.json');
+const totalIncluded = included.reduce((sum, s) => sum + s.verses.length, 0);
+console.log(`Created: public/quran-data-included.json`);
+console.log(`Included suras: ${included.length}, verses: ${totalIncluded}`);
 
 // Also save excluded count for reference
 fs.writeFileSync(
