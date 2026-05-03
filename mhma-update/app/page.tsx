@@ -303,17 +303,23 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
     if (!response.ok) throw new Error('Failed to load Quran data');
     const data = await response.json();
 
-    const verses = data.suras || [];
-    if (verses.length === 0) throw new Error('No verses available');
+    // Flatten all verses from all suras
+    const allVerses: any[] = [];
+    (data.suras || []).forEach((sura: any) => {
+      (sura.verses || []).forEach((verse: any) => {
+        allVerses.push({
+          text: verse.english,
+          translation: verse.english,
+          reference: `[Quran, ${sura.number}:${verse.aya}]`,
+          arabic: verse.arabic
+        });
+      });
+    });
+
+    if (allVerses.length === 0) throw new Error('No verses available');
     
-    const randomIndex = Math.floor(Math.random() * verses.length);
-    const verse = verses[randomIndex];
-    return {
-      text: verse.text,
-      translation: verse.translation,
-      reference: verse.reference,
-      arabic: verse.arabic
-    };
+    const randomIndex = Math.floor(Math.random() * allVerses.length);
+    return allVerses[randomIndex];
   } catch (error) {
     return {
       text: "And hold fast by the covenant of Allah all together and be not disunited",
@@ -459,29 +465,39 @@ const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
     fetchPrayerTimes();
   }, []);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Always fetch new verse on each load - no caching
-        const verse = await fetchQuranVerse();
+useEffect(() => {
+  // Load Quran verse IMMEDIATELY (fast, from static JSON)
+  const loadVerse = async () => {
+    try {
+      const verse = await fetchQuranVerse();
+      setDailyVerse(verse);
+    } catch (error) {
+      console.error("Verse loading error:", error);
+    } finally {
+      setVerseLoading(false);
+    }
+  };
+  loadVerse();
+}, []);
 
-        const [events, programs, journalEntries] = await Promise.all([
-          fetchEvents(277),
-          fetchPrograms(70),
-          fetchJournalEntries(199),
-        ]);
-        setWpEvents(events);
-        setWpPrograms(programs);
-        setWpJournalEntries(journalEntries);
-        setDailyVerse(verse);
-      } catch (error) {
-        console.error("Data fetching error:", error);
-      } finally {
-        setVerseLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+useEffect(() => {
+  // Load WordPress data separately (don't block verse)
+  const loadData = async () => {
+    try {
+      const [events, programs, journalEntries] = await Promise.all([
+        fetchEvents(277),
+        fetchPrograms(70),
+        fetchJournalEntries(199),
+      ]);
+      setWpEvents(events);
+      setWpPrograms(programs);
+      setWpJournalEntries(journalEntries);
+    } catch (error) {
+      console.error("Data fetching error:", error);
+    }
+  };
+  loadData();
+}, []);
 
   useEffect(() => {
     const loadData = async () => {

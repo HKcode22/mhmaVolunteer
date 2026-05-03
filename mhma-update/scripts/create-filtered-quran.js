@@ -225,7 +225,7 @@ quranData.suras.forEach((sura) => {
   if (includedVerses.length > 0) {
     included.push({
       number: sura.number,
-      sura: sura.name,  // Changed from "name" to "sura"
+      name: sura.name,
       verses: includedVerses
     });
   }
