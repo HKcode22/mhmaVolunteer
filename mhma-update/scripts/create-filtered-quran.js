@@ -146,11 +146,29 @@ const buildExclusionCombinations = () => {
     'they rejected', 'he rejected', 'they denied', 'he denied'
   ];
   
-  // Add more combinations to be stricter
+  // Add MORE combinations to be even stricter
   const moreCombinations = [
+    // Remove verses about specific people and historical contexts
     'your fathers', 'their fathers', 'your loins', 'upon you',
     'prophet muhammad came', 'prophet muhammad went', 'prophet moses went',
-    'grant us from among our wives', 'from their wives'
+    'grant us from among our wives', 'from their wives',
+    // Remove verses that could be confusing out of context
+    'believe in allah', 'believe in god', 'believe in him', 'believes in',
+    'righteous', 'pious', 'righteous deeds', 'good deeds',
+    'evil deed', 'sin', 'sins', 'forbidden', 'impermissible',
+    'lawful', 'permissible', 'halal', 'haram',
+    'testimony', 'witness', 'oath', 'swear', 'vow',
+    'inheritance', 'will', 'bequest', 'legacy',
+    'zakat', 'charity', 'sadaqah', 'donation',
+    'pilgrimage', 'hajj', 'umrah',
+    'fasting', 'ramadan', ' Ramadan',
+    'pray to', 'prayer to', 'worship to',
+    'messenger', 'rasul', 'nabi',
+    'revelation', 'revealed', 'revelation to',
+    'scripture', 'torah', 'injeel', 'psalm',
+    'heaven', 'paradise', 'jannah',
+    'hell', 'hellfire', 'jahannam',
+    'judgement day', 'day of resurrection', 'last day'
   ];
   
   return [...combinations, ...moreCombinations];
