@@ -4,7 +4,7 @@ const path = require('path');
 // Load the Quran data
 const quranData = require(path.join(__dirname, '..', 'public', 'quran-data.json'));
 
-// Expanded exclusion categories - be more inclusive to remove confusing verses
+// ALL original exclusion categories - keeping them all + adding more
 const EXCLUSION_CATEGORIES = {
   historicalNarratives: [
     'when you were', 'remember when', 'and when', 'and recall', 'and [recall]',
@@ -29,9 +29,54 @@ const EXCLUSION_CATEGORIES = {
     'when they were destroyed', 'when they perished', 'when they were drowned',
     'when they were burned', 'when it was revealed', 'when it was sent down',
     'when this was said', 'when that was done', 'your ancient', 'your forefather',
-    'their forefathers', 'their fathers'
+    'their forefathers', 'their fathers', 'the sperm', 'semen', 'discharge',
+    'sexual relation', 'intercourse', 'lie with', 'crawling', 'creeping'
   ],
-  // More keywords to catch remaining problematic verses
+  historicalPeopleGroups: [
+    'people of lut', 'people of noah', 'people of ad', 'people of thamud',
+    'people of pharaoh', 'people of abraham', 'people of moses', 'people of aaron',
+    'people of lot', 'people of israel', 'children of israel', 'tribe of',
+    'kingdom of', 'pharaoh', 'firon', 'nation of', 'family of', 'house of',
+    'clan of', 'descendants of', 'followers of', 'companions of', 'believers among the',
+    'unbelievers among the', 'rejecters among', 'pharaoh and his people',
+    'the people of the town', 'dwellers of', 'inhabitants of the city',
+    'companions of the cave', 'companions of the elephant', 'people of the ditch',
+    'dwellers of the wood', 'fellowship of the cave', 'the cave', 'the ditch', 'the elephant'
+  ],
+  historicalProphets: [
+    'prophet muhammad', 'prophet moses', 'prophet abraham', 'prophet noah',
+    'prophet lot', 'prophet adam', 'prophet isaac', 'prophet jacob', 'prophet joseph',
+    'prophet job', 'prophet john', 'prophet zachariah', 'prophet elijah',
+    'prophet enoch', 'prophet idris', 'prophet saleh', 'prophet hud',
+    'prophet shuayb', 'messenger muhammad', 'messenger of allah', 'abraham prayed',
+    'moses said', 'noah said', 'lot said', 'jesus said', 'muhammad said',
+    'isaac was', 'jacob was', 'joseph was', 'moses was', 'noah was'
+  ],
+  legalMatters: [
+    'cut off', 'stoning', 'lash', 'lashing', 'flogging', 'punishment', 'penalty',
+    'retribution', 'legal retribution', 'testimony', 'witnesses', 'four witnesses',
+    'bring witnesses', 'produce witnesses', 'oath', 'vow', 'court', 'judge', 'justice',
+    'legal', 'lawful', 'unlawful', 'inheritance law', 'divorce law', 'waiting period',
+    'bring four witnesses', 'produce four witnesses', 'four witnesses testify',
+    'cut off the hand', 'cut off his hand', 'cut off her hand', 'lash them with',
+    'flog them with', 'the punishment for', 'the penalty for', 'the retribution for',
+    'testimony of witnesses', 'oath of allah', 'vow to allah', 'court of law',
+    'legal retribution', 'legal punishment', 'an eye for an eye', 'tooth for tooth',
+    'life for life', 'blood money for', 'prescribed punishments', 'hadd punishments',
+    'legal testimony', 'giving testimony', 'bear witness', 'witness bearing',
+    'adultery', 'fornication', 'whip', 'strike'
+  ],
+  warfareConflict: [
+    'fight in the way', 'fight them', 'kill them', 'slay them', 'wherever you find',
+    'wage war', 'against them', 'battle', 'sword', 'weapon', 'attack', 'strike', 'smite',
+    'destroy', 'fighting in the cause', 'do not flee', 'battlefield', 'defend yourselves',
+    'strike the necks', 'cut off hands', 'crucify them', 'capture them', 'lay siege',
+    'besiege', 'ambush', 'raid', 'conquer', 'victory over', 'defeat of', 'casualties of',
+    'war booty', 'fight them in', 'fight the way', 'kill them wherever',
+    'slay them wherever', 'when you meet', 'when you encounter', 'strike their necks',
+    'wage war against', 'battle of the', 'sword of allah', 'weapon of war',
+    'kill', 'slain', 'killed', 'massacre', 'slaughter'
+  ],
   privateMatters: [
     'sexual intercourse', 'fornicator', 'fornication', 'adultery', 'accuse their wives',
     'accuse chaste women', 'unmarried woman', 'unmarried man', 'found guilty',
@@ -39,30 +84,21 @@ const EXCLUSION_CATEGORIES = {
     'breast', 'naked', 'nude', 'marriage', 'divorce', 'wife', 'husband', 'virgin',
     'chastity', 'unlawful sexual', 'accuse chaste', 'bring four', 'private parts',
     'when women menstruate', 'during menstruation', 'breast feeding', 'found guilty',
-    // NEW - add more
     'their wives', 'your wives', 'his wives', 'the wives',
-    'right hands possess', 'those their right', 'marry', 'pronounce thihar', 
-    'from their wives', 'grant us from among our wives'
+    'right hands possess', 'those their right', 'pronounce thihar'
   ],
-  // Keep other categories as they were
-  historicalPeopleGroups: [
-    'people of lut', 'people of noah', 'people of ad', 'people of thamud',
-    'people of pharaoh', 'people of abraham', 'people of moses', 'people of aaron',
-    'people of lot', 'people of israel', 'children of israel', 'tribe of',
-    'kingdom of', 'pharaoh', 'nation of', 'family of', 'house of'
-  ],
-  warfareConflict: [
-    'fight in the way', 'fight them', 'kill them', 'slay them', 'wherever you find',
-    'wage war', 'against them', 'battle', 'sword', 'weapon', 'attack', 'strike', 'smite',
-    'destroy', 'fighting in the cause', 'do not flee', 'battlefield', 'defend yourselves',
-    'strike the necks', 'cut off hands', 'crucify them', 'lay siege'
+  theologicalDebates: [
+    'disbelievers', 'polytheists', 'hypocrites', 'unbelievers', 'infidels', 'idolaters',
+    'disbelief', 'blasphemy', 'apostasy', 'people of the book', 'those who disbelieve',
+    'those who reject', 'those who deny', 'mischief in the land', 'corruption on earth',
+    'disbelievers will', 'hypocrites will', 'polytheists will', 'those who disbelieve',
+    'those who reject', 'those who deny', 'infidels will', 'idolaters will'
   ]
 };
 
 // Build combinations
 const buildExclusionCombinations = () => {
   const combinations = [
-    // Original combinations that were deleted - ADDING THEM BACK
     'people of abraham', 'people of lot', 'people of noah', 'people of moses',
     'people of pharaoh', 'people of ad', 'people of thamud', 'people of madyan',
     'children of israel', 'pharaoh and his people', 'the people of the town',
@@ -110,27 +146,21 @@ const buildExclusionCombinations = () => {
     'they rejected', 'he rejected', 'they denied', 'he denied'
   ];
   
-  const prophets = ['muhammad', 'moses', 'abraham', 'noah', 'lot', 'adam', 'isaac', 'jacob',
-                'joseph', 'job', 'jonah', 'john', 'jesus', 'zachariah', 'elijah',
-                'enoch', 'idris', 'saleh', 'hud', 'shuayb', 'yunus'];
-  const historicalActions = ['came to', 'went to', 'entered', 'left', 'arrived at',
-                     'departed from', 'traveled to', 'journeyed to', 'said to',
-                     'spoke to', 'called out to', 'prayed to', 'asked for'];
+  // Add more combinations to be stricter
+  const moreCombinations = [
+    'your fathers', 'their fathers', 'your loins', 'upon you',
+    'prophet muhammad came', 'prophet muhammad went', 'prophet moses went',
+    'grant us from among our wives', 'from their wives'
+  ];
   
-  for (const prophet of prophets) {
-    for (const action of historicalActions) {
-      combinations.push(`${prophet} ${action}`);
-    }
-  }
-  
-  return combinations;
+  return [...combinations, ...moreCombinations];
 };
 
 const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
 // Collect all verses but keep original structure
 const included = [];
-const excluded = [];
+let excludedCount = 0;
 
 quranData.suras.forEach((sura) => {
   const includedVerses = [];
@@ -141,7 +171,7 @@ quranData.suras.forEach((sura) => {
     
     // Length check
     if (english.length < 30 || english.length > 280) {
-      excluded.push({ sura: sura.number, aya: verse.aya, text: verseText });
+      excludedCount++;
       return;
     }
     
@@ -158,14 +188,14 @@ quranData.suras.forEach((sura) => {
     }
     
     if (shouldExclude) {
-      excluded.push({ sura: sura.number, aya: verse.aya, text: verseText });
+      excludedCount++;
       return;
     }
     
     // Check combinations
     for (const combo of EXCLUSION_COMBINATIONS) {
       if (english.includes(combo)) {
-        excluded.push({ sura: sura.number, aya: verse.aya, text: verseText });
+        excludedCount++;
         return;
       }
     }
@@ -183,8 +213,15 @@ quranData.suras.forEach((sura) => {
   }
 });
 
-console.log(`Included verses: ${included.length}`);
-console.log(`Excluded verses: ${excluded.length}`);
+// Calculate totals
+const totalOriginal = quranData.suras.reduce((sum, s) => sum + s.verses.length, 0);
+const totalIncluded = included.reduce((sum, s) => sum + s.verses.length, 0);
+
+console.log('=== Quran Filtering Results ===');
+console.log('Original verses:', totalOriginal);
+console.log('Included verses:', totalIncluded);
+console.log('Excluded verses:', excludedCount);
+console.log('Total check:', totalIncluded + excludedCount);
 
 // Save included verses with original structure
 fs.writeFileSync(
@@ -192,15 +229,12 @@ fs.writeFileSync(
   JSON.stringify({ suras: included }, null, 2)
 );
 
-const totalIncluded = included.reduce((sum, s) => sum + s.verses.length, 0);
-console.log(`Created: public/quran-data-included.json`);
-console.log(`Included suras: ${included.length}, verses: ${totalIncluded}`);
+console.log('Created: public/quran-data-included.json');
 
 // Also save excluded count for reference
 fs.writeFileSync(
   path.join(__dirname, '..', 'public', 'quran-data-excluded.json'),
-  JSON.stringify({ count: excluded.length }, null, 2)
+  JSON.stringify({ count: excludedCount }, null, 2)
 );
 
-console.log('Created: public/quran-data-excluded.json');
-console.log('\nDone! Now use quran-data-included.json for random verse selection.');
+console.log('Done!');
