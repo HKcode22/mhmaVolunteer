@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,6 +35,14 @@ interface Event {
 }
 
 export default function EditEventPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <EditEventContent />
+    </Suspense>
+  );
+}
+
+function EditEventContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get("id");

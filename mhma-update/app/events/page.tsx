@@ -41,25 +41,12 @@ export default function EventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Use the API route which has fallback logic for different parent IDs
-        const timestamp = Date.now();
-        const response = await fetch(`/api/events?parent=277&_=${timestamp}`, {
-          cache: 'no-store',
-        });
-
+        const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
+        const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=277&per_page=100`);
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
 
-        // Check if we got an error response
-        if (data.error) {
-          console.error("API error:", data.error);
-          setSlides([]);
-          return;
-        }
-
-        const events = Array.isArray(data) ? data : [];
-
-        const eventSlides: Slide[] = events.map((event: any) => {
+        const eventSlides: Slide[] = await Promise.all(data.map(async (event: any) => {
           let formattedDate = event.acf?.event_date || "";
           if (formattedDate && /^\d{8}$/.test(formattedDate)) {
             const year = formattedDate.substring(0, 4);
@@ -77,14 +64,24 @@ export default function EventsPage() {
             formattedTime = `${hour12}:${minutes}${ampm}`;
           }
 
-          // Poster URL is already resolved by the API route
           let posterUrl = event.acf?.event_poster || "";
+          if (typeof posterUrl === 'number') {
+            try {
+              const mediaResponse = await fetch(`${WP_API_URL}/wp/v2/media/${posterUrl}`);
+              if (mediaResponse.ok) {
+                const mediaData = await mediaResponse.json();
+                posterUrl = mediaData.source_url;
+              }
+            } catch (error) {
+              posterUrl = "";
+            }
+          }
 
           return {
             id: event.id,
             src: posterUrl || "https://mhma.us/wp-content/uploads/2024/06/MHMA-Default-Event.webp",
-            alt: event.title?.rendered || "Event",
-            eventName: event.title?.rendered || "Event",
+            alt: event.title.rendered,
+            eventName: event.title.rendered,
             eventDate: formattedDate,
             eventTime: formattedTime,
             eventLocation: event.acf?.event_location || "",
@@ -95,12 +92,11 @@ export default function EventsPage() {
             showLocation: event.acf?.show_location || false,
             showDescription: event.acf?.show_description || false,
           };
-        });
+        }));
 
         setSlides(eventSlides);
       } catch (err) {
         console.error("Failed to fetch events:", err);
-        setSlides([]);
       } finally {
         setLoading(false);
       }

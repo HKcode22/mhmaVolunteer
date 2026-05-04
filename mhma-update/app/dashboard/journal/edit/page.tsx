@@ -1,11 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 
 export default function EditJournalEntryPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <JournalEditContent />
+    </Suspense>
+  );
+}
+
+function JournalEditContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const journalId = searchParams.get("id");

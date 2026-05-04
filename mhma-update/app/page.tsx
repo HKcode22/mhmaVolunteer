@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Calendar } from "lucide-react";
+import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText } from "lucide-react";
 import { fetchEvents, fetchPrograms, fetchJournalEntries } from "@/lib/wordpress";
 import Navigation from "@/components/Navigation";
 
@@ -421,9 +421,8 @@ export default function HomePage() {
   const [wpEvents, setWpEvents] = useState<any[]>([]);
   const [wpPrograms, setWpPrograms] = useState<any[]>([]);
   const [wpJournalEntries, setWpJournalEntries] = useState<any[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
-  const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
+const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -467,52 +466,22 @@ export default function HomePage() {
   }, []);
 
 useEffect(() => {
-  // Load Quran verse only once on mount
-  let isMounted = true;
-
+  // Load Quran verse IMMEDIATELY (fast, from static JSON)
   const loadVerse = async () => {
-    // Check if we already have a verse for today in sessionStorage
-    const savedVerse = sessionStorage.getItem('dailyVerse');
-    const savedDate = sessionStorage.getItem('verseDate');
-    const today = new Date().toDateString();
-
-    if (savedVerse && savedDate === today) {
-      // Use saved verse for today
-      if (isMounted) {
-        setDailyVerse(JSON.parse(savedVerse));
-        setVerseLoading(false);
-      }
-      return;
-    }
-
     try {
       const verse = await fetchQuranVerse();
-      if (isMounted) {
-        setDailyVerse(verse);
-        // Save to sessionStorage for the day
-        sessionStorage.setItem('dailyVerse', JSON.stringify(verse));
-        sessionStorage.setItem('verseDate', today);
-      }
+      setDailyVerse(verse);
     } catch (error) {
       console.error("Verse loading error:", error);
     } finally {
-      if (isMounted) {
-        setVerseLoading(false);
-      }
+      setVerseLoading(false);
     }
   };
-
   loadVerse();
-
-  return () => {
-    isMounted = false;
-  };
 }, []);
 
 useEffect(() => {
   // Load WordPress data separately (don't block verse)
-  let isMounted = true;
-
   const loadData = async () => {
     try {
       const [events, programs, journalEntries] = await Promise.all([
@@ -520,31 +489,20 @@ useEffect(() => {
         fetchPrograms(70),
         fetchJournalEntries(199),
       ]);
-      if (isMounted) {
-        setWpEvents(events);
-        setWpPrograms(programs);
-        setWpJournalEntries(journalEntries);
-      }
+      setWpEvents(events);
+      setWpPrograms(programs);
+      setWpJournalEntries(journalEntries);
     } catch (error) {
       console.error("Data fetching error:", error);
-    } finally {
-      if (isMounted) {
-        setDataLoading(false);
-      }
     }
   };
-
   loadData();
-
-  return () => {
-    isMounted = false;
-  };
 }, []);
 
   // Removed duplicate useEffect - verse already loaded above, WordPress data loaded in separate useEffect
 
   // Use real events from WordPress
-  const displayEvents = wpEvents;
+  const displayEvents = wpEvents.length > 0 ? wpEvents.slice(0, 6) : [];
 
   return (
     <div className="min-h-screen font-sans">
@@ -714,16 +672,7 @@ useEffect(() => {
             Comprehensive Islamic education for children, youth, and adults — fostering faith and knowledge at every stage of life.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {dataLoading ? (
-              // Show loading skeleton while data is loading
-              [1, 2, 3].map((i) => (
-                <div key={i} className="bg-white p-6 rounded-xl border border-gray-100 animate-pulse">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full mb-3"></div>
-                  <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
-                </div>
-              ))
-            ) : (() => {
+            {(() => {
               // Filter programs to only show those with valid data
               const validPrograms = wpPrograms.filter((p: any) =>
                 p.title?.rendered &&
@@ -757,8 +706,7 @@ useEffect(() => {
                   </Link>
                 );
               });
-            })()
-            }
+            })()}
           </div>
           <div className="text-center">
             <Link href="/programs" className="inline-flex items-center px-6 py-2.5 bg-teal-800 text-white font-semibold rounded-lg hover:bg-teal-700 hover:scale-105 transition-all shadow-lg">
@@ -819,24 +767,7 @@ useEffect(() => {
             Upcoming <span className="text-amber-600">Events</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {dataLoading ? (
-              // Show loading skeleton while data is loading
-              [1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 animate-pulse">
-                  <div className="h-16 bg-gray-200"></div>
-                  <div className="p-4">
-                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              ))
-            ) : displayEvents.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-gray-500">
-                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>No upcoming events at this time.</p>
-              </div>
-            ) : (
-              displayEvents.slice(0, 6).map((event: any, i: number) => (
+            {displayEvents.slice(0, 6).map((event: any, i: number) => (
               <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-amber-300 transition-all group">
                 <div className="w-full bg-teal-800 flex flex-col items-center justify-center text-white py-2">
                   <span className="text-xl font-bold">
@@ -870,7 +801,7 @@ useEffect(() => {
                   )}
                 </div>
               </div>
-            )))}
+            ))}
           </div>
           <div className="text-center mt-8">
             <Link href="/events" className="inline-flex items-center text-amber-600 font-semibold hover:text-amber-700">
