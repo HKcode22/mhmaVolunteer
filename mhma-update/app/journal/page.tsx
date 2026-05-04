@@ -13,6 +13,7 @@ import {
   BookOpen
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import PageBanner from "@/components/PageBanner";
 
 interface JournalEntry {
   id: number;
@@ -39,6 +40,7 @@ interface JournalEntry {
 export default function JournalPage() {
   const [wpJournalEntries, setWpJournalEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchJournalEntries = async () => {
@@ -93,25 +95,18 @@ export default function JournalPage() {
     return dateB.getTime() - dateA.getTime();
   });
 
+  const displayEntries = showAll ? journalEntries : journalEntries.slice(0, 6);
+
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
       <Navigation currentPage="journal" />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-mhma-gold/30 bg-mhma-gold/10 backdrop-blur-sm text-mhma-gold text-xs font-bold tracking-widest uppercase">
-            Community Archive
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-serif uppercase tracking-tight">
-            The <span className="text-mhma-gold italic">Journal</span>
-          </h1>
-          <p className="text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">
-            Meeting minutes, community updates, and reflections from the heart of MHMA. 
-            Staying transparent and connected.
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        title="The Journal"
+        highlightedText="Journal"
+        subtitle="Meeting minutes, community updates, and reflections from the heart of MHMA. Staying transparent and connected."
+        badgeText="Community Archive"
+      />
 
       {/* Main Journal Grid */}
       <main className="flex-grow py-24">
@@ -138,9 +133,9 @@ export default function JournalPage() {
                 <div key={i} className="animate-pulse bg-gray-50 rounded-3xl h-64 border border-gray-100"></div>
               ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {journalEntries.map((entry) => (
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {displayEntries.map((entry) => (
                 <Link 
                   key={entry.id} 
                   href={`/journal/${entry.slug}`}
@@ -163,10 +158,21 @@ export default function JournalPage() {
                   </div>
                 </Link>
               ))}
-            </div>
-          )}
-        </div>
-      </main>
+                </div>
+
+                {!loading && journalEntries.length > 6 && (
+                  <div className="text-center mt-8">
+                    <button
+                      onClick={() => setShowAll(!showAll)}
+                      className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all"
+                    >
+                      {showAll ? 'Show Less' : `View All Entries (+${journalEntries.length - 6} more)`}
+                    </button>
+                  </div>
+                )}
+              )}
+          </div>
+        </main>
 
       {/* Footer */}
       <footer className="bg-mhma-dark mhma-pattern py-20 text-white mt-auto">

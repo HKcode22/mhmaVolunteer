@@ -317,9 +317,18 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
     });
 
     if (allVerses.length === 0) throw new Error('No verses available');
-    
-    const randomIndex = Math.floor(Math.random() * allVerses.length);
-    return allVerses[randomIndex];
+
+    // Use date-based selection for consistent daily verse (instead of random)
+    // This ensures the same verse is shown throughout the day
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+      hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    const index = Math.abs(hash) % allVerses.length;
+    return allVerses[index];
   } catch (error) {
     return {
       text: "And hold fast by the covenant of Allah all together and be not disunited",

@@ -6,22 +6,18 @@ import Image from "next/image";
 import Navigation from "@/components/Navigation";
 import { ChevronRight } from "lucide-react";
 
+import PageBanner from "@/components/PageBanner";
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen font-sans">
       <Navigation currentPage="about" />
 
-      {/* Page Header */}
-      <section className="pt-32 md:pt-36 pb-12 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-            About <span className="text-amber-400">MHMA</span>
-          </h1>
-          <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-            Strengthening the bonds of brotherhood through faith, education, and community service.
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        title="About MHMA"
+        highlightedText="MHMA"
+        subtitle="Strengthening the bonds of brotherhood through faith, education, and community service."
+      />
 
       {/* Our Story */}
       <section className="py-16 bg-white">

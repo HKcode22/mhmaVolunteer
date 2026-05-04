@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { MapPin, Mail, Phone, Send, ChevronRight, Clock, Users } from "lucide-react";
 
+import PageBanner from "@/components/PageBanner";
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -26,22 +28,11 @@ export default function ContactPage() {
     <div className="min-h-screen bg-gray-50">
       <Navigation currentPage="contact" />
 
-      {/* Hero Section */}
-      <section className="pt-44 md:pt-48 pb-16 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 text-white relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <div className="absolute top-10 right-10 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl"></div>
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4 uppercase tracking-wide">
-            Contact <span className="text-amber-400">Us</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-            We're here to help. Reach out with any question, request, or feedback.
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        title="Contact Us"
+        highlightedText="Us"
+        subtitle="We're here to help. Reach out with any question, request, or feedback."
+      />
 
       {/* Contact Info Cards */}
       <section className="py-12 bg-white">

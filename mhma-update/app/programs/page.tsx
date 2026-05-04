@@ -48,9 +48,12 @@ const hardcodedPrograms = [
   { title: "Arabic Academy", description: "Arabic language course for Quranic understanding.", image: "https://mhma.us/wp-content/uploads/2016/08/Arabic.png", href: "/programs/arabic-academy" },
 ];
 
+import PageBanner from "@/components/PageBanner";
+
 export default function ProgramsPage() {
   const [wpPrograms, setWpPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchPrograms = async () => {
@@ -69,38 +72,31 @@ export default function ProgramsPage() {
     fetchPrograms();
   }, []);
 
+  const displayPrograms = showAll ? hardcodedPrograms : hardcodedPrograms.slice(0, 6);
+
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
       <Navigation currentPage="programs" />
 
-      {/* Hero Header */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-mhma-gold/30 bg-mhma-gold/10 backdrop-blur-sm text-mhma-gold text-xs font-bold tracking-widest uppercase">
-            Faith & Education
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-serif uppercase tracking-tight">
-            Our <span className="text-mhma-gold italic">Programs</span>
-          </h1>
-          <p className="text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">
-            Nurturing minds and souls through tradition-based learning and community engagement. 
-            Discover programs for all ages and interests.
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        title="Our Programs"
+        highlightedText="Programs"
+        subtitle="Nurturing minds and souls through tradition-based learning and community engagement. Discover programs for all ages and interests."
+        badgeText="Faith & Education"
+      />
 
       {/* Main Grid */}
       <main className="flex-grow py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="animate-pulse bg-gray-50 rounded-3xl h-[400px] border border-gray-100"></div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {hardcodedPrograms.map((program) => {
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="animate-pulse bg-gray-50 rounded-3xl h-[400px] border border-gray-100"></div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {displayPrograms.map((program) => {
                 const programSlug = program.href.replace('/programs/', '');
                 const wpVersion = wpPrograms.find(wp => wp.slug === programSlug);
 
@@ -181,10 +177,20 @@ export default function ProgramsPage() {
                 <a key={i} href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-mhma-gold hover:text-white transition-all border border-gray-100">
                   <Icon className="w-4 h-4" />
                 </a>
-             ))}
-          </div>
-          <p className="text-gray-400 text-xs tracking-widest uppercase font-medium">© 2026 Mountain House Muslim Association</p>
-        </div>
+              ))}
+                </div>
+              )}
+
+              {!loading && hardcodedPrograms.length > 6 && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={() => setShowAll(!showAll)}
+                    className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all"
+                  >
+                    {showAll ? 'Show Less' : `View All Programs (+${hardcodedPrograms.length - 6} more)`}
+                  </button>
+                </div>
+              )}
       </footer>
     </div>
   );

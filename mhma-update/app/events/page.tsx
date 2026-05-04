@@ -17,6 +17,7 @@ import {
   ChevronLeft
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import PageBanner from "@/components/PageBanner";
 
 interface Slide {
   id: number;
@@ -109,20 +110,12 @@ export default function EventsPage() {
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
       <Navigation currentPage="events" />
 
-      {/* Hero Header */}
-      <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden mhma-gradient mhma-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-block px-4 py-1.5 mb-4 rounded-full border border-mhma-gold/30 bg-mhma-gold/10 backdrop-blur-sm text-mhma-gold text-xs font-bold tracking-widest uppercase">
-            Community Calendar
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 font-serif uppercase tracking-tight">
-            Upcoming <span className="text-mhma-gold italic">Events</span>
-          </h1>
-          <p className="text-lg text-gray-200 max-w-2xl mx-auto font-light">
-            Stay connected with the heartbeat of our community. Join us for prayers, learning, and sisterhood.
-          </p>
-        </div>
-      </section>
+      <PageBanner
+        title="Upcoming Events"
+        highlightedText="Events"
+        subtitle="Stay connected with the heartbeat of our community. Join us for prayers, learning, and sisterhood."
+        badgeText="Community Calendar"
+      />
 
       {/* Main Events Grid */}
       <main className="flex-grow py-12">
