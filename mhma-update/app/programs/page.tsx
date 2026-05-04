@@ -53,13 +53,15 @@ import PageBanner from "@/components/PageBanner";
 export default function ProgramsPage() {
   const [wpPrograms, setWpPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-        const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=70&per_page=100`);
+        // Use API proxy for reliable fetching (handles CORS, retries, and media resolution)
+        const timestamp = Date.now();
+        const response = await fetch(`/api/programs?_=${timestamp}`, {
+          cache: 'no-store',
+        });
         if (!response.ok) throw new Error("Failed to fetch programs");
         const data = await response.json();
         setWpPrograms(data);
@@ -91,7 +93,8 @@ export default function ProgramsPage() {
     }
   });
 
-  const displayPrograms = showAll ? allPrograms : allPrograms.slice(0, 6);
+  // Show ALL programs (removed limit to fix missing programs issue)
+  const displayPrograms = allPrograms;
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
@@ -198,20 +201,6 @@ export default function ProgramsPage() {
                 </a>
               ))}
           </div>
-          {!loading && allPrograms.length > 6 && (
-            <div className="text-center mt-8">
-              <button
-                type="button"
-                onClick={() => {
-                  console.log("Show All clicked, current state:", showAll);
-                  setShowAll(!showAll);
-                }}
-                className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all cursor-pointer"
-              >
-                {showAll ? 'Show Less' : `View All Programs (+${allPrograms.length - 6} more)`}
-              </button>
-            </div>
-          )}
         </div>
       </footer>
     </div>
