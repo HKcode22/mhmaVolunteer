@@ -59,6 +59,7 @@ export default function JournalPage() {
   }, []);
 
   const hardcodedJournalEntries = [
+    // 2026 Entries
     { id: 1, title: "BOD Minutes for MHMA Board of Directors Meeting – 12-Apr-26", date: "April 18, 2026", slug: "bod-minutes-for-mhma-board-of-directors-meeting-12-apr-26", rawDate: "2026-04-18" },
     { id: 2, title: "BOD Minutes for MHMA Board of Directors Meeting – 05-Apr-26", date: "April 12, 2026", slug: "bod-minutes-for-mhma-board-of-directors-meeting-05-apr-26", rawDate: "2026-04-12" },
     { id: 3, title: "Minutes for MHMA Full Board Meeting – 30-Mar-26", date: "April 5, 2026", slug: "minutes-for-mhma-full-board-meeting-30-mar-26", rawDate: "2026-04-05" },
@@ -66,7 +67,30 @@ export default function JournalPage() {
     { id: 5, title: "Minutes for MHMA Full Board Meeting – 15-Feb-26", date: "March 25, 2026", slug: "minutes-for-mhma-full-board-meeting-15-feb-26", rawDate: "2026-03-25" },
     { id: 6, title: "Minutes for MHMA Full Board Meeting – 18-Jan-26", date: "January 25, 2026", slug: "minutes-for-mhma-full-board-meeting-18-jan-26", rawDate: "2026-01-25" },
     { id: 7, title: "Minutes for MHMA Board of Trustees Meeting – 04-Mar-26", date: "March 23, 2026", slug: "minutes-for-mhma-board-of-trustees-meeting-04-mar-26", rawDate: "2026-03-23" },
-    { id: 8, title: "Minutes for MHMA Board of Trustees Meeting – 27-Feb-26", date: "March 23, 2026", slug: "minutes-for-mhma-board-of-trustees-meeting-27-feb-26", rawDate: "2026-03-23" }
+    { id: 8, title: "Minutes for MHMA Board of Trustees Meeting – 27-Feb-26", date: "March 23, 2026", slug: "minutes-for-mhma-board-of-trustees-meeting-27-feb-26", rawDate: "2026-03-23" },
+    { id: 9, title: "BOD Minutes for MHMA Board of Directors Meeting – 21-Jan-26", date: "January 25, 2026", slug: "bod-minutes-for-mhma-board-of-directors-meeting-21-jan-26", rawDate: "2026-01-25" },
+    { id: 10, title: "Minutes for MHMA Board of Trustees Meeting – 13-Jan-26", date: "January 22, 2026", slug: "minutes-for-mhma-board-of-trustees-meeting-13-jan-26", rawDate: "2026-01-22" },
+    { id: 11, title: "Minutes for MHMA Board Meeting – 11-Jan-26", date: "January 17, 2026", slug: "minutes-for-mhma-board-meeting-11-jan-26", rawDate: "2026-01-17" },
+    { id: 12, title: "Minutes for MHMA Board of Trustees Meeting – 06-Jan-26", date: "January 11, 2026", slug: "minutes-for-mhma-board-of-trustees-meeting-06-jan-26", rawDate: "2026-01-11" },
+    { id: 13, title: "BOD Minutes for MHMA Board of Directors Meeting – 04-Jan-26", date: "January 10, 2026", slug: "bod-minutes-for-mhma-board-of-directors-meeting-04-jan-26", rawDate: "2026-01-10" },
+    // 2025 Entries
+    { id: 14, title: "Minutes for MHMA Board Meeting – 21-Dec-25", date: "January 1, 2026", slug: "minutes-for-mhma-board-meeting-21-dec-25", rawDate: "2026-01-01" },
+    { id: 15, title: "BOD Minutes for MHMA Board of Directors Meeting – 14-Dec-25", date: "December 19, 2025", slug: "bod-minutes-for-mhma-board-of-directors-meeting-14-dec-25", rawDate: "2025-12-19" },
+    { id: 16, title: "Minutes for MHMA Board of Trustees Meeting – 16-Dec-25", date: "December 18, 2025", slug: "minutes-for-mhma-board-of-trustees-meeting-16-dec-25", rawDate: "2025-12-18" },
+    { id: 17, title: "Minutes for MHMA Board of Trustees Meeting – 09-Dec-25", date: "December 18, 2025", slug: "minutes-for-mhma-board-of-trustees-meeting-09-dec-25", rawDate: "2025-12-18" },
+    { id: 18, title: "BOD Minutes for MHMA Board of Directors Meeting – 07-Dec-25", date: "December 11, 2025", slug: "bod-minutes-for-mhma-board-of-directors-meeting-07-dec-25", rawDate: "2025-12-11" },
+    { id: 19, title: "Minutes for MHMA Board of Trustees Meeting – 26-Nov-25", date: "November 30, 2025", slug: "minutes-for-mhma-board-of-trustees-meeting-26-nov-25", rawDate: "2025-11-30" },
+    { id: 20, title: "Minutes for MHMA Board of Trustees Meeting – 23-Nov-25", date: "November 30, 2025", slug: "minutes-for-mhma-board-of-trustees-meeting-23-nov-25", rawDate: "2025-11-30" },
+    { id: 21, title: "Minutes for MHMA Full Board Meeting – 24-Nov-25", date: "November 29, 2025", slug: "minutes-for-mhma-full-board-meeting-24-nov-25", rawDate: "2025-11-29" },
+    // Community/Theme Entries (March 2025)
+    { id: 22, title: "Community, Commitment, and Connection: A Weekend of Purpose at MHMA", date: "March 20, 2025", slug: "community-commitment-and-connection-weekend-of-purpose", rawDate: "2025-03-20" },
+    { id: 23, title: "Amazing Festivities at the Mountain House Muslim Association Eid Event", date: "April 2, 2025", slug: "amazing-festivities-at-the-mountain-house-muslim-association-eid-event", rawDate: "2025-04-02" },
+    { id: 24, title: "Great Event", date: "April 2, 2025", slug: "great-event", rawDate: "2025-04-02" },
+    { id: 25, title: "Serving Our Community with Transparency", date: "March 20, 2025", slug: "serving-our-community-with-transparency", rawDate: "2025-03-20" },
+    { id: 26, title: "WE RESPECT THE WISDOM OF THE ELDERS", date: "March 20, 2025", slug: "we-respect-the-wisdom-of-the-elders", rawDate: "2025-03-20" },
+    { id: 27, title: "OUR YOUTH, OUR FUTURE", date: "March 20, 2025", slug: "our-youth-our-future", rawDate: "2025-03-20" },
+    { id: 28, title: "WE BELIEVE IN UNITY", date: "March 20, 2025", slug: "we-believe-in-unity", rawDate: "2025-03-20" },
+    { id: 29, title: "WE BELIEVE IN A STRONG COHESIVE COMMUNITY", date: "March 20, 2025", slug: "we-believe-in-a-strong-cohesive-community", rawDate: "2025-03-20" }
   ];
 
   const wpJournalEntriesFormatted = wpJournalEntries.map(entry => {
