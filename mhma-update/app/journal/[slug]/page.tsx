@@ -209,6 +209,46 @@ We will continue where we left off, target $1M, pledged so far $464K.
       }
     }
   },
+  "minutes-for-mhma-full-board-meeting-18-jan-26": {
+    title: "Minutes for MHMA Full Board Meeting – 18-Jan-26",
+    date: "January 25, 2026",
+    attendees: "Asad Jafri, Asad Siddiqui, Faisal Shahid, Kanishka Ramyar, Mohamed Basha, Mohamed Mohamed, Nazeer Shaik, Oussama Saafien, Owais Khalid, Saqib Malik, Sarfaraz Shaikh, Shahzad Ali, Umar Sear, Zafar Khan",
+    content: `The MHMA board meeting was held on 18-Jan-26. The following meeting minutes were recorded:
+
+**MINUTES**
+
+**Agenda & Minutes**
+
+**Construction Update**
+Continued discussions on construction timeline and vendor selection. Reviewed progress with survey work and city approvals.
+
+**MHMA Non-Profit Status Update**
+Reviewed reinstatement process with attorney Barbara. 1023 form completed pending submission. Tax returns for 2022-2023 being prepared.
+
+**Property Tax Update**
+Continued work on property tax exemption for the 7-acre land. 2 acres approved retroactively, working on documentation for remaining 5 acres.
+
+**Ramadan Planning**
+Initial planning discussions for Ramadan 2026. Committee formation and logistics being organized.
+
+**Fundraising Update**
+Reviewed fundraising targets and strategies for Masjid construction. Current focus on major donor engagement.
+
+**Action Items:**
+- Complete 1023 submission @Umar S
+- Follow up on property tax exemption documentation @Asad S
+- Begin Ramadan committee formation @Saqib M
+- Update construction timeline @Umar S`,
+    data: {
+      membership: { current: 210, previous: 210 },
+      accounts: {
+        operations: { current: "$0.00", previous: "$0.00" },
+        membership: { current: "$0.00", previous: "$0.00" },
+        masjid: { current: "$0.00", previous: "$0.00" },
+        zakat: { current: "$0.00", previous: "$0.00" }
+      }
+    }
+  },
   "minutes-for-mhma-full-board-meeting-15-feb-26": {
     title: "Minutes for MHMA Full Board Meeting – 15-Feb-26",
     date: "March 25, 2026",
