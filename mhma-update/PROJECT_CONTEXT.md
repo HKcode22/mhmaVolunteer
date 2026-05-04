@@ -109,3 +109,5 @@ Some programs have hardcoded pages that cannot be edited via dashboard:
 - Secret key: `mhma-jwt-secret-key-2024-local-development`
 - CORS enabled
 - Token endpoint: `/wp-json/jwt-auth/v1/token`
+
+

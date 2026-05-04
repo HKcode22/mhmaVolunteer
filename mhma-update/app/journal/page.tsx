@@ -40,7 +40,6 @@ interface JournalEntry {
 export default function JournalPage() {
   const [wpJournalEntries, setWpJournalEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchJournalEntries = async () => {
@@ -95,7 +94,8 @@ export default function JournalPage() {
     return dateB.getTime() - dateA.getTime();
   });
 
-  const displayEntries = showAll ? journalEntries : journalEntries.slice(0, 6);
+  // Show all journal entries (no limit)
+  const displayEntries = journalEntries;
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
@@ -133,48 +133,35 @@ export default function JournalPage() {
                 <div key={i} className="animate-pulse bg-gray-50 rounded-3xl h-64 border border-gray-100"></div>
               ))}
             </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {displayEntries.map((entry) => (
-                <Link 
-                  key={entry.id} 
-                  href={`/journal/${entry.slug}`}
-                  className="flex flex-col bg-white p-8 rounded-3xl shadow-sm border border-gray-100 group hover:border-mhma-gold hover:shadow-xl transition-all duration-500"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 bg-gray-50 rounded-xl text-mhma-teal group-hover:bg-mhma-teal group-hover:text-white transition-colors">
-                      <BookOpen className="w-5 h-5" />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {displayEntries.map((entry) => (
+                  <Link
+                    key={entry.id}
+                    href={`/journal/${entry.slug}`}
+                    className="flex flex-col bg-white p-8 rounded-3xl shadow-sm border border-gray-100 group hover:border-mhma-gold hover:shadow-xl transition-all duration-500"
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="p-3 bg-gray-50 rounded-xl text-mhma-teal group-hover:bg-mhma-teal group-hover:text-white transition-colors">
+                        <BookOpen className="w-5 h-5" />
+                      </div>
+                      <div className="flex items-center text-mhma-gold text-xs font-bold uppercase tracking-widest">
+                        <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                        {entry.date.replace("Published On: ", "")}
+                      </div>
                     </div>
-                    <div className="flex items-center text-mhma-gold text-xs font-bold uppercase tracking-widest">
-                      <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                      {entry.date.replace("Published On: ", "")}
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 font-serif leading-tight group-hover:text-mhma-gold transition-colors line-clamp-3 flex-grow">
+                      {entry.title}
+                    </h3>
+                    <div className="flex items-center text-gray-400 text-xs font-bold uppercase tracking-widest group-hover:text-mhma-dark transition-colors">
+                      Read Reflection <ChevronRight className="ml-1 w-4 h-4" />
                     </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 font-serif leading-tight group-hover:text-mhma-gold transition-colors line-clamp-3 flex-grow">
-                    {entry.title}
-                  </h3>
-                  <div className="flex items-center text-gray-400 text-xs font-bold uppercase tracking-widest group-hover:text-mhma-dark transition-colors">
-                    Read Reflection <ChevronRight className="ml-1 w-4 h-4" />
-                  </div>
-                </Link>
-              ))}
-                </div>
-
-                {!loading && journalEntries.length > 6 && (
-                  <div className="text-center mt-8">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        console.log("Show All Journal Entries clicked, current state:", showAll);
-                        setShowAll(!showAll);
-                      }}
-                      className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all cursor-pointer"
-                    >
-                      {showAll ? 'Show Less' : `View All Entries (+${journalEntries.length - 6} more)`}
-                    </button>
-                  </div>
-                )}
-              )}
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
           </div>
         </main>
 

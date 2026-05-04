@@ -74,14 +74,15 @@ export default function ProgramsPage() {
 
   // Merge hardcoded programs with WordPress programs
   // WordPress programs are ADDED to the list (not replace)
-  const allPrograms = [...hardcodedPrograms];
+  const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string }> = [...hardcodedPrograms];
   wpPrograms.forEach(wpProgram => {
-    // Avoid duplicates by checking slug
-    if (!allPrograms.some(p => p.slug === wpProgram.slug)) {
+    // Avoid duplicates by checking slug (extract from href for hardcoded, use slug for WP)
+    const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
+    if (!existingSlugs.includes(wpProgram.slug)) {
       allPrograms.push({
-        title: wpProgram.title?.rendered || wpProgram.title || "Untitled",
+        title: wpProgram.title?.rendered || "Untitled",
         description: wpProgram.acf?.program_description || "",
-        image: typeof wpProgram.acf?.program_image === 'number' 
+        image: typeof wpProgram.acf?.program_image === 'number'
           ? `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL}/wp/v2/media/${wpProgram.acf.program_image}`
           : wpProgram.acf?.program_image || "",
         href: `/programs/${wpProgram.slug}`,
@@ -196,23 +197,22 @@ export default function ProgramsPage() {
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
-                </div>
-              )}
-
-              {!loading && allPrograms.length > 6 && (
-                <div className="text-center mt-8">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      console.log("Show All clicked, current state:", showAll);
-                      setShowAll(!showAll);
-                    }}
-                    className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all cursor-pointer"
-                  >
-                    {showAll ? 'Show Less' : `View All Programs (+${allPrograms.length - 6} more)`}
-                  </button>
-                </div>
-              )}
+          </div>
+          {!loading && allPrograms.length > 6 && (
+            <div className="text-center mt-8">
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Show All clicked, current state:", showAll);
+                  setShowAll(!showAll);
+                }}
+                className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all cursor-pointer"
+              >
+                {showAll ? 'Show Less' : `View All Programs (+${allPrograms.length - 6} more)`}
+              </button>
+            </div>
+          )}
+        </div>
       </footer>
     </div>
   );

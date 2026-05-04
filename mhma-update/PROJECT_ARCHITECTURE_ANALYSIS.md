@@ -307,37 +307,7 @@ Next.js saves source_url to ACF field via PUT /wp/v2/pages/<id>
 Image now accessible via WordPress media API
 ```
 
-## Environment Configuration
 
-### .env.local
-```
-NEXT_PUBLIC_WORDPRESS_API_URL=http://mhma-update.local/wp-json
-```
-
-This single environment variable controls all API calls from Next.js to WordPress. Changing this value switches the entire frontend to a different WordPress backend.
-
-## Current Deployment Status
-
-### Development Environment (CURRENT)
-- **WordPress Local Path:** `/Users/hk/Local Sites/mhma-update`
-- **WordPress URL:** http://mhma-update.local
-- **WordPress Admin:** http://mhma-update.local/wp-admin
-- **Next.js URL:** http://localhost:3000
-- **Working Locally First:** Testing all features locally before production deployment
-- **Image Upload Testing:** Easier to test image uploads locally with LocalWP before Oracle Cloud
-- **Vercel Status:** Vercel account exists but not currently updating - waiting for local testing to complete
-
-### Frontend (Next.js)
-- **Development:** Running locally on localhost:3000
-- **Production:** Can be deployed to Vercel (free), Netlify (free), or any Node.js host
-- **Build:** `npm run build` creates optimized production build
-- **Start:** `npm start` runs production server
-
-### Backend (WordPress)
-- **Development:** LocalWP at `/Users/hk/Local Sites/mhma-update`
-- **URL:** http://mhma-update.local
-- **Production Target:** Oracle Cloud Free Tier (Ubuntu VM)
-- **Migration:** Export from LocalWP, import to Oracle Cloud WordPress
 
 ## Oracle Cloud Infrastructure (Production Target)
 
@@ -362,3 +332,303 @@ Username
 hk84164@gmail.com
 Password
 @kGpnA3pV i
+
+Skip to main content
+Free Tier account
+You are in a Free Trial. When your trial is over, your account is limited to Always Free resources. Upgrade at any time.
+Learn more
+
+Messages region has new messages. Press F6 to navigate.
+Search resources, services, documentation, and Marketplace
+Home
+Home
+Tenancy:hk84164
+Normal performance
+View service health
+Customize
+
+Resources
+
+Resource Explorer
+US West (San Jose)
+View all Resources
+Name
+Type
+Status
+Viewed
+
+mhma-wordpress
+Instance
+Running
+3 hours ago
+mhma-vcn
+Vcn
+Available
+14 days ago
+public subnet-mhma-vcn
+Subnet
+Available
+14 days ago
+ig-quick-action-NSG
+NetworkSecurityGroup
+Available
+15 days ago
+ig-quick-action-NSG
+NetworkSecurityGroup
+Available
+15 days ago
+default route table for mhma-vcn
+RouteTable
+Available
+15 days ago
+Default Security List for mhma-vcn
+SecurityList
+Available
+15 days ago
+7 results shown.
+Build
+
+Compute
+Create a VM instance
+2-6 mins
+Autonomous AI Transaction Processing
+Create an ATP database
+3-5 mins
+Autonomous AI Lakehouse
+Create an LH database
+3-5 mins
+Networking
+Set up a network with a wizard
+2-3 mins
+Show all
+Services
+
+Pinned
+InstancesCompute
+Virtual cloud networksNetworking
+Recently visited
+Block VolumesBlock Storage
+Limits, quotas and usageTenancy Management
+Service spotlight
+
+Customize the recommendations by choosing a profile.Update
+Account Management
+Tenancy Details
+View information about your tenancy and configure settings
+Oracle AI Database
+Autonomous AI Database
+Simplify operation of all workloads with a fully Autonomous AI Database that performs all routine database maintenance tasks while the system is running, without human intervention
+Object Storage & Archive Storage
+Buckets
+Securely store any type of data in its native format. Upload your data as objects that are stored in buckets
+What's new
+Release notes
+Apr 14, 2026
+Additional log support for OCI Logging Service
+Apr 14, 2026
+Provision an Autonomous Container Database with 19c or 26ai database software version in the same Autonomous Exadata VM Cluster
+Apr 14, 2026
+Availability of new Dynamic Performance Views on Oracle Autonomous AI Database on Dedicated Exadata Infrastructure
+Stay ahead of unexpected cloud costs
+Introducing OCI Cost Anomaly Detection, a no-cost service that proactively identifies unexpected spending trends to help you minimize impact and speed up investigations.
+Start monitoring
+
+Release notes
+OCI blog
+Getting started
+
+Customize the recommendations by choosing a profile.Update
+Documentation
+Best Practices for Setting Up Your Tenancy
+Hands-on Workshop
+OCI Fast Track
+Documentation
+Welcome to Oracle Cloud Infrastructure
+OCI documentation
+Learn
+
+Customize the recommendations by choosing a profile.Update
+Hands-on Workshop
+Get Started with Oracle Cloud Infrastructure Core Services
+Tutorial
+Use Oracle Cloud Infrastructure to Publish a Webserver Accessible from the Internet with IPv6
+Training & Certification
+OCI Foundations
+OCI Training and certification
+Quickstarts
+
+Application Development
+Deploy a WordPress website
+10-12 mins
+Architecture
+Deploy the OCI Core Landing Zone
+15-20 mins
+Application Development
+Deploy a low-code app on Autonomous AI Database using APEX
+3-5 mins
+Application Development
+Deploy RStudio in a container
+10-12 mins
+Show all
+View my deployments
+Cost analysis
+
+Alarms
+
+Applied filters
+Compartment
+hk84164 (root)
+There are no alarms in this compartment. Change compartment or create alarms to monitor your infrastructure and take action.
+Create alarm
+Announcements
+
+Announcements
+All unread
+1
+Scheduled maintenance
+Upcoming actions
+0
+Actions
+Required actions
+0
+Other
+Informational
+1
+Announcements
+User Management
+
+Identity
+Create user
+Identity
+Create group
+Security
+Configure multifactor authentication
+Logging
+Audit events
+Identity
+AI Accelerator Packs
+
+Agentic AI
+Enterprise Agentic AI Starter Kit
+Full-stack agentic AI environment on OCI powered by NVIDIA AIQ. Deploys reasoning models, vector DB, observability, application layer, and more in minutes. Customize and extend to build your own agentic workflows.
+Operations & Logistics
+Vehicle Delivery Route Optimizer
+GPU-accelerated fleet route optimization on OCI using NVIDIA cuOpt NIM—deploy in minutes and get a ready API endpoint to cut miles, time, and cost.
+Media & Content
+Video Search and Summarization
+OCI accelerator pack for AI video moderation: ingest video, index scenes, then search/summarize to flag nudity, violence, weapons, drugs, alcohol—no more manual review.
+Show all
+View my deployments
+Experience previews
+New
+Explore new Oracle Cloud Console experiences ahead of their general availability and provide early feedback.
+Opt in to experience previews
+Marketplace
+Access the one-stop-shop for quickly and securely deploying any Oracle or 3rd party application, including Oracle E-Business Suite, Cisco, Palo Alto Networks, Sesame Software, and more.
+Visit the Marketplace
+Beta program
+Sign up to participate in the Oracle Beta program and you'll get access to test product features before they are released and can help improve them for everyone.
+Join Oracle Beta Program
+Terms of Use and PrivacyCookie Preferences
+Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+Give us feedback
+Compute
+
+Compute
+Overview
+Instances
+Instance Maintenance
+Dedicated Virtual Machine Hosts
+Instance Configurations
+Instance Pools
+Cluster Networks
+Compute Clusters
+Autoscaling Configurations
+Capacity Reservations
+Custom Images
+
+
+Instances
+mhma-wordpress
+Running
+Instance details
+
+Actions
+Start
+General information
+Availability domain
+AD-1
+Fault domain
+FD-3
+Region
+us-sanjose-1
+OCID
+ocid1.instance.oc1.us-sanjose-1.anzwuljra23lb2qcfbslkbdir47ii6xeeyvcr33qzwjmrtw5gdqlvpam6daa
+Copy
+Launched
+Apr 19, 2026, 09:57:02 UTC
+Compartment
+hk84164 (root)
+Capacity type
+On-demand
+Instance access
+You connect to a running Linux instance using a Secure Shell (SSH) connection. You'll need the private key from the SSH key pair that was used to create the instance.
+Public IP address
+167.234.220.121
+Copy
+Username
+ubuntu
+Instance details
+Virtual cloud network
+mhma-vcn
+Maintenance reboot
+Launch mode
+PARAVIRTUALIZED
+Instance metadata service
+Version 2 only
+The instance metadata service provides metadata about the instance. Applications can use this metadata to bootstrap or do other tasks.
+Edit
+Live migration
+Use recommended default
+Change
+Image details
+Operating system
+Canonical Ubuntu
+Version
+22.04
+Image
+Canonical-Ubuntu-22.04-2026.02.28-0
+Launch options
+NIC attachment type
+PARAVIRTUALIZED
+Remote data volume
+PARAVIRTUALIZED
+Firmware
+UEFI_64
+Boot volume type
+PARAVIRTUALIZED
+In-transit encryption
+Enabled
+Secure Boot
+Disabled
+Measured Boot
+Disabled
+Trusted Platform Module
+Disabled
+Shape configuration
+Shape
+VM.Standard.E2.1.Micro
+This shape does not support resizing. Learn more
+OCPU count
+1
+Network bandwidth (Gbps)
+0.5
+Memory (GB)
+1
+Local disk
+Block storage only
+Disaster recovery
+The list of Disaster Recovery Protection Groups that have this instance as a member. This list may be incomplete due to insufficient policy permissions access to a group or groups.
+Full stack DR
+Not enabled
+Activate QuickDR

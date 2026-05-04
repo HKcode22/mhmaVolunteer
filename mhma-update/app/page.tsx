@@ -318,16 +318,8 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
 
     if (allVerses.length === 0) throw new Error('No verses available');
 
-    // Use date-based selection for consistent daily verse (instead of random)
-    // This ensures the same verse is shown throughout the day
-    const today = new Date();
-    const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-    let hash = 0;
-    for (let i = 0; i < dateString.length; i++) {
-      hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    const index = Math.abs(hash) % allVerses.length;
+    // Use random selection for a new verse on every page reload
+    const index = Math.floor(Math.random() * allVerses.length);
     return allVerses[index];
   } catch (error) {
     return {
@@ -697,7 +689,8 @@ useEffect(() => {
                 (p.acf?.program_title || p.acf?.program_description || p.title.rendered.length > 0)
               );
 
-              const programsToShow = validPrograms.length > 0 ? validPrograms.slice(0, 6) : [
+              // Show only 3 most recent programs
+              const programsToShow = validPrograms.length > 0 ? validPrograms.slice(0, 3) : [
                 { title: "Quran Maktab", desc: "Foundational Quran recitation for children with Tajweed instruction.", slug: "quran-maktab", icon: "📖" },
                 { title: "Hifz Program", desc: "Structured memorization of the Holy Quran guided by qualified teachers.", slug: "hifz-program", icon: "🌟" },
                 { title: "Arabic Language", desc: "Conversational and classical Arabic for all levels.", slug: "arabic-academy", icon: "🔤" }
