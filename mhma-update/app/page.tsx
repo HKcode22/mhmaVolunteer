@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText } from "lucide-react";
+import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Calendar } from "lucide-react";
 import { fetchEvents, fetchPrograms, fetchJournalEntries } from "@/lib/wordpress";
 import Navigation from "@/components/Navigation";
 
@@ -299,7 +299,7 @@ const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 const fetchQuranVerse = async (): Promise<QuranVerse> => {
   try {
     // Use pre-filtered included verses (much faster - no filtering needed)
-    const response = await fetch('/quran-data-included.json');
+    const response = await fetch('/quran-included.json');
     if (!response.ok) throw new Error('Failed to load Quran data');
     const data = await response.json();
 
@@ -421,8 +421,9 @@ export default function HomePage() {
   const [wpEvents, setWpEvents] = useState<any[]>([]);
   const [wpPrograms, setWpPrograms] = useState<any[]>([]);
   const [wpJournalEntries, setWpJournalEntries] = useState<any[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
-const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
+  const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -466,22 +467,52 @@ const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
   }, []);
 
 useEffect(() => {
-  // Load Quran verse IMMEDIATELY (fast, from static JSON)
+  // Load Quran verse only once on mount
+  let isMounted = true;
+
   const loadVerse = async () => {
+    // Check if we already have a verse for today in sessionStorage
+    const savedVerse = sessionStorage.getItem('dailyVerse');
+    const savedDate = sessionStorage.getItem('verseDate');
+    const today = new Date().toDateString();
+
+    if (savedVerse && savedDate === today) {
+      // Use saved verse for today
+      if (isMounted) {
+        setDailyVerse(JSON.parse(savedVerse));
+        setVerseLoading(false);
+      }
+      return;
+    }
+
     try {
       const verse = await fetchQuranVerse();
-      setDailyVerse(verse);
+      if (isMounted) {
+        setDailyVerse(verse);
+        // Save to sessionStorage for the day
+        sessionStorage.setItem('dailyVerse', JSON.stringify(verse));
+        sessionStorage.setItem('verseDate', today);
+      }
     } catch (error) {
       console.error("Verse loading error:", error);
     } finally {
-      setVerseLoading(false);
+      if (isMounted) {
+        setVerseLoading(false);
+      }
     }
   };
+
   loadVerse();
+
+  return () => {
+    isMounted = false;
+  };
 }, []);
 
 useEffect(() => {
   // Load WordPress data separately (don't block verse)
+  let isMounted = true;
+
   const loadData = async () => {
     try {
       const [events, programs, journalEntries] = await Promise.all([
@@ -489,42 +520,31 @@ useEffect(() => {
         fetchPrograms(70),
         fetchJournalEntries(199),
       ]);
-      setWpEvents(events);
-      setWpPrograms(programs);
-      setWpJournalEntries(journalEntries);
-    } catch (error) {
-      console.error("Data fetching error:", error);
-    }
-  };
-  loadData();
-}, []);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Always fetch new verse on each load
-        const verse = await fetchQuranVerse();
-
-        const [events, programs, journalEntries] = await Promise.all([
-          fetchEvents(277),
-          fetchPrograms(70),
-          fetchJournalEntries(199),
-        ]);
+      if (isMounted) {
         setWpEvents(events);
         setWpPrograms(programs);
         setWpJournalEntries(journalEntries);
-        setDailyVerse(verse);
-      } catch (error) {
-        console.error("Data fetching error:", error);
-      } finally {
-        setVerseLoading(false);
       }
-    };
-    loadData();
-  }, []);
+    } catch (error) {
+      console.error("Data fetching error:", error);
+    } finally {
+      if (isMounted) {
+        setDataLoading(false);
+      }
+    }
+  };
+
+  loadData();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
+  // Removed duplicate useEffect - verse already loaded above, WordPress data loaded in separate useEffect
 
   // Use real events from WordPress
-  const displayEvents = wpEvents.length > 0 ? wpEvents.slice(0, 6) : [];
+  const displayEvents = wpEvents;
 
   return (
     <div className="min-h-screen font-sans">
@@ -694,29 +714,51 @@ useEffect(() => {
             Comprehensive Islamic education for children, youth, and adults — fostering faith and knowledge at every stage of life.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {wpPrograms.length > 0 ? wpPrograms.slice(0, 6).map((program: any) => (
-              <Link key={program.id} href={`/programs/${program.slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-xl transition-all group">
-                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">
-                  {program.title?.rendered?.toLowerCase().includes('quran') ? '📖' : 
-                   program.title?.rendered?.toLowerCase().includes('hifz') ? '🌟' :
-                   program.title?.rendered?.toLowerCase().includes('arabic') ? '🔤' :
-                   program.title?.rendered?.toLowerCase().includes('sister') ? '🌸' :
-                   program.title?.rendered?.toLowerCase().includes('youth') ? '⚽' : '🏫'}
+            {dataLoading ? (
+              // Show loading skeleton while data is loading
+              [1, 2, 3].map((i) => (
+                <div key={i} className="bg-white p-6 rounded-xl border border-gray-100 animate-pulse">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full mb-3"></div>
+                  <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2 group-hover:text-amber-600">{program.title?.rendered}</h3>
-                <p className="text-gray-500 text-sm line-clamp-2">{program.acf?.program_description || 'Learn more about this program'}</p>
-              </Link>
-            )) : [
-              { title: "Quran Maktab", desc: "Foundational Quran recitation for children with Tajweed instruction." },
-              { title: "Hifz Program", desc: "Structured memorization of the Holy Quran guided by qualified teachers." },
-              { title: "Arabic Language", desc: "Conversational and classical Arabic for all levels." }
-            ].map((p, i) => (
-              <Link key={i} href={`/programs/${p.title.toLowerCase().replace(/\s+/g, '-')}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-xl transition-all group">
-                <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">📖</div>
-                <h3 className="font-bold text-gray-900 mb-2 group-hover:text-amber-600">{p.title}</h3>
-                <p className="text-gray-500 text-sm line-clamp-2">{p.desc}</p>
-              </Link>
-            ))}
+              ))
+            ) : (() => {
+              // Filter programs to only show those with valid data
+              const validPrograms = wpPrograms.filter((p: any) =>
+                p.title?.rendered &&
+                p.slug &&
+                (p.acf?.program_title || p.acf?.program_description || p.title.rendered.length > 0)
+              );
+
+              const programsToShow = validPrograms.length > 0 ? validPrograms.slice(0, 6) : [
+                { title: "Quran Maktab", desc: "Foundational Quran recitation for children with Tajweed instruction.", slug: "quran-maktab", icon: "📖" },
+                { title: "Hifz Program", desc: "Structured memorization of the Holy Quran guided by qualified teachers.", slug: "hifz-program", icon: "🌟" },
+                { title: "Arabic Language", desc: "Conversational and classical Arabic for all levels.", slug: "arabic-academy", icon: "🔤" }
+              ];
+
+              return programsToShow.map((program: any, i: number) => {
+                const title = program.title?.rendered || program.title;
+                const desc = program.acf?.program_description || program.desc || 'Learn more about this program';
+                const slug = program.slug || program.title?.toLowerCase().replace(/\s+/g, '-');
+                const icon = program.icon || (
+                  title?.toLowerCase().includes('quran') ? '📖' :
+                  title?.toLowerCase().includes('hifz') ? '🌟' :
+                  title?.toLowerCase().includes('arabic') ? '🔤' :
+                  title?.toLowerCase().includes('sister') ? '🌸' :
+                  title?.toLowerCase().includes('youth') ? '⚽' : '🏫'
+                );
+
+                return (
+                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-xl transition-all group">
+                    <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{icon}</div>
+                    <h3 className="font-bold text-gray-900 mb-2 group-hover:text-amber-600">{title}</h3>
+                    <p className="text-gray-500 text-sm line-clamp-2">{desc}</p>
+                  </Link>
+                );
+              });
+            })()
+            }
           </div>
           <div className="text-center">
             <Link href="/programs" className="inline-flex items-center px-6 py-2.5 bg-teal-800 text-white font-semibold rounded-lg hover:bg-teal-700 hover:scale-105 transition-all shadow-lg">
@@ -777,7 +819,24 @@ useEffect(() => {
             Upcoming <span className="text-amber-600">Events</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayEvents.slice(0, 6).map((event: any, i: number) => (
+            {dataLoading ? (
+              // Show loading skeleton while data is loading
+              [1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-100 animate-pulse">
+                  <div className="h-16 bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))
+            ) : displayEvents.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>No upcoming events at this time.</p>
+              </div>
+            ) : (
+              displayEvents.slice(0, 6).map((event: any, i: number) => (
               <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-amber-300 transition-all group">
                 <div className="w-full bg-teal-800 flex flex-col items-center justify-center text-white py-2">
                   <span className="text-xl font-bold">
@@ -811,7 +870,7 @@ useEffect(() => {
                   )}
                 </div>
               </div>
-            ))}
+            )))}
           </div>
           <div className="text-center mt-8">
             <Link href="/events" className="inline-flex items-center text-amber-600 font-semibold hover:text-amber-700">

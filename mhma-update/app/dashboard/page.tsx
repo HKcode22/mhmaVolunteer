@@ -40,6 +40,10 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [user, setUser] = useState<{ username: string; role: string } | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showAllPrograms, setShowAllPrograms] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
+  const [showAllJournals, setShowAllJournals] = useState(false);
+  const [showAllRequests, setShowAllRequests] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -331,7 +335,7 @@ export default function DashboardPage() {
                   <p className="text-gray-600 text-center py-4">No programs found.</p>
                 ) : (
                   <div className="space-y-2">
-                    {programs.slice(0, 5).map((program) => (
+                    {(showAllPrograms ? programs : programs.slice(0, 5)).map((program) => (
                       <div
                         key={program.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-amber-50 transition-colors border border-gray-100"
@@ -359,9 +363,12 @@ export default function DashboardPage() {
                       </div>
                     ))}
                     {programs.length > 5 && (
-                      <p className="text-center text-sm text-gray-500 py-2">
-                        +{programs.length - 5} more programs
-                      </p>
+                      <button
+                        onClick={() => setShowAllPrograms(!showAllPrograms)}
+                        className="w-full text-center text-sm text-mhma-teal hover:text-mhma-gold py-2 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                      >
+                        {showAllPrograms ? 'Show Less' : `+${programs.length - 5} more programs`}
+                      </button>
                     )}
                   </div>
                 )}
@@ -393,7 +400,7 @@ export default function DashboardPage() {
                   <p className="text-gray-600 text-center py-4">No events found.</p>
                 ) : (
                   <div className="space-y-2">
-                    {events.slice(0, 5).map((event) => (
+                    {(showAllEvents ? events : events.slice(0, 5)).map((event) => (
                       <div
                         key={event.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-amber-50 transition-colors border border-gray-100"
@@ -419,9 +426,12 @@ export default function DashboardPage() {
                       </div>
                     ))}
                     {events.length > 5 && (
-                      <p className="text-center text-sm text-gray-500 py-2">
-                        +{events.length - 5} more events
-                      </p>
+                      <button
+                        onClick={() => setShowAllEvents(!showAllEvents)}
+                        className="w-full text-center text-sm text-mhma-teal hover:text-mhma-gold py-2 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                      >
+                        {showAllEvents ? 'Show Less' : `+${events.length - 5} more events`}
+                      </button>
                     )}
                   </div>
                 )}
@@ -453,7 +463,7 @@ export default function DashboardPage() {
                   <p className="text-gray-600 text-center py-4">No journal entries found.</p>
                 ) : (
                   <div className="space-y-2">
-                    {journals.slice(0, 5).map((journal) => (
+                    {(showAllJournals ? journals : journals.slice(0, 5)).map((journal) => (
                       <div
                         key={journal.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-teal-50 transition-colors border border-gray-100"
@@ -479,9 +489,12 @@ export default function DashboardPage() {
                       </div>
                     ))}
                     {journals.length > 5 && (
-                      <p className="text-center text-sm text-gray-500 py-2">
-                        +{journals.length - 5} more entries
-                      </p>
+                      <button
+                        onClick={() => setShowAllJournals(!showAllJournals)}
+                        className="w-full text-center text-sm text-mhma-teal hover:text-mhma-gold py-2 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                      >
+                        {showAllJournals ? 'Show Less' : `+${journals.length - 5} more entries`}
+                      </button>
                     )}
                   </div>
                 )}
@@ -514,7 +527,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {eventRequests.slice(0, 5).map((request) => (
+                    {(showAllRequests ? eventRequests : eventRequests.slice(0, 5)).map((request) => (
                       <div
                         key={request.id}
                         className="flex items-center justify-between p-3 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors border border-teal-200"
@@ -540,9 +553,12 @@ export default function DashboardPage() {
                       </div>
                     ))}
                     {eventRequests.length > 5 && (
-                      <p className="text-center text-sm text-gray-500 py-2">
-                        +{eventRequests.length - 5} more requests
-                      </p>
+                      <button
+                        onClick={() => setShowAllRequests(!showAllRequests)}
+                        className="w-full text-center text-sm text-mhma-teal hover:text-mhma-gold py-2 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                      >
+                        {showAllRequests ? 'Show Less' : `+${eventRequests.length - 5} more requests`}
+                      </button>
                     )}
                   </div>
                 )}

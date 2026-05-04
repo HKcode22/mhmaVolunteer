@@ -103,10 +103,25 @@ export default function ProgramsPage() {
               {hardcodedPrograms.map((program) => {
                 const programSlug = program.href.replace('/programs/', '');
                 const wpVersion = wpPrograms.find(wp => wp.slug === programSlug);
-                const useHardcoded = wpVersion?.acf?.use_hardcoded_version !== false;
 
-                const displayTitle = (wpVersion && !useHardcoded) ? (wpVersion.acf?.program_title || wpVersion.title.rendered) : program.title;
-                const displayDesc = (wpVersion && !useHardcoded) ? (wpVersion.acf?.program_description || "") : program.description;
+                // Determine if we should use WordPress data or hardcoded
+                // Use WordPress data only if:
+                // 1. WordPress version exists
+                // 2. use_hardcoded_version is explicitly false
+                // 3. Has valid program_title or program_description
+                const hasValidWpData = wpVersion &&
+                  wpVersion.acf?.use_hardcoded_version === false &&
+                  (wpVersion.acf?.program_title || wpVersion.acf?.program_description);
+
+                // Use WordPress title if valid, otherwise fallback to hardcoded
+                const displayTitle = hasValidWpData
+                  ? (wpVersion.acf?.program_title || wpVersion.title.rendered || program.title)
+                  : program.title;
+
+                // Use WordPress description if valid, otherwise fallback to hardcoded
+                const displayDesc = hasValidWpData
+                  ? (wpVersion.acf?.program_description || program.description)
+                  : program.description;
 
                 return (
                   <Link 
