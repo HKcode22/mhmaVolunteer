@@ -72,7 +72,25 @@ export default function ProgramsPage() {
     fetchPrograms();
   }, []);
 
-  const displayPrograms = showAll ? hardcodedPrograms : hardcodedPrograms.slice(0, 6);
+  // Merge hardcoded programs with WordPress programs
+  // WordPress programs are ADDED to the list (not replace)
+  const allPrograms = [...hardcodedPrograms];
+  wpPrograms.forEach(wpProgram => {
+    // Avoid duplicates by checking slug
+    if (!allPrograms.some(p => p.slug === wpProgram.slug)) {
+      allPrograms.push({
+        title: wpProgram.title?.rendered || wpProgram.title || "Untitled",
+        description: wpProgram.acf?.program_description || "",
+        image: typeof wpProgram.acf?.program_image === 'number' 
+          ? `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL}/wp/v2/media/${wpProgram.acf.program_image}`
+          : wpProgram.acf?.program_image || "",
+        href: `/programs/${wpProgram.slug}`,
+        slug: wpProgram.slug
+      });
+    }
+  });
+
+  const displayPrograms = showAll ? allPrograms : allPrograms.slice(0, 6);
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
@@ -181,13 +199,17 @@ export default function ProgramsPage() {
                 </div>
               )}
 
-              {!loading && hardcodedPrograms.length > 6 && (
+              {!loading && allPrograms.length > 6 && (
                 <div className="text-center mt-8">
                   <button
-                    onClick={() => setShowAll(!showAll)}
-                    className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all"
+                    type="button"
+                    onClick={() => {
+                      console.log("Show All clicked, current state:", showAll);
+                      setShowAll(!showAll);
+                    }}
+                    className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all cursor-pointer"
                   >
-                    {showAll ? 'Show Less' : `View All Programs (+${hardcodedPrograms.length - 6} more)`}
+                    {showAll ? 'Show Less' : `View All Programs (+${allPrograms.length - 6} more)`}
                   </button>
                 </div>
               )}

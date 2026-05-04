@@ -476,17 +476,25 @@ const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
 
 useEffect(() => {
   // Load Quran verse IMMEDIATELY (fast, from static JSON)
-  const loadVerse = async () => {
-    try {
-      const verse = await fetchQuranVerse();
-      setDailyVerse(verse);
-    } catch (error) {
-      console.error("Verse loading error:", error);
-    } finally {
-      setVerseLoading(false);
-    }
-  };
-  loadVerse();
+  // Use ref to prevent double-fetch in React StrictMode
+  const hasLoaded = { current: false };
+  
+  if (!hasLoaded.current) {
+    hasLoaded.current = true;
+    const loadVerse = async () => {
+      try {
+        console.log("Loading Quran verse...");
+        const verse = await fetchQuranVerse();
+        setDailyVerse(verse);
+        console.log("Quran verse loaded:", verse.reference);
+      } catch (error) {
+        console.error("Verse loading error:", error);
+      } finally {
+        setVerseLoading(false);
+      }
+    };
+    loadVerse();
+  }
 }, []);
 
 useEffect(() => {

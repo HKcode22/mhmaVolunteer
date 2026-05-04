@@ -3,10 +3,17 @@
 ## Project Overview
 - **Project Name**: MHMA Volunteer
 - **Tech Stack**: Next.js 14.2 (app directory), React, TypeScript, Tailwind CSS
-- **WordPress API**: Local WordPress site at `http://mhma-update.local/wp-json`
-- **WordPress Hosting**: LocalWP (Local app) at `/Users/hk/Local Sites/mhma-update/`
+- **WordPress API (Local)**: Local WordPress site at `http://mhma-update.local/wp-json`
+- **WordPress API (Production)**: Oracle Cloud at `https://my-wp-backend.duckdns.org/wp-json`
+- **WordPress Hosting (Production)**: Oracle Cloud Free Tier (Ubuntu 22.04, 1 OCPU, 1GB RAM)
+  - **Oracle IP**: 167.234.220.121
+  - **Oracle Username**: ubuntu
+  - **DuckDNS**: my-wp-backend.duckdns.org
+  - **WordPress Username**: hkcode22
+  - **Oracle Cloud Login**: hk84164@gmail.com
+- **WordPress Hosting (Local)**: LocalWP (Local app) at `/Users/hk/Local Sites/mhma-update/`
 - **Authentication**: JWT authentication with token stored in localStorage as `jwt_token`
-- **Live Site**: https://different-leaf.localsite.io
+- **Frontend (Vercel)**: https://mhma-update.vercel.app
 - **GitHub Repo**: https://github.com/HKcode22/mhmaVolunteer
 
 ## Project Structure
@@ -49,7 +56,16 @@ The following ACF fields are used for programs:
 ## Important Notes
 - **Delete Programs**: Use `?force=true` parameter in DELETE requests to permanently delete (otherwise goes to trash)
 - **Image Handling**: ACF image fields store media IDs (integers), need to fetch media URL via `/wp/v2/media/{id}`
+  - **Oracle Micro Instance (1GB RAM)**: Large image uploads can cause MySQL to crash due to low memory
+  - Compress images before upload (recommend <500KB)
+  - If backend returns "Error establishing database connection", SSH and run: `sudo systemctl restart mysql`
 - **Authentication**: JWT token required for all dashboard operations, stored in localStorage
+- **Production WordPress (Oracle Cloud)**:
+  - **Instance**: mhma-wordpress (VM.Standard.E2.1.Micro)
+  - **Region**: us-sanjose-1, AD-1, FD-3
+  - **Access**: SSH as ubuntu@167.234.220.121
+  - **Common Issue**: Database connection errors - run `sudo systemctl restart mysql` via SSH
+  - **Check Status**: `curl -I https://my-wp-backend.duckdns.org/`
 - **Local WordPress Site**: Located at `/Users/hk/Local Sites/mhma-update/` (hosted via LocalWP)
   - **CRITICAL**: This is the ONLY computer where the WordPress site is hosted
   - Access via terminal commands: `cd /Users/hk/Local\ Sites/mhma-update/`

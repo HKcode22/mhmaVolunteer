@@ -163,8 +163,12 @@ export default function JournalPage() {
                 {!loading && journalEntries.length > 6 && (
                   <div className="text-center mt-8">
                     <button
-                      onClick={() => setShowAll(!showAll)}
-                      className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all"
+                      type="button"
+                      onClick={() => {
+                        console.log("Show All Journal Entries clicked, current state:", showAll);
+                        setShowAll(!showAll);
+                      }}
+                      className="inline-flex items-center px-8 py-3 bg-white text-mhma-teal font-bold rounded-full border-2 border-mhma-teal hover:bg-mhma-teal hover:text-white transition-all cursor-pointer"
                     >
                       {showAll ? 'Show Less' : `View All Entries (+${journalEntries.length - 6} more)`}
                     </button>

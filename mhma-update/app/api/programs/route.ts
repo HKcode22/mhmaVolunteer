@@ -5,16 +5,58 @@ const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://mhma-upd
 // Common parent IDs to try for programs (different environments may have different IDs)
 const PROGRAM_PARENT_IDS = [70, 71, 72, 69, 68, 100, 200];
 
+/**
+ * Sleep utility for retry backoff
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Fetch with retry logic for flaky Oracle backend
+ */
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Programs API: Attempt ${attempt + 1}/${maxRetries + 1} for ${url}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        console.log(`Programs API: Success on attempt ${attempt + 1}`);
+        return response;
+      }
+
+      // Don't retry on 4xx errors
+      if (response.status >= 400 && response.status < 500) {
+        return response;
+      }
+
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (error) {
+      console.warn(`Programs API: Attempt ${attempt + 1} failed:`, error instanceof Error ? error.message : String(error));
+
+      if (attempt < maxRetries) {
+        const backoffMs = Math.min(1000 * Math.pow(2, attempt), 10000);
+        console.log(`Programs API: Retrying in ${backoffMs}ms...`);
+        await sleep(backoffMs);
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Failed after retries');
+}
+
 async function fetchProgramsWithMedia(parentId: number) {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${WP_API_URL}/wp/v2/pages?parent=${parentId}&per_page=100`,
-      { next: { revalidate: 60 }, signal: controller.signal }
+      { next: { revalidate: 60 } }
     );
-    clearTimeout(timeout);
 
     if (!response.ok) return [];
 

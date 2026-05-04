@@ -356,3 +356,9 @@ This single environment variable controls all API calls from Next.js to WordPres
 - Same plugins as local environment
 - Environment variable change only needed for Next.js to connect
 
+ the user name of the wordpress is hkcode22 and passwrod is Khan2203, for oracle its language
+signup.cloud.oracle.com
+Username
+hk84164@gmail.com
+Password
+@kGpnA3pV i

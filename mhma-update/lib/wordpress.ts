@@ -4,6 +4,62 @@
 const WP_GRAPHQL_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/graphql";
 
 /**
+ * Sleep utility for retry backoff
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Fetch with retry logic for flaky Oracle backend
+ * Retries up to 3 times with exponential backoff
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries: number = 3
+): Promise<Response> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Fetch attempt ${attempt + 1}/${maxRetries + 1} to ${url}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        console.log(`Fetch succeeded on attempt ${attempt + 1}`);
+        return response;
+      }
+
+      // Don't retry on 4xx errors (client errors)
+      if (response.status >= 400 && response.status < 500) {
+        return response;
+      }
+
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.warn(`Fetch attempt ${attempt + 1} failed:`, lastError.message);
+
+      if (attempt < maxRetries) {
+        const backoffMs = Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10s
+        console.log(`Retrying in ${backoffMs}ms...`);
+        await sleep(backoffMs);
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed after retries");
+}
+
+/**
  * Generic GraphQL fetch function for WordPress
  * @param query - GraphQL query string
  * @param variables - Optional variables for the query
@@ -14,7 +70,7 @@ export async function fetchGraphQL<T = any>(
   variables?: Record<string, any>
 ): Promise<T | null> {
   try {
-    const response = await fetch(WP_GRAPHQL_URL, {
+    const response = await fetchWithRetry(WP_GRAPHQL_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
