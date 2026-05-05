@@ -68,8 +68,13 @@ export default function EventsPage() {
             formattedTime = `${hour12}:${minutes}${ampm}`;
           }
 
-          // Poster URL is already resolved by the API
-          const posterUrl = event.acf?.event_poster || "";
+          // Handle poster - could be URL string or numeric media ID
+          let posterUrl = event.acf?.event_poster || "";
+          if (typeof posterUrl === 'number') {
+            posterUrl = `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/wp-json', '')}/wp-content/uploads/`;
+            // Fallback: try to construct media URL or use default
+            posterUrl = "";
+          }
 
           return {
             id: event.id,

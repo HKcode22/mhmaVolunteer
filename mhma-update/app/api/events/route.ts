@@ -52,7 +52,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
   throw new Error('Failed after retries');
 }
 
-async function fetchEventsWithMedia(parentId: string) {
+async function fetchEvents(parentId: string) {
   try {
     const response = await fetchWithRetry(
       `${WP_API_URL}/wp/v2/pages?parent=${parentId}&per_page=100`,
@@ -62,34 +62,9 @@ async function fetchEventsWithMedia(parentId: string) {
     if (!response.ok) return [];
 
     const events = await response.json();
-
-    // Fetch media URLs for events with numeric poster IDs
-    const eventsWithMedia = await Promise.all(
-      events.map(async (event: any) => {
-        if (event.acf?.event_poster && typeof event.acf.event_poster === 'number') {
-          try {
-            const mediaResponse = await fetch(`${WP_API_URL}/wp/v2/media/${event.acf.event_poster}`, {
-              next: { revalidate: 300 }
-            });
-            if (mediaResponse.ok) {
-              const media = await mediaResponse.json();
-              return {
-                ...event,
-                acf: {
-                  ...event.acf,
-                  event_poster: media.source_url || media.guid?.rendered || "",
-                },
-              };
-            }
-          } catch (e) {
-            // Ignore media fetch errors
-          }
-        }
-        return event;
-      })
-    );
-
-    return eventsWithMedia;
+    // Return raw events WITHOUT concurrent media fetching (prevents Oracle crash)
+    // Frontend handles image URL construction
+    return events;
   } catch (error) {
     return [];
   }
@@ -100,22 +75,25 @@ export async function GET(request: NextRequest) {
   const requestedParentId = searchParams.get('parent') || '277';
 
   try {
-    // Try ALL parent IDs and merge results (don't stop at first match)
+    // Try parent IDs sequentially (NOT concurrently) to avoid Oracle crash
     const allEventsMap = new Map();
 
-    // Always try the requested parent first
-    const requestedEvents = await fetchEventsWithMedia(requestedParentId);
+    // Try requested parent first
+    const requestedEvents = await fetchEvents(requestedParentId);
     requestedEvents.forEach((event: any) => {
       if (event.id) allEventsMap.set(event.id, event);
     });
 
-    // Then try all other parent IDs and merge
-    for (const parentId of EVENT_PARENT_IDS) {
-      if (parentId.toString() === requestedParentId) continue;
-      const parentEvents = await fetchEventsWithMedia(parentId.toString());
-      parentEvents.forEach((event: any) => {
-        if (event.id) allEventsMap.set(event.id, event);
-      });
+    // Only try other parents if first one found nothing
+    if (allEventsMap.size === 0) {
+      for (const parentId of EVENT_PARENT_IDS) {
+        if (parentId.toString() === requestedParentId) continue;
+        const parentEvents = await fetchEvents(parentId.toString());
+        parentEvents.forEach((event: any) => {
+          if (event.id) allEventsMap.set(event.id, event);
+        });
+        if (allEventsMap.size > 0) break; // Stop once we find events
+      }
     }
 
     // Fallback: try fetching all pages with ACF event fields

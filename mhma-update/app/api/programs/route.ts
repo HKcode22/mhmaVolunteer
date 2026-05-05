@@ -51,7 +51,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
   throw new Error('Failed after retries');
 }
 
-async function fetchProgramsWithMedia(parentId: number) {
+async function fetchPrograms(parentId: number) {
   try {
     const response = await fetchWithRetry(
       `${WP_API_URL}/wp/v2/pages?parent=${parentId}&per_page=100`,
@@ -61,34 +61,8 @@ async function fetchProgramsWithMedia(parentId: number) {
     if (!response.ok) return [];
 
     const programs = await response.json();
-
-    // Fetch media URLs for programs with numeric image IDs
-    const programsWithMedia = await Promise.all(
-      programs.map(async (program: any) => {
-        if (program.acf?.program_image && typeof program.acf.program_image === 'number') {
-          try {
-            const mediaResponse = await fetch(`${WP_API_URL}/wp/v2/media/${program.acf.program_image}`, {
-              next: { revalidate: 300 }
-            });
-            if (mediaResponse.ok) {
-              const media = await mediaResponse.json();
-              return {
-                ...program,
-                acf: {
-                  ...program.acf,
-                  program_image: media.source_url || media.guid?.rendered || "",
-                },
-              };
-            }
-          } catch (e) {
-            // Ignore media fetch errors
-          }
-        }
-        return program;
-      })
-    );
-
-    return programsWithMedia;
+    // Return raw programs WITHOUT concurrent media fetching (prevents Oracle crash)
+    return programs;
   } catch (error) {
     return [];
   }
@@ -96,11 +70,11 @@ async function fetchProgramsWithMedia(parentId: number) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Try common parent IDs
+    // Try parent IDs sequentially (NOT concurrently) to avoid Oracle crash
     let programs: any[] = [];
 
     for (const parentId of PROGRAM_PARENT_IDS) {
-      programs = await fetchProgramsWithMedia(parentId);
+      programs = await fetchPrograms(parentId);
       if (programs.length > 0) break;
     }
 
