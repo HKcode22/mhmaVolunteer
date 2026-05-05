@@ -15,12 +15,12 @@ function sleep(ms: number): Promise<void> {
 /**
  * Fetch with retry logic for flaky Oracle backend
  */
-async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 2): Promise<Response> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Programs API: Attempt ${attempt + 1}/${maxRetries + 1} for ${url}`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 8000);
 
       const response = await fetch(url, { ...options, signal: controller.signal });
       clearTimeout(timeout);
@@ -40,7 +40,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
       console.warn(`Programs API: Attempt ${attempt + 1} failed:`, error instanceof Error ? error.message : String(error));
 
       if (attempt < maxRetries) {
-        const backoffMs = Math.min(1000 * Math.pow(2, attempt), 10000);
+        const backoffMs = Math.min(500 * Math.pow(2, attempt), 3000);
         console.log(`Programs API: Retrying in ${backoffMs}ms...`);
         await sleep(backoffMs);
       } else {
