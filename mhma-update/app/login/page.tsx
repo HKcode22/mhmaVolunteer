@@ -38,8 +38,8 @@ export default function LoginPage() {
     try {
       if (userType === "new") {
         // Registration
-        console.log("Attempting registration to:", `${WP_API_URL}/wp/v2/users/register`);
-        const response = await fetch(`${WP_API_URL}/wp/v2/users/register`, {
+        console.log("Attempting registration to:", `${WP_API_URL}/mhma/v1/register`);
+        const response = await fetch(`${WP_API_URL}/mhma/v1/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -48,6 +48,9 @@ export default function LoginPage() {
             username: formData.username,
             email: formData.email,
             password: formData.password,
+            first_name: formData.username, // Using username as first_name since login form doesn't separate
+            last_name: "",
+            phone: "",
           }),
         });
 
@@ -59,7 +62,7 @@ export default function LoginPage() {
           throw new Error(data.message || "Registration failed");
         }
 
-        setSuccess("Registration successful! Please log in.");
+        setSuccess("Registration submitted successfully! Your account is pending approval.");
         setUserType("existing");
       } else {
         // Login
