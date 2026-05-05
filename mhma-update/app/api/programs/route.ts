@@ -72,16 +72,18 @@ async function fetchPrograms(parentId: number) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Try parent IDs sequentially (NOT concurrently) to avoid Oracle crash
-    let programs: any[] = [];
+    // Try ALL parent IDs and merge results (sequential to avoid Oracle crash)
+    const allProgramsMap = new Map();
 
     for (const parentId of PROGRAM_PARENT_IDS) {
-      programs = await fetchPrograms(parentId);
-      if (programs.length > 0) break;
+      const programs = await fetchPrograms(parentId);
+      programs.forEach((program: any) => {
+        if (program.id) allProgramsMap.set(program.id, program);
+      });
     }
 
     // If still no programs, try fetching all pages and filter by ACF program fields
-    if (programs.length === 0) {
+    if (allProgramsMap.size === 0) {
       try {
         const response = await fetch(
           `${WP_API_URL}/wp/v2/pages?per_page=100`,
@@ -90,16 +92,21 @@ export async function GET(request: NextRequest) {
         if (response.ok) {
           const allPages = await response.json();
           // Filter pages that have program ACF fields
-          programs = allPages.filter((page: any) =>
+          const programs = allPages.filter((page: any) =>
             page.acf?.program_title || page.acf?.program_description || page.acf?.program_image
           );
+          programs.forEach((program: any) => {
+            if (program.id) allProgramsMap.set(program.id, program);
+          });
         }
       } catch (e) {
         // Ignore fallback fetch errors
       }
     }
 
-    return NextResponse.json(programs);
+    const mergedPrograms = Array.from(allProgramsMap.values());
+    console.log(`Programs API: Found ${mergedPrograms.length} total programs from all parents`);
+    return NextResponse.json(mergedPrograms);
   } catch (error) {
     return NextResponse.json({ error: `${error}` }, { status: 500 });
   }

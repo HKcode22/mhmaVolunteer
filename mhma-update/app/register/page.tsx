@@ -11,6 +11,7 @@ import {
   Youtube,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import PageBanner from "@/components/PageBanner";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -22,39 +23,67 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    // Handle registration logic here
-    console.log("Registration submitted:", formData);
+
+    const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://my-wp-backend.duckdns.org/wp-json";
+
+    try {
+      // WordPress REST API doesn't have built-in registration
+      // We'll create a user via the admin API or use a custom endpoint
+      // For now, submit to a custom registration endpoint
+      const response = await fetch(`${WP_API_URL}/mhma/v1/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: `${formData.firstName}${formData.lastName}`.toLowerCase(),
+          email: formData.email,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          password: formData.password,
+          phone: formData.phone,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Registration submitted! Your request is pending approval.");
+        // Reset form
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+        });
+      } else {
+        const data = await response.json();
+        alert(data.message || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Registration failed. Please try again.");
+    }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
+      <Navigation currentPage="register" />
+      <PageBanner
+        title="Sign Up"
+        highlightedText="Sign Up"
+        subtitle="Join our community and become part of Mountain House Muslim Association."
+        currentPage="register"
+      />
 
       {/* Main Content */}
-      <main className="pt-24">
-        {/* Hero Banner */}
-        <div className="relative h-[200px] w-full overflow-hidden">
-          <Image
-            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=270&fit=crop"
-            alt="Mountain landscape"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h1 className="text-4xl md:text-5xl font-light text-white uppercase tracking-wider">
-              Sign <span className="font-normal">Up</span>
-            </h1>
-          </div>
-        </div>
-
+      <main className="pt-8">
         {/* Registration Form Section */}
         <section className="py-16 px-4 bg-gray-50">
           <div className="max-w-2xl mx-auto">

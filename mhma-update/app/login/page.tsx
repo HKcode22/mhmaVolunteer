@@ -13,6 +13,7 @@ import {
   User,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import PageBanner from "@/components/PageBanner";
 
 export default function LoginPage() {
   const [userType, setUserType] = useState<"existing" | "new" | "board">("existing");
@@ -135,26 +136,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navigation currentPage="login" />
+      <PageBanner
+        title="Login"
+        highlightedText="Login"
+        subtitle="Access your member dashboard and stay connected with the community."
+        currentPage="login"
+      />
 
       {/* Main Content */}
-      <main className="pt-32">
-        {/* Hero Banner */}
-        <div className="relative h-[200px] w-full overflow-hidden">
-          <Image
-            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=270&fit=crop"
-            alt="Mountain landscape"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h1 className="text-4xl md:text-5xl font-light text-white uppercase tracking-wider">
-              Log <span className="font-normal">In</span>
-            </h1>
-          </div>
-        </div>
-
+      <main className="pt-8">
         {/* Login Form Section */}
         <section className="py-16 px-4 bg-white">
           <div className="max-w-md mx-auto">

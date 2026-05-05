@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
   const requestedParentId = searchParams.get('parent') || '277';
 
   try {
-    // Try parent IDs sequentially (NOT concurrently) to avoid Oracle crash
+    // Try ALL parent IDs and merge results (sequential to avoid Oracle crash)
     const allEventsMap = new Map();
 
     // Try requested parent first
@@ -86,16 +86,13 @@ export async function GET(request: NextRequest) {
       if (event.id) allEventsMap.set(event.id, event);
     });
 
-    // Only try other parents if first one found nothing
-    if (allEventsMap.size === 0) {
-      for (const parentId of EVENT_PARENT_IDS) {
-        if (parentId.toString() === requestedParentId) continue;
-        const parentEvents = await fetchEvents(parentId.toString());
-        parentEvents.forEach((event: any) => {
-          if (event.id) allEventsMap.set(event.id, event);
-        });
-        if (allEventsMap.size > 0) break; // Stop once we find events
-      }
+    // Try ALL other parent IDs and merge (don't stop)
+    for (const parentId of EVENT_PARENT_IDS) {
+      if (parentId.toString() === requestedParentId) continue;
+      const parentEvents = await fetchEvents(parentId.toString());
+      parentEvents.forEach((event: any) => {
+        if (event.id) allEventsMap.set(event.id, event);
+      });
     }
 
     // Fallback: try fetching all pages with ACF event fields
