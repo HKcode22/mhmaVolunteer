@@ -3,103 +3,134 @@
 import Link from "next/link";
 import Image from "next/image";
 import Navigation from "@/components/Navigation";
-import { Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  Youtube,
+  ChevronLeft,
+  ArrowRight
+} from "lucide-react";
 
 export default function UrduAcademyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
       <Navigation currentPage="programs" />
 
-      <main className="pt-20">
-        <section className="py-0">
-          <div className="flex flex-col lg:flex-row">
-            <div className="w-full lg:w-2/3 py-16 px-6 md:px-12 lg:px-16">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 uppercase mb-6">
-                URDU KA SAFAR
-              </h1>
-              <div className="w-48 h-1 bg-[#c9a227] mb-8"></div>
-              <div className="prose max-w-none">
-                <p className="text-gray-700 mb-4">Learn how to read and speak the Urdu language. Registrations are now open.</p>
-                <p className="text-gray-700 mb-4">
-                  <a href="https://s.mhma.info/urdu" target="_blank" rel="noopener noreferrer" className="text-[#c9a227] hover:underline">Application here</a>
+      {/* Hero Section - Consistent with Ladies Meetup */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <Link href="/programs" className="inline-flex items-center text-mhma-gold font-bold mb-8 hover:-translate-x-2 transition-transform text-sm tracking-widest uppercase">
+            <ChevronLeft className="w-4 h-4 mr-2" /> All Programs
+          </Link>
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-serif uppercase tracking-tight">
+            Urdu <span className="text-mhma-gold italic">Academy</span>
+          </h1>
+          <div className="w-24 h-1.5 bg-mhma-gold mx-auto rounded-full"></div>
+        </div>
+      </section>
+
+      <main className="flex-grow py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-16">
+            <div className="lg:w-7/12">
+              <div className="prose prose-lg max-w-none text-gray-700 font-light leading-relaxed">
+                <p className="text-xl text-mhma-teal font-medium mb-8 border-l-4 border-mhma-gold pl-6 italic">
+                  Urdu Ka Safar - Learn how to read and speak the beautiful Urdu language. Connect with your heritage and culture.
                 </p>
-                <p className="text-gray-700 mb-4">The program starts in September 2024, with orientation on Wednesday September 4th inshaAllahh.</p>
+
+                <div className="my-12 p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 font-serif">Program Highlights</h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <span className="text-mhma-gold mr-3">•</span>
+                      <span>Learn to read and write Urdu script</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-mhma-gold mr-3">•</span>
+                      <span>Develop conversational speaking skills</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-mhma-gold mr-3">•</span>
+                      <span>Connect with your cultural heritage</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-mhma-gold mr-3">•</span>
+                      <span>All ages welcome</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <p className="mb-6">
+                  The program starts with orientation. <a href="https://s.mhma.info/urdu" target="_blank" rel="noopener noreferrer" className="text-mhma-gold hover:underline font-medium">Apply here</a> to register.
+                </p>
               </div>
             </div>
-            <div className="w-full lg:w-1/3 bg-gray-100 py-16 px-6 md:px-8">
-              <div className="bg-white/50 p-8 mb-8">
-                <div className="text-center mb-8">
-                  <div className="text-5xl font-bold text-gray-800 mb-2">2010</div>
-                  <div className="text-gray-600 uppercase">MHMA Founded In</div>
+
+            <div className="lg:w-5/12 space-y-8">
+              {/* Join Card */}
+              <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 relative overflow-hidden">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">Register Now</h3>
+                <p className="text-gray-500 text-sm mb-8 font-light">Give your child the gift of language and heritage.</p>
+                <a href="https://s.mhma.info/urdu" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-full py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg uppercase tracking-widest">
+                  Apply <ArrowRight className="ml-2 w-5 h-5" />
+                </a>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-mhma-teal p-8 rounded-3xl text-center text-white shadow-lg">
+                  <p className="text-3xl font-bold font-serif text-mhma-gold mb-1">All</p>
+                  <p className="text-xs uppercase tracking-widest opacity-70 font-medium">Ages</p>
                 </div>
-                <div className="text-center mb-8">
-                  <div className="text-5xl font-bold text-gray-800 mb-2">190</div>
-                  <div className="text-gray-600 uppercase">Members</div>
-                </div>
-                <div className="text-center">
-                  <a
-                    href="/donate"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors w-full"
-                  >
-                    Donate Now
-                  </a>
+                <div className="bg-mhma-dark p-8 rounded-3xl text-center text-white shadow-lg">
+                  <p className="text-3xl font-bold font-serif text-mhma-gold mb-1">Weekly</p>
+                  <p className="text-xs uppercase tracking-widest opacity-70 font-medium">Classes</p>
                 </div>
               </div>
-              <div className="mb-8">
+
+              {/* Testimonial */}
+              <div className="bg-mhma-dark p-10 rounded-3xl text-white relative mhma-pattern">
+                <div className="text-4xl text-mhma-gold opacity-50 mb-4 font-serif">"</div>
+                <p className="text-lg italic font-light mb-6 leading-relaxed">Realize the potential of your child learning a language that you and your forefathers spoke!</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-0.5 bg-mhma-gold mr-4"></div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-mhma-gold">MHMA Member</p>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 font-serif">Location</h3>
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.0977704984784!2d-121.5405094!3d37.7786645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80900c02b5b8f353%3A0xa8e69c4f6e63c44a!2sMountain%20House%20Unity%20Center!5e0!3m2!1sen!2sus!4v1699400000000!5m2!1sen!2sus"
                   width="100%"
-                  height="300"
+                  height="200"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="rounded-lg"
+                  className="rounded-xl"
                 ></iframe>
               </div>
-              <div className="bg-[#333] text-white p-6 rounded-lg">
-                <div className="relative">
-                  <div className="text-4xl text-[#c9a227] absolute -top-2 -left-2">"</div>
-                  <p className="text-white/90 italic mb-4 pt-4">
-                    Realize the potential of your child learning a language that you and your forefathers spoke!
-                  </p>
-                  <div className="text-4xl text-[#c9a227] absolute -bottom-2 -right-2">"</div>
-                  <p className="font-semibold text-[#c9a227] mt-4">
-                    Anonymous • MHMA Member
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
-        </section>
-        <section className="py-12 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto text-center">
-            <Link href="/programs" className="inline-block bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-8 rounded transition-colors">
-              Back to Programs
-            </Link>
-          </div>
-        </section>
+        </div>
       </main>
 
-      <footer className="bg-[#1a1a1a] text-white py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col items-center">
-            <div className="mb-6">
-              <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="MHMA Logo" width={200} height={45} className="h-12 w-auto" />
-            </div>
-            <div className="flex space-x-4 mb-8">
-              <a href="https://www.facebook.com/mhma95391" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"><Facebook className="w-5 h-5" /></a>
-              <a href="https://www.instagram.com/mhma.ig/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"><Instagram className="w-5 h-5" /></a>
-              <a href="https://x.com/i/flow/login?redirect_after_login=%2Fmhmatweets" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"><Twitter className="w-5 h-5" /></a>
-              <a href="https://www.linkedin.com/company/mountain-house-muslim-association/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"><Linkedin className="w-5 h-5" /></a>
-              <a href="https://www.youtube.com/@MHMAYouTube" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"><Youtube className="w-5 h-5" /></a>
-            </div>
-            <div className="text-center text-gray-400 text-sm">
-              <p>Copyright 2024 MHMA - Mountain House Muslim Association</p>
-            </div>
+      {/* Footer */}
+      <footer className="bg-white py-16 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="Logo" width={200} height={40} className="mx-auto mb-12 opacity-80" />
+          <div className="flex justify-center space-x-6 mb-12">
+             {[Facebook, Instagram, Twitter, Linkedin, Youtube].map((Icon, i) => (
+                <a key={i} href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-mhma-gold hover:text-white transition-all border border-gray-100">
+                  <Icon className="w-4 h-4" />
+                </a>
+             ))}
           </div>
+          <p className="text-gray-400 text-xs tracking-widest uppercase font-medium">© 2026 Mountain House Muslim Association</p>
         </div>
       </footer>
     </div>
