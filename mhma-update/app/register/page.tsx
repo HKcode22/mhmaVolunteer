@@ -38,7 +38,7 @@ export default function RegisterPage() {
       {/* Navigation */}
       <Navigation currentPage="register" />
 
-      {/* Main Content -->
+      {/* Main Content */}
       <main className="pt-20">
         {/* Hero Banner */}
         <div className="relative h-[200px] w-full overflow-hidden">
