@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://mhma-update.local/wp-json';
 
 // Common parent IDs to try for events (different environments may have different IDs)
-const EVENT_PARENT_IDS = [277, 152, 276, 278, 100, 200];
+// 280 = Events page (original events), 277 = Alternative events parent
+const EVENT_PARENT_IDS = [280, 277, 152, 276, 278, 100, 200];
 
 /**
  * Sleep utility for retry backoff
