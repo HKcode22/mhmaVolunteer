@@ -490,16 +490,21 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  // Load WordPress data separately (don't block verse)
+  // Load WordPress data SEQUENTIALLY to prevent Oracle backend crash
   const loadData = async () => {
     try {
-      const [events, programs, journalEntries] = await Promise.all([
-        fetchEvents(277),
-        fetchPrograms(70),
-        fetchJournalEntries(199),
-      ]);
+      // Fetch one at a time to avoid overwhelming Oracle
+      const events = await fetchEvents(277);
       setWpEvents(events);
+
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+
+      const programs = await fetchPrograms(70);
       setWpPrograms(programs);
+
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+
+      const journalEntries = await fetchJournalEntries(199);
       setWpJournalEntries(journalEntries);
     } catch (error) {
       console.error("Data fetching error:", error);

@@ -6,7 +6,8 @@ const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://mhma-upd
 
 // Common parent IDs to try for events (different environments may have different IDs)
 // 280 = Events page (original events), 277 = Alternative events parent
-const EVENT_PARENT_IDS = [280, 277, 152, 276, 278, 100, 200];
+// Reduced list to prevent overwhelming Oracle backend
+const EVENT_PARENT_IDS = [280, 277];
 
 /**
  * Sleep utility for retry backoff

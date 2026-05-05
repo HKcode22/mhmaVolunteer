@@ -5,7 +5,8 @@ export const dynamic = 'force-dynamic';
 const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://mhma-update.local/wp-json';
 
 // Common parent IDs to try for programs (different environments may have different IDs)
-const PROGRAM_PARENT_IDS = [70, 71, 72, 69, 68, 100, 200];
+// Reduced list to prevent overwhelming Oracle backend
+const PROGRAM_PARENT_IDS = [70, 71, 72];
 
 /**
  * Sleep utility for retry backoff
