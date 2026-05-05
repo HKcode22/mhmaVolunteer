@@ -122,9 +122,10 @@ export async function GET(request: NextRequest) {
         );
         if (response.ok) {
           const allPages = await response.json();
-          // Filter pages that have event ACF fields
+          // Filter pages that have event ACF fields OR are child pages of Events (280) or parent 277
           events = allPages.filter((page: any) =>
-            page.acf?.event_date || page.acf?.event_poster || page.acf?.event_time
+            page.acf?.event_date || page.acf?.event_poster || page.acf?.event_time ||
+            page.parent === 280 || page.parent === 277
           );
         }
       } catch (e) {
