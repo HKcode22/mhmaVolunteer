@@ -105,8 +105,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   ABOUT<span className="text-[10px]">▼</span>
                 </Link>
                 {aboutDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-0 min-w-[160px] w-auto bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden border-t-2 border-teal-600">
-                    <Link href="/about" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">ABOUT US</Link>
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="h-1 bg-teal-600 w-12 mx-auto rounded-full mt-1"></div>
+                    <Link href="/about" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 mt-1">ABOUT US</Link>
                     <Link href="/board" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">BOARD</Link>
                     <Link href="/committees" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">COMMITTEES</Link>
                     <Link href="/bylaws" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">BYLAWS</Link>
@@ -125,8 +126,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   EVENTS<span className="text-[10px]">▼</span>
                 </Link>
                 {eventsDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-0 min-w-[160px] w-auto bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden border-t-2 border-teal-600">
-                    <Link href="/events" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">ALL EVENTS</Link>
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="h-1 bg-teal-600 w-12 mx-auto rounded-full mt-1"></div>
+                    <Link href="/events" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 mt-1">ALL EVENTS</Link>
                     <Link href="/event-scheduling-request" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">SCHEDULING REQUEST</Link>
                   </div>
                 )}
@@ -146,8 +148,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   PROGRAMS<span className="text-[10px]">▼</span>
                 </Link>
                 {programsDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-0 min-w-[160px] w-auto bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden border-t-2 border-teal-600">
-                    <Link href="/programs" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">ALL PROGRAMS</Link>
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="h-1 bg-teal-600 w-12 mx-auto rounded-full mt-1"></div>
+                    <Link href="/programs" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 mt-1">ALL PROGRAMS</Link>
                     <Link href="/zakat" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">ZAKAT</Link>
                   </div>
                 )}
@@ -163,8 +166,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   DONATE<span className="text-[10px]">▼</span>
                 </Link>
                 {donateDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-0 min-w-[160px] w-auto bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden border-t-2 border-teal-600">
-                    <Link href="/donate" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">GENERAL DONATION</Link>
+                  <div className="absolute top-full left-0 mt-1 w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="h-1 bg-teal-600 w-12 mx-auto rounded-full mt-1"></div>
+                    <Link href="/donate" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 mt-1">GENERAL DONATION</Link>
                     <Link href="/masjid-construction" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700">MASJID CONSTRUCTION</Link>
                   </div>
                 )}

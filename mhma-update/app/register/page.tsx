@@ -9,7 +9,6 @@ import {
   Twitter,
   Linkedin,
   Youtube,
-  User,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 
@@ -35,11 +34,10 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <Navigation currentPage="register" />
+      <Navigation />
 
       {/* Main Content */}
-      <main className="pt-20">
+      <main className="pt-24">
         {/* Hero Banner */}
         <div className="relative h-[200px] w-full overflow-hidden">
           <Image

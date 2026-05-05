@@ -1,377 +1,244 @@
 <?php
 /**
  * Plugin Name: MHMA Member Roles
- * Description: Creates custom member roles (New Member and Existing Member) with limited dashboard access
- * Version: 1.0.0
+ * Description: Adds custom member roles for MHMA (existing_member, new_member) with appropriate capabilities.
+ * Version: 1.0
  * Author: MHMA
- * Requires at least: 5.0
- * Requires PHP: 7.0
  */
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
 /**
- * Create custom member roles on plugin activation
+ * Register custom member roles on plugin activation
  */
-function mhma_create_member_roles() {
-    // Define capabilities for new members (very limited access)
-    $new_member_caps = array(
-        'read' => true,                          // Can read/view content
-        'edit_posts' => false,                   // Cannot create/edit posts
-        'delete_posts' => false,                   // Cannot delete posts
-        'upload_files' => false,                   // Cannot upload files
-        'edit_dashboard' => false,               // Cannot access dashboard editing
-    );
-
-    // Define capabilities for existing members (read-only dashboard access)
+function mhma_register_member_roles() {
+    // Define capabilities for each role
+    
+    // Board Member - Full access (keep existing)
+    // This is the administrator-level role for board members
+    
+    // Existing Member - Can login, view content, edit own profile only
     $existing_member_caps = array(
-        'read' => true,                          // Can read/view content
-        'edit_posts' => false,                   // Cannot create/edit posts
-        'delete_posts' => false,                   // Cannot delete posts
-        'upload_files' => false,                   // Cannot upload files
-        'edit_dashboard' => false,               // Cannot access dashboard editing
+        'read' => true,
+        'edit_posts' => false,
+        'delete_posts' => false,
+        'publish_posts' => false,
+        'upload_files' => false,
+        'edit_pages' => false,
+        'edit_published_posts' => false,
+        'delete_published_posts' => false,
+        'delete_others_posts' => false,
+        'edit_others_posts' => false,
+        'manage_categories' => false,
+        'moderate_comments' => false,
+        'manage_links' => false,
+        'edit_theme_options' => false,
+        'activate_plugins' => false,
+        'edit_plugins' => false,
+        'edit_users' => false,
+        'create_users' => false,
+        'delete_users' => false,
+        'install_plugins' => false,
+        'install_themes' => false,
+        'manage_options' => false,
+        'promote_users' => false,
+        'publish_pages' => false,
+        'edit_published_pages' => false,
+        'delete_published_pages' => false,
+        'delete_others_pages' => false,
+        'edit_others_pages' => false,
+        'delete_pages' => false,
+        'switch_themes' => false,
+        'list_users' => false,
+        'remove_users' => false,
+        'add_users' => false,
+        'customize' => false,
     );
-
-    // Remove roles if they exist (to ensure clean setup)
-    remove_role('new_member');
+    
+    // New Member - Same as existing member (will be upgraded later)
+    // Can login, view content, edit own profile only
+    $new_member_caps = $existing_member_caps;
+    
+    // Remove and re-add roles to ensure clean state
     remove_role('existing_member');
-
-    // Add New Member role
-    add_role(
-        'new_member',
-        'New Member',
-        $new_member_caps
-    );
-
-    // Add Existing Member role
-    add_role(
-        'existing_member',
-        'Existing Member',
-        $existing_member_caps
-    );
+    remove_role('new_member');
+    
+    add_role('existing_member', 'Existing Member', $existing_member_caps);
+    add_role('new_member', 'New Member', $new_member_caps);
 }
-register_activation_hook(__FILE__, 'mhma_create_member_roles');
 
 /**
- * Remove roles on plugin deactivation
+ * Plugin activation hook
  */
-function mhma_remove_member_roles() {
-    remove_role('new_member');
-    remove_role('existing_member');
+function mhma_member_roles_activate() {
+    mhma_register_member_roles();
+    
+    // Also ensure board_member role exists if needed
+    if (!get_role('board_member')) {
+        $board_caps = get_role('administrator')->capabilities;
+        add_role('board_member', 'Board Member', $board_caps);
+    }
 }
-register_deactivation_hook(__FILE__, 'mhma_remove_member_roles');
+register_activation_hook(__FILE__, 'mhma_member_roles_activate');
 
 /**
- * Redirect non-admin users away from wp-admin
- * Board members (administrator, editor) can access dashboard
- * Members get redirected to frontend
+ * Initialize on admin init
  */
-function mhma_restrict_admin_access() {
-    // Check if we're in the admin area
-    if (is_admin() && !wp_doing_ajax()) {
+function mhma_member_roles_init() {
+    // Re-register on init to ensure roles exist
+    mhma_register_member_roles();
+}
+add_action('admin_init', 'mhma_member_roles_init');
+
+/**
+ * Restrict dashboard access for non-board members
+ */
+function mhma_restrict_dashboard_access() {
+    if (is_admin() && !defined('DOING_AJAX')) {
         $user = wp_get_current_user();
-
-        // If user is not logged in, let WordPress handle login redirect
-        if (!$user->exists()) {
-            return;
-        }
-
-        $user_roles = $user->roles;
-
-        // Define roles that CAN access wp-admin (board members)
-        $allowed_roles = array('administrator', 'editor', 'board_member');
-
-        // Check if user has any allowed role
-        $can_access_admin = false;
-        foreach ($user_roles as $role) {
-            if (in_array($role, $allowed_roles)) {
-                $can_access_admin = true;
-                break;
+        
+        if (in_array('existing_member', $user->roles) || in_array('new_member', $user->roles)) {
+            // Allow profile page only
+            $current_screen = get_current_screen();
+            if ($current_screen && $current_screen->id === 'profile') {
+                return;
             }
-        }
-
-        // Redirect members to frontend if trying to access wp-admin
-        if (!$can_access_admin) {
-            // Redirect to the frontend dashboard or home page
-            $redirect_url = home_url('/dashboard');
-            wp_redirect($redirect_url);
+            
+            // Redirect to homepage for other admin pages
+            wp_redirect(home_url());
             exit;
         }
     }
 }
-add_action('init', 'mhma_restrict_admin_access');
+add_action('admin_init', 'mhma_restrict_dashboard_access', 1);
 
 /**
- * Hide admin bar for non-board-member roles
+ * Add admin menu for role management
  */
-function mhma_hide_admin_bar() {
-    $user = wp_get_current_user();
-
-    if (!$user->exists()) {
-        return;
-    }
-
-    $user_roles = $user->roles;
-    $allowed_roles = array('administrator', 'editor', 'board_member');
-
-    $can_see_admin_bar = false;
-    foreach ($user_roles as $role) {
-        if (in_array($role, $allowed_roles)) {
-            $can_see_admin_bar = true;
-            break;
-        }
-    }
-
-    if (!$can_see_admin_bar) {
-        add_filter('show_admin_bar', '__return_false');
-    }
-}
-add_action('after_setup_theme', 'mhma_hide_admin_bar');
-
-/**
- * Custom REST API endpoint to check user role
- */
-function mhma_register_role_endpoint() {
-    register_rest_route('mhma/v1', '/user-role', array(
-        'methods' => 'GET',
-        'callback' => 'mhma_get_user_role',
-        'permission_callback' => function() {
-            return is_user_logged_in();
-        }
-    ));
-}
-add_action('rest_api_init', 'mhma_register_role_endpoint');
-
-/**
- * Return current user's role and capabilities
- */
-function mhma_get_user_role() {
-    $user = wp_get_current_user();
-
-    return array(
-        'roles' => $user->roles,
-        'capabilities' => $user->allcaps,
-        'is_board_member' => array_intersect($user->roles, array('administrator', 'editor', 'board_member')) ? true : false,
-        'is_member' => array_intersect($user->roles, array('new_member', 'existing_member')) ? true : false,
-    );
-}
-
-/**
- * Add user role to JWT response
- */
-function mhma_add_role_to_jwt($response, $user) {
-    $user_data = get_userdata($user->ID);
-
-    $response['user_roles'] = $user_data->roles;
-    $response['is_board_member'] = array_intersect($user_data->roles, array('administrator', 'editor', 'board_member')) ? true : false;
-    $response['is_member'] = array_intersect($user_data->roles, array('new_member', 'existing_member')) ? true : false;
-
-    return $response;
-}
-add_filter('jwt_auth_token_before_dispatch', 'mhma_add_role_to_jwt', 10, 2);
-
-/**
- * Create test users on plugin activation (only for development)
- * Uncomment this section when you want to create test users
- */
-/*
-function mhma_create_test_users() {
-    // Create test new member
-    $new_member_id = username_exists('testnewmember');
-    if (!$new_member_id) {
-        $new_member_id = wp_create_user('testnewmember', 'TestPass123!', 'testnewmember@example.com');
-        if (!is_wp_error($new_member_id)) {
-            $user = new WP_User($new_member_id);
-            $user->set_role('new_member');
-            update_user_meta($new_member_id, 'first_name', 'Test');
-            update_user_meta($new_member_id, 'last_name', 'New Member');
-        }
-    }
-
-    // Create test existing member
-    $existing_member_id = username_exists('testexistingmember');
-    if (!$existing_member_id) {
-        $existing_member_id = wp_create_user('testexistingmember', 'TestPass123!', 'testexistingmember@example.com');
-        if (!is_wp_error($existing_member_id)) {
-            $user = new WP_User($existing_member_id);
-            $user->set_role('existing_member');
-            update_user_meta($existing_member_id, 'first_name', 'Test');
-            update_user_meta($existing_member_id, 'last_name', 'Existing Member');
-        }
-    }
-
-    // Create test board member
-    $board_member_id = username_exists('testboardmember');
-    if (!$board_member_id) {
-        $board_member_id = wp_create_user('testboardmember', 'TestPass123!', 'testboardmember@example.com');
-        if (!is_wp_error($board_member_id)) {
-            $user = new WP_User($board_member_id);
-            $user->set_role('administrator');
-            update_user_meta($board_member_id, 'first_name', 'Test');
-            update_user_meta($board_member_id, 'last_name', 'Board Member');
-        }
-    }
-}
-// Uncomment the line below to create test users on activation
-// add_action('init', 'mhma_create_test_users');
-*/
-
-/**
- * Add admin notice for test user creation
- */
-function mhma_admin_notice() {
-    if (isset($_GET['page']) && $_GET['page'] === 'mhma-member-roles') {
-        return;
-    }
-
-    // Check if test users exist
-    $new_member_exists = username_exists('testnewmember');
-    $existing_member_exists = username_exists('testexistingmember');
-    $board_member_exists = username_exists('testboardmember');
-
-    if (!$new_member_exists || !$existing_member_exists || !$board_member_exists) {
-        ?>
-        <div class="notice notice-info">
-            <p>
-                <strong>MHMA Member Roles:</strong> Test users not created yet.
-                <a href="<?php echo admin_url('users.php?page=mhma-create-test-users'); ?>">Click here to create test users</a>
-            </p>
-        </div>
-        <?php
-    }
-}
-add_action('admin_notices', 'mhma_admin_notice');
-
-/**
- * Add admin page for creating test users
- */
-function mhma_add_test_users_page() {
-    add_submenu_page(
-        'users.php',
-        'Create Test Users',
-        'Create Test Users',
+function mhma_add_roles_menu() {
+    add_management_page(
+        'MHMA Member Roles',
+        'MHMA Roles',
         'manage_options',
-        'mhma-create-test-users',
-        'mhma_create_test_users_page'
+        'mhma-member-roles',
+        'mhma_roles_page'
     );
 }
-add_action('admin_menu', 'mhma_add_test_users_page');
+add_action('admin_menu', 'mhma_add_roles_menu');
 
 /**
- * Admin page content for creating test users
+ * Render roles management page
  */
-function mhma_create_test_users_page() {
-    $message = '';
-
-    if (isset($_POST['create_test_users'])) {
-        check_admin_referer('mhma_create_test_users');
-
-        // Create test new member
-        $new_member_id = username_exists('testnewmember');
-        if (!$new_member_id) {
-            $new_member_id = wp_create_user('testnewmember', 'TestPass123!', 'testnewmember@example.com');
-            if (!is_wp_error($new_member_id)) {
-                $user = new WP_User($new_member_id);
-                $user->set_role('new_member');
-                update_user_meta($new_member_id, 'first_name', 'Test');
-                update_user_meta($new_member_id, 'last_name', 'New Member');
-            }
-        }
-
-        // Create test existing member
-        $existing_member_id = username_exists('testexistingmember');
-        if (!$existing_member_id) {
-            $existing_member_id = wp_create_user('testexistingmember', 'TestPass123!', 'testexistingmember@example.com');
-            if (!is_wp_error($existing_member_id)) {
-                $user = new WP_User($existing_member_id);
-                $user->set_role('existing_member');
-                update_user_meta($existing_member_id, 'first_name', 'Test');
-                update_user_meta($existing_member_id, 'last_name', 'Existing Member');
-            }
-        }
-
-        // Create test board member
-        $board_member_id = username_exists('testboardmember');
-        if (!$board_member_id) {
-            $board_member_id = wp_create_user('testboardmember', 'TestPass123!', 'testboardmember@example.com');
-            if (!is_wp_error($board_member_id)) {
-                $user = new WP_User($board_member_id);
-                $user->set_role('administrator');
-                update_user_meta($board_member_id, 'first_name', 'Test');
-                update_user_meta($board_member_id, 'last_name', 'Board Member');
-            }
-        }
-
-        $message = 'Test users created successfully!';
-    }
-
+function mhma_roles_page() {
     ?>
     <div class="wrap">
-        <h1>Create Test Users for MHMA</h1>
-
-        <?php if ($message): ?>
-        <div class="notice notice-success">
-            <p><?php echo esc_html($message); ?></p>
-        </div>
-        <?php endif; ?>
-
-        <div class="card">
-            <h2>Test User Accounts</h2>
-            <p>The following test users will be created:</p>
-            <table class="widefat" style="max-width: 800px;">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Password</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>testnewmember</td>
-                        <td>TestPass123!</td>
-                        <td>New Member</td>
-                        <td><?php echo username_exists('testnewmember') ? '<span style="color: green;">✓ Exists</span>' : '<span style="color: orange;">Not Created</span>'; ?></td>
-                    </tr>
-                    <tr>
-                        <td>testexistingmember</td>
-                        <td>TestPass123!</td>
-                        <td>Existing Member</td>
-                        <td><?php echo username_exists('testexistingmember') ? '<span style="color: green;">✓ Exists</span>' : '<span style="color: orange;">Not Created</span>'; ?></td>
-                    </tr>
-                    <tr>
-                        <td>testboardmember</td>
-                        <td>TestPass123!</td>
-                        <td>Board Member (Admin)</td>
-                        <td><?php echo username_exists('testboardmember') ? '<span style="color: green;">✓ Exists</span>' : '<span style="color: orange;">Not Created</span>'; ?></td>
-                    </tr>
-                </table>
-
-            <form method="post">
-                <?php wp_nonce_field('mhma_create_test_users'); ?>
-                <p>
-                    <input type="submit" name="create_test_users" class="button button-primary" value="Create Test Users" <?php echo (username_exists('testnewmember') && username_exists('testexistingmember') && username_exists('testboardmember')) ? 'disabled' : ''; ?>>
-                </p>
-            </form>
-
-            <?php if (username_exists('testnewmember') && username_exists('testexistingmember') && username_exists('testboardmember')): ?>
-            <p style="color: green;"><strong>✓ All test users have been created successfully!</strong></p>
-            <p>You can now use these credentials to test the login and registration functionality on the frontend.</p>
-            <?php endif; ?>
-        </div>
-
-        <div class="card" style="margin-top: 20px;">
-            <h2>Role Capabilities</h2>
-            <ul>
-                <li><strong>New Member:</strong> Can login, view content, NO dashboard editing access</li>
-                <li><strong>Existing Member:</strong> Can login, view content, NO dashboard editing access</li>
-                <li><strong>Board Member:</strong> Full wp-admin access for content management</li>
-            </ul>
-        </div>
+        <h1>MHMA Member Roles</h1>
+        <p>This plugin manages custom member roles for MHMA:</p>
+        <ul>
+            <li><strong>Board Member</strong> - Full admin access (keep as-is from WP)</li>
+            <li><strong>Existing Member</strong> - Can login and view content, NO editing rights</li>
+            <li><strong>New Member</strong> - Same as existing member (upgrade path available)</li>
+        </ul>
+        <p>Roles are automatically registered. To assign roles, go to <a href="<?php echo admin_url('users.php'); ?>">Users</a> page.</p>
     </div>
     <?php
 }
+
+/**
+ * Display user role in admin user list
+ */
+function mhma_display_user_role($column_content, $column, $user_id) {
+    if ($column === 'mhma_role') {
+        $user = get_user_by('id', $user_id);
+        if ($user) {
+            $roles = array_map(function($role) {
+                $role_labels = array(
+                    'administrator' => 'Administrator',
+                    'editor' => 'Editor',
+                    'author' => 'Author',
+                    'contributor' => 'Contributor',
+                    'subscriber' => 'Subscriber',
+                    'board_member' => 'Board Member',
+                    'existing_member' => 'Existing Member',
+                    'new_member' => 'New Member',
+                );
+                return isset($role_labels[$role]) ? $role_labels[$role] : $role;
+            }, $user->roles);
+            return implode(', ', $roles);
+        }
+    }
+    return $column_content;
+}
+add_filter('manage_users_custom_column', 'mhma_display_user_role', 10, 3);
+
+/**
+ * Add custom column to user list
+ */
+function mhma_add_user_columns($columns) {
+    $columns['mhma_role'] = 'MHMA Role';
+    return $columns;
+}
+add_filter('manage_users_columns', 'mhma_add_user_columns');
+
+/**
+ * Show role info on user profile
+ */
+function mhma_show_role_info($user) {
+    ?>
+    <h3>MHMA Member Information</h3>
+    <table class="form-table">
+        <tr>
+            <th><label for="mhma_member_role">Member Type</label></th>
+            <td>
+                <select name="mhma_member_role" id="mhma_member_role">
+                    <?php
+                    $user_roles = $user->roles;
+                    $selected_role = '';
+                    foreach ($user_roles as $role) {
+                        if (in_array($role, ['existing_member', 'new_member', 'board_member'])) {
+                            $selected_role = $role;
+                            break;
+                        }
+                    }
+                    ?>
+                    <option value="">Select Role</option>
+                    <option value="new_member" <?php selected($selected_role, 'new_member'); ?>>New Member</option>
+                    <option value="existing_member" <?php selected($selected_role, 'existing_member'); ?>>Existing Member</option>
+                    <option value="board_member" <?php selected($selected_role, 'board_member'); ?>>Board Member</option>
+                </select>
+                <p class="description">Assign MHMA member role to this user.</p>
+            </td>
+        </tr>
+    </table>
+    <?php
+}
+add_action('show_user_profile', 'mhma_show_role_info');
+add_action('edit_user_profile', 'mhma_show_role_info');
+
+/**
+ * Save custom role from user profile
+ */
+function mhma_save_user_role($user_id) {
+    if (!current_user_can('edit_user', $user_id)) {
+        return;
+    }
+    
+    if (isset($_POST['mhma_member_role'])) {
+        $new_role = sanitize_text_field($_POST['mhma_member_role']);
+        
+        if (in_array($new_role, ['existing_member', 'new_member', 'board_member'])) {
+            // Remove old MHMA roles
+            $user = new WP_User($user_id);
+            $user->remove_role('existing_member');
+            $user->remove_role('new_member');
+            $user->remove_role('board_member');
+            
+            // Add new role
+            $user->add_role($new_role);
+        }
+    }
+}
+add_action('personal_options_update', 'mhma_save_user_role');
+add_action('edit_user_profile_update', 'mhma_save_user_role');

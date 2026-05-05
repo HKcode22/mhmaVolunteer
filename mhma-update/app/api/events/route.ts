@@ -100,21 +100,26 @@ export async function GET(request: NextRequest) {
   const requestedParentId = searchParams.get('parent') || '277';
 
   try {
-    // First try the requested parent ID
-    let events = await fetchEventsWithMedia(requestedParentId);
+    // Try ALL parent IDs and merge results (don't stop at first match)
+    const allEventsMap = new Map();
 
-    // If no events found, try other common parent IDs
-    if (events.length === 0) {
-      for (const parentId of EVENT_PARENT_IDS) {
-        if (parentId.toString() !== requestedParentId) {
-          events = await fetchEventsWithMedia(parentId.toString());
-          if (events.length > 0) break;
-        }
-      }
+    // Always try the requested parent first
+    const requestedEvents = await fetchEventsWithMedia(requestedParentId);
+    requestedEvents.forEach((event: any) => {
+      if (event.id) allEventsMap.set(event.id, event);
+    });
+
+    // Then try all other parent IDs and merge
+    for (const parentId of EVENT_PARENT_IDS) {
+      if (parentId.toString() === requestedParentId) continue;
+      const parentEvents = await fetchEventsWithMedia(parentId.toString());
+      parentEvents.forEach((event: any) => {
+        if (event.id) allEventsMap.set(event.id, event);
+      });
     }
 
-    // If still no events, try fetching all pages and filter by ACF event fields
-    if (events.length === 0) {
+    // Fallback: try fetching all pages with ACF event fields
+    if (allEventsMap.size === 0) {
       try {
         const response = await fetch(
           `${WP_API_URL}/wp/v2/pages?per_page=100`,
@@ -122,18 +127,22 @@ export async function GET(request: NextRequest) {
         );
         if (response.ok) {
           const allPages = await response.json();
-          // Filter pages that have event ACF fields OR are child pages of Events (280) or parent 277
-          events = allPages.filter((page: any) =>
-            page.acf?.event_date || page.acf?.event_poster || page.acf?.event_time ||
-            page.parent === 280 || page.parent === 277
+          const events = allPages.filter((page: any) =>
+            page.acf?.event_date || page.acf?.event_poster || page.acf?.event_time
           );
+          events.forEach((event: any) => {
+            if (event.id) allEventsMap.set(event.id, event);
+          });
         }
       } catch (e) {
         // Ignore fallback fetch errors
       }
     }
 
-    return NextResponse.json(events);
+    const mergedEvents = Array.from(allEventsMap.values());
+    console.log(`Events API: Found ${mergedEvents.length} total events from all parents`);
+
+    return NextResponse.json(mergedEvents);
   } catch (error) {
     return NextResponse.json({ error: `${error}` }, { status: 500 });
   }
