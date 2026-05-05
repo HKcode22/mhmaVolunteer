@@ -11,11 +11,17 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Add custom REST API endpoint for registration
+// Add custom REST API endpoints
 add_action('rest_api_init', function () {
     register_rest_route('mhma/v1', '/register', [
         'methods' => 'POST',
         'callback' => 'mhma_handle_registration',
+        'permission_callback' => '__return_true',
+    ]);
+
+    register_rest_route('mhma/v1', '/enroll', [
+        'methods' => 'POST',
+        'callback' => 'mhma_handle_enrollment',
         'permission_callback' => '__return_true',
     ]);
 });
@@ -75,5 +81,53 @@ function mhma_handle_registration($request) {
         'success' => true,
         'message' => 'Registration submitted successfully. Your account is pending approval.',
         'user_id' => $user_id
+    ], 200);
+}
+
+function mhma_handle_enrollment($request) {
+    $full_name = sanitize_text_field($request->get_param('fullName'));
+    $email = sanitize_email($request->get_param('email'));
+    $phone = sanitize_text_field($request->get_param('phone'));
+    $program = sanitize_text_field($request->get_param('program'));
+    $message = sanitize_textarea_field($request->get_param('message'));
+
+    // Validate required fields
+    if (empty($full_name) || empty($email) || empty($phone) || empty($program)) {
+        return new WP_Error('missing_fields', 'All required fields must be filled', ['status' => 400]);
+    }
+
+    // Create enrollment post
+    $post_data = [
+        'post_title' => "Enrollment: $full_name - $program",
+        'post_content' => "Full Name: $full_name\nEmail: $email\nPhone: $phone\nProgram: $program\n\nMessage:\n$message",
+        'post_status' => 'private',
+        'post_type' => 'enrollment',
+    ];
+
+    $post_id = wp_insert_post($post_data);
+
+    if (is_wp_error($post_id)) {
+        return $post_id;
+    }
+
+    // Send notification to admin
+    $admin_email = get_option('admin_email');
+    $subject = 'New Program Enrollment: ' . $full_name;
+    $email_message = "A new enrollment request has been submitted:\n\n";
+    $email_message .= "Name: $full_name\n";
+    $email_message .= "Email: $email\n";
+    $email_message .= "Phone: $phone\n";
+    $email_message .= "Program: $program\n\n";
+    if (!empty($message)) {
+        $email_message .= "Message:\n$message\n\n";
+    }
+    $email_message .= "Please review and follow up with the applicant.";
+
+    wp_mail($admin_email, $subject, $email_message);
+
+    return new WP_REST_Response([
+        'success' => true,
+        'message' => 'Enrollment submitted successfully. We will contact you shortly.',
+        'enrollment_id' => $post_id
     ], 200);
 }

@@ -141,6 +141,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   <div className="min-w-[140px] w-max bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-1 bg-teal-600 w-12 mx-auto rounded-full mt-1"></div>
                     <Link href="/programs" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 mt-1 whitespace-nowrap">ALL PROGRAMS</Link>
+                    <Link href="/enroll" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ENROLL NOW</Link>
                     <Link href="/zakat" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ZAKAT</Link>
                   </div>
                 </div>
