@@ -1,0 +1,518 @@
+[
+  {
+    "key": "group_event_scheduling_request",
+    "title": "Event Scheduling Request",
+    "fields": [
+      {
+        "key": "field_organizer_first_name",
+        "label": "First Name",
+        "name": "organizer_first_name",
+        "type": "text",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "maxlength": ""
+      },
+      {
+        "key": "field_organizer_last_name",
+        "label": "Last Name",
+        "name": "organizer_last_name",
+        "type": "text",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "maxlength": ""
+      },
+      {
+        "key": "field_organizer_email",
+        "label": "Email",
+        "name": "organizer_email",
+        "type": "email",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": ""
+      },
+      {
+        "key": "field_organizer_phone",
+        "label": "Phone",
+        "name": "organizer_phone",
+        "type": "text",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "maxlength": ""
+      },
+      {
+        "key": "field_event_title",
+        "label": "Event Title",
+        "name": "event_title",
+        "type": "text",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "maxlength": ""
+      },
+      {
+        "key": "field_event_category",
+        "label": "Event Category",
+        "name": "event_category",
+        "type": "select",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "religious": "Religious",
+          "social": "Social",
+          "educational": "Educational",
+          "fundraising": "Fundraising",
+          "community": "Community",
+          "youth": "Youth",
+          "other": "Other"
+        },
+        "default_value": "",
+        "allow_null": 0,
+        "multiple": 0,
+        "ui": 0,
+        "ajax": 0,
+        "placeholder": ""
+      },
+      {
+        "key": "field_event_description",
+        "label": "Event Description",
+        "name": "event_description",
+        "type": "textarea",
+        "instructions": "Please provide as much information as possible, including event category detail if you selected other",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "maxlength": "",
+        "rows": "",
+        "new_lines": "wpautop"
+      },
+      {
+        "key": "field_event_start",
+        "label": "Start",
+        "name": "event_start",
+        "type": "date_time_picker",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "display_format": "Y-m-d H:i:s",
+        "return_format": "Y-m-d H:i:s"
+      },
+      {
+        "key": "field_event_end",
+        "label": "End",
+        "name": "event_end",
+        "type": "date_time_picker",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "display_format": "Y-m-d H:i:s",
+        "return_format": "Y-m-d H:i:s"
+      },
+      {
+        "key": "field_has_host_speaker",
+        "label": "Will there be a host or guest speaker?",
+        "name": "has_host_speaker",
+        "type": "radio",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "allow_null": 0,
+        "other_choice": 0,
+        "default_value": "",
+        "layout": "vertical",
+        "return_format": "value"
+      },
+      {
+        "key": "field_has_food",
+        "label": "Will food be served?",
+        "name": "has_food",
+        "type": "radio",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "allow_null": 0,
+        "other_choice": 0,
+        "default_value": "",
+        "layout": "vertical",
+        "return_format": "value"
+      },
+      {
+        "key": "field_food_service",
+        "label": "Food Service",
+        "name": "food_service",
+        "type": "checkbox",
+        "instructions": "Please select one or more options",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "self_serve": "Self-serve",
+          "catered": "Catered",
+          "potluck": "Potluck",
+          "other": "Other"
+        },
+        "allow_custom": 0,
+        "default_value": "",
+        "layout": "vertical",
+        "toggle": 0,
+        "return_format": "value"
+      },
+      {
+        "key": "field_location",
+        "label": "Location",
+        "name": "location",
+        "type": "text",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "Location",
+        "prepend": "",
+        "append": "",
+        "maxlength": ""
+      },
+      {
+        "key": "field_facility",
+        "label": "Facility",
+        "name": "facility",
+        "type": "select",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "unity_center": "Unity Center",
+          "masjid": "Masjid",
+          "outdoor": "Outdoor",
+          "other": "Other"
+        },
+        "default_value": "",
+        "allow_null": 0,
+        "multiple": 0,
+        "ui": 0,
+        "ajax": 0,
+        "placeholder": ""
+      },
+      {
+        "key": "field_round_tables",
+        "label": "Round Tables",
+        "name": "round_tables",
+        "type": "number",
+        "instructions": "Please enter the number of round tables needed",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "min": "",
+        "max": "",
+        "step": ""
+      },
+      {
+        "key": "field_rectangular_tables",
+        "label": "Rectangular Tables",
+        "name": "rectangular_tables",
+        "type": "number",
+        "instructions": "Please enter the number of rectangular tables needed",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "min": "",
+        "max": "",
+        "step": ""
+      },
+      {
+        "key": "field_chairs",
+        "label": "Chairs",
+        "name": "chairs",
+        "type": "number",
+        "instructions": "Please enter the number of chairs needed",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "min": "",
+        "max": "",
+        "step": ""
+      },
+      {
+        "key": "field_equipment",
+        "label": "Equipment",
+        "name": "equipment",
+        "type": "checkbox",
+        "instructions": "Please select all require options",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "projector": "Projector",
+          "microphone": "Microphone",
+          "speakers": "Speakers",
+          "tables": "Tables",
+          "chairs": "Chairs",
+          "other": "Other"
+        },
+        "allow_custom": 0,
+        "default_value": "",
+        "layout": "vertical",
+        "toggle": 0,
+        "return_format": "value"
+      },
+      {
+        "key": "field_volunteers",
+        "label": "Volunteers",
+        "name": "volunteers",
+        "type": "number",
+        "instructions": "Please enter the number of volunteers needed",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "min": "",
+        "max": "",
+        "step": ""
+      },
+      {
+        "key": "field_helpers",
+        "label": "Helpers",
+        "name": "helpers",
+        "type": "number",
+        "instructions": "Please enter the number of paid helpers needed",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "prepend": "",
+        "append": "",
+        "min": "",
+        "max": "",
+        "step": ""
+      },
+      {
+        "key": "field_rsvp_required",
+        "label": "RSVP Required",
+        "name": "rsvp_required",
+        "type": "radio",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "allow_null": 0,
+        "other_choice": 0,
+        "default_value": "",
+        "layout": "vertical",
+        "return_format": "value"
+      },
+      {
+        "key": "field_payment_required",
+        "label": "Payment Collection Required",
+        "name": "payment_required",
+        "type": "radio",
+        "instructions": "",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "choices": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "allow_null": 0,
+        "other_choice": 0,
+        "default_value": "",
+        "layout": "vertical",
+        "return_format": "value"
+      },
+      {
+        "key": "field_comments",
+        "label": "Comments",
+        "name": "comments",
+        "type": "textarea",
+        "instructions": "Please share any additional information that will help with the event planning, and flyer creation",
+        "required": 0,
+        "conditional_logic": 0,
+        "wrapper": {
+          "width": "",
+          "class": "",
+          "id": ""
+        },
+        "default_value": "",
+        "placeholder": "",
+        "maxlength": "",
+        "rows": "",
+        "new_lines": "wpautop"
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "page"
+        },
+        {
+          "param": "page_template",
+          "operator": "==",
+          "value": "default"
+        }
+      ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+  }
+]
