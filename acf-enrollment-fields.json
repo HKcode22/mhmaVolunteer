@@ -1,0 +1,86 @@
+{
+  "key": "group_enrollment_form",
+  "title": "Enrollment Form",
+  "fields": [
+    {
+      "key": "field_enrollment_full_name",
+      "label": "Full Name",
+      "name": "enrollment_full_name",
+      "type": "text",
+      "required": 1,
+      "wrapper": {
+        "width": "50"
+      }
+    },
+    {
+      "key": "field_enrollment_email",
+      "label": "Email Address",
+      "name": "enrollment_email",
+      "type": "email",
+      "required": 1,
+      "wrapper": {
+        "width": "50"
+      }
+    },
+    {
+      "key": "field_enrollment_phone",
+      "label": "Phone Number",
+      "name": "enrollment_phone",
+      "type": "text",
+      "required": 1,
+      "wrapper": {
+        "width": "50"
+      }
+    },
+    {
+      "key": "field_enrollment_program",
+      "label": "Select Program",
+      "name": "enrollment_program",
+      "type": "select",
+      "required": 1,
+      "choices": {
+        "youth_sports_league": "Youth Sports League",
+        "ladies_meetup": "Ladies Meetup",
+        "learn_3d_printing": "Learn 3D Printing",
+        "urdu_academy": "Urdu Academy",
+        "maktab_program": "Maktab Program",
+        "family_night": "Family Night",
+        "jummah_and_salah": "Jummah and Salah",
+        "wish": "WISH (Weekend Islamic School)",
+        "quran_hifz_program": "Quran Hifz Program",
+        "boy_scouts": "Boy Scouts",
+        "arabic_academy": "Arabic Academy"
+      },
+      "wrapper": {
+        "width": "50"
+      }
+    },
+    {
+      "key": "field_enrollment_message",
+      "label": "Additional Message",
+      "name": "enrollment_message",
+      "type": "textarea",
+      "required": 0,
+      "wrapper": {
+        "width": "100"
+      }
+    }
+  ],
+  "location": [
+    [
+      {
+        "param": "page_template",
+        "operator": "==",
+        "value": "page-enrollment.php"
+      }
+    ]
+  ],
+  "menu_order": 0,
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": [],
+  "active": true,
+  "description": ""
+}
