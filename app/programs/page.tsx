@@ -163,9 +163,20 @@ export default function ProgramsPage() {
                     </div>
                     <div className="p-6 flex flex-col flex-grow">
                       <h3 className="text-lg font-bold text-gray-900 mb-3 font-serif group-hover:text-mhma-gold transition-colors">{displayTitle}</h3>
-                      <p className="text-gray-500 text-sm leading-relaxed mb-6 font-light line-clamp-2">{displayDesc}</p>
-                      <div className="mt-auto flex items-center text-mhma-gold text-xs font-bold uppercase tracking-widest">
-                        Learn More <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <p className="text-gray-500 text-sm leading-relaxed mb-4 font-light line-clamp-2">{displayDesc}</p>
+                      <div className="mt-auto space-y-3">
+                        <Link
+                          href="/enroll"
+                          className="block w-full text-center px-4 py-2.5 bg-mhma-gold text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all shadow-md"
+                        >
+                          Enroll Now
+                        </Link>
+                        <Link 
+                          href={program.href}
+                          className="block w-full text-center text-mhma-gold text-xs font-bold uppercase tracking-widest hover:underline"
+                        >
+                          Learn More <ChevronRight className="ml-1 w-4 h-4 inline group-hover:translate-x-1 transition-transform" />
+                        </Link>
                       </div>
                     </div>
                   </Link>

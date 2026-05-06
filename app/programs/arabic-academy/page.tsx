@@ -121,7 +121,7 @@ export default function ArabicAcademyPage() {
               <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 relative overflow-hidden">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">Enroll Today</h3>
                 <p className="text-gray-500 text-sm mb-8 font-light">Join the Arabic Academy and unlock the beauty of the Quranic language.</p>
-                <Link href="/register" className="flex items-center justify-center w-full py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg uppercase tracking-widest">
+                <Link href="/enroll" className="flex items-center justify-center w-full py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg uppercase tracking-widest">
                   REGISTER NOW <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
                 {isLoggedIn && (

@@ -87,8 +87,11 @@ register_activation_hook(__FILE__, 'mhma_member_roles_activate');
  * Initialize on admin init
  */
 function mhma_member_roles_init() {
-    // Re-register on init to ensure roles exist
     mhma_register_member_roles();
+    if (!get_role('board_member')) {
+        $board_caps = get_role('administrator')->capabilities;
+        add_role('board_member', 'Board Member', $board_caps);
+    }
 }
 add_action('admin_init', 'mhma_member_roles_init');
 

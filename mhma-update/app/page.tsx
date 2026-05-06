@@ -353,6 +353,8 @@ export default function HomePage() {
       setUsername(storedUsername);
     }
   }, []);
+// اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ (May the peace, mercy, and blessings of Allah [The God] be upon you)
+// Welcome To MHMA (The full name of whoever logged in)
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {

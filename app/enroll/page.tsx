@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 
 export default function EnrollPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -16,6 +20,16 @@ export default function EnrollPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("jwt_token");
+    if (!token) {
+      router.push("/login?redirect=/enroll");
+    } else {
+      setIsAuthenticated(true);
+    }
+    setCheckingAuth(false);
+  }, [router]);
 
   const programs = [
     { value: "youth_sports_league", label: "Youth Sports League" },
@@ -67,6 +81,21 @@ export default function EnrollPage() {
       setLoading(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-[#c9a227] border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-white">

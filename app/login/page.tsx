@@ -21,6 +21,8 @@ export default function LoginPage() {
     username: "",
     password: "",
     email: "",
+    firstName: "",
+    lastName: "",
     rememberMe: false,
   });
   const [loading, setLoading] = useState(false);
@@ -48,8 +50,8 @@ export default function LoginPage() {
             username: formData.username,
             email: formData.email,
             password: formData.password,
-            first_name: formData.username, // Using username as first_name since login form doesn't separate
-            last_name: "",
+            first_name: formData.firstName,
+            last_name: formData.lastName,
             phone: "",
           }),
         });
@@ -92,8 +94,9 @@ export default function LoginPage() {
           localStorage.setItem("jwt_token", data.token);
           localStorage.setItem("username", data.user_nicename || formData.username);
 
-          // Fetch actual user role from WordPress
+          // Fetch actual user data from WordPress
           let actualRole = "subscriber";
+          let userFirstName = formData.username;
           try {
             const userResponse = await fetch(`${WP_API_URL}/wp/v2/users/me`, {
               headers: {
@@ -103,13 +106,15 @@ export default function LoginPage() {
             if (userResponse.ok) {
               const userData = await userResponse.json();
               actualRole = userData.roles && userData.roles.length > 0 ? userData.roles[0] : "subscriber";
+              userFirstName = userData.first_name || userData.name || formData.username;
             }
           } catch (err) {
             console.error("Failed to fetch user role:", err);
           }
 
           localStorage.setItem("user_role", actualRole);
-          console.log("Login successful. Actual role from WordPress:", actualRole);
+          localStorage.setItem("first_name", userFirstName);
+          console.log("Login successful. Actual role from WordPress:", actualRole, "First name:", userFirstName);
 
           const isBoardMember = actualRole === "board_member" || actualRole === "administrator";
 
@@ -117,6 +122,7 @@ export default function LoginPage() {
             localStorage.removeItem("jwt_token");
             localStorage.removeItem("user_role");
             localStorage.removeItem("username");
+            localStorage.removeItem("first_name");
             throw new Error("Access denied. Only registered board members can log in here. Please contact the administrator if you believe this is an error.");
           }
 
@@ -220,20 +226,52 @@ export default function LoginPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {userType === "new" && (
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          value={formData.firstName}
+                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                          placeholder="First name"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          value={formData.lastName}
+                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                          placeholder="Last name"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+                  </>
                 )}
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">

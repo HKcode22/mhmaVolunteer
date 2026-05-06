@@ -176,8 +176,8 @@ export default function DynamicProgramPage() {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">Interested in joining?</h3>
                 <p className="text-gray-500 text-sm mb-8 font-light">Be part of our growing community and benefit from our specialized educational programs.</p>
-                <Link href="/register" className="flex items-center justify-center w-full py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg uppercase tracking-widest">
-                  REGISTER NOW <ArrowRight className="ml-2 w-5 h-5" />
+                <Link href="/enroll" className="flex items-center justify-center w-full py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg uppercase tracking-widest">
+                  ENROLL NOW <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
                 {isLoggedIn && (
                   <Link
