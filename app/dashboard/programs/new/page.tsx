@@ -5,19 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ChevronDown,
-  Facebook,
-  Instagram,
-  Menu,
-  X,
-  Twitter,
-  Linkedin,
-  Youtube,
   ArrowLeft,
   Save,
-  User,
-  LogOut,
 } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 interface FormData {
   title: string;
@@ -40,9 +31,6 @@ interface FormData {
 
 export default function NewProgramPage() {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
-  const [programsDropdownOpen, setProgramsDropdownOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -177,6 +165,22 @@ export default function NewProgramPage() {
       const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
       const token = localStorage.getItem("jwt_token");
 
+      // Find Programs page by slug dynamically
+      let programsParentId = 70;
+      try {
+        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=programs&per_page=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (searchResponse.ok) {
+          const pages = await searchResponse.json();
+          if (pages.length > 0) {
+            programsParentId = pages[0].id;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not find Programs page by slug, using fallback ID");
+      }
+
       // Create new program page
       const response = await fetch(`${WP_API_URL}/wp/v2/pages`, {
         method: "POST",
@@ -189,7 +193,7 @@ export default function NewProgramPage() {
           content: formData.content,
           slug: formData.slug || formData.title.toLowerCase().replace(/\s+/g, "-"),
           status: "publish",
-          parent: 70, // Programs page ID
+          parent: programsParentId,
           acf: {
             program_title: formData.programTitle,
             program_description: formData.programDescription,
@@ -227,53 +231,9 @@ export default function NewProgramPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("user_role");
-    localStorage.removeItem("username");
-    window.location.href = "/login";
-  };
-
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white shadow-sm fixed w-full z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex-shrink-0">
-              <Link href="/dashboard" className="block">
-                <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="MHMA Logo" width={180} height={40} className="h-10 w-auto" />
-              </Link>
-            </div>
-            <div className="hidden lg:flex items-center space-x-8">
-              <Link href="/dashboard" className="text-[#c9a227] font-medium">DASHBOARD</Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-700 hover:text-red-600 transition-colors font-medium"
-              >
-                LOGOUT
-              </button>
-            </div>
-            <div className="lg:hidden">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-700 hover:text-[#c9a227] p-2">
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-            </div>
-          </div>
-          {mobileMenuOpen && (
-            <div className="lg:hidden bg-white border-t">
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                <Link href="/dashboard" className="block px-3 py-2 text-[#c9a227] font-medium">DASHBOARD</Link>
-                <button
-                  onClick={handleLogout}
-                  className="block px-3 py-2 text-gray-700 hover:text-red-600 font-medium w-full text-left"
-                >
-                  LOGOUT
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
+      <Navigation currentPage="dashboard" />
 
       <main className="pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

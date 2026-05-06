@@ -3,24 +3,12 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import {
-  ChevronDown,
-  Facebook,
-  Instagram,
-  Menu,
-  X,
-  Twitter,
-  Linkedin,
-  Youtube,
-  Landmark,
-  BookOpen,
-  Heart,
-  User,
-  LogOut,
   ArrowLeft,
   Save,
+  Upload,
 } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 interface ACFData {
   program_title?: string;
@@ -56,9 +44,6 @@ function EditProgramContent() {
   const searchParams = useSearchParams();
   const programId = searchParams.get("id");
   
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
-  const [programsDropdownOpen, setProgramsDropdownOpen] = useState(false);
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

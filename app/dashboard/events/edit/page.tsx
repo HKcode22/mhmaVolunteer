@@ -5,12 +5,12 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowLeft,
   Save,
   Upload,
 } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 interface ACFData {
   event_poster?: string;
@@ -235,31 +235,7 @@ function EditEventContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="bg-white shadow-sm fixed w-full z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex-shrink-0">
-              <Link href="/dashboard" className="block">
-                <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="MHMA Logo" width={180} height={40} className="h-10 w-auto" />
-              </Link>
-            </div>
-            <div className="hidden lg:flex items-center space-x-8">
-              <Link href="/dashboard" className="text-[#c9a227] font-medium">DASHBOARD</Link>
-              <button
-                onClick={() => {
-                  localStorage.removeItem("jwt_token");
-                  localStorage.removeItem("user_role");
-                  localStorage.removeItem("username");
-                  window.location.href = "/login";
-                }}
-                className="text-gray-700 hover:text-red-600 transition-colors font-medium"
-              >
-                LOGOUT
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation currentPage="dashboard" />
 
       <main className="pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

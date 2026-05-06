@@ -307,3 +307,102 @@ function mhma_save_user_role($user_id) {
 }
 add_action('personal_options_update', 'mhma_save_user_role');
 add_action('edit_user_profile_update', 'mhma_save_user_role');
+
+/**
+ * Expose ACF user meta fields in REST API
+ */
+function mhma_register_user_meta_fields() {
+    $meta_fields = array(
+        'phone' => 'string',
+        'address' => 'string',
+        'emergency_contact_name' => 'string',
+        'emergency_contact_phone' => 'string',
+        'membership_date' => 'string',
+        'family_size' => 'integer',
+        'profile_pic' => 'integer',
+    );
+
+    foreach ($meta_fields as $field => $type) {
+        register_rest_field('user', $field, array(
+            'get_callback' => function($user) use ($field) {
+                $value = get_user_meta($user['id'], $field, true);
+                if ($field === 'profile_pic' && $value) {
+                    $img = wp_get_attachment_image_src($value, 'medium');
+                    return $img ? $img[0] : null;
+                }
+                return $value ?: null;
+            },
+            'update_callback' => function($value, $user) use ($field) {
+                if ($field === 'profile_pic') {
+                    if (is_numeric($value)) {
+                        update_user_meta($user->ID, $field, intval($value));
+                    }
+                } else {
+                    update_user_meta($user->ID, $field, sanitize_text_field($value));
+                }
+            },
+            'schema' => array(
+                'description' => ucfirst(str_replace('_', ' ', $field)),
+                'type' => $type,
+                'context' => array('view', 'edit'),
+            ),
+        ));
+    }
+}
+add_action('rest_api_init', 'mhma_register_user_meta_fields');
+
+/**
+ * Custom endpoint to update user profile (first_name, last_name, and meta fields)
+ */
+function mhma_register_profile_update_endpoint() {
+    register_rest_route('mhma/v1', '/update-profile', array(
+        'methods' => 'POST',
+        'callback' => 'mhma_update_user_profile',
+        'permission_callback' => function() {
+            return is_user_logged_in();
+        },
+    ));
+}
+add_action('rest_api_init', 'mhma_register_profile_update_endpoint');
+
+function mhma_update_user_profile($request) {
+    $user_id = get_current_user_id();
+    $params = $request->get_json_params();
+
+    if (isset($params['first_name'])) {
+        wp_update_user(array('ID' => $user_id, 'first_name' => sanitize_text_field($params['first_name'])));
+    }
+    if (isset($params['last_name'])) {
+        wp_update_user(array('ID' => $user_id, 'last_name' => sanitize_text_field($params['last_name'])));
+    }
+
+    $meta_fields = array('phone', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'membership_date', 'family_size');
+    foreach ($meta_fields as $field) {
+        if (isset($params[$field])) {
+            update_user_meta($user_id, $field, sanitize_text_field($params[$field]));
+        }
+    }
+
+    if (isset($params['profile_pic_id']) && is_numeric($params['profile_pic_id'])) {
+        update_user_meta($user_id, 'profile_pic', intval($params['profile_pic_id']));
+    }
+
+    $updated_user = get_userdata($user_id);
+    return new WP_REST_Response(array(
+        'success' => true,
+        'user' => array(
+            'id' => $updated_user->ID,
+            'first_name' => $updated_user->first_name,
+            'last_name' => $updated_user->last_name,
+            'email' => $updated_user->user_email,
+            'username' => $updated_user->user_login,
+            'phone' => get_user_meta($user_id, 'phone', true),
+            'address' => get_user_meta($user_id, 'address', true),
+            'emergency_contact_name' => get_user_meta($user_id, 'emergency_contact_name', true),
+            'emergency_contact_phone' => get_user_meta($user_id, 'emergency_contact_phone', true),
+            'membership_date' => get_user_meta($user_id, 'membership_date', true),
+            'family_size' => get_user_meta($user_id, 'family_size', true),
+            'profile_pic' => get_user_meta($user_id, 'profile_pic', true),
+        ),
+    ), 200);
+}

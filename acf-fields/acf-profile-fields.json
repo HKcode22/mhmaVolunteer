@@ -121,6 +121,30 @@
             "step": "",
             "prepend": "",
             "append": ""
+        },
+        {
+            "key": "field_profile_pic",
+            "label": "Profile Picture",
+            "name": "profile_pic",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Upload a profile picture",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "id",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": "jpg,jpeg,png,webp"
         }
     ],
     "location": [

@@ -444,8 +444,8 @@ useEffect(() => {
 
   // Removed duplicate useEffect - verse already loaded above, WordPress data loaded in separate useEffect
 
-  // Use real events from WordPress
-  const displayEvents = wpEvents.length > 0 ? wpEvents.slice(0, 6) : [];
+  // Use real events from WordPress - show only 3 most recent
+  const displayEvents = wpEvents.length > 0 ? wpEvents.slice(0, 3) : [];
 
   return (
     <div className="min-h-screen font-sans">
@@ -715,7 +715,7 @@ useEffect(() => {
             Upcoming <span className="text-amber-600">Events</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayEvents.slice(0, 6).map((event: any, i: number) => (
+            {displayEvents.map((event: any, i: number) => (
               <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-amber-300 transition-all group">
                 <div className="w-full bg-teal-800 flex flex-col items-center justify-center text-white py-2">
                   <span className="text-xl font-bold">

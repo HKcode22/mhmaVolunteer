@@ -76,7 +76,23 @@ export default function DashboardPage() {
       const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
       const token = localStorage.getItem("jwt_token");
 
-      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=70&per_page=100`, {
+      // Find Programs page by slug dynamically
+      let programsParentId = 70;
+      try {
+        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=programs&per_page=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (searchResponse.ok) {
+          const pages = await searchResponse.json();
+          if (pages.length > 0) {
+            programsParentId = pages[0].id;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not find Programs page by slug, using fallback ID");
+      }
+
+      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=${programsParentId}&per_page=100`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -100,7 +116,23 @@ export default function DashboardPage() {
       const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
       const token = localStorage.getItem("jwt_token");
 
-      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=277&per_page=100`, {
+      // Find Events page by slug dynamically
+      let eventsParentId = 277;
+      try {
+        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=events&per_page=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (searchResponse.ok) {
+          const pages = await searchResponse.json();
+          if (pages.length > 0) {
+            eventsParentId = pages[0].id;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not find Events page by slug, using fallback ID");
+      }
+
+      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=${eventsParentId}&per_page=100`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -122,7 +154,23 @@ export default function DashboardPage() {
       const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
       const token = localStorage.getItem("jwt_token");
 
-      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=199&per_page=100`, {
+      // Find Journal page by slug dynamically
+      let journalParentId = 199;
+      try {
+        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=journal&per_page=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (searchResponse.ok) {
+          const pages = await searchResponse.json();
+          if (pages.length > 0) {
+            journalParentId = pages[0].id;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not find Journal page by slug, using fallback ID");
+      }
+
+      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=${journalParentId}&per_page=100`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
