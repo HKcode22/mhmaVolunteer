@@ -36,7 +36,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
   };
 
   const navLinkClass = (page: string) => 
-    `text-sm font-semibold tracking-wide inline-block transition-all duration-200 hover:text-amber-500`;
+    `text-sm font-semibold tracking-wide inline-block px-2 py-2 transition-all duration-200 hover:text-amber-500`;
 
   return (
     <nav className="fixed w-full z-50 top-0">
@@ -94,7 +94,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             </Link>
 
             {/* Desktop nav links */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-3">
               <Link href="/" className={`${navLinkClass("home")} ${currentPage === "home" ? "text-amber-500" : "text-gray-700"}`}>
                 HOME
               </Link>
@@ -106,14 +106,14 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/about" className={`${navLinkClass("about")} ${currentPage === "about" ? "text-amber-500" : "text-gray-700"} flex items-center gap-1`}>
                   ABOUT<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="min-w-[180px] bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-teal-600 w-full"></div>
-                    <Link href="/about" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ABOUT US</Link>
-                    <Link href="/board" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">BOARD</Link>
-                    <Link href="/committees" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">COMMITTEES</Link>
-                    <Link href="/bylaws" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">BYLAWS</Link>
-                    <Link href="/community-transparency" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">COMMUNITY TRANSPARENCY</Link>
+                    <Link href="/about" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">ABOUT US</Link>
+                    <Link href="/board" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">BOARD</Link>
+                    <Link href="/committees" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">COMMITTEES</Link>
+                    <Link href="/bylaws" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">BYLAWS</Link>
+                    <Link href="/community-transparency" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">COMMUNITY TRANSPARENCY</Link>
                   </div>
                 </div>
               </div>
@@ -125,11 +125,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/events" className={`${navLinkClass("events")} ${currentPage === "events" ? "text-amber-500" : "text-gray-700"} flex items-center gap-1`}>
                   EVENTS<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="min-w-[180px] bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-teal-600 w-full"></div>
-                    <Link href="/events" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ALL EVENTS</Link>
-                    <Link href="/event-scheduling-request" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">SCHEDULING REQUEST</Link>
+                    <Link href="/events" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">ALL EVENTS</Link>
+                    <Link href="/event-scheduling-request" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">SCHEDULING REQUEST</Link>
                   </div>
                 </div>
               </div>
@@ -145,12 +145,12 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/programs" className={`${navLinkClass("programs")} ${currentPage === "programs" ? "text-amber-500" : "text-gray-700"} flex items-center gap-1`}>
                   PROGRAMS<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="min-w-[180px] bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-teal-600 w-full"></div>
-                    <Link href="/programs" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ALL PROGRAMS</Link>
-                    <Link href="/enroll" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ENROLL NOW</Link>
-                    <Link href="/zakat" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">ZAKAT</Link>
+                    <Link href="/programs" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">ALL PROGRAMS</Link>
+                    <Link href="/enroll" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">ENROLL NOW</Link>
+                    <Link href="/zakat" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">ZAKAT</Link>
                   </div>
                 </div>
               </div>
@@ -162,11 +162,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/donate" className={`${navLinkClass("donate")} ${currentPage === "donate" ? "text-amber-500" : "text-gray-700"} flex items-center gap-1`}>
                   DONATE<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="min-w-[180px] bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-teal-600 w-full"></div>
-                    <Link href="/donate" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">GENERAL DONATION</Link>
-                    <Link href="/masjid-construction" className="block px-4 py-2.5 text-sm hover:bg-teal-50 hover:text-teal-700 whitespace-nowrap">MASJID CONSTRUCTION</Link>
+                    <Link href="/donate" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">GENERAL DONATION</Link>
+                    <Link href="/masjid-construction" className="block px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 text-center whitespace-nowrap">MASJID CONSTRUCTION</Link>
                   </div>
                 </div>
               </div>
