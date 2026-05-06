@@ -93,6 +93,7 @@ export default function LoginPage() {
           localStorage.setItem("username", data.user_nicename || formData.username);
 
           // Fetch actual user role from WordPress
+          let actualRole = "subscriber";
           try {
             const userResponse = await fetch(`${WP_API_URL}/wp/v2/users/me`, {
               headers: {
@@ -101,31 +102,26 @@ export default function LoginPage() {
             });
             if (userResponse.ok) {
               const userData = await userResponse.json();
-              const actualRole = userData.roles && userData.roles.length > 0 ? userData.roles[0] : "subscriber";
-              localStorage.setItem("user_role", actualRole);
-              console.log("Login successful. Actual role from WordPress:", actualRole, "User type selected:", userType);
-            } else {
-              // Fallback to JWT response if user fetch fails
-              const userRole = data.user_role || data.role || "subscriber";
-              localStorage.setItem("user_role", userRole);
-              console.log("Login successful. Role from JWT (user fetch failed):", userRole, "User type selected:", userType);
+              actualRole = userData.roles && userData.roles.length > 0 ? userData.roles[0] : "subscriber";
             }
           } catch (err) {
-            // Fallback to JWT response if user fetch fails
-            const userRole = data.user_role || data.role || "subscriber";
-            localStorage.setItem("user_role", userRole);
-            console.log("Login successful. Role from JWT (user fetch error):", userRole, "User type selected:", userType);
+            console.error("Failed to fetch user role:", err);
           }
-        }
 
-        setSuccess("Login successful! Redirecting...");
-        setTimeout(() => {
-          if (userType === "board") {
-            window.location.href = "/dashboard";
-          } else {
-            window.location.href = "/";
-          }
-        }, 1000);
+          localStorage.setItem("user_role", actualRole);
+          console.log("Login successful. Actual role from WordPress:", actualRole);
+
+          const isBoardMember = actualRole === "board_member" || actualRole === "administrator";
+
+          setSuccess("Login successful! Redirecting...");
+          setTimeout(() => {
+            if (isBoardMember) {
+              window.location.href = "/dashboard";
+            } else {
+              window.location.href = "/";
+            }
+          }, 1000);
+        }
       }
     } catch (err) {
       console.error("Login error:", err);

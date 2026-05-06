@@ -67,9 +67,16 @@ function EditEventContent() {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
+    const userRole = localStorage.getItem("user_role");
 
     if (!token) {
       router.push("/login");
+      return;
+    }
+
+    const isBoardMember = userRole === "board_member" || userRole === "administrator";
+    if (!isBoardMember) {
+      router.push("/");
       return;
     }
 

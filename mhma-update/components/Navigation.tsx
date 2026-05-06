@@ -13,11 +13,14 @@ interface NavigationProps {
 export default function Navigation({ currentPage }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isBoardMember, setIsBoardMember] = useState(false);
 
   useEffect(() => {
     const checkLoginState = () => {
       const token = localStorage.getItem("jwt_token");
+      const userRole = localStorage.getItem("user_role");
       setIsLoggedIn(!!token);
+      setIsBoardMember(userRole === "board_member" || userRole === "administrator");
     };
     checkLoginState();
     window.addEventListener("storage", checkLoginState);
@@ -55,9 +58,14 @@ export default function Navigation({ currentPage }: NavigationProps) {
 
           {/* Login - Right Side */}
           <div className="flex items-center gap-4 ml-auto">
-            {isLoggedIn ? (
+            {isBoardMember ? (
               <>
                 <Link href="/dashboard" className="text-white hover:text-amber-400 font-medium transition-colors">DASHBOARD</Link>
+                <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
+              </>
+            ) : isLoggedIn ? (
+              <>
+                <span className="text-white/70 text-xs">Welcome, {localStorage.getItem("username") || "Member"}</span>
                 <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
               </>
             ) : (
@@ -190,8 +198,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/programs" className="block py-2 text-gray-700 border-b border-gray-100">PROGRAMS</Link>
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/contact" className="block py-2 text-gray-700">CONTACT</Link>
-            {isLoggedIn ? (
+            {isBoardMember ? (
               <Link href="/dashboard" className="block py-2 text-amber-600 font-semibold">DASHBOARD</Link>
+            ) : isLoggedIn ? (
+              <span className="block py-2 text-gray-500 text-sm">Logged in as member</span>
             ) : (
               <Link href="/login" className="block py-2 text-amber-600 font-semibold">MEMBER LOGIN</Link>
             )}

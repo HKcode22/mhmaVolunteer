@@ -85,11 +85,14 @@ function EditProgramContent() {
     const token = localStorage.getItem("jwt_token");
     const userRole = localStorage.getItem("user_role");
 
-    console.log("Edit page - Token exists:", !!token);
-    console.log("Edit page - User role:", userRole);
-
     if (!token) {
       router.push("/login");
+      return;
+    }
+
+    const isBoardMember = userRole === "board_member" || userRole === "administrator";
+    if (!isBoardMember) {
+      router.push("/");
       return;
     }
 

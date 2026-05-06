@@ -316,6 +316,8 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
       });
     });
 
+    // اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ
+
     if (allVerses.length === 0) throw new Error('No verses available');
 
     // Use random selection for a new verse on every page reload

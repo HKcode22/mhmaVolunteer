@@ -73,9 +73,15 @@ export default function NewProgramPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
+    const userRole = localStorage.getItem("user_role");
     setIsLoggedIn(!!token);
     if (!token) {
       router.push("/login");
+      return;
+    }
+    const isBoardMember = userRole === "board_member" || userRole === "administrator";
+    if (!isBoardMember) {
+      router.push("/");
     }
   }, []);
 

@@ -9437,11 +9437,6 @@
           "english": "But seek, through that which Allah has given you, the home of the Hereafter; and [yet], do not forget your share of the world. And do good as Allah has done good to you. And desire not corruption in the land. Indeed, Allah does not like corrupters.\""
         },
         {
-          "aya": 78,
-          "arabic": "قَالَ إِنَّمَآ أُوتِيتُهُۥ عَلَىٰ عِلْمٍ عِندِىٓ ۚ أَوَلَمْ يَعْلَمْ أَنَّ ٱللَّهَ قَدْ أَهْلَكَ مِن قَبْلِهِۦ مِنَ ٱلْقُرُونِ مَنْ هُوَ أَشَدُّ مِنْهُ قُوَّةً وَأَكْثَرُ جَمْعًا ۚ وَلَا يُسْـَٔلُ عَن ذُنُوبِهِمُ ٱلْمُجْرِمُونَ",
-          "english": "He said, \"I was only given it because of knowledge I have.\" Did he not know that Allah had destroyed before him of generations those who were greater than him in power and greater in accumulation [of wealth]? But the criminals, about their sins, will not be asked."
-        },
-        {
           "aya": 81,
           "arabic": "فَخَسَفْنَا بِهِۦ وَبِدَارِهِ ٱلْأَرْضَ فَمَا كَانَ لَهُۥ مِن فِئَةٍ يَنصُرُونَهُۥ مِن دُونِ ٱللَّهِ وَمَا كَانَ مِنَ ٱلْمُنتَصِرِينَ",
           "english": "And We caused the earth to swallow him and his home. And there was for him no company to aid him other than Allah, nor was he of those who [could] defend themselves."
@@ -15674,6 +15669,16 @@
           "aya": 2,
           "arabic": "ٱللَّهُ ٱلصَّمَدُ",
           "english": "Allah, the Eternal Refuge."
+        },
+        {
+          "aya": 3,
+          "arabic": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+          "english": "He neither begets nor is born,"
+        },
+        {
+          "aya": 4,
+          "arabic": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+          "english": "Nor is there to Him any equivalent.\""
         }
       ]
     },

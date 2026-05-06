@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
@@ -16,6 +16,21 @@ export default function NewJournalEntryPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("jwt_token");
+    const userRole = localStorage.getItem("user_role");
+
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    const isBoardMember = userRole === "board_member" || userRole === "administrator";
+    if (!isBoardMember) {
+      router.push("/");
+    }
+  }, []);
 
   // Helper function to convert YYYY-MM-DD to ACF format (F j, Y) - WITHOUT timezone issues
   const formatDateForACF = (dateString: string) => {

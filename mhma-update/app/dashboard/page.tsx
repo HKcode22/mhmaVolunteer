@@ -56,6 +56,12 @@ export default function DashboardPage() {
       return;
     }
 
+    const isBoardMember = userRole === "board_member" || userRole === "administrator";
+    if (!isBoardMember) {
+      window.location.href = "/";
+      return;
+    }
+
     setUser({ username: username || "Board Member", role: userRole || "board_member" });
 
     // Fetch programs, events, journals, and event requests

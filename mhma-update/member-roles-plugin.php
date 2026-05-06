@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MHMA Member Roles
  * Description: Adds custom member roles for MHMA (existing_member, new_member) with appropriate capabilities.
- * Version: 1.0
+ * Version: 1.1
  * Author: MHMA
  */
 
@@ -91,6 +91,67 @@ function mhma_member_roles_init() {
     mhma_register_member_roles();
 }
 add_action('admin_init', 'mhma_member_roles_init');
+
+/**
+ * REST API endpoint to check if current user is a board member
+ */
+function mhma_register_role_check_endpoint() {
+    register_rest_route('mhma/v1', '/check-role', array(
+        'methods' => 'GET',
+        'callback' => 'mhma_check_user_role',
+        'permission_callback' => function() {
+            return is_user_logged_in();
+        },
+    ));
+}
+add_action('rest_api_init', 'mhma_register_role_check_endpoint');
+
+function mhma_check_user_role() {
+    $user = wp_get_current_user();
+    $roles = $user->roles;
+    $is_board_member = in_array('board_member', $roles) || in_array('administrator', $roles);
+    
+    return new WP_REST_Response(array(
+        'success' => true,
+        'user_id' => $user->ID,
+        'username' => $user->user_login,
+        'email' => $user->user_email,
+        'roles' => $roles,
+        'is_board_member' => $is_board_member,
+        'display_name' => $user->display_name,
+    ), 200);
+}
+
+/**
+ * Restrict REST API page creation/editing/deleting to board members only
+ */
+function mhma_restrict_page_rest_api($result, $request) {
+    // Only check page endpoints (programs, events, journals)
+    $route = $request->get_route();
+    
+    // Skip if not a pages endpoint
+    if (strpos($route, '/wp/v2/pages') === false) {
+        return $result;
+    }
+    
+    // Allow GET requests for everyone
+    if ($request->get_method() === 'GET') {
+        return $result;
+    }
+    
+    // For POST, PUT, DELETE - require board member
+    $user = wp_get_current_user();
+    if (!in_array('board_member', $user->roles) && !in_array('administrator', $user->roles)) {
+        return new WP_Error(
+            'rest_forbidden',
+            'Only board members can create, edit, or delete pages.',
+            array('status' => 403)
+        );
+    }
+    
+    return $result;
+}
+add_filter('rest_request_before_callbacks', 'mhma_restrict_page_rest_api', 10, 2);
 
 /**
  * Restrict dashboard access for non-board members
