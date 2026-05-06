@@ -71,9 +71,7 @@ export default function EventsPage() {
           // Handle poster - could be URL string or numeric media ID
           let posterUrl = event.acf?.event_poster || "";
           if (typeof posterUrl === 'number') {
-            posterUrl = `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/wp-json', '')}/wp-content/uploads/`;
-            // Fallback: try to construct media URL or use default
-            posterUrl = "";
+            posterUrl = ""; // Will be resolved below via media API
           }
 
           return {
@@ -94,6 +92,30 @@ export default function EventsPage() {
         });
 
         setSlides(eventSlides);
+
+        // Resolve media IDs to URLs sequentially to avoid crashing Oracle backend
+        const resolvedSlides = [...eventSlides];
+        const WP_BASE = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/wp-json', '') || "https://my-wp-backend.duckdns.org";
+        for (let i = 0; i < resolvedSlides.length; i++) {
+          const mediaId = data[i]?.acf?.event_poster;
+          if (typeof mediaId === 'number' && mediaId > 0) {
+            try {
+              const mediaRes = await fetch(`${WP_BASE}/wp-json/wp/v2/media/${mediaId}`);
+              if (mediaRes.ok) {
+                const mediaData = await mediaRes.json();
+                resolvedSlides[i].src = mediaData.source_url || resolvedSlides[i].src;
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch media for event ${resolvedSlides[i].id}:`, err);
+            }
+            // Small delay between requests to avoid overwhelming backend
+            if (i < resolvedSlides.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
+          }
+        }
+
+        setSlides(resolvedSlides);
       } catch (err) {
         console.error("Failed to fetch events:", err);
       } finally {
