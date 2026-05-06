@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: MHMA Member Roles
- * Description: Adds custom member roles for MHMA (existing_member, new_member) with appropriate capabilities.
- * Version: 1.1
+ * Description: Adds custom member roles for MHMA (board_member, existing_member, new_member) with appropriate capabilities.
+ * Version: 2.0
  * Author: MHMA
  */
 
@@ -11,15 +11,10 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Register custom member roles on plugin activation
+ * Register custom member roles
  */
 function mhma_register_member_roles() {
-    // Define capabilities for each role
-    
-    // Board Member - Full access (keep existing)
-    // This is the administrator-level role for board members
-    
-    // Existing Member - Can login, view content, edit own profile only
+    // Existing Member capabilities
     $existing_member_caps = array(
         'read' => true,
         'edit_posts' => false,
@@ -57,16 +52,21 @@ function mhma_register_member_roles() {
         'customize' => false,
     );
     
-    // New Member - Same as existing member (will be upgraded later)
-    // Can login, view content, edit own profile only
     $new_member_caps = $existing_member_caps;
     
     // Remove and re-add roles to ensure clean state
     remove_role('existing_member');
     remove_role('new_member');
+    remove_role('board_member');
     
     add_role('existing_member', 'Existing Member', $existing_member_caps);
     add_role('new_member', 'New Member', $new_member_caps);
+    
+    // Board Member - Administrator capabilities
+    if (!get_role('board_member')) {
+        $admin_caps = get_role('administrator')->capabilities;
+        add_role('board_member', 'Board Member', $admin_caps);
+    }
 }
 
 /**
@@ -74,12 +74,7 @@ function mhma_register_member_roles() {
  */
 function mhma_member_roles_activate() {
     mhma_register_member_roles();
-    
-    // Also ensure board_member role exists if needed
-    if (!get_role('board_member')) {
-        $board_caps = get_role('administrator')->capabilities;
-        add_role('board_member', 'Board Member', $board_caps);
-    }
+    flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'mhma_member_roles_activate');
 
@@ -88,10 +83,6 @@ register_activation_hook(__FILE__, 'mhma_member_roles_activate');
  */
 function mhma_member_roles_init() {
     mhma_register_member_roles();
-    if (!get_role('board_member')) {
-        $board_caps = get_role('administrator')->capabilities;
-        add_role('board_member', 'Board Member', $board_caps);
-    }
 }
 add_action('admin_init', 'mhma_member_roles_init');
 
@@ -126,23 +117,37 @@ function mhma_check_user_role() {
 }
 
 /**
+ * Hook into JWT auth response to include roles
+ */
+function mhma_add_roles_to_jwt_response($response, $user) {
+    if (is_wp_error($response)) {
+        return $response;
+    }
+    
+    $user_data = get_userdata($user->ID);
+    if ($user_data && !empty($user_data->roles)) {
+        $response['data']['user_role'] = $user_data->roles[0];
+        $response['data']['roles'] = $user_data->roles;
+    }
+    
+    return $response;
+}
+add_filter('jwt_auth_token_before_dispatch', 'mhma_add_roles_to_jwt_response', 10, 2);
+
+/**
  * Restrict REST API page creation/editing/deleting to board members only
  */
 function mhma_restrict_page_rest_api($result, $request) {
-    // Only check page endpoints (programs, events, journals)
     $route = $request->get_route();
     
-    // Skip if not a pages endpoint
     if (strpos($route, '/wp/v2/pages') === false) {
         return $result;
     }
     
-    // Allow GET requests for everyone
     if ($request->get_method() === 'GET') {
         return $result;
     }
     
-    // For POST, PUT, DELETE - require board member
     $user = wp_get_current_user();
     if (!in_array('board_member', $user->roles) && !in_array('administrator', $user->roles)) {
         return new WP_Error(
@@ -164,13 +169,11 @@ function mhma_restrict_dashboard_access() {
         $user = wp_get_current_user();
         
         if (in_array('existing_member', $user->roles) || in_array('new_member', $user->roles)) {
-            // Allow profile page only
             $current_screen = get_current_screen();
             if ($current_screen && $current_screen->id === 'profile') {
                 return;
             }
             
-            // Redirect to homepage for other admin pages
             wp_redirect(home_url());
             exit;
         }
@@ -201,9 +204,9 @@ function mhma_roles_page() {
         <h1>MHMA Member Roles</h1>
         <p>This plugin manages custom member roles for MHMA:</p>
         <ul>
-            <li><strong>Board Member</strong> - Full admin access (keep as-is from WP)</li>
+            <li><strong>Board Member</strong> - Full admin access</li>
             <li><strong>Existing Member</strong> - Can login and view content, NO editing rights</li>
-            <li><strong>New Member</strong> - Same as existing member (upgrade path available)</li>
+            <li><strong>New Member</strong> - Same as existing member</li>
         </ul>
         <p>Roles are automatically registered. To assign roles, go to <a href="<?php echo admin_url('users.php'); ?>">Users</a> page.</p>
     </div>
@@ -293,13 +296,11 @@ function mhma_save_user_role($user_id) {
         $new_role = sanitize_text_field($_POST['mhma_member_role']);
         
         if (in_array($new_role, ['existing_member', 'new_member', 'board_member'])) {
-            // Remove old MHMA roles
             $user = new WP_User($user_id);
             $user->remove_role('existing_member');
             $user->remove_role('new_member');
             $user->remove_role('board_member');
             
-            // Add new role
             $user->add_role($new_role);
         }
     }

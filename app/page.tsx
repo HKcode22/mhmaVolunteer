@@ -463,9 +463,7 @@ useEffect(() => {
         <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
           <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
           <p className="text-xs md:text-sm tracking-[0.3em] uppercase text-amber-400 mb-3 font-semibold">Est. 2010 · Mountain House, California</p>
-          {isLoggedIn && username && (
-            <p className="text-lg md:text-xl lg:text-2xl text-amber-300 mb-2 font-arabic" dir="rtl">اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ</p>
-          )}
+          <p className="text-lg md:text-xl lg:text-2xl text-amber-300 mb-2 font-arabic" dir="rtl">اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ</p>
           <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
             Welcome to <span className="text-amber-400">MHMA</span>{isLoggedIn && username ? `, ${username}!` : '!'}
           </h1>

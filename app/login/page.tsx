@@ -94,22 +94,55 @@ export default function LoginPage() {
           localStorage.setItem("jwt_token", data.token);
           localStorage.setItem("username", data.user_nicename || formData.username);
 
-          // Fetch actual user data from WordPress
+          // Fetch actual user data from WordPress using multiple methods
           let actualRole = "subscriber";
           let userFirstName = formData.username;
+
+          // Method 1: Check JWT response for roles (some JWT plugins include this)
+          if (data.user && data.user.role) {
+            actualRole = data.user.role;
+          } else if (data.roles && data.roles.length > 0) {
+            actualRole = data.roles[0];
+          } else if (data.user_role) {
+            actualRole = data.user_role;
+          }
+
+          // Method 2: Try custom MHMA endpoint (most reliable)
           try {
-            const userResponse = await fetch(`${WP_API_URL}/wp/v2/users/me`, {
+            const roleResponse = await fetch(`${WP_API_URL}/mhma/v1/check-role`, {
               headers: {
                 Authorization: `Bearer ${data.token}`,
               },
             });
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              actualRole = userData.roles && userData.roles.length > 0 ? userData.roles[0] : "subscriber";
-              userFirstName = userData.first_name || userData.name || formData.username;
+            if (roleResponse.ok) {
+              const roleData = await roleResponse.json();
+              if (roleData.roles && roleData.roles.length > 0) {
+                actualRole = roleData.roles[0];
+              }
+              userFirstName = roleData.display_name || roleData.username || formData.username;
             }
           } catch (err) {
-            console.error("Failed to fetch user role:", err);
+            console.log("MHMA role check endpoint failed, trying alternative...");
+          }
+
+          // Method 3: Fallback to wp/v2/users/me
+          if (actualRole === "subscriber") {
+            try {
+              const userResponse = await fetch(`${WP_API_URL}/wp/v2/users/me`, {
+                headers: {
+                  Authorization: `Bearer ${data.token}`,
+                },
+              });
+              if (userResponse.ok) {
+                const userData = await userResponse.json();
+                if (userData.roles && userData.roles.length > 0) {
+                  actualRole = userData.roles[0];
+                }
+                userFirstName = userData.first_name || userData.name || formData.username;
+              }
+            } catch (err) {
+              console.error("Failed to fetch user data:", err);
+            }
           }
 
           localStorage.setItem("user_role", actualRole);
@@ -256,6 +289,20 @@ export default function LoginPage() {
                           required
                         />
                       </div>
+                    </div>
+                    <div>
+                      <label htmlFor="regUsername" className="block text-sm font-medium text-gray-700 mb-2">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        id="regUsername"
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                        placeholder="Choose a username"
+                        required
+                      />
                     </div>
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
