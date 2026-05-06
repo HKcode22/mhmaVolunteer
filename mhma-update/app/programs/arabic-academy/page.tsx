@@ -61,8 +61,8 @@ export default function ArabicAcademyPage() {
             }
 
             setProgramData({
-              title: page.acf?.program_title || page.title?.rendered || "LEARN ARABIC LANGUAGE",
-              description: page.acf?.program_description || "",
+              title: page.acf?.program_title || "LEARN ARABIC LANGUAGE",
+              description: page.acf?.program_description || "A Fully accredited Arabic language course designed to equip students with the ability to understand the Quranic language.",
               content: page.content?.rendered || "",
               imageUrl: imageUrl,
               stat1Label: page.acf?.stat1_label || "Students",

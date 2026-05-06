@@ -298,12 +298,10 @@ const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
 const fetchQuranVerse = async (): Promise<QuranVerse> => {
   try {
-    // Use pre-filtered included verses (much faster - no filtering needed)
     const response = await fetch('/quran-included.json');
     if (!response.ok) throw new Error('Failed to load Quran data');
     const data = await response.json();
 
-    // Flatten all verses from all suras
     const allVerses: any[] = [];
     (data.suras || []).forEach((sura: any) => {
       (sura.verses || []).forEach((verse: any) => {
@@ -316,11 +314,8 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
       });
     });
 
-    // اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ
-
     if (allVerses.length === 0) throw new Error('No verses available');
 
-    // Use random selection for a new verse on every page reload
     const index = Math.floor(Math.random() * allVerses.length);
     return allVerses[index];
   } catch (error) {
@@ -332,85 +327,6 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
     };
   }
 };
-
-// Statistics tracking for verse filtering
-interface FilterStats {
-  total: number;
-  passed: number;
-  excluded: number;
-  excludedByCategory: Record<string, number>;
-  excludedByCombo: number;
-  tooShort: number;
-  tooLong: number;
-}
-
-function filterVerses(verses: any[], logStats = false): any[] {
-  const stats: FilterStats = {
-    total: verses.length,
-    passed: 0,
-    excluded: 0,
-    excludedByCategory: {},
-    excludedByCombo: 0,
-    tooShort: 0,
-    tooLong: 0
-  };
-
-  const filtered = verses.filter((verse: any) => {
-    const english = (verse.translation || "").toLowerCase();
-
-    // Length check first
-    if (english.length < 30) {
-      stats.tooShort++;
-      stats.excluded++;
-      return false;
-    }
-    if (english.length > 280) {
-      stats.tooLong++;
-      stats.excluded++;
-      return false;
-    }
-
-    // Check exclusion categories
-    for (const cat in EXCLUSION_CATEGORIES) {
-      // @ts-ignore
-      for (const kw of EXCLUSION_CATEGORIES[cat]) {
-        if (english.includes(kw)) {
-          stats.excludedByCategory[cat] = (stats.excludedByCategory[cat] || 0) + 1;
-          stats.excluded++;
-          return false;
-        }
-      }
-    }
-
-    // Check exclusion combinations (multi-word patterns)
-    for (const combo of EXCLUSION_COMBINATIONS) {
-      if (english.includes(combo)) {
-        stats.excludedByCombo++;
-        stats.excluded++;
-        return false;
-      }
-    }
-
-    stats.passed++;
-    return true;
-  });
-
-  if (logStats) {
-    // Stats logging disabled for production performance
-  }
-
-  return filtered;
-}
-
-function getTodayDate() {
-  const now = new Date();
-  return now.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-}
 
 interface PrayerTime {
   name: string;
@@ -425,7 +341,18 @@ export default function HomePage() {
   const [wpPrograms, setWpPrograms] = useState<any[]>([]);
   const [wpJournalEntries, setWpJournalEntries] = useState<any[]>([]);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
-const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
+  const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
+  const [username, setUsername] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("jwt_token");
+    const storedUsername = localStorage.getItem("username");
+    if (token && storedUsername) {
+      setIsLoggedIn(true);
+      setUsername(storedUsername);
+    }
+  }, []);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -537,7 +464,7 @@ useEffect(() => {
           <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
           <p className="text-xs md:text-sm tracking-[0.3em] uppercase text-amber-400 mb-3 font-semibold">Est. 2010 · Mountain House, California</p>
           <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
-            Welcome to <span className="text-amber-400">MHMA</span>
+            Welcome to <span className="text-amber-400">MHMA</span>{isLoggedIn && username ? `, ${username}!` : '!'}
           </h1>
           <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-2 max-w-3xl mx-auto font-light tracking-[0.15em] uppercase">
             Serving the Muslim Community
@@ -545,6 +472,11 @@ useEffect(() => {
           <p className="text-lg md:text-xl lg:text-2xl text-white mb-6 max-w-3xl mx-auto font-serif">
             Faith, Education & Brotherhood
           </p>
+          {isLoggedIn && (
+            <p className="text-sm md:text-base text-amber-300/80 mb-4 italic font-light">
+              اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ
+            </p>
+          )}
 
           {/* Quran Verse Box - Beautiful translucent */}
           <div className="max-w-5xl mx-auto mb-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl">

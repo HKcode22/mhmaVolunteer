@@ -113,6 +113,13 @@ export default function LoginPage() {
 
           const isBoardMember = actualRole === "board_member" || actualRole === "administrator";
 
+          if (userType === "board" && !isBoardMember) {
+            localStorage.removeItem("jwt_token");
+            localStorage.removeItem("user_role");
+            localStorage.removeItem("username");
+            throw new Error("Access denied. Only registered board members can log in here. Please contact the administrator if you believe this is an error.");
+          }
+
           setSuccess("Login successful! Redirecting...");
           setTimeout(() => {
             if (isBoardMember) {
