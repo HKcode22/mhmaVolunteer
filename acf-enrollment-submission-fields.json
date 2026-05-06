@@ -1,0 +1,209 @@
+{
+    "key": "group_enrollment_fields",
+    "title": "Enrollment Submission Fields",
+    "fields": [
+        {
+            "key": "field_enrollment_full_name",
+            "label": "Full Name",
+            "name": "enrollment_full_name",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Full name of the person enrolling",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "John Doe",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_enrollment_email",
+            "label": "Email Address",
+            "name": "enrollment_email",
+            "aria-label": "",
+            "type": "email",
+            "instructions": "Contact email address",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": "email@example.com",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_enrollment_phone",
+            "label": "Phone Number",
+            "name": "enrollment_phone",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Contact phone number",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "(555) 123-4567",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_enrollment_program",
+            "label": "Selected Program",
+            "name": "enrollment_program",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "Program the person wants to enroll in",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "youth_sports_league": "Youth Sports League",
+                "ladies_meetup": "Ladies Meetup",
+                "learn_3d_printing": "Learn 3D Printing",
+                "urdu_academy": "Urdu Academy",
+                "maktab_program": "Maktab Program",
+                "family_night": "Family Night",
+                "jummah_and_salah": "Jummah and Salah",
+                "wish": "WISH (Weekend Islamic School)",
+                "quran_hifz_program": "Quran Hifz Program",
+                "boy_scouts": "Boy Scouts",
+                "arabic_academy": "Arabic Academy"
+            },
+            "default_value": false,
+            "return_format": "value",
+            "multiple": 0,
+            "allow_null": 0,
+            "ui": 0,
+            "ajax": 0,
+            "placeholder": ""
+        },
+        {
+            "key": "field_enrollment_status",
+            "label": "Enrollment Status",
+            "name": "enrollment_status",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "Current status of this enrollment",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "pending": "Pending Review",
+                "approved": "Approved",
+                "rejected": "Rejected",
+                "completed": "Completed"
+            },
+            "default_value": "pending",
+            "return_format": "value",
+            "multiple": 0,
+            "allow_null": 0,
+            "ui": 0,
+            "ajax": 0,
+            "placeholder": ""
+        },
+        {
+            "key": "field_enrollment_message",
+            "label": "Additional Message",
+            "name": "enrollment_message",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Any questions or special requests from the applicant",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 4,
+            "placeholder": "",
+            "new_lines": "br"
+        },
+        {
+            "key": "field_enrollment_date",
+            "label": "Submission Date",
+            "name": "enrollment_date",
+            "aria-label": "",
+            "type": "date_picker",
+            "instructions": "Date when this enrollment was submitted",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "d/m/Y",
+            "return_format": "d/m/Y",
+            "first_day": 1
+        },
+        {
+            "key": "field_enrollment_notes",
+            "label": "Admin Notes",
+            "name": "enrollment_notes",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Internal notes for board members only",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "Board member notes...",
+            "new_lines": "br"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "page"
+            },
+            {
+                "param": "page_parent",
+                "operator": "==",
+                "value": "Enrollments"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 1
+}

@@ -85,6 +85,22 @@ export default function NewEventPage() {
       const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
       const token = localStorage.getItem("jwt_token");
 
+      // First, find the Events page by slug to get its ID dynamically
+      let eventsParentId = 277; // fallback
+      try {
+        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=events&per_page=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (searchResponse.ok) {
+          const pages = await searchResponse.json();
+          if (pages.length > 0) {
+            eventsParentId = pages[0].id;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not find Events page by slug, using fallback ID:", e);
+      }
+
       // First upload the image if provided
       let mediaId = null;
       if (formData.posterImage) {
@@ -114,7 +130,7 @@ export default function NewEventPage() {
         formattedDate = `${year}${month}${day}`;
       }
 
-      // Create new event page (child of Events page)
+      // Create new event page as child of Events page
       const response = await fetch(`${WP_API_URL}/wp/v2/pages`, {
         method: "POST",
         headers: {
@@ -125,7 +141,7 @@ export default function NewEventPage() {
           title: formData.title,
           content: formData.eventDescription,
           status: "publish",
-          parent: 277, // Events page ID
+          parent: eventsParentId,
           acf: {
             event_poster: mediaId,
             event_date: formattedDate,
@@ -143,7 +159,8 @@ export default function NewEventPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create event");
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || `Failed to create event (status: ${response.status})`);
       }
 
       setSuccess("Event created successfully!");

@@ -57,24 +57,29 @@ export default function Navigation({ currentPage }: NavigationProps) {
           </div>
 
           {/* Login - Right Side */}
-          <div className="flex items-center gap-4 ml-auto">
-            {isBoardMember ? (
-              <>
-                <Link href="/dashboard" className="text-white hover:text-amber-400 font-medium transition-colors">DASHBOARD</Link>
-                <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
-              </>
-            ) : isLoggedIn ? (
-              <>
-                <span className="text-white/70 text-xs">Welcome, {localStorage.getItem("username") || "Member"}</span>
-                <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
-              </>
-            ) : (
-              <Link href="/login" className="text-white hover:text-amber-400 font-medium transition-colors flex items-center gap-1">
-                <User className="w-3.5 h-3.5" />
-                MEMBER LOGIN
-              </Link>
-            )}
-          </div>
+            <div className="flex items-center gap-4 ml-auto">
+              {isBoardMember ? (
+                <>
+                  <Link href="/profile" className="text-white hover:text-amber-400 transition-colors flex items-center gap-1">
+                    <User className="w-3.5 h-3.5" /> PROFILE
+                  </Link>
+                  <Link href="/dashboard" className="text-white hover:text-amber-400 font-medium transition-colors">DASHBOARD</Link>
+                  <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
+                </>
+              ) : isLoggedIn ? (
+                <>
+                  <Link href="/profile" className="text-white hover:text-amber-400 transition-colors flex items-center gap-1">
+                    <User className="w-3.5 h-3.5" /> PROFILE
+                  </Link>
+                  <span className="text-white/70 text-xs">Welcome, {localStorage.getItem("first_name") || "Member"}</span>
+                  <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
+                </>
+              ) : (
+                <Link href="/login" className="text-white hover:text-amber-400 font-medium transition-colors flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" /> MEMBER LOGIN
+                </Link>
+              )}
+            </div>
         </div>
       </div>
 
@@ -199,9 +204,12 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/contact" className="block py-2 text-gray-700">CONTACT</Link>
             {isBoardMember ? (
-              <Link href="/dashboard" className="block py-2 text-amber-600 font-semibold">DASHBOARD</Link>
+              <>
+                <Link href="/profile" className="block py-2 text-amber-600 font-semibold">PROFILE</Link>
+                <Link href="/dashboard" className="block py-2 text-amber-600 font-semibold">DASHBOARD</Link>
+              </>
             ) : isLoggedIn ? (
-              <span className="block py-2 text-gray-500 text-sm">Logged in as member</span>
+              <Link href="/profile" className="block py-2 text-amber-600 font-semibold">PROFILE</Link>
             ) : (
               <Link href="/login" className="block py-2 text-amber-600 font-semibold">MEMBER LOGIN</Link>
             )}

@@ -40,3 +40,6 @@ build/
 Thumbs.db
 .vercel
 .env*.local
+
+# Unused files archive (see trash branch)
+NotBeingUsedTrash/

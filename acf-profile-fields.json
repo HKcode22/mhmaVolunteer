@@ -1,0 +1,144 @@
+{
+    "key": "group_profile_fields",
+    "title": "Profile Fields",
+    "fields": [
+        {
+            "key": "field_profile_phone",
+            "label": "Phone Number",
+            "name": "phone",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Your contact phone number",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "(555) 123-4567",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_profile_address",
+            "label": "Address",
+            "name": "address",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Your residential address",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "123 Main St, Mountain House, CA 95391",
+            "new_lines": "br"
+        },
+        {
+            "key": "field_profile_emergency_contact",
+            "label": "Emergency Contact Name",
+            "name": "emergency_contact_name",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Name of emergency contact person",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "Full name",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_profile_emergency_phone",
+            "label": "Emergency Contact Phone",
+            "name": "emergency_contact_phone",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Phone number of emergency contact",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "(555) 987-6543",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_profile_membership_date",
+            "label": "Membership Date",
+            "name": "membership_date",
+            "aria-label": "",
+            "type": "date_picker",
+            "instructions": "Date of joining MHMA",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "d/m/Y",
+            "return_format": "d/m/Y",
+            "first_day": 1
+        },
+        {
+            "key": "field_profile_family_size",
+            "label": "Family Size",
+            "name": "family_size",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Number of family members in the household",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": "",
+            "max": "",
+            "placeholder": "",
+            "step": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "user_form",
+                "operator": "==",
+                "value": "edit"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}
