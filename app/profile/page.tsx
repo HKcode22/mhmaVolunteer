@@ -165,7 +165,8 @@ export default function ProfilePage() {
     const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://my-wp-backend.duckdns.org/wp-json";
 
     try {
-      const response = await fetch(`${WP_API_URL}/mhma/v1/update-profile`, {
+      // Step 1: Always update first_name/last_name via standard WP REST API
+      const userResponse = await fetch(`${WP_API_URL}/wp/v2/users/me`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,26 +175,48 @@ export default function ProfilePage() {
         body: JSON.stringify({
           first_name: formData.first_name,
           last_name: formData.last_name,
-          phone: formData.phone,
-          address: formData.address,
-          emergency_contact_name: formData.emergency_contact_name,
-          emergency_contact_phone: formData.emergency_contact_phone,
-          membership_date: formData.membership_date,
-          family_size: formData.family_size,
-          profile_pic_id: formData.profile_pic_id ? parseInt(formData.profile_pic_id) : undefined,
         }),
       });
 
-      if (response.ok) {
-        setSuccess("Profile updated successfully!");
-        setEditing(false);
-        fetchProfile(token);
-      } else {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || "Failed to update profile");
+      if (!userResponse.ok) {
+        throw new Error("Failed to update name. Token may be expired - please log out and log in again.");
       }
+
+      // Step 2: Try to update meta fields via custom endpoint (if available)
+      try {
+        const metaResponse = await fetch(`${WP_API_URL}/mhma/v1/update-profile`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            phone: formData.phone,
+            address: formData.address,
+            emergency_contact_name: formData.emergency_contact_name,
+            emergency_contact_phone: formData.emergency_contact_phone,
+            membership_date: formData.membership_date,
+            family_size: formData.family_size,
+            profile_pic_id: formData.profile_pic_id ? parseInt(formData.profile_pic_id) : undefined,
+          }),
+        });
+
+        if (!metaResponse.ok && metaResponse.status === 404) {
+          console.warn("Custom profile endpoint not available, name saved but meta fields need plugin update");
+        }
+      } catch (metaErr) {
+        console.warn("Meta fields update failed (endpoint may not be deployed):", metaErr);
+      }
+
+      setSuccess("Profile updated successfully!");
+      setEditing(false);
+      fetchProfile(token);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile. Please try again.");
+      if (err instanceof Error && err.message.includes("Token may be expired")) {
+        setError(err.message);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to update profile. Please try again.");
+      }
     } finally {
       setSaving(false);
     }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Menu, X, User, LogOut, MapPin, Mail, Phone } from "lucide-react";
+import { ChevronDown, Menu, X, User, LogOut, MapPin, Mail, Phone, Bell } from "lucide-react";
 import { fetchEvents, fetchPrograms, fetchJournalEntries } from "@/lib/wordpress";
 
 interface NavigationProps {
@@ -64,6 +64,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     <User className="w-3.5 h-3.5" /> PROFILE
                   </Link>
                   <Link href="/dashboard" className="text-white hover:text-amber-400 font-medium transition-colors">DASHBOARD</Link>
+                  <Link href="/dashboard/notifications" className="text-white hover:text-amber-400 transition-colors flex items-center gap-1">
+                    <Bell className="w-3.5 h-3.5" /> NOTIFICATIONS
+                  </Link>
                   <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
                 </>
               ) : isLoggedIn ? (
@@ -207,6 +210,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
               <>
                 <Link href="/profile" className="block py-2 text-amber-600 font-semibold">PROFILE</Link>
                 <Link href="/dashboard" className="block py-2 text-amber-600 font-semibold">DASHBOARD</Link>
+                <Link href="/dashboard/notifications" className="block py-2 text-amber-600 font-semibold">NOTIFICATIONS</Link>
               </>
             ) : isLoggedIn ? (
               <Link href="/profile" className="block py-2 text-amber-600 font-semibold">PROFILE</Link>

@@ -406,3 +406,111 @@ function mhma_update_user_profile($request) {
         ),
     ), 200);
 }
+
+/**
+ * Register Contact Submission custom post type
+ */
+function mhma_register_contact_submission_cpt() {
+    register_post_type('contact_submission', array(
+        'labels' => array(
+            'name' => 'Contact Submissions',
+            'singular_name' => 'Contact Submission',
+            'add_new' => 'Add New',
+            'add_new_item' => 'Add New Contact Submission',
+            'edit_item' => 'Edit Contact Submission',
+            'new_item' => 'New Contact Submission',
+            'view_item' => 'View Contact Submission',
+            'search_items' => 'Search Contact Submissions',
+            'not_found' => 'No contact submissions found',
+            'not_found_in_trash' => 'No contact submissions found in Trash',
+        ),
+        'public' => false,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_rest' => true,
+        'rest_base' => 'contact_submission',
+        'menu_icon' => 'dashicons-email-alt',
+        'supports' => array('title', 'editor', 'custom-fields'),
+        'capability_type' => 'post',
+        'capabilities' => array(
+            'create_posts' => 'do_not_allow',
+        ),
+        'map_meta_cap' => false,
+    ));
+}
+add_action('init', 'mhma_register_contact_submission_cpt');
+
+/**
+ * REST endpoint to receive contact form submissions
+ */
+function mhma_register_contact_endpoint() {
+    register_rest_route('mhma/v1', '/contact', array(
+        'methods' => 'POST',
+        'callback' => 'mhma_handle_contact_submission',
+        'permission_callback' => '__return_true',
+    ));
+}
+add_action('rest_api_init', 'mhma_register_contact_endpoint');
+
+function mhma_handle_contact_submission($request) {
+    $name = sanitize_text_field($request->get_param('name'));
+    $email = sanitize_email($request->get_param('email'));
+    $subject = sanitize_text_field($request->get_param('subject'));
+    $message = sanitize_textarea_field($request->get_param('message'));
+
+    if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+        return new WP_Error('missing_fields', 'All fields are required.', array('status' => 400));
+    }
+
+    $post_id = wp_insert_post(array(
+        'post_title' => "$subject - $name",
+        'post_content' => "Name: $name\nEmail: $email\nSubject: $subject\n\nMessage:\n$message",
+        'post_status' => 'private',
+        'post_type' => 'contact_submission',
+        'meta_input' => array(
+            'contact_name' => $name,
+            'contact_email' => $email,
+            'contact_subject' => $subject,
+        ),
+    ));
+
+    if (is_wp_error($post_id)) {
+        return $post_id;
+    }
+
+    $admin_email = get_option('admin_email');
+    $email_subject = "New Contact Form Submission: $subject";
+    $email_message = "A new contact form submission has been received:\n\n";
+    $email_message .= "Name: $name\n";
+    $email_message .= "Email: $email\n";
+    $email_message .= "Subject: $subject\n\n";
+    $email_message .= "Message:\n$message\n\n";
+    $email_message .= "View in admin: " . admin_url("post.php?post=$post_id&action=edit");
+    wp_mail($admin_email, $email_subject, $email_message);
+
+    return new WP_REST_Response(array(
+        'success' => true,
+        'message' => 'Your message has been sent successfully.',
+        'submission_id' => $post_id,
+    ), 200);
+}
+
+/**
+ * Expose contact_submission meta fields in REST API
+ */
+function mhma_register_contact_meta_fields() {
+    $meta_fields = array('contact_name', 'contact_email', 'contact_subject');
+    foreach ($meta_fields as $field) {
+        register_rest_field('contact_submission', $field, array(
+            'get_callback' => function($post) use ($field) {
+                return get_post_meta($post['id'], $field, true) ?: '';
+            },
+            'schema' => array(
+                'description' => ucfirst(str_replace('_', ' ', $field)),
+                'type' => 'string',
+                'context' => array('view', 'edit'),
+            ),
+        ));
+    }
+}
+add_action('rest_api_init', 'mhma_register_contact_meta_fields');

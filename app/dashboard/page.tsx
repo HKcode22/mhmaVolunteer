@@ -15,6 +15,7 @@ import {
   Plus,
   Trash2,
   BookOpen,
+  Bell,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const [events, setEvents] = useState<Program[]>([]);
   const [journals, setJournals] = useState<Program[]>([]);
   const [eventRequests, setEventRequests] = useState<Program[]>([]);
+  const [enrollments, setEnrollments] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState<{ username: string; role: string } | null>(null);
@@ -44,6 +46,7 @@ export default function DashboardPage() {
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [showAllJournals, setShowAllJournals] = useState(false);
   const [showAllRequests, setShowAllRequests] = useState(false);
+  const [showAllEnrollments, setShowAllEnrollments] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -69,6 +72,7 @@ export default function DashboardPage() {
     fetchEvents();
     fetchJournals();
     fetchEventRequests();
+    fetchEnrollments();
   }, []);
 
   const fetchPrograms = async () => {
@@ -210,6 +214,45 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchEnrollments = async () => {
+    try {
+      const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
+      const token = localStorage.getItem("jwt_token");
+
+      let enrollmentsParentId = 0;
+      try {
+        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=enrollments&per_page=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (searchResponse.ok) {
+          const pages = await searchResponse.json();
+          if (pages.length > 0) {
+            enrollmentsParentId = pages[0].id;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not find Enrollments page by slug");
+      }
+
+      if (!enrollmentsParentId) return;
+
+      const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=${enrollmentsParentId}&per_page=100`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch enrollments");
+      }
+
+      const data = await response.json();
+      setEnrollments(data);
+    } catch (err) {
+      console.error("Failed to load enrollments:", err);
+    }
+  };
+
   const handleDeleteProgram = async (programId: number, programTitle: string) => {
     if (deletingId === programId) {
       return; // Prevent double-click
@@ -321,40 +364,52 @@ export default function DashboardPage() {
           )}
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             <Link
               href="/dashboard/programs/new"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
+              className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
             >
               <div className="flex items-center">
-                <Plus className="h-8 w-8 text-[#c9a227] mr-4" />
+                <Plus className="h-7 w-7 text-[#c9a227] mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Add New Program</h3>
-                  <p className="text-sm text-gray-600">Create a new program page</p>
+                  <h3 className="text-base font-semibold text-gray-900">Add Program</h3>
+                  <p className="text-xs text-gray-600">Create a new program</p>
                 </div>
               </div>
             </Link>
             <Link
               href="/dashboard/events/new"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
+              className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
             >
               <div className="flex items-center">
-                <Plus className="h-8 w-8 text-[#c9a227] mr-4" />
+                <Plus className="h-7 w-7 text-[#c9a227] mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Add New Event</h3>
-                  <p className="text-sm text-gray-600">Create a new event poster</p>
+                  <h3 className="text-base font-semibold text-gray-900">Add Event</h3>
+                  <p className="text-xs text-gray-600">Create a new event</p>
                 </div>
               </div>
             </Link>
             <Link
               href="/dashboard/journal/new"
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
+              className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
             >
               <div className="flex items-center">
-                <BookOpen className="h-8 w-8 text-[#c9a227] mr-4" />
+                <BookOpen className="h-7 w-7 text-[#c9a227] mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Add Journal Entry</h3>
-                  <p className="text-sm text-gray-600">Create a new journal entry</p>
+                  <h3 className="text-base font-semibold text-gray-900">Journal</h3>
+                  <p className="text-xs text-gray-600">Create a journal entry</p>
+                </div>
+              </div>
+            </Link>
+            <Link
+              href="/dashboard/notifications"
+              className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
+            >
+              <div className="flex items-center">
+                <Bell className="h-7 w-7 text-[#c9a227] mr-3 flex-shrink-0" />
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">Notifications</h3>
+                  <p className="text-xs text-gray-600">View all activity</p>
                 </div>
               </div>
             </Link>
@@ -612,6 +667,62 @@ export default function DashboardPage() {
                         className="w-full text-center text-sm text-mhma-teal hover:text-mhma-gold py-2 hover:bg-gray-50 rounded-lg transition-colors font-medium"
                       >
                         {showAllRequests ? 'Show Less' : `+${eventRequests.length - 5} more requests`}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Enrollments Box */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-teal-800 to-teal-700 text-white flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <BookOpen className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">Enrollments</h2>
+                    <p className="text-xs text-white/70">{enrollments.length} submissions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 max-h-80 overflow-y-auto">
+                {enrollments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <BookOpen className="h-8 w-8 text-green-600" />
+                    </div>
+                    <p className="text-gray-600">No enrollments yet.</p>
+                    <p className="text-sm text-gray-500">Enrollments will appear here when members submit them.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(showAllEnrollments ? enrollments : enrollments.slice(0, 5)).map((enrollment) => (
+                      <div
+                        key={enrollment.id}
+                        className="flex items-center justify-between p-3 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors border border-teal-200"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium text-gray-900 truncate">{enrollment.title.rendered}</h3>
+                          <p className="text-xs text-teal-600">Program enrollment</p>
+                        </div>
+                        <div className="flex space-x-1 ml-2">
+                          <Link
+                            href={`/dashboard/events/edit?id=${enrollment.id}`}
+                            className="p-1.5 text-teal-600 hover:bg-teal-200 rounded-md transition-colors"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                    {enrollments.length > 5 && (
+                      <button
+                        onClick={() => setShowAllEnrollments(!showAllEnrollments)}
+                        className="w-full text-center text-sm text-mhma-teal hover:text-mhma-gold py-2 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                      >
+                        {showAllEnrollments ? 'Show Less' : `+${enrollments.length - 5} more enrollments`}
                       </button>
                     )}
                   </div>

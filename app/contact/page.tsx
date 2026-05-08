@@ -14,14 +14,35 @@ export default function ContactPage() {
     message: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, this would send to WordPress or an API
-    console.log("Form submitted:", formData);
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
+      const response = await fetch(`${WP_API_URL}/mhma/v1/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to send message");
+      }
+
+      setSubmitted(true);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to send message");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -127,6 +148,11 @@ export default function ContactPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="bg-gray-50 rounded-xl p-8 shadow-lg">
+              {submitError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">{submitError}</p>
+                </div>
+              )}
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -190,10 +216,11 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full md:w-auto px-8 py-4 bg-amber-500 text-white font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-600 transition-colors shadow-lg flex items-center justify-center gap-2"
+                disabled={submitting}
+                className="w-full md:w-auto px-8 py-4 bg-amber-500 text-white font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-600 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
-                Send Message
+                {submitting ? "Sending..." : "Send Message"}
               </button>
             </form>
           )}
