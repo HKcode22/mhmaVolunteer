@@ -32,7 +32,7 @@ build/
 .vscode/
 .idea/
 *.swp
-*.swo
+*.swod
 *~
 
 # OS
@@ -43,3 +43,5 @@ Thumbs.db
 
 # Unused files archive (see trash branch)
 NotBeingUsedTrash/
+.kilo
+.windsurf

@@ -5,12 +5,13 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import Navigation from "@/components/Navigation";
 import {
   ArrowLeft,
   Save,
   Upload,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
 
 interface ACFData {
   event_poster?: string;

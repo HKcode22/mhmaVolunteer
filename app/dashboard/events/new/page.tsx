@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Navigation from "@/components/Navigation";
 import {
   ArrowLeft,
   Save,
   Upload,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
 
 interface FormData {
   title: string;
