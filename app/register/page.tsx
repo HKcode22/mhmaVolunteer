@@ -12,8 +12,13 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
+import { useRouter } from "next/navigation";
+import { auth, db } from "@/lib/firebase-client";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { addDoc, collection } from "firebase/firestore";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -30,45 +35,21 @@ export default function RegisterPage() {
       return;
     }
 
-    const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://my-wp-backend.duckdns.org/wp-json";
-
     try {
-      // WordPress REST API doesn't have built-in registration
-      // We'll create a user via the admin API or use a custom endpoint
-      // For now, submit to a custom registration endpoint
-      const response = await fetch(`${WP_API_URL}/mhma/v1/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: `${formData.firstName}${formData.lastName}`.toLowerCase(),
-          email: formData.email,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          password: formData.password,
-          phone: formData.phone,
-        }),
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+      await addDoc(collection(db, "users"), {
+        email: formData.email,
+        displayName: `${formData.firstName} ${formData.lastName}`,
+        phone: formData.phone,
+        role: "member",
+        createdAt: new Date().toISOString(),
       });
-
-      if (response.ok) {
-        alert("Registration submitted! Your request is pending approval.");
-        // Reset form
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          password: "",
-          confirmPassword: "",
-        });
-      } else {
-        const data = await response.json();
-        alert(data.message || "Registration failed. Please try again.");
-      }
-    } catch (error) {
+      alert("Registration successful! Please log in.");
+      router.push("/login");
+    } catch (error: any) {
       console.error("Registration error:", error);
-      alert("Registration failed. Please try again.");
+      alert(error.message || "Registration failed. Please try again.");
     }
   };
 

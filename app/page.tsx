@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText } from "lucide-react";
-import { fetchEvents, fetchPrograms, fetchJournalEntries } from "@/lib/wordpress";
+import { fetchEvents, fetchPrograms, fetchJournalEntries } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/components/Navigation";
 
 interface QuranVerse {
@@ -335,24 +336,14 @@ interface PrayerTime {
 }
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [dailyVerse, setDailyVerse] = useState<QuranVerse | null>(null);
   const [verseLoading, setVerseLoading] = useState(true);
-  const [wpEvents, setWpEvents] = useState<any[]>([]);
-  const [wpPrograms, setWpPrograms] = useState<any[]>([]);
-  const [wpJournalEntries, setWpJournalEntries] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [journalEntries, setJournalEntries] = useState<any[]>([]);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
-  const [username, setUsername] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("jwt_token");
-    const storedFirstName = localStorage.getItem("first_name");
-    if (token && storedFirstName) {
-      setIsLoggedIn(true);
-      setUsername(storedFirstName);
-    }
-  }, []);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -404,10 +395,8 @@ useEffect(() => {
     hasLoaded.current = true;
     const loadVerse = async () => {
       try {
-        console.log("Loading Quran verse...");
         const verse = await fetchQuranVerse();
         setDailyVerse(verse);
-        console.log("Quran verse loaded:", verse.reference);
       } catch (error) {
         console.error("Verse loading error:", error);
       } finally {
@@ -419,22 +408,16 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  // Load WordPress data SEQUENTIALLY to prevent Oracle backend crash
   const loadData = async () => {
     try {
-      // Fetch one at a time to avoid overwhelming Oracle
-      const events = await fetchEvents(277);
-      setWpEvents(events);
-
-      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
-
-      const programs = await fetchPrograms(70);
-      setWpPrograms(programs);
-
-      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
-
-      const journalEntries = await fetchJournalEntries(199);
-      setWpJournalEntries(journalEntries);
+      const [events, programs, journalEntries] = await Promise.all([
+        fetchEvents(3),
+        fetchPrograms(3),
+        fetchJournalEntries(3),
+      ]);
+      setEvents(events);
+      setPrograms(programs);
+      setJournalEntries(journalEntries);
     } catch (error) {
       console.error("Data fetching error:", error);
     }
@@ -442,10 +425,7 @@ useEffect(() => {
   loadData();
 }, []);
 
-  // Removed duplicate useEffect - verse already loaded above, WordPress data loaded in separate useEffect
-
-  // Use real events from WordPress - show only 3 most recent
-  const displayEvents = wpEvents.length > 0 ? wpEvents.slice(0, 3) : [];
+  const displayEvents = events.length > 0 ? events.slice(0, 3) : [];
 
   return (
     <div className="min-h-screen font-sans">
@@ -471,7 +451,7 @@ useEffect(() => {
           </div>
           */}
           <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
-            Welcome to <span className="text-amber-400">MHMA</span>{isLoggedIn && username ? `, ${username}!` : '!'}
+            Welcome to <span className="text-amber-400">MHMA</span>{user?.displayName ? `, ${user.displayName}!` : '!'}
           </h1>
           <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-2 max-w-3xl mx-auto font-light tracking-[0.15em] uppercase">
             Serving the Muslim Community
@@ -621,7 +601,7 @@ useEffect(() => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {(() => {
               // Filter programs to only show those with valid data
-              const validPrograms = wpPrograms.filter((p: any) =>
+              const validPrograms = programs.filter((p: any) =>
                 p.title?.rendered &&
                 p.slug &&
                 (p.acf?.program_title || p.acf?.program_description || p.title.rendered.length > 0)
@@ -767,7 +747,7 @@ useEffect(() => {
             <p className="text-gray-400">Reflections and updates from our community.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {wpJournalEntries.length > 0 ? wpJournalEntries.slice(0, 3).map((entry: any) => (
+            {journalEntries.length > 0 ? journalEntries.slice(0, 3).map((entry: any) => (
               <Link key={entry.id} href="/journal" className="bg-white/5 p-6 rounded-xl border border-white/10 hover:bg-white/10 hover:border-amber-400 transition-all">
                 <p className="text-amber-400 text-xs font-bold mb-3 uppercase tracking-wider">Journal Entry</p>
                 <h3 className="font-bold text-lg mb-3 line-clamp-2">{entry.title?.rendered}</h3>

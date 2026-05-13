@@ -1,0 +1,2032 @@
+[
+    {
+        "key": "group_contact_page",
+        "title": "Contact Page Fields",
+        "fields": [
+            {
+                "key": "field_contact_address",
+                "label": "Address",
+                "name": "contact_address",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Enter the full address",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "Mountain House Unity Center\n1170 Stonebridge Drive\nMountain House, CA 95391",
+                "placeholder": "",
+                "maxlength": "",
+                "rows": 4,
+                "new_lines": "br"
+            },
+            {
+                "key": "field_contact_phone",
+                "label": "Phone Number",
+                "name": "contact_phone",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Main contact phone number",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "(209) 555-0123",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_contact_email",
+                "label": "Email Address",
+                "name": "contact_email",
+                "aria-label": "",
+                "type": "email",
+                "instructions": "Main contact email",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "info@mhma.us",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_contact_hours",
+                "label": "Office Hours",
+                "name": "contact_hours",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Office hours or availability information",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "Office Hours:\nMon-Fri: 10:00 AM - 5:00 PM\nWeekend: By Appointment",
+                "placeholder": "",
+                "maxlength": "",
+                "rows": 3,
+                "new_lines": "br"
+            },
+            {
+                "key": "field_contact_map_embed",
+                "label": "Google Maps Embed URL",
+                "name": "contact_map_embed",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "Paste the Google Maps embed URL for directions",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "https:\/\/www.google.com\/maps\/embed?pb=!1m18!1m12!1m3!1d3153.0977704984784!2d-121.5405094!3d37.7786645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80900c02b5b8f353%3A0xa8e69c4f6e63c44a!2sMountain%20House%20Unity%20Center!5e0!3m2!1sen!2sus!4v1699400000000!5m2!1sen!2sus",
+                "placeholder": ""
+            },
+            {
+                "key": "field_contact_social_facebook",
+                "label": "Facebook URL",
+                "name": "contact_social_facebook",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "Facebook page link",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "https:\/\/www.facebook.com\/mhma95391",
+                "placeholder": ""
+            },
+            {
+                "key": "field_contact_social_instagram",
+                "label": "Instagram URL",
+                "name": "contact_social_instagram",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "Instagram page link",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "https:\/\/www.instagram.com\/mhma.ig\/",
+                "placeholder": ""
+            },
+            {
+                "key": "field_contact_social_twitter",
+                "label": "Twitter\/X URL",
+                "name": "contact_social_twitter",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "Twitter\/X page link",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "https:\/\/x.com\/mhmatweets",
+                "placeholder": ""
+            },
+            {
+                "key": "field_contact_social_youtube",
+                "label": "YouTube URL",
+                "name": "contact_social_youtube",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "YouTube channel link",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "https:\/\/www.youtube.com\/@MHMAYouTube",
+                "placeholder": ""
+            },
+            {
+                "key": "field_contact_social_linkedin",
+                "label": "LinkedIn URL",
+                "name": "contact_social_linkedin",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "LinkedIn company page",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "https:\/\/www.linkedin.com\/company\/mountain-house-muslim-association\/",
+                "placeholder": ""
+            },
+            {
+                "key": "field_contact_hero_title",
+                "label": "Hero Title",
+                "name": "contact_hero_title",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Main title for the contact page hero section",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "Contact Us",
+                "placeholder": "Contact Us",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_contact_hero_subtitle",
+                "label": "Hero Subtitle",
+                "name": "contact_hero_subtitle",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Subtitle or description for the contact page hero",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "We're here to help. Reach out with any question, request, or feedback.",
+                "placeholder": "",
+                "maxlength": "",
+                "rows": 2,
+                "new_lines": "br"
+            },
+            {
+                "key": "field_contact_form_shortcode",
+                "label": "Contact Form Shortcode",
+                "name": "contact_form_shortcode",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Shortcode for the contact form (if using a form plugin like Contact Form 7 or WPForms)",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "[contact-form-7 id=\"123\" title=\"Contact form 1\"]",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_contact_enable_form",
+                "label": "Enable Contact Form",
+                "name": "contact_enable_form",
+                "aria-label": "",
+                "type": "true_false",
+                "instructions": "Show or hide the contact form section",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "message": "Enable contact form on page",
+                "default_value": 1,
+                "ui": 1,
+                "ui_on_text": "Show",
+                "ui_off_text": "Hide"
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_parent",
+                    "operator": "==",
+                    "value": "375"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "Custom fields for the Contact Us page",
+        "show_in_rest": 1,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "contactPageFields",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    },
+    {
+        "key": "group_enrollment_fields",
+        "title": "Enrollment Submission Fields",
+        "fields": [
+            {
+                "key": "field_enrollment_full_name",
+                "label": "Full Name",
+                "name": "enrollment_full_name",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Full name of the person enrolling",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 1,
+                "placeholder": "John Doe",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "enrollmentFullName",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_enrollment_email",
+                "label": "Email Address",
+                "name": "enrollment_email",
+                "aria-label": "",
+                "type": "email",
+                "instructions": "Contact email address",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 1,
+                "placeholder": "email@example.com",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "enrollmentEmail",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_enrollment_phone",
+                "label": "Phone Number",
+                "name": "enrollment_phone",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Contact phone number",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "33",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 1,
+                "placeholder": "(555) 123-4567",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "enrollmentPhone",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_enrollment_program",
+                "label": "Selected Program",
+                "name": "enrollment_program",
+                "aria-label": "",
+                "type": "select",
+                "instructions": "Program the person wants to enroll in",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "33",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "youth_sports_league": "Youth Sports League",
+                    "ladies_meetup": "Ladies Meetup",
+                    "learn_3d_printing": "Learn 3D Printing",
+                    "urdu_academy": "Urdu Academy",
+                    "maktab_program": "Maktab Program",
+                    "family_night": "Family Night",
+                    "jummah_and_salah": "Jummah and Salah",
+                    "wish": "WISH (Weekend Islamic School)",
+                    "quran_hifz_program": "Quran Hifz Program",
+                    "boy_scouts": "Boy Scouts",
+                    "arabic_academy": "Arabic Academy"
+                },
+                "default_value": false,
+                "return_format": "value",
+                "multiple": 0,
+                "allow_null": 0,
+                "allow_in_bindings": 1,
+                "ui": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "enrollmentProgram",
+                "graphql_non_null": 0,
+                "ajax": 0,
+                "placeholder": "",
+                "create_options": 0,
+                "save_options": 0
+            },
+            {
+                "key": "field_enrollment_status",
+                "label": "Enrollment Status",
+                "name": "enrollment_status",
+                "aria-label": "",
+                "type": "select",
+                "instructions": "Current status of this enrollment",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "33",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "pending": "Pending Review",
+                    "approved": "Approved",
+                    "rejected": "Rejected",
+                    "completed": "Completed"
+                },
+                "default_value": "pending",
+                "return_format": "value",
+                "multiple": 0,
+                "allow_null": 0,
+                "ui": 0,
+                "ajax": 0,
+                "placeholder": "",
+                "create_options": 0,
+                "save_options": 0
+            },
+            {
+                "key": "field_enrollment_message",
+                "label": "Additional Message",
+                "name": "enrollment_message",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Any questions or special requests from the applicant",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "rows": 4,
+                "placeholder": "",
+                "new_lines": "br"
+            },
+            {
+                "key": "field_enrollment_date",
+                "label": "Submission Date",
+                "name": "enrollment_date",
+                "aria-label": "",
+                "type": "date_picker",
+                "instructions": "Date when this enrollment was submitted",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "d\/m\/Y",
+                "return_format": "d\/m\/Y",
+                "first_day": 1,
+                "default_to_current_date": 0
+            },
+            {
+                "key": "field_enrollment_notes",
+                "label": "Admin Notes",
+                "name": "enrollment_notes",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Internal notes for board members only",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "rows": 3,
+                "placeholder": "Board member notes...",
+                "new_lines": "br"
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_parent",
+                    "operator": "==",
+                    "value": "441"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 1,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "enrollmentSubmissionFields",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    },
+    {
+        "key": "group_69dca7468485b",
+        "title": "Event Details",
+        "fields": [
+            {
+                "key": "field_69dca746b6186",
+                "label": "Event Poster",
+                "name": "event_poster",
+                "aria-label": "",
+                "type": "image",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "return_format": "url",
+                "library": "all",
+                "min_width": "",
+                "min_height": "",
+                "min_size": "",
+                "max_width": "",
+                "max_height": "",
+                "max_size": "",
+                "mime_types": "",
+                "allow_in_bindings": 0,
+                "preview_size": "medium",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventPoster"
+            },
+            {
+                "key": "field_69dca7e2b6188",
+                "label": "Event Date",
+                "name": "event_date",
+                "aria-label": "",
+                "type": "date_picker",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "m\/d\/Y",
+                "return_format": "m\/d\/Y",
+                "first_day": 0,
+                "default_to_current_date": 1,
+                "allow_in_bindings": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventDate",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dca82ab6189",
+                "label": "Event Time",
+                "name": "event_time",
+                "aria-label": "",
+                "type": "time_picker",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "g:i a",
+                "return_format": "g:i a",
+                "allow_in_bindings": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventTime",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dca865b618a",
+                "label": "Event Location",
+                "name": "event_location",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventLocation",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dca882b618b",
+                "label": "RSVP Link",
+                "name": "event_rsvp_link",
+                "aria-label": "",
+                "type": "url",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventRsvpLink",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dca7ddb6187",
+                "label": "Event Description",
+                "name": "event_description",
+                "aria-label": "",
+                "type": "wysiwyg",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 0,
+                "tabs": "all",
+                "toolbar": "full",
+                "media_upload": 1,
+                "delay": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventDescription",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69e879258efe1",
+                "label": "Event Name",
+                "name": "event_name",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "eventName",
+                "graphql_non_null": 0
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_parent",
+                    "operator": "==",
+                    "value": "280"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 1,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "eventDetails",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    },
+    {
+        "key": "group_event_scheduling_request",
+        "title": "Event Scheduling Request",
+        "fields": [
+            {
+                "key": "field_organizer_first_name",
+                "label": "First Name",
+                "name": "organizer_first_name",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_organizer_last_name",
+                "label": "Last Name",
+                "name": "organizer_last_name",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_organizer_email",
+                "label": "Email",
+                "name": "organizer_email",
+                "aria-label": "",
+                "type": "email",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_organizer_phone",
+                "label": "Phone",
+                "name": "organizer_phone",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_event_title",
+                "label": "Event Title",
+                "name": "event_title",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_event_category",
+                "label": "Event Category",
+                "name": "event_category",
+                "aria-label": "",
+                "type": "select",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "religious": "Religious",
+                    "social": "Social",
+                    "educational": "Educational",
+                    "fundraising": "Fundraising",
+                    "community": "Community",
+                    "youth": "Youth",
+                    "other": "Other"
+                },
+                "default_value": false,
+                "allow_null": 0,
+                "multiple": 0,
+                "ui": 0,
+                "ajax": 0,
+                "placeholder": "",
+                "return_format": "value",
+                "create_options": 0,
+                "save_options": 0
+            },
+            {
+                "key": "field_event_description",
+                "label": "Event Description",
+                "name": "event_description",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Please provide as much information as possible, including event category detail if you selected other",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "maxlength": "",
+                "rows": "",
+                "new_lines": "wpautop"
+            },
+            {
+                "key": "field_event_start",
+                "label": "Start",
+                "name": "event_start",
+                "aria-label": "",
+                "type": "date_time_picker",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "Y-m-d H:i:s",
+                "return_format": "Y-m-d H:i:s",
+                "first_day": 1,
+                "default_to_current_date": 0
+            },
+            {
+                "key": "field_event_end",
+                "label": "End",
+                "name": "event_end",
+                "aria-label": "",
+                "type": "date_time_picker",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "Y-m-d H:i:s",
+                "return_format": "Y-m-d H:i:s",
+                "first_day": 1,
+                "default_to_current_date": 0
+            },
+            {
+                "key": "field_has_host_speaker",
+                "label": "Will there be a host or guest speaker?",
+                "name": "has_host_speaker",
+                "aria-label": "",
+                "type": "radio",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "yes": "Yes",
+                    "no": "No"
+                },
+                "allow_null": 0,
+                "other_choice": 0,
+                "default_value": "",
+                "layout": "vertical",
+                "return_format": "value",
+                "save_other_choice": 0
+            },
+            {
+                "key": "field_has_food",
+                "label": "Will food be served?",
+                "name": "has_food",
+                "aria-label": "",
+                "type": "radio",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "yes": "Yes",
+                    "no": "No"
+                },
+                "allow_null": 0,
+                "other_choice": 0,
+                "default_value": "",
+                "layout": "vertical",
+                "return_format": "value",
+                "save_other_choice": 0
+            },
+            {
+                "key": "field_food_service",
+                "label": "Food Service",
+                "name": "food_service",
+                "aria-label": "",
+                "type": "checkbox",
+                "instructions": "Please select one or more options",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "self_serve": "Self-serve",
+                    "catered": "Catered",
+                    "potluck": "Potluck",
+                    "other": "Other"
+                },
+                "allow_custom": 0,
+                "default_value": [],
+                "layout": "vertical",
+                "toggle": 0,
+                "return_format": "value",
+                "save_custom": 0,
+                "custom_choice_button_text": "Add new choice"
+            },
+            {
+                "key": "field_location",
+                "label": "Location",
+                "name": "location",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "Location",
+                "prepend": "",
+                "append": "",
+                "maxlength": ""
+            },
+            {
+                "key": "field_facility",
+                "label": "Facility",
+                "name": "facility",
+                "aria-label": "",
+                "type": "select",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "unity_center": "Unity Center",
+                    "masjid": "Masjid",
+                    "outdoor": "Outdoor",
+                    "other": "Other"
+                },
+                "default_value": false,
+                "allow_null": 0,
+                "multiple": 0,
+                "ui": 0,
+                "ajax": 0,
+                "placeholder": "",
+                "return_format": "value",
+                "create_options": 0,
+                "save_options": 0
+            },
+            {
+                "key": "field_round_tables",
+                "label": "Round Tables",
+                "name": "round_tables",
+                "aria-label": "",
+                "type": "number",
+                "instructions": "Please enter the number of round tables needed",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "min": "",
+                "max": "",
+                "step": ""
+            },
+            {
+                "key": "field_rectangular_tables",
+                "label": "Rectangular Tables",
+                "name": "rectangular_tables",
+                "aria-label": "",
+                "type": "number",
+                "instructions": "Please enter the number of rectangular tables needed",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "min": "",
+                "max": "",
+                "step": ""
+            },
+            {
+                "key": "field_chairs",
+                "label": "Chairs",
+                "name": "chairs",
+                "aria-label": "",
+                "type": "number",
+                "instructions": "Please enter the number of chairs needed",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "min": "",
+                "max": "",
+                "step": ""
+            },
+            {
+                "key": "field_equipment",
+                "label": "Equipment",
+                "name": "equipment",
+                "aria-label": "",
+                "type": "checkbox",
+                "instructions": "Please select all require options",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "projector": "Projector",
+                    "microphone": "Microphone",
+                    "speakers": "Speakers",
+                    "tables": "Tables",
+                    "chairs": "Chairs",
+                    "other": "Other"
+                },
+                "allow_custom": 0,
+                "default_value": [],
+                "layout": "vertical",
+                "toggle": 0,
+                "return_format": "value",
+                "save_custom": 0,
+                "custom_choice_button_text": "Add new choice"
+            },
+            {
+                "key": "field_volunteers",
+                "label": "Volunteers",
+                "name": "volunteers",
+                "aria-label": "",
+                "type": "number",
+                "instructions": "Please enter the number of volunteers needed",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "min": "",
+                "max": "",
+                "step": ""
+            },
+            {
+                "key": "field_helpers",
+                "label": "Helpers",
+                "name": "helpers",
+                "aria-label": "",
+                "type": "number",
+                "instructions": "Please enter the number of paid helpers needed",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "min": "",
+                "max": "",
+                "step": ""
+            },
+            {
+                "key": "field_rsvp_required",
+                "label": "RSVP Required",
+                "name": "rsvp_required",
+                "aria-label": "",
+                "type": "radio",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "yes": "Yes",
+                    "no": "No"
+                },
+                "allow_null": 0,
+                "other_choice": 0,
+                "default_value": "",
+                "layout": "vertical",
+                "return_format": "value",
+                "save_other_choice": 0
+            },
+            {
+                "key": "field_payment_required",
+                "label": "Payment Collection Required",
+                "name": "payment_required",
+                "aria-label": "",
+                "type": "radio",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "choices": {
+                    "yes": "Yes",
+                    "no": "No"
+                },
+                "allow_null": 0,
+                "other_choice": 0,
+                "default_value": "",
+                "layout": "vertical",
+                "return_format": "value",
+                "save_other_choice": 0
+            },
+            {
+                "key": "field_comments",
+                "label": "Comments",
+                "name": "comments",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Please share any additional information that will help with the event planning, and flyer creation",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "placeholder": "",
+                "maxlength": "",
+                "rows": "",
+                "new_lines": "wpautop"
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_parent",
+                    "operator": "==",
+                    "value": "281"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 0,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "eventSchedulingRequest",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    },
+    {
+        "key": "group_69eeee4793b28",
+        "title": "Journal",
+        "fields": [
+            {
+                "key": "field_69eeee48b5c48",
+                "label": "Journal Title",
+                "name": "journal_title",
+                "aria-label": "",
+                "type": "wysiwyg",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 0,
+                "tabs": "all",
+                "toolbar": "full",
+                "media_upload": 1,
+                "delay": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "journalTitle",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69eeeea6b5c49",
+                "label": "Date Held On",
+                "name": "date_held_on",
+                "aria-label": "",
+                "type": "date_picker",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "F j, Y",
+                "return_format": "F j, Y",
+                "first_day": 1,
+                "default_to_current_date": 0,
+                "allow_in_bindings": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "journalDate",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69f02ca165812",
+                "label": "Date Published",
+                "name": "date_published",
+                "aria-label": "",
+                "type": "date_picker",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "F j, Y",
+                "return_format": "F j, Y",
+                "first_day": 1,
+                "default_to_current_date": 0,
+                "allow_in_bindings": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "datePublished",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69f03301de0ec",
+                "label": "Content",
+                "name": "content",
+                "aria-label": "",
+                "type": "wysiwyg",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 0,
+                "tabs": "all",
+                "toolbar": "full",
+                "media_upload": 1,
+                "delay": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "content",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69f03312de0ed",
+                "label": "Attendees",
+                "name": "attendees",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "attendees",
+                "graphql_non_null": 0
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_parent",
+                    "operator": "==",
+                    "value": "199"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 0,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "journal",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    },
+    {
+        "key": "group_profile_fields",
+        "title": "Profile Fields",
+        "fields": [
+            {
+                "key": "field_profile_phone",
+                "label": "Phone Number",
+                "name": "phone",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Your contact phone number",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "placeholder": "(555) 123-4567",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_profile_address",
+                "label": "Address",
+                "name": "address",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "Your residential address",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "rows": 3,
+                "placeholder": "123 Main St, Mountain House, CA 95391",
+                "new_lines": "br"
+            },
+            {
+                "key": "field_profile_emergency_contact",
+                "label": "Emergency Contact Name",
+                "name": "emergency_contact_name",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Name of emergency contact person",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "placeholder": "Full name",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_profile_emergency_phone",
+                "label": "Emergency Contact Phone",
+                "name": "emergency_contact_phone",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "Phone number of emergency contact",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "50",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "placeholder": "(555) 987-6543",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_profile_membership_date",
+                "label": "Membership Date",
+                "name": "membership_date",
+                "aria-label": "",
+                "type": "date_picker",
+                "instructions": "Date of joining MHMA",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "display_format": "d\/m\/Y",
+                "return_format": "d\/m\/Y",
+                "first_day": 1,
+                "default_to_current_date": 0
+            },
+            {
+                "key": "field_profile_family_size",
+                "label": "Family Size",
+                "name": "family_size",
+                "aria-label": "",
+                "type": "number",
+                "instructions": "Number of family members in the household",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "min": "",
+                "max": "",
+                "placeholder": "",
+                "step": "",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_profile_pic",
+                "label": "Profile Picture",
+                "name": "profile_pic",
+                "aria-label": "",
+                "type": "image",
+                "instructions": "Upload a profile picture",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "return_format": "id",
+                "library": "all",
+                "min_width": "",
+                "min_height": "",
+                "min_size": "",
+                "max_width": "",
+                "max_height": "",
+                "max_size": "",
+                "mime_types": "jpg,jpeg,png,webp",
+                "preview_size": "medium"
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "user_form",
+                    "operator": "==",
+                    "value": "edit"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 0,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "profileFields",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    },
+    {
+        "key": "group_69dcafa369cbc",
+        "title": "Program Content",
+        "fields": [
+            {
+                "key": "field_69dcafa331569",
+                "label": "Program Title",
+                "name": "program_title",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "programTitle",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "use-hardcoded-version",
+                "label": "Use Hardcoded Version",
+                "name": "",
+                "aria-label": "",
+                "type": "true_false",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": 0,
+                "message": "",
+                "ui": 0,
+                "ui_on_text": "",
+                "ui_off_text": ""
+            },
+            {
+                "key": "field_69dcafce3156b",
+                "label": "Program Description",
+                "name": "program_description",
+                "aria-label": "",
+                "type": "wysiwyg",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 0,
+                "tabs": "all",
+                "toolbar": "full",
+                "media_upload": 1,
+                "delay": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "programDescription",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb0453156e",
+                "label": "Additional Content",
+                "name": "additional_content",
+                "aria-label": "",
+                "type": "wysiwyg",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "allow_in_bindings": 0,
+                "tabs": "all",
+                "toolbar": "full",
+                "media_upload": 1,
+                "delay": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "programStats",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcaff43156c",
+                "label": "Program Image",
+                "name": "program_image",
+                "aria-label": "",
+                "type": "image",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "return_format": "url",
+                "library": "all",
+                "min_width": "",
+                "min_height": "",
+                "min_size": "",
+                "max_width": "",
+                "max_height": "",
+                "max_size": "",
+                "mime_types": "",
+                "allow_in_bindings": 0,
+                "preview_size": "medium",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "programImage"
+            },
+            {
+                "key": "field_69e33123fe108",
+                "label": "Program Image Poster",
+                "name": "program_image_poster",
+                "aria-label": "",
+                "type": "image",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "return_format": "url",
+                "library": "all",
+                "min_width": "",
+                "min_height": "",
+                "min_size": "",
+                "max_width": "",
+                "max_height": "",
+                "max_size": "",
+                "mime_types": "",
+                "allow_in_bindings": 0,
+                "preview_size": "medium",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "programImage"
+            },
+            {
+                "key": "field_69dcb0423156d",
+                "label": "Stat 1 Label",
+                "name": "stat_1_label",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat1Label",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcafcc3156a",
+                "label": "Stat 1 Value",
+                "name": "stat_1_value",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat1Value",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb28f31570",
+                "label": "Stat 2 Label",
+                "name": "stat_2_label",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat2Label",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb29231571",
+                "label": "Stat 2 Value",
+                "name": "stat_2_value",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat2Value",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb29331572",
+                "label": "Stat 3 Label",
+                "name": "stat_3_label",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat3Label",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb29531573",
+                "label": "Stat 3 Value",
+                "name": "stat_3_value",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat3Value",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb2dc31574",
+                "label": "Stat 4 Label",
+                "name": "stat_4_label",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat4Label",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69dcb2ed31575",
+                "label": "Stat 4 Value",
+                "name": "stat_4_value",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": "",
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "stat4Value",
+                "graphql_non_null": 0
+            },
+            {
+                "key": "field_69e7d04dffac0",
+                "label": "Use Hardcoded Version",
+                "name": "use_hardcoded_version",
+                "aria-label": "",
+                "type": "true_false",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "message": "If checked, the Arabic Academy page will use the hardcoded version instead of WordPress data",
+                "default_value": 0,
+                "allow_in_bindings": 0,
+                "ui": 0,
+                "show_in_graphql": 1,
+                "graphql_description": "",
+                "graphql_field_name": "useHardcodedVersion",
+                "graphql_non_null": 0,
+                "ui_on_text": "",
+                "ui_off_text": ""
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_parent",
+                    "operator": "==",
+                    "value": "70"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 1,
+        "display_title": "",
+        "allow_ai_access": false,
+        "ai_description": "",
+        "show_in_graphql": 1,
+        "graphql_field_name": "programContent",
+        "map_graphql_types_from_location_rules": 0,
+        "graphql_types": ""
+    }
+]

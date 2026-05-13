@@ -16,25 +16,14 @@ import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 
 interface JournalEntry {
-  id: number;
-  title: {
-    rendered: string;
-  };
+  id: string;
+  title: string;
   slug: string;
-  acf?: {
-    journal_title?: string;
-    date_published?: string;
-    date_held_on?: string;
-    attendees?: string;
-    content?: string;
-  };
-  meta?: {
-    journal_title?: string;
-    date_published?: string;
-    date_held_on?: string;
-    attendees?: string;
-    journal_content?: string;
-  };
+  datePublished: string;
+  dateHeldOn: string;
+  attendees: string;
+  content: string;
+  createdAt: string;
 }
 
 export default function JournalPage() {
@@ -44,8 +33,7 @@ export default function JournalPage() {
   useEffect(() => {
     const fetchJournalEntries = async () => {
       try {
-        const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-        const response = await fetch(`${WP_API_URL}/wp/v2/pages?parent=199&per_page=100&_fields=id,title,slug,acf,meta,content`);
+        const response = await fetch("/api/journal");
         if (!response.ok) throw new Error("Failed to fetch journal entries");
         const data = await response.json();
         setWpJournalEntries(data);
@@ -94,21 +82,19 @@ export default function JournalPage() {
   ];
 
   const wpJournalEntriesFormatted = wpJournalEntries.map(entry => {
-    const datePublished = entry.acf?.date_published || entry.meta?.date_published;
-    let formattedDate = datePublished || "";
-    if (datePublished) {
-      const date = new Date(datePublished);
+    let formattedDate = entry.datePublished || "";
+    if (entry.datePublished) {
+      const date = new Date(entry.datePublished);
       if (!isNaN(date.getTime())) {
         formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       }
     }
-    const journalTitle = entry.acf?.journal_title || entry.meta?.journal_title;
     return {
       id: entry.id,
-      title: journalTitle || entry.title.rendered,
+      title: entry.title,
       date: formattedDate,
       slug: entry.slug,
-      rawDate: datePublished || "",
+      rawDate: entry.datePublished || "",
     };
   });
 

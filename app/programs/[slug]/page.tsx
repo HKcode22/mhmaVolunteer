@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, redirect } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -20,81 +20,39 @@ import {
   ChevronRight
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { fetchProgramBySlug } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
 
 interface ProgramData {
-  id: number;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
+  id?: string;
+  title: string;
   slug: string;
-  acf?: {
-    program_title?: string;
-    program_description?: string;
-    program_image?: any;
-    program_image_poster?: any;
-    use_hardcoded_version?: boolean;
-    stat_1_label?: string;
-    stat_1_value?: string;
-    stat_2_label?: string;
-    stat_2_value?: string;
-    stat_3_label?: string;
-    stat_3_value?: string;
-    stat_4_label?: string;
-    stat_4_value?: string;
-    additional_content?: string;
-  };
+  description?: string;
+  image?: string;
+  imagePoster?: string;
+  additionalContent?: string;
+  stats?: { label: string; value: string }[];
+  useHardcodedVersion?: boolean;
 }
 
 export default function DynamicProgramPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const [programData, setProgramData] = useState<ProgramData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [posterImageUrl, setPosterImageUrl] = useState<string>("");
-
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem("jwt_token") : null;
-    setIsLoggedIn(!!token);
-  }, []);
+  const { isBoardMember } = useAuth();
 
   useEffect(() => {
     const fetchProgramData = async () => {
       try {
-        const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-        const response = await fetch(`${WP_API_URL}/wp/v2/pages?slug=${slug}`);
-        const data = await response.json();
-        if (data.length > 0) {
-          const program = data[0];
+        const program = await fetchProgramBySlug(slug);
+        if (program) {
           setProgramData(program);
-
-          if (program.acf?.program_image) {
-            if (typeof program.acf.program_image === 'number') {
-              const res = await fetch(`${WP_API_URL}/wp/v2/media/${program.acf.program_image}`);
-              if (res.ok) {
-                const media = await res.json();
-                setImageUrl(media.source_url);
-              }
-            } else {
-              setImageUrl(program.acf.program_image);
-            }
-          }
-
-          if (program.acf?.program_image_poster) {
-            if (typeof program.acf.program_image_poster === 'number') {
-              const res = await fetch(`${WP_API_URL}/wp/v2/media/${program.acf.program_image_poster}`);
-              if (res.ok) {
-                const media = await res.json();
-                setPosterImageUrl(media.source_url);
-              }
-            } else {
-              setPosterImageUrl(program.acf.program_image_poster);
-            }
-          }
+          setImageUrl(program.image || "");
+          setPosterImageUrl(program.imagePoster || "");
         }
       } catch (error) {
         console.error("Error fetching program:", error);
@@ -116,14 +74,12 @@ export default function DynamicProgramPage() {
     );
   }
 
-  if (!programData) return redirect("/programs");
+  if (!programData) {
+    router.push('/programs');
+    return null;
+  }
 
-  const stats = [
-    { label: programData.acf?.stat_1_label, value: programData.acf?.stat_1_value },
-    { label: programData.acf?.stat_2_label, value: programData.acf?.stat_2_value },
-    { label: programData.acf?.stat_3_label, value: programData.acf?.stat_3_value },
-    { label: programData.acf?.stat_4_label, value: programData.acf?.stat_4_value },
-  ].filter(s => s.label && s.value);
+  const stats = programData.stats?.filter(s => s.label && s.value) || [];
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
@@ -136,7 +92,7 @@ export default function DynamicProgramPage() {
             <ChevronLeft className="w-4 h-4 mr-2" /> All Programs
           </Link>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 font-serif uppercase tracking-tight">
-            {programData.acf?.program_title || programData.title.rendered}
+            {programData.title}
           </h1>
           <div className="w-24 h-1.5 bg-mhma-gold mx-auto rounded-full"></div>
         </div>
@@ -150,19 +106,16 @@ export default function DynamicProgramPage() {
             {/* Left Side: Content */}
             <div className="lg:w-7/12">
               <div className="prose prose-lg max-w-none text-gray-700 font-light leading-relaxed mb-12">
-                {programData.content.rendered && (
-                  <div className="mb-12" dangerouslySetInnerHTML={{ __html: programData.content.rendered }} />
-                )}
-                {programData.acf?.program_description && (
-                  <div className="mb-12" dangerouslySetInnerHTML={{ __html: programData.acf.program_description }} />
+                {programData.description && (
+                  <div className="mb-12" dangerouslySetInnerHTML={{ __html: programData.description }} />
                 )}
                 {posterImageUrl && (
                   <div className="my-16">
                     <img src={posterImageUrl} alt="Program Poster" className="rounded-3xl shadow-2xl w-full border border-gray-100" />
                   </div>
                 )}
-                {programData.acf?.additional_content && (
-                  <div className="mt-12 p-8 bg-gray-50 rounded-3xl border border-gray-100" dangerouslySetInnerHTML={{ __html: programData.acf.additional_content }} />
+                {programData.additionalContent && (
+                  <div className="mt-12 p-8 bg-gray-50 rounded-3xl border border-gray-100" dangerouslySetInnerHTML={{ __html: programData.additionalContent }} />
                 )}
               </div>
             </div>
@@ -179,7 +132,7 @@ export default function DynamicProgramPage() {
                 <Link href="/enroll" className="flex items-center justify-center w-full py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg uppercase tracking-widest">
                   ENROLL NOW <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
-                {isLoggedIn && (
+                {isBoardMember && (
                   <Link
                     href={`/dashboard/programs/edit?id=${programData.id}`}
                     className="flex items-center justify-center w-full py-3 mt-4 border-2 border-mhma-gold text-mhma-gold font-bold rounded-xl hover:bg-mhma-gold hover:text-white transition-all text-sm uppercase tracking-widest"

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -17,70 +16,21 @@ import {
   Edit
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { useAuth } from "@/lib/auth-context";
 
 export default function ArabicAcademyPage() {
-  const [programData, setProgramData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [programId, setProgramId] = useState<number | null>(null);
+  const { isLoggedIn } = useAuth();
+  const programId = null;
 
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem("jwt_token") : null;
-    setIsLoggedIn(!!token);
-
-    const fetchProgramData = async () => {
-      try {
-        const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-        const response = await fetch(`${WP_API_URL}/wp/v2/pages?slug=arabic-academy`);
-        const data = await response.json();
-        if (data && data.length > 0) {
-          const page = data[0];
-          setProgramId(page.id);
-          const useHardcoded = page.acf?.use_hardcoded_version === true || page.acf?.[''] === true;
-          
-          if (useHardcoded) {
-            setProgramData({
-              title: "LEARN ARABIC LANGUAGE",
-              description: "A Fully accredited Arabic language course designed to equip students with the ability to understand the Quranic language.",
-              imageUrl: "https://mhma.us/wp-content/uploads/2016/08/Arabic.png",
-              stat1Label: "Students",
-              stat1Value: "25",
-              stat2Label: "Days/Week",
-              stat2Value: "5"
-            });
-          } else {
-            let imageUrl = "";
-            if (page.acf?.program_image && typeof page.acf.program_image === 'number') {
-              const res = await fetch(`${WP_API_URL}/wp/v2/media/${page.acf.program_image}`);
-              if (res.ok) {
-                const media = await res.json();
-                imageUrl = media.source_url;
-              }
-            } else if (page.acf?.program_image) {
-              imageUrl = page.acf.program_image;
-            }
-
-            setProgramData({
-              title: page.acf?.program_title || "LEARN ARABIC LANGUAGE",
-              description: page.acf?.program_description || "A Fully accredited Arabic language course designed to equip students with the ability to understand the Quranic language.",
-              content: page.content?.rendered || "",
-              imageUrl: imageUrl,
-              stat1Label: page.acf?.stat1_label || "Students",
-              stat1Value: page.acf?.stat1_value || "25",
-              stat2Label: page.acf?.stat2_label || "Days/Week",
-              stat2Value: page.acf?.stat2_value || "5",
-              additionalContent: page.acf?.additional_content || "",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching program data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProgramData();
-  }, []);
+  const programData: any = {
+    title: "LEARN ARABIC LANGUAGE",
+    description: "A Fully accredited Arabic language course designed to equip students with the ability to understand the Quranic language.",
+    imageUrl: "https://mhma.us/wp-content/uploads/2016/08/Arabic.png",
+    stat1Label: "Students",
+    stat1Value: "25",
+    stat2Label: "Days/Week",
+    stat2Value: "5"
+  };
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">

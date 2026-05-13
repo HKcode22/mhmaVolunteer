@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { MapPin, Mail, Phone, Send, ChevronRight, Clock, Users } from "lucide-react";
 
+import { addContactSubmission } from "@/lib/firebase";
 import PageBanner from "@/components/PageBanner";
 
 export default function ContactPage() {
@@ -23,17 +24,7 @@ export default function ContactPage() {
     setSubmitError("");
 
     try {
-      const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-      const response = await fetch(`${WP_API_URL}/mhma/v1/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to send message");
-      }
+      await addContactSubmission({ name: formData.name, email: formData.email, subject: formData.subject, message: formData.message, read: false });
 
       setSubmitted(true);
       setFormData({ name: "", email: "", subject: "", message: "" });

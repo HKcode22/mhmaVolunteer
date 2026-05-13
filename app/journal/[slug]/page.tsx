@@ -1,27 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navigation from "@/components/Navigation";
-
-interface JournalEntry {
-  id: number;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
-  slug: string;
-  acf?: {
-    journal_title?: string;
-    date_published?: string;
-    date_held_on?: string;
-    attendees?: string;
-    content?: string;
-  };
-}
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { fetchJournalEntryBySlug } from "@/lib/firebase";
 
 const journalContent: Record<string, { title: string; content: string; date: string; attendees: string; data?: any; isImage?: boolean; imageUrl?: string }> = {
   "bod-minutes-for-mhma-board-of-directors-meeting-12-apr-26": {
@@ -1508,70 +1492,57 @@ function renderContent(content: string) {
   return elements;
 }
 
-export default function JournalEntryPage({ params }: { params: { slug: string } }) {
-  const [wpEntry, setWpEntry] = useState<JournalEntry | null>(null);
-  const [allJournalEntries, setAllJournalEntries] = useState<any[]>([]);
+export default function JournalEntryPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const [entry, setEntry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function loadEntry() {
       try {
-        const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-
-        // Fetch current entry
-        const entryResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=${params.slug}`);
-        if (entryResponse.ok) {
-          const data = await entryResponse.json();
-          if (data && data.length > 0) {
-            setWpEntry(data[0]);
-          }
-        }
-
-        // Fetch all journal entries for related posts
-        const allResponse = await fetch(`${WP_API_URL}/wp/v2/pages?parent=199&per_page=100`);
-        if (allResponse.ok) {
-          const wpEntries = await allResponse.json();
-          const formattedWpEntries = wpEntries.map((entry: JournalEntry) => {
-            const datePublished = entry.acf?.date_published;
-            const dateHeldOn = entry.acf?.date_held_on;
-            let formattedDate = "";
-            let rawDate = "";
-            if (datePublished) {
-              const date = new Date(datePublished);
-              formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-              rawDate = datePublished;
-            }
-            return {
-              slug: entry.slug,
-              title: entry.acf?.journal_title || entry.title.rendered,
-              date: formattedDate,
-              rawDate: rawDate,
-            };
+        const firebaseEntry = await fetchJournalEntryBySlug(slug);
+        if (firebaseEntry && firebaseEntry.content) {
+          setEntry({
+            ...firebaseEntry,
+            datePublished: "",
+            dateHeldOn: "",
+            isHtml: false,
           });
-
-          // Combine with hardcoded entries
-          const hardcodedEntries = Object.entries(journalContent).map(([slug, data]) => ({
-            slug,
-            title: data.title,
-            date: data.date,
-            rawDate: data.date,
-          }));
-
-          const allEntries = [...formattedWpEntries, ...hardcodedEntries];
-          setAllJournalEntries(allEntries);
+        } else if (journalContent[slug]) {
+          setEntry({
+            ...journalContent[slug],
+            datePublished: "",
+            dateHeldOn: "",
+            isHtml: false,
+          });
+        } else {
+          setEntry(null);
         }
-      } catch (err) {
-        console.error("Failed to fetch data:", err);
-      } finally {
-        setLoading(false);
+      } catch {
+        if (journalContent[slug]) {
+          setEntry({
+            ...journalContent[slug],
+            datePublished: "",
+            dateHeldOn: "",
+            isHtml: false,
+          });
+        } else {
+          setEntry(null);
+        }
       }
-    };
+      setLoading(false);
+    }
+    loadEntry();
+  }, [slug]);
 
-    fetchData();
-  }, [params.slug]);
-
-  const hardcodedEntry = journalContent[params.slug];
+  const allJournalEntries = Object.entries(journalContent).map(([slug, data]) => ({
+    slug,
+    title: data.title,
+    date: data.date,
+    rawDate: data.date,
+  }));
 
   if (loading) {
     return (
@@ -1579,22 +1550,16 @@ export default function JournalEntryPage({ params }: { params: { slug: string } 
         <Navigation currentPage="journal" />
         <main className="pt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <p className="text-gray-600">Loading...</p>
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
           </div>
         </main>
       </div>
     );
   }
-
-  const entry = wpEntry ? {
-    title: wpEntry.acf?.journal_title || wpEntry.title.rendered,
-    content: wpEntry.acf?.content || wpEntry.content.rendered,
-    datePublished: wpEntry.acf?.date_published ? new Date(wpEntry.acf.date_published).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "",
-    dateHeldOn: wpEntry.acf?.date_held_on ? new Date(wpEntry.acf.date_held_on).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "",
-    attendees: wpEntry.acf?.attendees || "",
-    isHtml: true, // WordPress content is HTML
-    data: undefined, // WordPress entries don't have hardcoded data
-  } : { ...hardcodedEntry, datePublished: "", dateHeldOn: "", isHtml: false };
 
   if (!entry) {
     return (
@@ -1754,7 +1719,7 @@ export default function JournalEntryPage({ params }: { params: { slug: string } 
 
                 // Filter out current entry and sort by date
                 const relatedEntries = allJournalEntries
-                  .filter((e) => e.slug !== params.slug)
+                  .filter((e) => e.slug !== slug)
                   .map((e) => ({
                     ...e,
                     dateObj: new Date((e as any).rawDate || "1970-01-01"),

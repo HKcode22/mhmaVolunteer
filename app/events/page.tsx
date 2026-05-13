@@ -44,14 +44,14 @@ export default function EventsPage() {
       try {
         // Use API proxy for reliable fetching (handles CORS and retries)
         const timestamp = Date.now();
-        const response = await fetch(`/api/events?parent=277&_=${timestamp}`, {
+        const response = await fetch(`/api/events?_=${timestamp}`, {
           cache: 'no-store',
         });
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
 
         const eventSlides: Slide[] = data.map((event: any) => {
-          let formattedDate = event.acf?.event_date || "";
+          let formattedDate = event.date || "";
           if (formattedDate && /^\d{8}$/.test(formattedDate)) {
             const year = formattedDate.substring(0, 4);
             const month = formattedDate.substring(4, 6);
@@ -59,7 +59,7 @@ export default function EventsPage() {
             formattedDate = `${month}/${day}/${year}`;
           }
 
-          let formattedTime = event.acf?.event_time || "";
+          let formattedTime = event.time || "";
           if (formattedTime && /^\d{1,2}:\d{2}(:\d{2})?$/.test(formattedTime)) {
             const [hours, minutes] = formattedTime.split(':');
             const hour = parseInt(hours, 10);
@@ -68,54 +68,24 @@ export default function EventsPage() {
             formattedTime = `${hour12}:${minutes}${ampm}`;
           }
 
-          // Handle poster - could be URL string or numeric media ID
-          let posterUrl = event.acf?.event_poster || "";
-          if (typeof posterUrl === 'number') {
-            posterUrl = ""; // Will be resolved below via media API
-          }
-
           return {
             id: event.id,
-            src: posterUrl || "https://mhma.us/wp-content/uploads/2024/06/MHMA-Default-Event.webp",
-            alt: event.title?.rendered || "Event",
-            eventName: event.title?.rendered || "Untitled Event",
+            src: event.poster || "https://mhma.us/wp-content/uploads/2024/06/MHMA-Default-Event.webp",
+            alt: event.title || "Event",
+            eventName: event.title || "Untitled Event",
             eventDate: formattedDate,
             eventTime: formattedTime,
-            eventLocation: event.acf?.event_location || "",
-            eventDescription: event.acf?.event_description || "",
-            eventRsvpLink: event.acf?.event_rsvp_link || "",
-            showDate: event.acf?.show_date || false,
-            showTime: event.acf?.show_time || false,
-            showLocation: event.acf?.show_location || false,
-            showDescription: event.acf?.show_description || false,
+            eventLocation: event.location || "",
+            eventDescription: event.description || "",
+            eventRsvpLink: event.rsvpLink || "",
+            showDate: !!formattedDate,
+            showTime: !!formattedTime,
+            showLocation: !!event.location,
+            showDescription: !!event.description,
           };
         });
 
         setSlides(eventSlides);
-
-        // Resolve media IDs to URLs sequentially to avoid crashing Oracle backend
-        const resolvedSlides = [...eventSlides];
-        const WP_BASE = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/wp-json', '') || "https://my-wp-backend.duckdns.org";
-        for (let i = 0; i < resolvedSlides.length; i++) {
-          const mediaId = data[i]?.acf?.event_poster;
-          if (typeof mediaId === 'number' && mediaId > 0) {
-            try {
-              const mediaRes = await fetch(`${WP_BASE}/wp-json/wp/v2/media/${mediaId}`);
-              if (mediaRes.ok) {
-                const mediaData = await mediaRes.json();
-                resolvedSlides[i].src = mediaData.source_url || resolvedSlides[i].src;
-              }
-            } catch (err) {
-              console.warn(`Failed to fetch media for event ${resolvedSlides[i].id}:`, err);
-            }
-            // Small delay between requests to avoid overwhelming backend
-            if (i < resolvedSlides.length - 1) {
-              await new Promise(resolve => setTimeout(resolve, 300));
-            }
-          }
-        }
-
-        setSlides(resolvedSlides);
       } catch (err) {
         console.error("Failed to fetch events:", err);
       } finally {

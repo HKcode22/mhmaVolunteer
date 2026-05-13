@@ -20,17 +20,12 @@ import {
 import Navigation from "@/components/Navigation";
 
 interface Program {
-  id: number;
-  title: {
-    rendered: string;
-  };
+  id: string;
+  title: string;
   slug: string;
-  acf?: {
-    program_title?: string;
-    program_description?: string;
-    program_image?: any;
-    use_hardcoded_version?: boolean;
-  };
+  description?: string;
+  image?: string;
+  useHardcodedVersion?: boolean;
 }
 
 const hardcodedPrograms = [
@@ -74,19 +69,15 @@ export default function ProgramsPage() {
     fetchPrograms();
   }, []);
 
-  // Merge hardcoded programs with WordPress programs
-  // WordPress programs are ADDED to the list (not replace)
+  // Merge programs from Firestore with hardcoded fallback
   const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string }> = [...hardcodedPrograms];
   wpPrograms.forEach(wpProgram => {
-    // Avoid duplicates by checking slug (extract from href for hardcoded, use slug for WP)
     const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
     if (!existingSlugs.includes(wpProgram.slug)) {
       allPrograms.push({
-        title: wpProgram.title?.rendered || "Untitled",
-        description: wpProgram.acf?.program_description || "",
-        image: typeof wpProgram.acf?.program_image === 'number'
-          ? `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL}/wp/v2/media/${wpProgram.acf.program_image}`
-          : wpProgram.acf?.program_image || "",
+        title: wpProgram.title || "Untitled",
+        description: wpProgram.description || "",
+        image: wpProgram.image || "",
         href: `/programs/${wpProgram.slug}`,
         slug: wpProgram.slug
       });
@@ -119,27 +110,8 @@ export default function ProgramsPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {displayPrograms.map((program) => {
-                const programSlug = program.href.replace('/programs/', '');
-                const wpVersion = wpPrograms.find(wp => wp.slug === programSlug);
-
-                // Determine if we should use WordPress data or hardcoded
-                // Use WordPress data only if:
-                // 1. WordPress version exists
-                // 2. use_hardcoded_version is explicitly false
-                // 3. Has valid program_title or program_description
-                const hasValidWpData = wpVersion &&
-                  wpVersion.acf?.use_hardcoded_version === false &&
-                  (wpVersion.acf?.program_title || wpVersion.acf?.program_description);
-
-                // Use WordPress title if valid, otherwise fallback to hardcoded
-                const displayTitle = hasValidWpData
-                  ? (wpVersion.acf?.program_title || wpVersion.title.rendered || program.title)
-                  : program.title;
-
-                // Use WordPress description if valid, otherwise fallback to hardcoded
-                const displayDesc = hasValidWpData
-                  ? (wpVersion.acf?.program_description || program.description)
-                  : program.description;
+                const displayTitle = program.title;
+                const displayDesc = program.description;
 
                 return (
                   <Link 

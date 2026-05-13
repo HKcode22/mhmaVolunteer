@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { firestore } from '@/lib/firebase-admin';
+
+export const dynamic = 'force-dynamic';
 
 const LATITUDE = 37.7782;
 const LONGITUDE = -121.5423;
@@ -11,16 +14,32 @@ interface PrayerTime {
 
 export async function GET(request: NextRequest) {
   try {
+    // Try Firestore first (admin-configured times)
+    const doc = await firestore.collection('siteContent').doc('prayerTimes').get();
+    if (doc.exists) {
+      const data = doc.data()!;
+      return NextResponse.json({
+        prayerTimes: [
+          { name: "Fajr", arabicName: "الفجر", time: data.fajr || "4:48 AM" },
+          { name: "Dhuhr", arabicName: "الظهر", time: data.dhuhr || "1:00 PM" },
+          { name: "Asr", arabicName: "العصر", time: data.asr || "5:56 PM" },
+          { name: "Maghrib", arabicName: "المغرب", time: data.maghrib || "7:58 PM" },
+          { name: "Isha", arabicName: "العشاء", time: data.isha || "9:19 PM" },
+        ],
+        source: 'firestore',
+      });
+    }
+
+    // Fallback: fetch from AlAdhan API
     const today = new Date();
     const day = String(today.getDate()).padStart(2, '0');
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const year = today.getFullYear();
     const dateString = `${day}-${month}-${year}`;
 
-    // Fetch from AlAdhan API with Hanafi school (school=1)
     const response = await fetch(
       `https://api.aladhan.com/v1/timings/${dateString}?latitude=${LATITUDE}&longitude=${LONGITUDE}&method=2&school=1`,
-      { next: { revalidate: 3600 } } // Cache for 1 hour
+      { next: { revalidate: 3600 } }
     );
 
     if (!response.ok) {
@@ -52,6 +71,7 @@ export async function GET(request: NextRequest) {
         date: data.data.date.readable,
         hijriDate: `${data.data.date.hijri.date} ${data.data.date.hijri.month.en} ${data.data.date.hijri.year} AH`,
         method: data.data.meta.method.name,
+        source: 'aladhan',
       });
     }
 

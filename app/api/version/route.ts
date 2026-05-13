@@ -1,18 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
   return NextResponse.json({
-    version: '1.0.3',
+    version: "2.0.0",
     deployedAt: new Date().toISOString(),
-    gitCommit: 'a7c1a96',
+    backend: "Firebase (Firestore + Auth)",
     features: [
-      'Retry logic for Oracle backend',
-      'Merged WP + hardcoded programs',
-      'Fixed Show More buttons with type=button',
-      'Quran verse consistent per day',
-      'PageBanner component for all pages',
-      'Journal Meta Fields plugin created'
+      "Migrated from WordPress to Firebase",
+      "Firestore for all data (events, programs, journal, contact, etc.)",
+      "Firebase Auth for login/registration",
+      "Board dashboard with full CRUD",
+      "$0 hosting on Firebase Spark plan",
     ],
-    environment: process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'not set'
   });
 }

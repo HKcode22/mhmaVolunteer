@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
+import { addSchedulingRequest } from "@/lib/firebase";
 
 export default function EventSchedulingRequestPage() {
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [formData, setFormData] = useState({
     // Organizer
     firstName: "",
@@ -65,83 +68,39 @@ export default function EventSchedulingRequestPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setSubmitError("");
 
     try {
-      const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://mhma-update.local/wp-json";
-
-      // Create a new page for the event scheduling request
-      const response = await fetch(`${WP_API_URL}/wp/v2/pages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await addSchedulingRequest({
+        organizer: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
         },
-        body: JSON.stringify({
-          title: `Event Request: ${formData.eventTitle || "Untitled"}`,
-          content: `
-            <h3>Organizer</h3>
-            <p><strong>Name:</strong> ${formData.firstName} ${formData.lastName}</p>
-            <p><strong>Email:</strong> ${formData.email}</p>
-            <p><strong>Phone:</strong> ${formData.phone}</p>
-            <p><strong>Country:</strong> ${formData.country}</p>
-            <h3>Event Details</h3>
-            <p><strong>Title:</strong> ${formData.eventTitle}</p>
-            <p><strong>Category:</strong> ${formData.eventCategory}</p>
-            <p><strong>Description:</strong> ${formData.eventDescription}</p>
-            <p><strong>Start:</strong> ${formData.start}</p>
-            <p><strong>End:</strong> ${formData.end}</p>
-            <p><strong>Has Host/Speaker:</strong> ${formData.hasHostSpeaker}</p>
-            <p><strong>Has Food:</strong> ${formData.hasFood}</p>
-            <p><strong>Food Service:</strong> ${formData.foodService.join(", ")}</p>
-            <p><strong>Location:</strong> ${formData.location}</p>
-            <p><strong>Facility:</strong> ${formData.facility}</p>
-            <p><strong>Round Tables:</strong> ${formData.roundTables}</p>
-            <p><strong>Rectangular Tables:</strong> ${formData.rectangularTables}</p>
-            <p><strong>Chairs:</strong> ${formData.chairs}</p>
-            <p><strong>Equipment:</strong> ${formData.equipment.join(", ")}</p>
-            <p><strong>Volunteers:</strong> ${formData.volunteers}</p>
-            <p><strong>Helpers:</strong> ${formData.helpers}</p>
-            <p><strong>RSVP Required:</strong> ${formData.rsvpRequired}</p>
-            <p><strong>Payment Required:</strong> ${formData.paymentRequired}</p>
-            <p><strong>Comments:</strong> ${formData.comments}</p>
-          `,
-          status: "pending", // Set to pending so board members can review
-          parent: 277, // Events page parent
-          acf: {
-            organizer_first_name: formData.firstName,
-            organizer_last_name: formData.lastName,
-            organizer_email: formData.email,
-            organizer_phone: formData.phone,
-            organizer_country: formData.country,
-            event_title: formData.eventTitle,
-            event_category: formData.eventCategory,
-            event_description: formData.eventDescription,
-            event_start: formData.start,
-            event_end: formData.end,
-            has_host_speaker: formData.hasHostSpeaker,
-            has_food: formData.hasFood,
-            food_service: formData.foodService,
-            location: formData.location,
-            facility: formData.facility,
-            round_tables: formData.roundTables,
-            rectangular_tables: formData.rectangularTables,
-            chairs: formData.chairs,
-            equipment: formData.equipment,
-            volunteers: formData.volunteers,
-            helpers: formData.helpers,
-            rsvp_required: formData.rsvpRequired,
-            payment_required: formData.paymentRequired,
-            comments: formData.comments,
-          },
-        }),
+        eventTitle: formData.eventTitle,
+        category: formData.eventCategory,
+        description: formData.eventDescription,
+        start: formData.start,
+        end: formData.end,
+        hasHostSpeaker: formData.hasHostSpeaker,
+        hasFood: formData.hasFood,
+        foodService: formData.foodService,
+        location: formData.location,
+        facility: formData.facility,
+        roundTables: formData.roundTables ? Number(formData.roundTables) : undefined,
+        rectangularTables: formData.rectangularTables ? Number(formData.rectangularTables) : undefined,
+        chairs: formData.chairs ? Number(formData.chairs) : undefined,
+        equipment: formData.equipment,
+        volunteers: formData.volunteers ? Number(formData.volunteers) : undefined,
+        helpers: formData.helpers ? Number(formData.helpers) : undefined,
+        rsvpRequired: formData.rsvpRequired,
+        paymentRequired: formData.paymentRequired,
+        comments: formData.comments,
+        status: "pending",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit request");
-      }
-
-      alert("Event scheduling request submitted successfully!");
-      // Reset form
+      setSubmitSuccess(true);
       setFormData({
         firstName: "",
         lastName: "",
@@ -170,7 +129,7 @@ export default function EventSchedulingRequestPage() {
       });
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Failed to submit request. Please try again.");
+      setSubmitError("Failed to submit request. Please try again.");
     }
   };
 
@@ -184,10 +143,21 @@ export default function EventSchedulingRequestPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Event Scheduling Request</h1>
           <p className="text-gray-600 mb-8">Please fill out the form below to request an event scheduling.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Organizer Section */}
-            <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Organizer</h2>
+          {submitSuccess ? (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+              <p className="text-green-800 font-semibold text-lg">Event scheduling request submitted successfully!</p>
+              <p className="text-green-600">We will review your request and get back to you.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-800 text-sm">{submitError}</p>
+                </div>
+              )}
+              {/* Organizer Section */}
+              <div className="border-b border-gray-200 pb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Organizer</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -647,6 +617,7 @@ export default function EventSchedulingRequestPage() {
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
 

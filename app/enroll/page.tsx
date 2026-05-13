@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { addEnrollment } from "@/lib/firebase";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 
 export default function EnrollPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -22,14 +23,10 @@ export default function EnrollPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt_token");
-    if (!token) {
+    if (!authLoading && !user) {
       router.push("/login?redirect=/enroll");
-    } else {
-      setIsAuthenticated(true);
     }
-    setCheckingAuth(false);
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const programs = [
     { value: "youth_sports_league", label: "Youth Sports League" },
@@ -50,66 +47,17 @@ export default function EnrollPage() {
     setError("");
     setLoading(true);
 
-    const WP_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://my-wp-backend.duckdns.org/wp-json";
-    const token = localStorage.getItem("jwt_token");
-
     try {
-      // First, find the Enrollments page by slug
-      let enrollmentsParentId = 0;
-      try {
-        const searchResponse = await fetch(`${WP_API_URL}/wp/v2/pages?slug=enrollments&per_page=1`);
-        if (searchResponse.ok) {
-          const pages = await searchResponse.json();
-          if (pages.length > 0) {
-            enrollmentsParentId = pages[0].id;
-          }
-        }
-      } catch (e) {
-        console.warn("Could not find Enrollments page, will create without parent:", e);
-      }
+      await addEnrollment({ fullName: formData.fullName, email: formData.email, phone: formData.phone, program: formData.program, message: formData.message, status: "pending" });
 
-      const submissionDate = new Date();
-      const formattedDate = submissionDate.getFullYear() +
-        String(submissionDate.getMonth() + 1).padStart(2, '0') +
-        String(submissionDate.getDate()).padStart(2, '0');
-
-      // Save enrollment as a child page under Enrollments
-      const response = await fetch(`${WP_API_URL}/wp/v2/pages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title: `Enrollment: ${formData.fullName} - ${formData.program}`,
-          content: formData.message || "",
-          status: "private",
-          ...(enrollmentsParentId > 0 ? { parent: enrollmentsParentId } : {}),
-          acf: {
-            enrollment_full_name: formData.fullName,
-            enrollment_email: formData.email,
-            enrollment_phone: formData.phone,
-            enrollment_program: formData.program,
-            enrollment_message: formData.message,
-            enrollment_status: "pending",
-            enrollment_date: formattedDate,
-          },
-        }),
+      setSuccess(true);
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        program: "",
+        message: "",
       });
-
-      if (response.ok) {
-        setSuccess(true);
-        setFormData({
-          fullName: "",
-          email: "",
-          phone: "",
-          program: "",
-          message: "",
-        });
-      } else {
-        const data = await response.json();
-        setError(data.message || "Enrollment failed. Please try again.");
-      }
     } catch (error) {
       console.error("Enrollment error:", error);
       setError("Enrollment failed. Please try again.");
@@ -118,7 +66,7 @@ export default function EnrollPage() {
     }
   };
 
-  if (checkingAuth) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -129,7 +77,7 @@ export default function EnrollPage() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return null;
   }
 
