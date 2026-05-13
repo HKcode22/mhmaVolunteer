@@ -4,22 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, User } from "lucide-react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase-client";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 
 export default function LoginPage() {
-  const [userType, setUserType] = useState<"existing" | "new" | "board">("existing");
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    email: "",
-    firstName: "",
-    lastName: "",
-  });
+  const [userType, setUserType] = useState<"member" | "board">("member");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -32,55 +26,32 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      if (userType === "new") {
-        if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
-          throw new Error("Please fill in all required fields.");
-        }
-        const cred = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-        await setDoc(doc(db, "users", cred.user.uid), {
-          email: formData.email,
-          displayName: `${formData.firstName} ${formData.lastName}`,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          role: "member",
-          createdAt: serverTimestamp(),
-        });
-        setSuccess("Account created! You are now logged in.");
-        setTimeout(() => { window.location.href = "/"; }, 1000);
-      } else {
-        const loginId = formData.username.includes("@") ? formData.username : `${formData.username}@placeholder.com`;
-        const email = formData.username.includes("@") ? formData.username : null;
-        let cred;
-
-        if (email) {
-          cred = await signInWithEmailAndPassword(auth, email, formData.password);
-        } else {
-          setError("Please enter your email address to log in.");
-          setLoading(false);
-          return;
-        }
-
-        const tokenResult = await cred.user.getIdTokenResult();
-        const role = (tokenResult.claims.role as string) || "member";
-        const isBoard = role === "board_member" || role === "administrator";
-
-        if (userType === "board" && !isBoard) {
-          await auth.signOut();
-          throw new Error("Access denied. Only board members can log in here.");
-        }
-
-        await refreshUser();
-        setSuccess("Login successful! Redirecting...");
-        setTimeout(() => {
-          window.location.href = isBoard ? "/dashboard" : "/";
-        }, 1000);
+      const email = username.includes("@") ? username : null;
+      if (!email) {
+        setError("Please enter your email address to log in.");
+        setLoading(false);
+        return;
       }
+
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const tokenResult = await cred.user.getIdTokenResult();
+      const role = (tokenResult.claims.role as string) || "member";
+      const isBoard = role === "board_member" || role === "administrator";
+
+      if (userType === "board" && !isBoard) {
+        await auth.signOut();
+        throw new Error("Access denied. Only board members can log in here.");
+      }
+
+      await refreshUser();
+      setSuccess("Login successful! Redirecting...");
+      setTimeout(() => {
+        window.location.href = isBoard ? "/dashboard" : "/";
+      }, 1000);
     } catch (err: any) {
       const msg =
         err.code === "auth/user-not-found" ? "No account found with this email." :
         err.code === "auth/wrong-password" || err.code === "auth/invalid-credential" ? "Invalid email or password." :
-        err.code === "auth/email-already-in-use" ? "An account with this email already exists." :
-        err.code === "auth/weak-password" ? "Password should be at least 6 characters." :
         err.code === "auth/too-many-requests" ? "Too many attempts. Please try again later." :
         err.message || "An error occurred.";
       setError(msg);
@@ -106,20 +77,13 @@ export default function LoginPage() {
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Mountain House Muslim Association</h2>
                 <p className="text-gray-600 text-center mb-6">I am a...</p>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => setUserType("new")}
-                    className={`p-4 rounded-lg border-2 transition-all ${userType === "new" ? "border-[#c9a227] bg-[#c9a227]/10" : "border-gray-200 hover:border-[#c9a227]"}`}
+                    onClick={() => setUserType("member")}
+                    className={`p-4 rounded-lg border-2 transition-all ${userType === "member" ? "border-[#c9a227] bg-[#c9a227]/10" : "border-gray-200 hover:border-[#c9a227]"}`}
                   >
                     <User className="w-6 h-6 mx-auto mb-2 text-gray-700" />
-                    <span className="text-sm font-medium text-gray-700">New Member</span>
-                  </button>
-                  <button
-                    onClick={() => setUserType("existing")}
-                    className={`p-4 rounded-lg border-2 transition-all ${userType === "existing" ? "border-[#c9a227] bg-[#c9a227]/10" : "border-gray-200 hover:border-[#c9a227]"}`}
-                  >
-                    <User className="w-6 h-6 mx-auto mb-2 text-gray-700" />
-                    <span className="text-sm font-medium text-gray-700">Existing Member</span>
+                    <span className="text-sm font-medium text-gray-700">Member</span>
                   </button>
                   <button
                     onClick={() => setUserType("board")}
@@ -133,8 +97,7 @@ export default function LoginPage() {
 
               <div className="text-center mb-8">
                 <p className="text-gray-600">
-                  {userType === "new" && "Create a new member account"}
-                  {userType === "existing" && "Registered User Login"}
+                  {userType === "member" && "Registered User Login"}
                   {userType === "board" && "Board Member Login"}
                 </p>
               </div>
@@ -152,71 +115,35 @@ export default function LoginPage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {userType === "new" && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                        <input type="text" id="firstName" value={formData.firstName}
-                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
-                          placeholder="First name" required />
-                      </div>
-                      <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                        <input type="text" id="lastName" value={formData.lastName}
-                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
-                          placeholder="Last name" required />
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                      <input type="email" id="email" value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
-                        placeholder="Enter your email" required />
-                    </div>
-                  </>
-                )}
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input type="email" id="username" value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input type="email" id="email" value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
                     placeholder="Enter your email address" required />
                 </div>
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                  <input type="password" id="password" value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  <input type="password" id="password" value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
-                    placeholder={userType === "new" ? "Create a password (min 6 characters)" : "Enter your password"}
-                    required />
+                    placeholder="Enter your password" required />
                 </div>
 
                 <button type="submit" disabled={loading}
                   className="w-full bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? "Processing..." : userType === "new" ? "Register" : "Login"}
+                  {loading ? "Processing..." : "Login"}
                 </button>
               </form>
 
-              <div className="mt-6 text-center">
-                {userType === "new" && (
-                  <p className="text-sm text-gray-600">
-                    Already a member?{" "}
-                    <button onClick={() => setUserType("existing")} className="text-[#c9a227] hover:underline font-medium">Login here</button>
-                  </p>
-                )}
-                {userType === "existing" && (
-                  <p className="text-sm text-gray-600">
-                    Don&apos;t have an account?{" "}
-                    <button onClick={() => setUserType("new")} className="text-[#c9a227] hover:underline font-medium">Register here</button>
-                  </p>
-                )}
+              <div className="mt-6 text-center space-y-2">
+                <p className="text-sm text-gray-600">
+                  Don&apos;t have an account?{" "}
+                  <Link href="/register" className="text-[#c9a227] hover:underline font-medium">Register here</Link>
+                </p>
                 {userType === "board" && (
-                  <p className="text-sm text-gray-600">Board member access only. Contact administrator if you need access.</p>
+                  <p className="text-sm text-gray-500">Board member access only. Contact administrator if you need access.</p>
                 )}
               </div>
 

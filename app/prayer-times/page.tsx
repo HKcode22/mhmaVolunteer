@@ -50,59 +50,42 @@ export default function PrayerTimesPage() {
   const [hijriDate, setHijriDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [method, setMethod] = useState("ISNA");
 
   useEffect(() => {
     fetchPrayerTimes();
   }, []);
 
   const fetchPrayerTimes = async () => {
-    // Commented out aladhan API - using masjidi widget instead
-    /*
     try {
       setLoading(true);
-      const today = new Date();
-      
-      const response = await fetch(
-        `https://api.aladhan.com/v1/timings/${Math.floor(today.getTime() / 1000)}?latitude=${LATITUDE}&longitude=${LONGITUDE}&method=2&school=0`
-      );
-
+      const response = await fetch('/api/prayer-times');
       if (!response.ok) throw new Error("Failed to fetch prayer times");
+      const data = await response.json();
 
-      const data: AladhanResponse = await response.json();
-
-      if (data.code === 200 && data.data) {
-        const timings = data.data.timings;
-        const date = data.data.date;
-
-        const formatTime = (time24: string) => {
-          const [hours, minutes] = time24.split(':');
-          const hour = parseInt(hours, 10);
-          const ampm = hour >= 12 ? 'PM' : 'AM';
-          const hour12 = hour % 12 || 12;
-          return `${hour12}:${minutes} ${ampm}`;
-        };
-
-        setPrayerTimes([
-          { name: "Fajr", time: formatTime(timings.Fajr), arabicName: "الفجر" },
-          { name: "Sunrise", time: formatTime(timings.Sunrise), arabicName: "الشروق" },
-          { name: "Dhuhr", time: formatTime(timings.Dhuhr), arabicName: "الظهر" },
-          { name: "Asr", time: formatTime(timings.Asr), arabicName: "العصر" },
-          { name: "Maghrib", time: formatTime(timings.Maghrib), arabicName: "المغرب" },
-          { name: "Isha", time: formatTime(timings.Isha), arabicName: "العشاء" },
-        ]);
-
-        setCurrentDate(date.readable);
-        setHijriDate(`${date.hijri.date} ${date.hijri.month.en} ${date.hijri.year} AH`);
-        setMethod(data.data.meta.method.name);
+      if (data.prayerTimes && data.prayerTimes.length > 0) {
+        setPrayerTimes(data.prayerTimes);
+        setCurrentDate(data.date || "");
+        setHijriDate(data.hijriDate || "");
+      } else {
+        setFallbackTimes();
       }
     } catch (err) {
       setError("Unable to load prayer times. Please try again later.");
+      setFallbackTimes();
     } finally {
       setLoading(false);
     }
-    */
-    setLoading(false);
+  };
+
+  const setFallbackTimes = () => {
+    setPrayerTimes([
+      { name: "Fajr", arabicName: "الفجر", time: "4:48 AM" },
+      { name: "Sunrise", arabicName: "الشروق", time: "6:13 AM" },
+      { name: "Dhuhr", arabicName: "الظهر", time: "1:00 PM" },
+      { name: "Asr", arabicName: "العصر", time: "5:56 PM" },
+      { name: "Maghrib", arabicName: "المغرب", time: "7:58 PM" },
+      { name: "Isha", arabicName: "العشاء", time: "9:19 PM" },
+    ]);
   };
 
   return (
