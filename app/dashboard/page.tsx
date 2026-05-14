@@ -12,8 +12,9 @@ import {
   fetchJournalEntries, deleteJournalEntry,
   fetchEnrollments, deleteEnrollment,
   fetchSchedulingRequests, deleteSchedulingRequest,
+  fetchContactSubmissions, deleteContactSubmission,
   generateInviteCode, fetchInviteCodes, deleteInviteCode,
-  FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, FirebaseEnrollment, FirebaseSchedulingRequest, InviteCode,
+  FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, InviteCode,
 } from "@/lib/firebase";
 import Navigation from "@/components/Navigation";
 
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [journals, setJournals] = useState<FirebaseJournalEntry[]>([]);
   const [eventRequests, setEventRequests] = useState<FirebaseSchedulingRequest[]>([]);
   const [enrollments, setEnrollments] = useState<FirebaseEnrollment[]>([]);
+  const [contactSubmissions, setContactSubmissions] = useState<FirebaseContactSubmission[]>([]);
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -33,6 +35,7 @@ export default function DashboardPage() {
   const [showAllJournals, setShowAllJournals] = useState(false);
   const [showAllRequests, setShowAllRequests] = useState(false);
   const [showAllEnrollments, setShowAllEnrollments] = useState(false);
+  const [showAllSubmissions, setShowAllSubmissions] = useState(false);
   const [showAllCodes, setShowAllCodes] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
@@ -58,14 +61,16 @@ export default function DashboardPage() {
         timeout(fetchJournalEntries(100), 15000).catch(() => [] as FirebaseJournalEntry[]),
         timeout(fetchSchedulingRequests(100), 15000).catch(() => [] as FirebaseSchedulingRequest[]),
         timeout(fetchEnrollments(100), 15000).catch(() => [] as FirebaseEnrollment[]),
+        timeout(fetchContactSubmissions(100), 15000).catch(() => [] as FirebaseContactSubmission[]),
         timeout(fetchInviteCodes(), 15000).catch(() => [] as InviteCode[]),
       ]);
-      const [p, e, j, er, en, codes] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, j, er, en, cs, codes] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setJournals(j || []);
       setEventRequests(er || []);
       setEnrollments(en || []);
+      setContactSubmissions(cs || []);
       setInviteCodes(codes || []);
       setLoading(false);
     };
@@ -107,7 +112,7 @@ export default function DashboardPage() {
   const handleDelete = async (
     id: string,
     title: string,
-    type: "program" | "event" | "journal" | "request" | "enrollment"
+    type: "program" | "event" | "journal" | "request" | "enrollment" | "submission"
   ) => {
     if (deletingId === id) return;
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
@@ -119,6 +124,7 @@ export default function DashboardPage() {
         case "journal": await deleteJournalEntry(id); setJournals(p => p.filter(x => x.id !== id)); break;
         case "request": await deleteSchedulingRequest(id); setEventRequests(p => p.filter(x => x.id !== id)); break;
         case "enrollment": await deleteEnrollment(id); setEnrollments(p => p.filter(x => x.id !== id)); break;
+        case "submission": await deleteContactSubmission(id); setContactSubmissions(p => p.filter(x => x.id !== id)); break;
       }
     } catch (err) {
       console.error(`Failed to delete ${type}:`, err);
@@ -141,6 +147,7 @@ export default function DashboardPage() {
   const visibleJournals = showAllJournals ? journals : journals.slice(0, 5);
   const visibleRequests = showAllRequests ? eventRequests : eventRequests.slice(0, 5);
   const visibleEnrollments = showAllEnrollments ? enrollments : enrollments.slice(0, 5);
+  const visibleSubmissions = showAllSubmissions ? contactSubmissions : contactSubmissions.slice(0, 5);
   const visibleCodes = showAllCodes ? inviteCodes : inviteCodes.slice(0, 5);
 
   return (
@@ -252,6 +259,18 @@ export default function DashboardPage() {
           {enrollments.length === 0 && <p className="text-gray-400 text-sm p-3">No enrollments.</p>}
         </Section>
 
+        <Section title="Contact Submissions" count={contactSubmissions.length} href="#" allShown={showAllSubmissions} onToggle={() => setShowAllSubmissions(!showAllSubmissions)} scrollable>
+          {visibleSubmissions.map(s => (
+            <div key={s.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 truncate">{s.subject || "(no subject)"}</p>
+                <p className="text-xs text-gray-500">{s.name} · {s.email}{!s.read ? <span className="text-amber-600 font-medium ml-2">NEW</span> : null}</p>
+              </div>
+              <button onClick={() => s.id && handleDelete(s.id, s.subject || "submission", "submission")} disabled={deletingId === s.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+            </div>
+          ))}
+          {contactSubmissions.length === 0 && <p className="text-gray-400 text-sm p-3">No contact submissions.</p>}
+        </Section>
         <Section title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)} scrollable>
           {codeMsg && (
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3 flex items-center justify-between">

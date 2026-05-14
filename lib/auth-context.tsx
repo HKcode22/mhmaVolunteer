@@ -55,32 +55,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      // Always mark loading done, even on errors
       const finish = () => { if (!cancelled) setLoading(false); };
 
       try {
         if (firebaseUser) {
-          const role = await fetchUserRole(firebaseUser.uid);
           let idTokenResult;
           try {
             idTokenResult = await firebaseUser.getIdTokenResult();
           } catch (tokenErr) {
-            console.warn("Auth: token fetch failed, using Firestore role:", tokenErr);
+            console.warn("Auth: token fetch failed:", tokenErr);
           }
-          const customRole = idTokenResult?.claims?.role as string || role;
+
+          const claimRole = idTokenResult?.claims?.role as string | undefined;
+          let firestoreRole: string | undefined;
+          try {
+            firestoreRole = await fetchUserRole(firebaseUser.uid);
+          } catch {}
+
+          const role = claimRole || firestoreRole || "member";
+
           if (!cancelled) {
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               displayName: firebaseUser.displayName,
-              role: customRole,
+              role,
             });
           }
         } else {
           if (!cancelled) setUser(null);
         }
       } catch (err) {
-        console.error("Auth: unexpected error in auth callback:", err);
+        console.error("Auth: unexpected error:", err);
         if (!cancelled) setUser(null);
       } finally {
         finish();

@@ -252,6 +252,20 @@ export async function deleteSchedulingRequest(id: string): Promise<void> {
   await deleteDoc(doc(db, collections.schedulingRequests, id));
 }
 
+export async function fetchContactSubmissions(limitCount = 50): Promise<FirebaseContactSubmission[]> {
+  const q = query(collection(db, collections.contactSubmissions), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<FirebaseContactSubmission>(snap);
+}
+
+export async function markContactSubmissionRead(id: string): Promise<void> {
+  await updateDoc(doc(db, collections.contactSubmissions, id), { read: true });
+}
+
+export async function deleteContactSubmission(id: string): Promise<void> {
+  await deleteDoc(doc(db, collections.contactSubmissions, id));
+}
+
 export async function addContactSubmission(data: Omit<FirebaseContactSubmission, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, collections.contactSubmissions), {
     ...data,
