@@ -3,39 +3,36 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { addEvent } from "@/lib/firebase";
-import { storage } from "@/lib/firebase-client";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { uploadImage } from "@/lib/upload";
 import Navigation from "@/components/Navigation";
 
 export default function NewEventPage() {
   const router = useRouter();
   const { isBoardMember, loading: authLoading } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
     title: "", slug: "", date: "", time: "", location: "", rsvpLink: "", description: "", eventName: "", poster: "",
   });
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
   }, [authLoading, isBoardMember, router]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     try {
-      const storageRef = ref(storage, `events/${Date.now()}-${file.name}`);
-      const snap = await uploadBytesResumable(storageRef, file);
-      const url = await getDownloadURL(snap.ref);
+      const url = await uploadImage(file);
       setFormData(prev => ({ ...prev, poster: url }));
     } catch (err: any) {
-      setError(err.message || "Upload failed");
+      setError(err.message || "Image upload failed");
     } finally {
       setUploading(false);
     }
@@ -43,6 +40,7 @@ export default function NewEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploading) return;
     setSaving(true); setError(""); setSuccess("");
     try {
       const slug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -113,14 +111,28 @@ export default function NewEventPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Event Poster</label>
-              <input type="file" accept="image/*" onChange={handleImageUpload}
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
-              {formData.poster && <img src={formData.poster} alt="" className="mt-2 h-20 rounded" />}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</label>
+              <div className="flex gap-4 items-start">
+                <div className="flex-1">
+                  <label className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors">
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm text-gray-600">{uploading ? "Uploading..." : "Upload Image"}</span>
+                    <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="hidden" />
+                  </label>
+                  {uploading && <Loader2 className="w-4 h-4 mt-2 animate-spin text-[#c9a227]" />}
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Or paste image URL:</p>
+                  <input type="url" value={formData.poster} onChange={e => setFormData({ ...formData, poster: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none"
+                    placeholder="https://example.com/image.jpg" />
+                </div>
+              </div>
+              {formData.poster && <img src={formData.poster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
             </div>
-            <button type="submit" disabled={saving || uploading}
+            <button type="submit" disabled={saving}
               className="w-full bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
-              {uploading ? "Uploading..." : saving ? "Saving..." : "Create Event"}
+              {saving ? "Saving..." : "Create Event"}
             </button>
           </form>
         </div>

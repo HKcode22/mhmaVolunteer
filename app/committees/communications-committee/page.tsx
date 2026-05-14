@@ -149,7 +149,7 @@ export default function CommunicationsCommitteePage() {
 
             {/* Copyright */}
             <div className="text-center text-gray-400 text-sm">
-              <p>Copyright 2024 MHMA - Mountain House Muslim Association</p>
+              <p>Copyright 2026 MHMA - Mountain House Muslim Association</p>
             </div>
           </div>
         </div>

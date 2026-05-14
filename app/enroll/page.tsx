@@ -10,7 +10,7 @@ import PageBanner from "@/components/PageBanner";
 
 export default function EnrollPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isBoardMember, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -23,10 +23,13 @@ export default function EnrollPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (authLoading) return;
+    if (!user) {
       router.push("/login?redirect=/enroll");
+    } else if (isBoardMember) {
+      router.push("/dashboard");
     }
-  }, [user, authLoading, router]);
+  }, [user, isBoardMember, authLoading, router]);
 
   const programs = [
     { value: "youth_sports_league", label: "Youth Sports League" },

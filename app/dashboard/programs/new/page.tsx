@@ -3,17 +3,17 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { addProgram } from "@/lib/firebase";
-import { storage } from "@/lib/firebase-client";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { uploadImage } from "@/lib/upload";
 import Navigation from "@/components/Navigation";
 
 export default function NewProgramPage() {
   const router = useRouter();
   const { isBoardMember, loading: authLoading } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -26,25 +26,22 @@ export default function NewProgramPage() {
     stat4Label: "", stat4Value: "",
     additionalContent: "",
   });
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
   }, [authLoading, isBoardMember, router]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "programImage" | "programImagePoster") => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "programImage" | "programImagePoster") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingImage(true);
+    setUploading(field);
     try {
-      const storageRef = ref(storage, `programs/${Date.now()}-${file.name}`);
-      const snapshot = await uploadBytesResumable(storageRef, file);
-      const url = await getDownloadURL(snapshot.ref);
+      const url = await uploadImage(file);
       setFormData(prev => ({ ...prev, [field]: url }));
     } catch (err: any) {
-      setError(err.message || "Upload failed");
+      setError(err.message || "Image upload failed");
     } finally {
-      setUploadingImage(false);
+      setUploading(null);
     }
   };
 
@@ -121,15 +118,37 @@ export default function NewProgramPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, "programImage")}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
-                {formData.programImage && <img src={formData.programImage} alt="" className="mt-2 h-20 rounded" />}
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors text-sm">
+                      <Upload className="w-3 h-3" />
+                      <span>{uploading === "programImage" ? "Uploading..." : "Upload"}</span>
+                      <input type="file" accept="image/*" onChange={e => handleFileUpload(e, "programImage")} disabled={uploading !== null} className="hidden" />
+                    </label>
+                    {uploading === "programImage" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-[#c9a227]" />}
+                  </div>
+                  <input type="url" value={formData.programImage} onChange={e => setFormData({ ...formData, programImage: e.target.value })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-sm"
+                    placeholder="Or paste URL" />
+                </div>
+                {formData.programImage && <img src={formData.programImage} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</label>
-                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, "programImagePoster")}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
-                {formData.programImagePoster && <img src={formData.programImagePoster} alt="" className="mt-2 h-20 rounded" />}
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors text-sm">
+                      <Upload className="w-3 h-3" />
+                      <span>{uploading === "programImagePoster" ? "Uploading..." : "Upload"}</span>
+                      <input type="file" accept="image/*" onChange={e => handleFileUpload(e, "programImagePoster")} disabled={uploading !== null} className="hidden" />
+                    </label>
+                    {uploading === "programImagePoster" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-[#c9a227]" />}
+                  </div>
+                  <input type="url" value={formData.programImagePoster} onChange={e => setFormData({ ...formData, programImagePoster: e.target.value })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-sm"
+                    placeholder="Or paste URL" />
+                </div>
+                {formData.programImagePoster && <img src={formData.programImagePoster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
             </div>
 
@@ -155,9 +174,9 @@ export default function NewProgramPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none font-mono text-sm" />
             </div>
 
-            <button type="submit" disabled={saving || uploadingImage}
+            <button type="submit" disabled={saving}
               className="w-full bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
-              {uploadingImage ? "Uploading image..." : saving ? "Saving..." : "Create Program"}
+              {saving ? "Saving..." : "Create Program"}
             </button>
           </form>
         </div>

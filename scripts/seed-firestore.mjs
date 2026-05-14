@@ -33,7 +33,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 1. SEED EVENTS
   // -----------------------------------------------------------------------
-  console.log("[1/8] Seeding Events...");
+  console.log("[1/9] Seeding Events...");
   const events = [
     {
       title: "Community Iftar 2026",
@@ -149,7 +149,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 2. SEED PROGRAMS
   // -----------------------------------------------------------------------
-  console.log("[2/8] Seeding Programs...");
+  console.log("[2/9] Seeding Programs...");
   const programs = [
     {
       title: "Youth Sports League",
@@ -365,7 +365,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 3. SEED JOURNAL
   // -----------------------------------------------------------------------
-  console.log("[3/8] Seeding Journal...");
+  console.log("[3/9] Seeding Journal...");
   const journalMeta = JSON.parse(readFileSync(resolve(__dirname, "journal-meta.json"), "utf8"));
   const journalEntries = Object.entries(journalMeta).map(([slug, data]) => ({
     title: data.title,
@@ -386,7 +386,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 4. SEED SITE CONTENT - Contact Page
   // -----------------------------------------------------------------------
-  console.log("[4/8] Seeding Site Content (Contact)...");
+  console.log("[4/9] Seeding Site Content (Contact)...");
   await docs("siteContent").doc("contact").set({
     address: "Mountain House Unity Center\n1170 Stonebridge Drive\nMountain House, CA 95391",
     phone: "(209) 555-0123",
@@ -408,7 +408,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 5. SEED PRAYER TIMES CONFIG
   // -----------------------------------------------------------------------
-  console.log("[5/8] Seeding Prayer Times Config...");
+  console.log("[5/9] Seeding Prayer Times Config...");
   await docs("siteContent").doc("prayerTimes").set({
     fajr: "4:48 AM",
     dhuhr: "1:00 PM",
@@ -423,7 +423,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 6. SEED ANNOUNCEMENTS
   // -----------------------------------------------------------------------
-  console.log("[6/8] Seeding Announcements...");
+  console.log("[6/9] Seeding Announcements...");
   await docs("siteContent").doc("announcements").set({
     items: [
       { text: "Ramadan Mubarak! Join us for daily Taraweeh prayers at 8:30 PM", active: true },
@@ -436,7 +436,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   // 7. CREATE FIREBASE AUTH USERS
   // -----------------------------------------------------------------------
-  console.log("[7/8] Creating Firebase Auth users...");
+  console.log("[7/9] Creating Firebase Auth users...");
 
   const users = [
     {
@@ -480,9 +480,37 @@ async function seed() {
   }
 
   // -----------------------------------------------------------------------
-  // 8. INDEXES NOTE
+  // 8. SEED INVITE CODES (so board registration works immediately)
   // -----------------------------------------------------------------------
-  console.log("[8/8] Setting up collection indexes note...");
+  console.log("[8/9] Seeding Invite Codes...");
+
+  const adminUser = await auth.getUserByEmail("hk84164@gmail.com");
+  const boardUser = await auth.getUserByEmail("board@mhma.us");
+
+  const initialCodes = [
+    { code: "MHMA2026", generatedBy: adminUser.uid },
+    { code: "BOARD001", generatedBy: boardUser.uid },
+    { code: "ADMIN999", generatedBy: adminUser.uid },
+  ];
+
+  for (const ic of initialCodes) {
+    await docs("inviteCodes").add({
+      code: ic.code,
+      used: false,
+      generatedBy: ic.generatedBy,
+      createdAt: FieldValue.serverTimestamp(),
+      usedBy: null,
+      usedAt: null,
+    });
+    console.log(`  Created invite code: ${ic.code}`);
+  }
+
+  console.log("");
+
+  // -----------------------------------------------------------------------
+  // 9. INDEXES NOTE
+  // -----------------------------------------------------------------------
+  console.log("[9/9] Setting up collection indexes note...");
   console.log("  Note: Composite indexes may be needed in Firebase Console for:\n" +
     "  - events: createdAt DESC\n" +
     "  - programs: createdAt DESC\n" +
@@ -502,9 +530,14 @@ async function seed() {
   console.log("  - siteContent/prayerTimes");
   console.log("  - siteContent/announcements");
   console.log("  - users (2 users)");
+  console.log("  - inviteCodes (3 codes)");
   console.log("\nAuth Users Created:");
   console.log("  - board@mhma.us / Board@2026!Secure (role: administrator)");
   console.log("  - hk84164@gmail.com / Admin@2026!Secure (role: administrator)");
+  console.log("\nInvite Codes:");
+  console.log("  - MHMA2026 (generated by hk84164@gmail.com)");
+  console.log("  - BOARD001 (generated by board@mhma.us)");
+  console.log("  - ADMIN999 (generated by hk84164@gmail.com)");
   console.log("\n⚠  IMPORTANT: Change passwords after first login!");
   console.log("   Go to: https://console.firebase.google.com/project/mhma-backend/authentication/users");
   console.log("");

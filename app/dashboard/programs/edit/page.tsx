@@ -3,11 +3,10 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProgramBySlug, updateProgram, FirebaseProgram } from "@/lib/firebase";
-import { storage } from "@/lib/firebase-client";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { uploadImage } from "@/lib/upload";
 import Navigation from "@/components/Navigation";
 
 function EditProgramForm() {
@@ -17,10 +16,10 @@ function EditProgramForm() {
   const { isBoardMember, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState<FirebaseProgram>({ title: "", slug: "", stats: [] });
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -32,19 +31,17 @@ function EditProgramForm() {
     }
   }, [authLoading, isBoardMember, id, router]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "image" | "imagePoster") => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "image" | "imagePoster") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    setUploading(field);
     try {
-      const storageRef = ref(storage, `programs/${Date.now()}-${file.name}`);
-      const snap = await uploadBytesResumable(storageRef, file);
-      const url = await getDownloadURL(snap.ref);
+      const url = await uploadImage(file);
       setFormData(prev => ({ ...prev, [field]: url }));
     } catch (err: any) {
-      setError(err.message || "Upload failed");
+      setError(err.message || "Image upload failed");
     } finally {
-      setUploading(false);
+      setUploading(null);
     }
   };
 
@@ -96,20 +93,42 @@ function EditProgramForm() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, "image")}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
-                {formData.image && <img src={formData.image} alt="" className="mt-2 h-20 rounded" />}
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors text-sm">
+                      <Upload className="w-3 h-3" />
+                      <span>{uploading === "image" ? "Uploading..." : "Upload"}</span>
+                      <input type="file" accept="image/*" onChange={e => handleFileUpload(e, "image")} disabled={uploading !== null} className="hidden" />
+                    </label>
+                    {uploading === "image" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-[#c9a227]" />}
+                  </div>
+                  <input type="url" value={formData.image || ""} onChange={e => setFormData({ ...formData, image: e.target.value })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-sm"
+                    placeholder="Or paste URL" />
+                </div>
+                {formData.image && <img src={formData.image} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</label>
-                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, "imagePoster")}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
-                {formData.imagePoster && <img src={formData.imagePoster} alt="" className="mt-2 h-20 rounded" />}
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors text-sm">
+                      <Upload className="w-3 h-3" />
+                      <span>{uploading === "imagePoster" ? "Uploading..." : "Upload"}</span>
+                      <input type="file" accept="image/*" onChange={e => handleFileUpload(e, "imagePoster")} disabled={uploading !== null} className="hidden" />
+                    </label>
+                    {uploading === "imagePoster" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-[#c9a227]" />}
+                  </div>
+                  <input type="url" value={formData.imagePoster || ""} onChange={e => setFormData({ ...formData, imagePoster: e.target.value })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-sm"
+                    placeholder="Or paste URL" />
+                </div>
+                {formData.imagePoster && <img src={formData.imagePoster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
             </div>
-            <button type="submit" disabled={saving || uploading}
+            <button type="submit" disabled={saving}
               className="w-full bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
-              {uploading ? "Uploading..." : saving ? "Saving..." : "Update Program"}
+              {saving ? "Saving..." : "Update Program"}
             </button>
           </form>
         </div>

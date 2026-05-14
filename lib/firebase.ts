@@ -266,3 +266,59 @@ export async function fetchNotifications(limitCount = 50): Promise<any[]> {
   const snap = await getDocs(q);
   return collectionData<any>(snap);
 }
+
+// ─── Invite Code Functions ───
+
+export interface InviteCode {
+  id?: string;
+  code: string;
+  used: boolean;
+  usedBy?: string;
+  generatedBy: string;
+  createdAt: any;
+  usedAt?: any;
+}
+
+const INVITE_CODES = "inviteCodes";
+
+export async function generateInviteCode(generatedBy: string): Promise<string> {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  await addDoc(collection(db, INVITE_CODES), {
+    code,
+    used: false,
+    generatedBy,
+    createdAt: serverTimestamp(),
+    usedBy: null,
+    usedAt: null,
+  });
+  return code;
+}
+
+export async function validateInviteCode(code: string): Promise<boolean> {
+  const q = query(collection(db, INVITE_CODES), where("code", "==", code), where("used", "==", false), limit(1));
+  const snap = await getDocs(q);
+  return !snap.empty;
+}
+
+export async function markInviteCodeUsed(code: string, usedBy: string): Promise<void> {
+  const q = query(collection(db, INVITE_CODES), where("code", "==", code), where("used", "==", false), limit(1));
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    const docRef = doc(db, INVITE_CODES, snap.docs[0].id);
+    await updateDoc(docRef, { used: true, usedBy, usedAt: serverTimestamp() });
+  }
+}
+
+export async function fetchInviteCodes(): Promise<InviteCode[]> {
+  const q = query(collection(db, INVITE_CODES), orderBy("createdAt", "desc"), limit(100));
+  const snap = await getDocs(q);
+  return collectionData<InviteCode>(snap);
+}
+
+export async function deleteInviteCode(id: string): Promise<void> {
+  await deleteDoc(doc(db, INVITE_CODES, id));
+}

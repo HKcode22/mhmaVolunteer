@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell } from "lucide-react";
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import {
@@ -12,7 +12,8 @@ import {
   fetchJournalEntries, deleteJournalEntry,
   fetchEnrollments, deleteEnrollment,
   fetchSchedulingRequests, deleteSchedulingRequest,
-  FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, FirebaseEnrollment, FirebaseSchedulingRequest,
+  generateInviteCode, fetchInviteCodes, deleteInviteCode,
+  FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, FirebaseEnrollment, FirebaseSchedulingRequest, InviteCode,
 } from "@/lib/firebase";
 import Navigation from "@/components/Navigation";
 
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [journals, setJournals] = useState<FirebaseJournalEntry[]>([]);
   const [eventRequests, setEventRequests] = useState<FirebaseSchedulingRequest[]>([]);
   const [enrollments, setEnrollments] = useState<FirebaseEnrollment[]>([]);
+  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showAllPrograms, setShowAllPrograms] = useState(false);
@@ -31,6 +33,10 @@ export default function DashboardPage() {
   const [showAllJournals, setShowAllJournals] = useState(false);
   const [showAllRequests, setShowAllRequests] = useState(false);
   const [showAllEnrollments, setShowAllEnrollments] = useState(false);
+  const [showAllCodes, setShowAllCodes] = useState(false);
+  const [generatingCode, setGeneratingCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState("");
+  const [codeMsg, setCodeMsg] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) {
@@ -41,18 +47,20 @@ export default function DashboardPage() {
 
     const loadAll = async () => {
       try {
-        const [p, e, j, er, en] = await Promise.all([
+        const [p, e, j, er, en, codes] = await Promise.all([
           fetchPrograms(100),
           fetchEvents(100),
           fetchJournalEntries(100),
           fetchSchedulingRequests(100),
           fetchEnrollments(100),
+          fetchInviteCodes(),
         ]);
         setPrograms(p);
         setEvents(e);
         setJournals(j);
         setEventRequests(er);
         setEnrollments(en);
+        setInviteCodes(codes);
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
       } finally {
@@ -61,6 +69,38 @@ export default function DashboardPage() {
     };
     loadAll();
   }, [authLoading, isBoardMember, router]);
+
+  const handleGenerateCode = async () => {
+    if (!user?.uid) return;
+    setGeneratingCode(true);
+    setCodeMsg("");
+    try {
+      const code = await generateInviteCode(user.uid);
+      setCodeMsg(`Generated: ${code}`);
+      const codes = await fetchInviteCodes();
+      setInviteCodes(codes);
+    } catch (err: any) {
+      setCodeMsg("Failed to generate code: " + err.message);
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(""), 2000);
+  };
+
+  const handleDeleteCode = async (id: string) => {
+    if (!confirm("Delete this invite code?")) return;
+    try {
+      await deleteInviteCode(id);
+      setInviteCodes(codes => codes.filter(c => c.id !== id));
+    } catch (err) {
+      console.error("Failed to delete code:", err);
+    }
+  };
 
   const handleDelete = async (
     id: string,
@@ -99,6 +139,7 @@ export default function DashboardPage() {
   const visibleJournals = showAllJournals ? journals : journals.slice(0, 5);
   const visibleRequests = showAllRequests ? eventRequests : eventRequests.slice(0, 5);
   const visibleEnrollments = showAllEnrollments ? enrollments : enrollments.slice(0, 5);
+  const visibleCodes = showAllCodes ? inviteCodes : inviteCodes.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,6 +169,10 @@ export default function DashboardPage() {
           <Link href="/dashboard/notifications" className="bg-gray-700 text-white p-4 rounded-xl hover:bg-gray-600 transition-all flex flex-col items-center justify-center gap-2">
             <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
           </Link>
+          <button onClick={handleGenerateCode} disabled={generatingCode}
+            className="bg-purple-800 text-white p-4 rounded-xl hover:bg-purple-700 transition-all flex flex-col items-center justify-center gap-2 disabled:opacity-50">
+            <Key className="w-6 h-6" /><span className="font-semibold text-sm">Invite Code</span>
+          </button>
         </div>
 
         {/* Programs */}
@@ -208,6 +253,49 @@ export default function DashboardPage() {
           ))}
           {enrollments.length === 0 && <p className="text-gray-400 text-sm p-3">No enrollments.</p>}
         </Section>
+        {/* Invite Codes */}
+        <Section title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)}>
+          {codeMsg && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3 flex items-center justify-between">
+              <p className="text-sm text-purple-800 font-medium">{codeMsg}</p>
+              {codeMsg.startsWith("Generated:") && (
+                <button onClick={() => handleCopyCode(codeMsg.replace("Generated: ", ""))}
+                  className="ml-2 p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
+                  {copiedCode === codeMsg.replace("Generated: ", "") ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
+          )}
+          <button onClick={handleGenerateCode} disabled={generatingCode}
+            className="w-full mb-3 bg-purple-800 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+            <RefreshCw className={`w-4 h-4 ${generatingCode ? "animate-spin" : ""}`} />
+            {generatingCode ? "Generating..." : "Generate New Code"}
+          </button>
+          {visibleCodes.map(c => (
+            <div key={c.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+              <div className="flex-1 min-w-0">
+                <p className="font-mono font-bold text-lg text-purple-900 tracking-wider">{c.code}</p>
+                <p className="text-xs text-gray-500">
+                  {c.used ? `Used by ${c.usedBy || "someone"}` : "Available"}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {!c.used && (
+                  <button onClick={() => handleCopyCode(c.code)} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded">
+                    {copiedCode === c.code ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                )}
+                <button onClick={() => c.id && handleDeleteCode(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+          {inviteCodes.length === 0 && !generatingCode && (
+            <p className="text-gray-400 text-sm p-3">No invite codes yet. Generate one to share with new board members.</p>
+          )}
+        </Section>
+
       </div>
 
       <footer className="bg-gray-100 py-8 border-t border-gray-200">
