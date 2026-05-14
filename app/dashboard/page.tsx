@@ -45,27 +45,29 @@ export default function DashboardPage() {
     }
     if (authLoading) return;
 
+    const timeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms)),
+      ]);
+
     const loadAll = async () => {
-      try {
-        const [p, e, j, er, en, codes] = await Promise.all([
-          fetchPrograms(100),
-          fetchEvents(100),
-          fetchJournalEntries(100),
-          fetchSchedulingRequests(100),
-          fetchEnrollments(100),
-          fetchInviteCodes(),
-        ]);
-        setPrograms(p);
-        setEvents(e);
-        setJournals(j);
-        setEventRequests(er);
-        setEnrollments(en);
-        setInviteCodes(codes);
-      } catch (err) {
-        console.error("Failed to load dashboard data:", err);
-      } finally {
-        setLoading(false);
-      }
+      const results = await Promise.allSettled([
+        timeout(fetchPrograms(100), 15000).catch(() => [] as FirebaseProgram[]),
+        timeout(fetchEvents(100), 15000).catch(() => [] as FirebaseEvent[]),
+        timeout(fetchJournalEntries(100), 15000).catch(() => [] as FirebaseJournalEntry[]),
+        timeout(fetchSchedulingRequests(100), 15000).catch(() => [] as FirebaseSchedulingRequest[]),
+        timeout(fetchEnrollments(100), 15000).catch(() => [] as FirebaseEnrollment[]),
+        timeout(fetchInviteCodes(), 15000).catch(() => [] as InviteCode[]),
+      ]);
+      const [p, e, j, er, en, codes] = results.map(r => (r as any).value || (r as any).reason || []);
+      setPrograms(p || []);
+      setEvents(e || []);
+      setJournals(j || []);
+      setEventRequests(er || []);
+      setEnrollments(en || []);
+      setInviteCodes(codes || []);
+      setLoading(false);
     };
     loadAll();
   }, [authLoading, isBoardMember, router]);

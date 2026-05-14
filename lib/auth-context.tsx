@@ -39,35 +39,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserRole = async (uid: string) => {
+  const fetchUserRole = async (uid: string): Promise<string> => {
     try {
       const docSnap = await getDoc(doc(db, "users", uid));
       if (docSnap.exists()) {
         return docSnap.data().role || "member";
       }
-    } catch {}
+    } catch (err) {
+      console.warn("Auth: Firestore unavailable, skipping role fetch:", err);
+    }
     return "member";
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      if (firebaseUser) {
-        const role = await fetchUserRole(firebaseUser.uid);
-        const idTokenResult = await firebaseUser.getIdTokenResult();
-        const customRole = idTokenResult.claims.role as string || role;
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          role: customRole,
-        });
-      } else {
-        setUser(null);
+      // Always mark loading done, even on errors
+      const finish = () => { if (!cancelled) setLoading(false); };
+
+      try {
+        if (firebaseUser) {
+          const role = await fetchUserRole(firebaseUser.uid);
+          let idTokenResult;
+          try {
+            idTokenResult = await firebaseUser.getIdTokenResult();
+          } catch (tokenErr) {
+            console.warn("Auth: token fetch failed, using Firestore role:", tokenErr);
+          }
+          const customRole = idTokenResult?.claims?.role as string || role;
+          if (!cancelled) {
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              role: customRole,
+            });
+          }
+        } else {
+          if (!cancelled) setUser(null);
+        }
+      } catch (err) {
+        console.error("Auth: unexpected error in auth callback:", err);
+        if (!cancelled) setUser(null);
+      } finally {
+        finish();
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
@@ -78,8 +101,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     if (auth.currentUser) {
       const role = await fetchUserRole(auth.currentUser.uid);
-      const idTokenResult = await auth.currentUser.getIdTokenResult(true);
-      const customRole = idTokenResult.claims.role as string || role;
+      let idTokenResult;
+      try {
+        idTokenResult = await auth.currentUser.getIdTokenResult(true);
+      } catch {}
+      const customRole = idTokenResult?.claims?.role as string || role;
       setUser({
         uid: auth.currentUser.uid,
         email: auth.currentUser.email,

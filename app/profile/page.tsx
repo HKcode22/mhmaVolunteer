@@ -132,6 +132,7 @@ export default function ProfilePage() {
         <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Change Password</h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
+            <input type="text" autoComplete="username" value={user?.email || ""} readOnly className="hidden" aria-hidden="true" />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
               <input type="password" value={passwordForm.current} onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })}
