@@ -232,6 +232,7 @@ export default function RegisterPage() {
                           type={showPassword ? "text" : "password"}
                           value={formData.password}
                           onChange={(e) => update("password", e.target.value)}
+                          autoComplete="new-password"
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
                           placeholder="Min 6 characters"
                           required
@@ -246,6 +247,7 @@ export default function RegisterPage() {
                           type={showPassword ? "text" : "password"}
                           value={formData.confirmPassword}
                           onChange={(e) => update("confirmPassword", e.target.value)}
+                          autoComplete="new-password"
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
                           placeholder="Repeat password"
                           required

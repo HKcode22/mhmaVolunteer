@@ -175,8 +175,8 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Programs */}
-        <Section title="Programs" count={programs.length} href="/dashboard/programs/new" allShown={showAllPrograms} onToggle={() => setShowAllPrograms(!showAllPrograms)}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Section title="Programs" count={programs.length} href="/dashboard/programs/new" allShown={showAllPrograms} onToggle={() => setShowAllPrograms(!showAllPrograms)} scrollable>
           {visiblePrograms.map(p => (
             <div key={p.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
@@ -192,8 +192,7 @@ export default function DashboardPage() {
           {programs.length === 0 && <p className="text-gray-400 text-sm p-3">No programs yet.</p>}
         </Section>
 
-        {/* Events */}
-        <Section title="Events" count={events.length} href="/dashboard/events/new" allShown={showAllEvents} onToggle={() => setShowAllEvents(!showAllEvents)}>
+        <Section title="Events" count={events.length} href="/dashboard/events/new" allShown={showAllEvents} onToggle={() => setShowAllEvents(!showAllEvents)} scrollable>
           {visibleEvents.map(e => (
             <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
@@ -209,8 +208,7 @@ export default function DashboardPage() {
           {events.length === 0 && <p className="text-gray-400 text-sm p-3">No events yet.</p>}
         </Section>
 
-        {/* Journal */}
-        <Section title="Journal" count={journals.length} href="/dashboard/journal/new" allShown={showAllJournals} onToggle={() => setShowAllJournals(!showAllJournals)}>
+        <Section title="Journal" count={journals.length} href="/dashboard/journal/new" allShown={showAllJournals} onToggle={() => setShowAllJournals(!showAllJournals)} scrollable>
           {visibleJournals.map(j => (
             <div key={j.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
@@ -226,8 +224,7 @@ export default function DashboardPage() {
           {journals.length === 0 && <p className="text-gray-400 text-sm p-3">No journal entries yet.</p>}
         </Section>
 
-        {/* Scheduling Requests */}
-        <Section title="Scheduling Requests" count={eventRequests.length} href="#" allShown={showAllRequests} onToggle={() => setShowAllRequests(!showAllRequests)}>
+        <Section title="Scheduling Requests" count={eventRequests.length} href="#" allShown={showAllRequests} onToggle={() => setShowAllRequests(!showAllRequests)} scrollable>
           {visibleRequests.map(r => (
             <div key={r.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
@@ -240,8 +237,7 @@ export default function DashboardPage() {
           {eventRequests.length === 0 && <p className="text-gray-400 text-sm p-3">No scheduling requests.</p>}
         </Section>
 
-        {/* Enrollments */}
-        <Section title="Enrollments" count={enrollments.length} href="#" allShown={showAllEnrollments} onToggle={() => setShowAllEnrollments(!showAllEnrollments)}>
+        <Section title="Enrollments" count={enrollments.length} href="#" allShown={showAllEnrollments} onToggle={() => setShowAllEnrollments(!showAllEnrollments)} scrollable>
           {visibleEnrollments.map(e => (
             <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
@@ -253,8 +249,8 @@ export default function DashboardPage() {
           ))}
           {enrollments.length === 0 && <p className="text-gray-400 text-sm p-3">No enrollments.</p>}
         </Section>
-        {/* Invite Codes */}
-        <Section title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)}>
+
+        <Section title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)} scrollable>
           {codeMsg && (
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3 flex items-center justify-between">
               <p className="text-sm text-purple-800 font-medium">{codeMsg}</p>
@@ -295,6 +291,7 @@ export default function DashboardPage() {
             <p className="text-gray-400 text-sm p-3">No invite codes yet. Generate one to share with new board members.</p>
           )}
         </Section>
+        </div>
 
       </div>
 
@@ -307,12 +304,12 @@ export default function DashboardPage() {
   );
 }
 
-function Section({ title, count, href, children, allShown, onToggle }: {
-  title: string; count: number; href: string; children: React.ReactNode; allShown: boolean; onToggle: () => void;
+function Section({ title, count, href, children, allShown, onToggle, scrollable }: {
+  title: string; count: number; href: string; children: React.ReactNode; allShown: boolean; onToggle: () => void; scrollable?: boolean;
 }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200">
-      <div className="flex items-center justify-between mb-4">
+    <div className={`bg-gray-50 rounded-xl p-6 border border-gray-200 ${scrollable ? "max-h-[420px] flex flex-col" : ""}`}>
+      <div className="flex items-center justify-between mb-4 shrink-0">
         <h2 className="text-xl font-serif font-bold text-gray-900">{title} <span className="text-gray-400 text-sm font-sans">({count})</span></h2>
         <div className="flex gap-3">
           {href !== "#" && (
@@ -321,13 +318,13 @@ function Section({ title, count, href, children, allShown, onToggle }: {
             </Link>
           )}
           {count > 5 && (
-            <button onClick={onToggle} className="text-amber-600 hover:text-amber-700 text-sm font-semibold">
+            <button onClick={onToggle} className="text-amber-600 hover:text-amber-700 text-sm font-semibold shrink-0">
               {allShown ? "Show Less" : "Show All"}
             </button>
           )}
         </div>
       </div>
-      <div className="space-y-2">{children}</div>
+      <div className={`space-y-2 ${scrollable ? "overflow-y-auto flex-1 pr-1" : ""}`}>{children}</div>
     </div>
   );
 }

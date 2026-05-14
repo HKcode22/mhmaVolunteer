@@ -600,31 +600,24 @@ useEffect(() => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {(() => {
-              // Filter programs to only show those with valid data
-              const validPrograms = programs.filter((p: any) =>
-                p.title?.rendered &&
-                p.slug &&
-                (p.acf?.program_title || p.acf?.program_description || p.title.rendered.length > 0)
-              );
-
-              // Show only 3 most recent programs
+              const validPrograms = programs.filter((p: any) => p.title && p.slug);
               const programsToShow = validPrograms.length > 0 ? validPrograms.slice(0, 3) : [
-                { title: "Quran Maktab", desc: "Foundational Quran recitation for children with Tajweed instruction.", slug: "quran-maktab", icon: "📖" },
-                { title: "Hifz Program", desc: "Structured memorization of the Holy Quran guided by qualified teachers.", slug: "hifz-program", icon: "🌟" },
-                { title: "Arabic Language", desc: "Conversational and classical Arabic for all levels.", slug: "arabic-academy", icon: "🔤" }
+                { title: "Quran Maktab", desc: "Foundational Quran recitation for children with Tajweed instruction.", slug: "maktab-program" },
+                { title: "Hifz Program", desc: "Structured memorization of the Holy Quran guided by qualified teachers.", slug: "quran-hifz-program" },
+                { title: "Arabic Language", desc: "Conversational and classical Arabic for all levels.", slug: "arabic-academy" }
               ];
 
               return programsToShow.map((program: any, i: number) => {
-                const title = program.title?.rendered || program.title;
-                const desc = program.acf?.program_description || program.desc || 'Learn more about this program';
-                const slug = program.slug || program.title?.toLowerCase().replace(/\s+/g, '-');
-                const icon = program.icon || (
-                  title?.toLowerCase().includes('quran') ? '📖' :
-                  title?.toLowerCase().includes('hifz') ? '🌟' :
-                  title?.toLowerCase().includes('arabic') ? '🔤' :
-                  title?.toLowerCase().includes('sister') ? '🌸' :
-                  title?.toLowerCase().includes('youth') ? '⚽' : '🏫'
-                );
+                const title = program.title || "Program";
+                const desc = program.description || "Learn more about this program";
+                const slug = program.slug || title.toLowerCase().replace(/\s+/g, "-");
+                const icon =
+                  title.toLowerCase().includes("quran") || title.toLowerCase().includes("maktab") ? "📖" :
+                  title.toLowerCase().includes("hifz") ? "🌟" :
+                  title.toLowerCase().includes("arabic") || title.toLowerCase().includes("urdu") ? "🔤" :
+                  title.toLowerCase().includes("ladi") || title.toLowerCase().includes("sister") || title.toLowerCase().includes("wish") ? "🌸" :
+                  title.toLowerCase().includes("youth") || title.toLowerCase().includes("sport") || title.toLowerCase().includes("scout") ? "⚽" :
+                  title.toLowerCase().includes("3d") || title.toLowerCase().includes("print") ? "🖨️" : "🏫";
 
                 return (
                   <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-xl transition-all group">
@@ -695,41 +688,44 @@ useEffect(() => {
             Upcoming <span className="text-amber-600">Events</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayEvents.map((event: any, i: number) => (
-              <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-amber-300 transition-all group">
-                <div className="w-full bg-teal-800 flex flex-col items-center justify-center text-white py-2">
-                  <span className="text-xl font-bold">
-                    {event.acf?.event_date ? new Date(event.acf.event_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')).getDate() : '??'}
-                  </span>
-                  <span className="text-xs uppercase">
-                    {event.acf?.event_date ? new Date(event.acf.event_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')).toLocaleDateString('en-US', { month: 'short' }) : 'MAY'}
-                  </span>
-                </div>
-                <div className="p-3">
-                  <h3 className="font-bold text-gray-900 mb-1 group-hover:text-amber-600 text-sm">{event.title?.rendered}</h3>
-                  <div className="flex items-center text-gray-500 text-xs space-x-2 mb-2">
-                    {event.acf?.event_time && (
-                      <span className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" /> {event.acf.event_time}
-                      </span>
-                    )}
-                    <span className="flex items-center truncate">
-                      <MapPin className="w-3 h-3 mr-1" /> {event.acf?.event_location || 'MHMA'}
-                    </span>
+            {displayEvents.map((event: any, i: number) => {
+              const eventDate = event.date || "";
+              const day = eventDate ? eventDate.split("-").pop() || "??" : "??";
+              const month = eventDate
+                ? new Date(eventDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
+                : "MAY";
+              return (
+                <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-amber-300 transition-all group">
+                  <div className="w-full bg-teal-800 flex flex-col items-center justify-center text-white py-2">
+                    <span className="text-xl font-bold">{day}</span>
+                    <span className="text-xs uppercase">{month}</span>
                   </div>
-                  {event.acf?.event_rsvp_link && (
-                    <a
-                      href={event.acf.event_rsvp_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block w-full text-center px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded hover:bg-amber-600 transition-colors"
-                    >
-                      RSVP
-                    </a>
-                  )}
+                  <div className="p-3">
+                    <h3 className="font-bold text-gray-900 mb-1 group-hover:text-amber-600 text-sm">{event.title || "Untitled"}</h3>
+                    <div className="flex items-center text-gray-500 text-xs space-x-2 mb-2">
+                      {event.time && (
+                        <span className="flex items-center">
+                          <Clock className="w-3 h-3 mr-1" /> {event.time}
+                        </span>
+                      )}
+                      <span className="flex items-center truncate">
+                        <MapPin className="w-3 h-3 mr-1" /> {event.location || "MHMA"}
+                      </span>
+                    </div>
+                    {event.rsvpLink && (
+                      <a
+                        href={event.rsvpLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block w-full text-center px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded hover:bg-amber-600 transition-colors"
+                      >
+                        RSVP
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="text-center mt-8">
             <Link href="/events" className="inline-flex items-center text-amber-600 font-semibold hover:text-amber-700">
