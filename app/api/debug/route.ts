@@ -6,17 +6,18 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const results: Record<string, any> = {};
 
-  // 1. Check environment config
+  const trim = (s: string | undefined) => (s || "").trim();
+
   results.config = {
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "missing",
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "missing",
+    projectId: trim(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+    projectIdRaw: JSON.stringify(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+    authDomain: trim(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
     hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
   };
 
-  // 2. Try Firestore admin SDK read
   try {
     const collections = await firestore.listCollections();
-    const collectionNames = collections.map(c => c.id);
+    const collectionNames = collections.map(c => c.id).sort();
     results.firestore = {
       status: "connected",
       collections: collectionNames,
@@ -30,41 +31,30 @@ export async function GET() {
     };
   }
 
-  // 3. Try reading from specific collections
   if (results.firestore?.status === "connected") {
-    const targets = ["events", "programs", "users", "inviteCodes"];
+    const targets = ["events", "programs", "journal", "users", "inviteCodes", "enrollments", "schedulingRequests", "contactSubmissions", "notifications"];
     results.collections = {};
     for (const name of targets) {
       try {
         const snap = await firestore.collection(name).limit(1).get();
         results.collections[name] = {
           exists: !snap.empty,
-          size: snap.size,
+          docCount: snap.size,
         };
       } catch (err: any) {
-        results.collections[name] = {
-          error: err.message,
-        };
+        results.collections[name] = { error: err.message };
       }
     }
   }
 
-  // 4. Test auth
   try {
-    const userRecord = await firestore.collection("users").limit(1).get();
-    results.auth = {
-      userCount: userRecord.size,
-    };
-    if (!userRecord.empty) {
-      const first = userRecord.docs[0].data();
-      results.auth.sampleUser = {
-        email: first.email,
-        role: first.role,
-        fields: Object.keys(first),
-      };
-    }
+    const userSnap = await firestore.collection("users").limit(5).get();
+    results.users = userSnap.docs.map(d => {
+      const data = d.data();
+      return { id: d.id, email: data.email, role: data.role, displayName: data.displayName };
+    });
   } catch (err: any) {
-    results.auth = { error: err.message };
+    results.users = { error: err.message };
   }
 
   return NextResponse.json(results);

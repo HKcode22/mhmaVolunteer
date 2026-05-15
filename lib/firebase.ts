@@ -16,6 +16,17 @@ import {
   DocumentData,
 } from "firebase/firestore";
 
+const WRITE_TIMEOUT = 30000; // 30 seconds
+
+function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`TIMEOUT: ${label} exceeded ${WRITE_TIMEOUT}ms`)), WRITE_TIMEOUT)
+    ),
+  ]);
+}
+
 export interface FirebaseEvent {
   id?: string;
   title: string;
@@ -133,19 +144,40 @@ export async function fetchEventById(id: string): Promise<FirebaseEvent | null> 
 }
 
 export async function addEvent(data: Omit<FirebaseEvent, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, collections.events), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.events), { ...data, createdAt: serverTimestamp() }),
+      "addEvent"
+    );
+    console.log("Firestore: addEvent success, id:", ref.id);
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addEvent FAILED:", err);
+    throw err;
+  }
 }
 
 export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Promise<void> {
-  await updateDoc(doc(db, collections.events, id), { ...data, updatedAt: serverTimestamp() });
+  try {
+    await withTimeout(
+      updateDoc(doc(db, collections.events, id), { ...data, updatedAt: serverTimestamp() }),
+      "updateEvent"
+    );
+    console.log("Firestore: updateEvent success, id:", id);
+  } catch (err) {
+    console.error("Firestore: updateEvent FAILED:", err);
+    throw err;
+  }
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  await deleteDoc(doc(db, collections.events, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, collections.events, id)), "deleteEvent");
+    console.log("Firestore: deleteEvent success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteEvent FAILED:", err);
+    throw err;
+  }
 }
 
 export async function fetchPrograms(limitCount = 10): Promise<FirebaseProgram[]> {
@@ -163,19 +195,40 @@ export async function fetchProgramBySlug(slug: string): Promise<FirebaseProgram 
 }
 
 export async function addProgram(data: Omit<FirebaseProgram, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, collections.programs), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.programs), { ...data, createdAt: serverTimestamp() }),
+      "addProgram"
+    );
+    console.log("Firestore: addProgram success, id:", ref.id);
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addProgram FAILED:", err);
+    throw err;
+  }
 }
 
 export async function updateProgram(id: string, data: Partial<FirebaseProgram>): Promise<void> {
-  await updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() });
+  try {
+    await withTimeout(
+      updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
+      "updateProgram"
+    );
+    console.log("Firestore: updateProgram success, id:", id);
+  } catch (err) {
+    console.error("Firestore: updateProgram FAILED:", err);
+    throw err;
+  }
 }
 
 export async function deleteProgram(id: string): Promise<void> {
-  await deleteDoc(doc(db, collections.programs, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, collections.programs, id)), "deleteProgram");
+    console.log("Firestore: deleteProgram success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteProgram FAILED:", err);
+    throw err;
+  }
 }
 
 export async function fetchJournalEntries(limitCount = 10): Promise<FirebaseJournalEntry[]> {
@@ -193,19 +246,40 @@ export async function fetchJournalEntryBySlug(slug: string): Promise<FirebaseJou
 }
 
 export async function addJournalEntry(data: Omit<FirebaseJournalEntry, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, collections.journal), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.journal), { ...data, createdAt: serverTimestamp() }),
+      "addJournalEntry"
+    );
+    console.log("Firestore: addJournalEntry success, id:", ref.id);
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addJournalEntry FAILED:", err);
+    throw err;
+  }
 }
 
 export async function updateJournalEntry(id: string, data: Partial<FirebaseJournalEntry>): Promise<void> {
-  await updateDoc(doc(db, collections.journal, id), { ...data, updatedAt: serverTimestamp() });
+  try {
+    await withTimeout(
+      updateDoc(doc(db, collections.journal, id), { ...data, updatedAt: serverTimestamp() }),
+      "updateJournalEntry"
+    );
+    console.log("Firestore: updateJournalEntry success, id:", id);
+  } catch (err) {
+    console.error("Firestore: updateJournalEntry FAILED:", err);
+    throw err;
+  }
 }
 
 export async function deleteJournalEntry(id: string): Promise<void> {
-  await deleteDoc(doc(db, collections.journal, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, collections.journal, id)), "deleteJournalEntry");
+    console.log("Firestore: deleteJournalEntry success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteJournalEntry FAILED:", err);
+    throw err;
+  }
 }
 
 export async function fetchEnrollments(limitCount = 50): Promise<FirebaseEnrollment[]> {
@@ -215,19 +289,40 @@ export async function fetchEnrollments(limitCount = 50): Promise<FirebaseEnrollm
 }
 
 export async function addEnrollment(data: Omit<FirebaseEnrollment, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, collections.enrollments), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.enrollments), { ...data, createdAt: serverTimestamp() }),
+      "addEnrollment"
+    );
+    console.log("Firestore: addEnrollment success, id:", ref.id);
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addEnrollment FAILED:", err);
+    throw err;
+  }
 }
 
 export async function updateEnrollment(id: string, data: Partial<FirebaseEnrollment>): Promise<void> {
-  await updateDoc(doc(db, collections.enrollments, id), { ...data, updatedAt: serverTimestamp() });
+  try {
+    await withTimeout(
+      updateDoc(doc(db, collections.enrollments, id), { ...data, updatedAt: serverTimestamp() }),
+      "updateEnrollment"
+    );
+    console.log("Firestore: updateEnrollment success, id:", id);
+  } catch (err) {
+    console.error("Firestore: updateEnrollment FAILED:", err);
+    throw err;
+  }
 }
 
 export async function deleteEnrollment(id: string): Promise<void> {
-  await deleteDoc(doc(db, collections.enrollments, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, collections.enrollments, id)), "deleteEnrollment");
+    console.log("Firestore: deleteEnrollment success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteEnrollment FAILED:", err);
+    throw err;
+  }
 }
 
 export async function fetchSchedulingRequests(limitCount = 50): Promise<FirebaseSchedulingRequest[]> {
@@ -237,19 +332,40 @@ export async function fetchSchedulingRequests(limitCount = 50): Promise<Firebase
 }
 
 export async function addSchedulingRequest(data: Omit<FirebaseSchedulingRequest, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, collections.schedulingRequests), {
-    ...data,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.schedulingRequests), { ...data, createdAt: serverTimestamp() }),
+      "addSchedulingRequest"
+    );
+    console.log("Firestore: addSchedulingRequest success, id:", ref.id);
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addSchedulingRequest FAILED:", err);
+    throw err;
+  }
 }
 
 export async function updateSchedulingRequest(id: string, data: Partial<FirebaseSchedulingRequest>): Promise<void> {
-  await updateDoc(doc(db, collections.schedulingRequests, id), { ...data, updatedAt: serverTimestamp() });
+  try {
+    await withTimeout(
+      updateDoc(doc(db, collections.schedulingRequests, id), { ...data, updatedAt: serverTimestamp() }),
+      "updateSchedulingRequest"
+    );
+    console.log("Firestore: updateSchedulingRequest success, id:", id);
+  } catch (err) {
+    console.error("Firestore: updateSchedulingRequest FAILED:", err);
+    throw err;
+  }
 }
 
 export async function deleteSchedulingRequest(id: string): Promise<void> {
-  await deleteDoc(doc(db, collections.schedulingRequests, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, collections.schedulingRequests, id)), "deleteSchedulingRequest");
+    console.log("Firestore: deleteSchedulingRequest success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteSchedulingRequest FAILED:", err);
+    throw err;
+  }
 }
 
 export async function fetchContactSubmissions(limitCount = 50): Promise<FirebaseContactSubmission[]> {
@@ -259,20 +375,39 @@ export async function fetchContactSubmissions(limitCount = 50): Promise<Firebase
 }
 
 export async function markContactSubmissionRead(id: string): Promise<void> {
-  await updateDoc(doc(db, collections.contactSubmissions, id), { read: true });
+  try {
+    await withTimeout(
+      updateDoc(doc(db, collections.contactSubmissions, id), { read: true }),
+      "markContactSubmissionRead"
+    );
+  } catch (err) {
+    console.error("Firestore: markContactSubmissionRead FAILED:", err);
+    throw err;
+  }
 }
 
 export async function deleteContactSubmission(id: string): Promise<void> {
-  await deleteDoc(doc(db, collections.contactSubmissions, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, collections.contactSubmissions, id)), "deleteContactSubmission");
+    console.log("Firestore: deleteContactSubmission success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteContactSubmission FAILED:", err);
+    throw err;
+  }
 }
 
 export async function addContactSubmission(data: Omit<FirebaseContactSubmission, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, collections.contactSubmissions), {
-    ...data,
-    read: false,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.contactSubmissions), { ...data, read: false, createdAt: serverTimestamp() }),
+      "addContactSubmission"
+    );
+    console.log("Firestore: addContactSubmission success");
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addContactSubmission FAILED:", err);
+    throw err;
+  }
 }
 
 export async function fetchNotifications(limitCount = 50): Promise<any[]> {
@@ -301,15 +436,17 @@ export async function generateInviteCode(generatedBy: string): Promise<string> {
   for (let i = 0; i < 8; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
-  await addDoc(collection(db, INVITE_CODES), {
-    code,
-    used: false,
-    generatedBy,
-    createdAt: serverTimestamp(),
-    usedBy: null,
-    usedAt: null,
-  });
-  return code;
+  try {
+    await withTimeout(
+      addDoc(collection(db, INVITE_CODES), { code, used: false, generatedBy, createdAt: serverTimestamp(), usedBy: null, usedAt: null }),
+      "generateInviteCode"
+    );
+    console.log("Firestore: generateInviteCode success");
+    return code;
+  } catch (err) {
+    console.error("Firestore: generateInviteCode FAILED:", err);
+    throw err;
+  }
 }
 
 export async function validateInviteCode(code: string): Promise<boolean> {
@@ -334,5 +471,11 @@ export async function fetchInviteCodes(): Promise<InviteCode[]> {
 }
 
 export async function deleteInviteCode(id: string): Promise<void> {
-  await deleteDoc(doc(db, INVITE_CODES, id));
+  try {
+    await withTimeout(deleteDoc(doc(db, INVITE_CODES, id)), "deleteInviteCode");
+    console.log("Firestore: deleteInviteCode success");
+  } catch (err) {
+    console.error("Firestore: deleteInviteCode FAILED:", err);
+    throw err;
+  }
 }
