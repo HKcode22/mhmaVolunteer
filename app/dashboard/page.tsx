@@ -155,34 +155,31 @@ export default function DashboardPage() {
       <Navigation currentPage="dashboard" />
 
       <div className="pt-28 pb-8 px-4 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 mt-1">Welcome, {user?.displayName || "Board Member"}</p>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-serif font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-500 mt-1">Welcome, {user?.displayName || "Board Member"}</p>
+            </div>
           </div>
-          <button onClick={() => { signOut(); router.push("/login"); }} className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium">
-            <LogOut className="w-4 h-4" /> Logout
-          </button>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Link href="/dashboard/programs/new" className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2">
-            <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Program</span>
-          </Link>
-          <Link href="/dashboard/events/new" className="bg-amber-600 text-white p-4 rounded-xl hover:bg-amber-500 transition-all flex flex-col items-center justify-center gap-2">
-            <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Event</span>
-          </Link>
-          <Link href="/dashboard/journal/new" className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2">
-            <BookOpen className="w-6 h-6" /><span className="font-semibold text-sm">Journal</span>
-          </Link>
-          <Link href="/dashboard/notifications" className="bg-gray-700 text-white p-4 rounded-xl hover:bg-gray-600 transition-all flex flex-col items-center justify-center gap-2">
-            <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
-          </Link>
-          <button onClick={handleGenerateCode} disabled={generatingCode}
-            className="bg-purple-800 text-white p-4 rounded-xl hover:bg-purple-700 transition-all flex flex-col items-center justify-center gap-2 disabled:opacity-50">
-            <Key className="w-6 h-6" /><span className="font-semibold text-sm">Invite Code</span>
-          </button>
-        </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Link href="/dashboard/programs/new" className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2">
+              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Program</span>
+            </Link>
+            <Link href="/dashboard/events/new" className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2">
+              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Event</span>
+            </Link>
+            <Link href="/dashboard/journal/new" className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2">
+              <BookOpen className="w-6 h-6" /><span className="font-semibold text-sm">Journal</span>
+            </Link>
+            <Link href="/dashboard/notifications" className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2">
+              <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
+            </Link>
+            <button onClick={handleGenerateCode} disabled={generatingCode}
+              className="bg-teal-800 text-white p-4 rounded-xl hover:bg-teal-700 transition-all flex flex-col items-center justify-center gap-2 disabled:opacity-50">
+              <Key className="w-6 h-6" /><span className="font-semibold text-sm">Invite Code</span>
+            </button>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Section title="Programs" count={programs.length} href="/dashboard/programs/new" allShown={showAllPrograms} onToggle={() => setShowAllPrograms(!showAllPrograms)} scrollable>

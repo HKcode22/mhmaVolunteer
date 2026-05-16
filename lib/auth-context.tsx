@@ -39,16 +39,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserRole = async (uid: string): Promise<string> => {
+  const fetchUserData = async (uid: string): Promise<{ role: string; displayName: string }> => {
     try {
       const docSnap = await getDoc(doc(db, "users", uid));
       if (docSnap.exists()) {
-        return docSnap.data().role || "member";
+        const data = docSnap.data();
+        return {
+          role: data.role || "member",
+          displayName: data.displayName || data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : "",
+        };
       }
     } catch (err) {
       console.warn("Auth: Firestore unavailable, skipping role fetch:", err);
     }
-    return "member";
+    return { role: "member", displayName: "" };
   };
 
   useEffect(() => {
@@ -67,18 +71,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
 
           const claimRole = idTokenResult?.claims?.role as string | undefined;
-          let firestoreRole: string | undefined;
+          let firestoreData: { role: string; displayName: string } = { role: "member", displayName: "" };
           try {
-            firestoreRole = await fetchUserRole(firebaseUser.uid);
+            firestoreData = await fetchUserData(firebaseUser.uid);
           } catch {}
 
-          const role = claimRole || firestoreRole || "member";
+          const role = claimRole || firestoreData.role || "member";
+          const displayName = firebaseUser.displayName || firestoreData.displayName || null;
 
           if (!cancelled) {
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
-              displayName: firebaseUser.displayName,
+              displayName,
               role,
             });
           }
@@ -106,17 +111,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     if (auth.currentUser) {
-      const role = await fetchUserRole(auth.currentUser.uid);
       let idTokenResult;
       try {
         idTokenResult = await auth.currentUser.getIdTokenResult(true);
       } catch {}
-      const customRole = idTokenResult?.claims?.role as string || role;
+      const claimRole = idTokenResult?.claims?.role as string | undefined;
+      let firestoreData = { role: "member", displayName: "" };
+      try {
+        firestoreData = await fetchUserData(auth.currentUser.uid);
+      } catch {}
+      const role = claimRole || firestoreData.role || "member";
+      const displayName = auth.currentUser.displayName || firestoreData.displayName || null;
       setUser({
         uid: auth.currentUser.uid,
         email: auth.currentUser.email,
-        displayName: auth.currentUser.displayName,
-        role: customRole,
+        displayName,
+        role,
       });
     }
   };

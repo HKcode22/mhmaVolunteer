@@ -6,6 +6,8 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
+import { uploadImage } from "@/lib/upload";
+import { Upload, Loader2, User } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 
@@ -18,8 +20,9 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("");
   const [profile, setProfile] = useState({
     phone: "", address: "", emergencyContactName: "", emergencyContactPhone: "",
-    membershipDate: "", familySize: "",
+    membershipDate: "", familySize: "", photoUrl: "",
   });
+  const [photoUploading, setPhotoUploading] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
 
   useEffect(() => {
@@ -35,12 +38,29 @@ export default function ProfilePage() {
             emergencyContactPhone: data.emergencyContactPhone || "",
             membershipDate: data.membershipDate || "",
             familySize: data.familySize || "",
+            photoUrl: data.photoUrl || "",
           });
         }
         setLoading(false);
       }).catch(() => setLoading(false));
     }
   }, [user, authLoading, router]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoUploading(true);
+    setError("");
+    try {
+      const url = await uploadImage(file);
+      setProfile(prev => ({ ...prev, photoUrl: url }));
+      setSuccess("Photo uploaded!");
+    } catch (err: any) {
+      setError(err.message || "Photo upload failed");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +112,30 @@ export default function ProfilePage() {
         <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Profile Information</h2>
           <p className="text-gray-500 text-sm mb-4">{user?.email} · {user?.displayName}</p>
+
+          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+              {profile.photoUrl ? (
+                <img src={profile.photoUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-8 h-8 text-gray-400" />
+              )}
+            </div>
+            <div>
+              <label className="flex items-center gap-2 px-4 py-2 bg-teal-800 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-teal-700 transition-colors">
+                <Upload className="w-4 h-4" />
+                {photoUploading ? "Uploading..." : "Upload Photo"}
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={photoUploading} className="hidden" />
+              </label>
+              {photoUploading && <Loader2 className="w-4 h-4 mt-1 animate-spin text-teal-700" />}
+              {profile.photoUrl && (
+                <button onClick={() => setProfile(prev => ({ ...prev, photoUrl: "" }))} className="text-xs text-red-600 mt-1 hover:underline">
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
