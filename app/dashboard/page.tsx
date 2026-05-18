@@ -10,9 +10,9 @@ import {
   fetchEvents, deleteEvent,
   fetchPrograms, deleteProgram,
   fetchJournalEntries, deleteJournalEntry,
-  fetchEnrollments, deleteEnrollment,
-  fetchSchedulingRequests, deleteSchedulingRequest,
-  fetchContactSubmissions, deleteContactSubmission,
+  fetchEnrollments, deleteEnrollment, updateEnrollment,
+  fetchSchedulingRequests, deleteSchedulingRequest, updateSchedulingRequest,
+  fetchContactSubmissions, deleteContactSubmission, markContactSubmissionRead,
   generateInviteCode, fetchInviteCodes, deleteInviteCode,
   FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, InviteCode,
 } from "@/lib/firebase";
@@ -108,6 +108,35 @@ export default function DashboardPage() {
       console.error("Failed to delete code:", err);
     }
   };
+
+  const handleUpdateStatus = async (
+    id: string,
+    type: "enrollment" | "request",
+    newStatus: string,
+  ) => {
+    try {
+      if (type === "enrollment") {
+        await updateEnrollment(id, { status: newStatus as any });
+        setEnrollments(p => p.map(e => e.id === id ? { ...e, status: newStatus as any } : e));
+      } else {
+        await updateSchedulingRequest(id, { status: newStatus as any });
+        setEventRequests(p => p.map(e => e.id === id ? { ...e, status: newStatus as any } : e));
+      }
+    } catch (err) {
+      console.error(`Failed to update ${type}:`, err);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    try {
+      await markContactSubmissionRead(id);
+      setContactSubmissions(p => p.map(s => s.id === id ? { ...s, read: true } : s));
+    } catch (err) {
+      console.error("Failed to mark read:", err);
+    }
+  };
+
+
 
   const handleDelete = async (
     id: string,
@@ -235,9 +264,25 @@ export default function DashboardPage() {
             <div key={r.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">{r.eventTitle}</p>
-                <p className="text-xs text-gray-500">{r.organizer?.firstName} {r.organizer?.lastName} · {r.status}</p>
+                <p className="text-xs text-gray-500">{r.organizer?.firstName} {r.organizer?.lastName}
+                  <span className={`ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
+                    r.status === "approved" ? "bg-green-100 text-green-700" :
+                    r.status === "rejected" ? "bg-red-100 text-red-700" :
+                    "bg-amber-100 text-amber-700"
+                  }`}>{r.status}</span>
+                </p>
               </div>
-              <button onClick={() => r.id && handleDelete(r.id, r.eventTitle, "request")} disabled={deletingId === r.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex gap-1">
+                {r.status === "pending" && (
+                  <>
+                    <button onClick={() => r.id && handleUpdateStatus(r.id, "request", "approved")}
+                      className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button>
+                    <button onClick={() => r.id && handleUpdateStatus(r.id, "request", "rejected")}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                  </>
+                )}
+                <button onClick={() => r.id && handleDelete(r.id, r.eventTitle, "request")} disabled={deletingId === r.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              </div>
             </div>
           ))}
           {eventRequests.length === 0 && <p className="text-gray-400 text-sm p-3">No scheduling requests.</p>}
@@ -248,9 +293,30 @@ export default function DashboardPage() {
             <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">{e.fullName} · {e.program}</p>
-                <p className="text-xs text-gray-500">{e.email} · {e.status}</p>
+                <p className="text-xs text-gray-500">{e.email}
+                  <span className={`ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
+                    e.status === "approved" ? "bg-green-100 text-green-700" :
+                    e.status === "rejected" ? "bg-red-100 text-red-700" :
+                    e.status === "completed" ? "bg-blue-100 text-blue-700" :
+                    "bg-amber-100 text-amber-700"
+                  }`}>{e.status}</span>
+                </p>
               </div>
-              <button onClick={() => e.id && handleDelete(e.id, `${e.fullName} - ${e.program}`, "enrollment")} disabled={deletingId === e.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex gap-1">
+                {e.status === "pending" && (
+                  <>
+                    <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "approved")}
+                      className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button>
+                    <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "rejected")}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                  </>
+                )}
+                {e.status === "approved" && (
+                  <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "completed")}
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Mark Completed"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                )}
+                <button onClick={() => e.id && handleDelete(e.id, `${e.fullName} - ${e.program}`, "enrollment")} disabled={deletingId === e.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              </div>
             </div>
           ))}
           {enrollments.length === 0 && <p className="text-gray-400 text-sm p-3">No enrollments.</p>}
@@ -263,7 +329,13 @@ export default function DashboardPage() {
                 <p className="font-semibold text-gray-900 truncate">{s.subject || "(no subject)"}</p>
                 <p className="text-xs text-gray-500">{s.name} · {s.email}{!s.read ? <span className="text-amber-600 font-medium ml-2">NEW</span> : null}</p>
               </div>
-              <button onClick={() => s.id && handleDelete(s.id, s.subject || "submission", "submission")} disabled={deletingId === s.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex gap-1">
+                {!s.read && (
+                  <button onClick={() => s.id && handleMarkRead(s.id)}
+                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Mark as Read"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.66l5-3.33a2 2 0 012.22 0l5 3.33a2 2 0 01.89 1.66V19a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 11l9 6 9-6" /></svg></button>
+                )}
+                <button onClick={() => s.id && handleDelete(s.id, s.subject || "submission", "submission")} disabled={deletingId === s.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              </div>
             </div>
           ))}
           {contactSubmissions.length === 0 && <p className="text-gray-400 text-sm p-3">No contact submissions.</p>}

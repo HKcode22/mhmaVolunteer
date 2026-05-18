@@ -1503,18 +1503,19 @@ export default function JournalEntryPage() {
     async function loadEntry() {
       try {
         const firebaseEntry = await fetchJournalEntryBySlug(slug);
-        if (firebaseEntry && firebaseEntry.content) {
-          setEntry({
-            ...firebaseEntry,
-            datePublished: "",
-            dateHeldOn: "",
-            isHtml: false,
-          });
-        } else if (journalContent[slug]) {
+        // Prefer hardcoded content over Firestore placeholder (seed script only stores title as content)
+        if (journalContent[slug]) {
           setEntry({
             ...journalContent[slug],
-            datePublished: "",
-            dateHeldOn: "",
+            datePublished: firebaseEntry?.datePublished || "",
+            dateHeldOn: firebaseEntry?.dateHeldOn || "",
+            isHtml: false,
+          });
+        } else if (firebaseEntry && firebaseEntry.content) {
+          setEntry({
+            ...firebaseEntry,
+            datePublished: firebaseEntry.datePublished || "",
+            dateHeldOn: firebaseEntry.dateHeldOn || "",
             isHtml: false,
           });
         } else {
@@ -1713,23 +1714,14 @@ export default function JournalEntryPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-4">Related Posts</h3>
             <div className="grid gap-4">
               {(() => {
-                // Get current entry's date for comparison
-                const currentEntryDate = (entry as any).datePublished || (entry as any).date || "";
-                const currentDateObj = currentEntryDate ? new Date(currentEntryDate.replace("Published On: ", "")) : new Date("1970-01-01");
-
-                // Filter out current entry and sort by date
+                // Show latest entries (excluding current) as related posts
                 const relatedEntries = allJournalEntries
                   .filter((e) => e.slug !== slug)
                   .map((e) => ({
                     ...e,
                     dateObj: new Date((e as any).rawDate || "1970-01-01"),
                   }))
-                  .sort((a, b) => {
-                    // Sort by how close they are to the current entry's date
-                    const diffA = Math.abs(a.dateObj.getTime() - currentDateObj.getTime());
-                    const diffB = Math.abs(b.dateObj.getTime() - currentDateObj.getTime());
-                    return diffA - diffB;
-                  })
+                  .sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime())
                   .slice(0, 5);
 
                 return relatedEntries.map((entry) => (
