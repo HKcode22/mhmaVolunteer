@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ───
+    // Check if the requesting user is a board member or administrator
+    // Looks at the user's Firestore document (works for web-registered users
+    // who don't have custom claims set)
+    function isBoardMember() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in
+          ['board_member', 'administrator'];
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // ─── Events ───
+    // Anyone can read events. Only board members can create/update/delete.
+    match /events/{event} {
+      allow read: if true;
+      allow create, update, delete: if isBoardMember();
+    }
+
+    // ─── Programs ───
+    // Anyone can read programs. Only board members can create/update/delete.
+    match /programs/{program} {
+      allow read: if true;
+      allow create, update, delete: if isBoardMember();
+    }
+
+    // ─── Journal ───
+    // Anyone can read journal entries. Only board members can create/update/delete.
+    match /journal/{entry} {
+      allow read: if true;
+      allow create, update, delete: if isBoardMember();
+    }
+
+    // ─── Users ───
+    // Users can read/write their own document. Board members can read any user doc.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isBoardMember();
+      allow create, update: if isOwner(userId);
+      allow delete: if false;  // Users cannot be deleted via client SDK
+    }
+
+    // ─── Site Content ───
+    // Anyone can read site content (contact info, announcements, etc.)
+    // Only board members can create/update/delete.
+    match /siteContent/{doc} {
+      allow read: if true;
+      allow create, update, delete: if isBoardMember();
+    }
+
+    // ─── Enrollments ───
+    // Any authenticated user can enroll (create).
+    // Board members can read, update (approve/reject), and delete.
+    match /enrollments/{enrollment} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isBoardMember();
+    }
+
+    // ─── Scheduling Requests ───
+    // Any authenticated user can submit a scheduling request.
+    // Board members can read, update (approve/reject), and delete.
+    match /schedulingRequests/{request} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isBoardMember();
+    }
+
+    // ─── Contact Submissions ───
+    // Anyone (even unauthenticated) can submit a contact form.
+    // Only board members can read, mark as read, or delete.
+    match /contactSubmissions/{submission} {
+      allow create: if true;
+      allow read, update, delete: if isBoardMember();
+    }
+
+    // ─── Notifications ───
+    // System-created. Board members can read them.
+    match /notifications/{notification} {
+      allow read: if isBoardMember();
+      allow create: if true;  // Allow creation from web during registration
+      allow update, delete: if isBoardMember();
+    }
+
+    // ─── Invite Codes ───
+    // Board members can generate, read, and delete invite codes.
+    // validateInviteCode (read with where filter) needs read access.
+    // markInviteCodeUsed (update) needs write access with a valid code.
+    match /inviteCodes/{code} {
+      allow read: if isBoardMember();
+      allow create: if isBoardMember();
+      allow update: if isBoardMember();
+      allow delete: if isBoardMember();
+    }
+  }
+}
