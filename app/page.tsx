@@ -297,7 +297,32 @@ const buildExclusionCombinations = () => {
 
 const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
+const UMMahAPI_KEY = "umh_c38ac44eef3e585d9df7b01e93eb19a12683a328";
+
 const fetchQuranVerse = async (): Promise<QuranVerse> => {
+  try {
+    // Try UmmahAPI for verse of the day (random ayah with translation)
+    const response = await fetch(
+      `https://ummahapi.com/api/quran/random?translations=en&api_key=${UMMahAPI_KEY}`,
+      { next: { revalidate: 86400 } } // cache for 24 hours
+    );
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.ayah) {
+        const ayah = data.ayah;
+        return {
+          text: ayah.text || "",
+          translation: ayah.translation?.text || ayah.english || "",
+          reference: `[Quran, ${ayah.surah?.name || ayah.surahNumber}:${ayah.number || ayah.ayahNumber}]`,
+          arabic: ayah.text || ayah.arabic || "",
+        };
+      }
+    }
+  } catch (error) {
+    console.warn("UmmahAPI verse fetch failed, falling back to local");
+  }
+
+  // Fallback: use local quran-included.json
   try {
     const response = await fetch('/quran-included.json');
     if (!response.ok) throw new Error('Failed to load Quran data');

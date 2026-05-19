@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw } from "lucide-react";
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase-client";
 import {
   fetchEvents, deleteEvent,
   fetchPrograms, deleteProgram,
@@ -40,6 +42,39 @@ export default function DashboardPage() {
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
+  const [showCustomize, setShowCustomize] = useState(false);
+  const [layoutOrder, setLayoutOrder] = useState<string[]>([
+    "programs", "events", "journal", "requests", "enrollments", "submissions", "codes"
+  ]);
+
+  useEffect(() => {
+    if (user?.uid) {
+      getDoc(doc(db, "users", user.uid)).then(snap => {
+        if (snap.exists() && snap.data().dashboardOrder) {
+          setLayoutOrder(snap.data().dashboardOrder);
+        }
+      });
+    }
+  }, [user?.uid]);
+
+  const saveLayoutOrder = async (newOrder: string[]) => {
+    setLayoutOrder(newOrder);
+    if (user?.uid) {
+      try {
+        await setDoc(doc(db, "users", user.uid), { dashboardOrder: newOrder }, { merge: true });
+      } catch (err) {
+        console.error("Failed to save layout:", err);
+      }
+    }
+  };
+
+  const moveSection = (index: number, direction: "up" | "down") => {
+    const newOrder = [...layoutOrder];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
+    [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
+    saveLayoutOrder(newOrder);
+  };
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) {
@@ -190,6 +225,10 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-serif font-bold text-gray-900">Dashboard</h1>
               <p className="text-gray-500 mt-1">Welcome, {user?.displayName || "Board Member"}</p>
             </div>
+            <button onClick={() => setShowCustomize(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-600">
+              <Settings className="w-4 h-4" /> Customize
+            </button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -212,179 +251,238 @@ export default function DashboardPage() {
           </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Section title="Programs" count={programs.length} href="/dashboard/programs/new" allShown={showAllPrograms} onToggle={() => setShowAllPrograms(!showAllPrograms)} scrollable>
-          {visiblePrograms.map(p => (
-            <div key={p.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{p.title}</p>
-                <p className="text-xs text-gray-500">{p.id}</p>
-              </div>
-              <div className="flex gap-2">
-                <Link href={`/dashboard/programs/edit?id=${p.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
-                <button onClick={() => p.id && handleDelete(p.id, p.title, "program")} disabled={deletingId === p.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-          {programs.length === 0 && <p className="text-gray-400 text-sm p-3">No programs yet.</p>}
-        </Section>
-
-        <Section title="Events" count={events.length} href="/dashboard/events/new" allShown={showAllEvents} onToggle={() => setShowAllEvents(!showAllEvents)} scrollable>
-          {visibleEvents.map(e => (
-            <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{e.title}</p>
-                <p className="text-xs text-gray-500">{e.date || ""} {e.time || ""}</p>
-              </div>
-              <div className="flex gap-2">
-                <Link href={`/dashboard/events/edit?id=${e.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
-                <button onClick={() => e.id && handleDelete(e.id, e.title, "event")} disabled={deletingId === e.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-          {events.length === 0 && <p className="text-gray-400 text-sm p-3">No events yet.</p>}
-        </Section>
-
-        <Section title="Journal" count={journals.length} href="/dashboard/journal/new" allShown={showAllJournals} onToggle={() => setShowAllJournals(!showAllJournals)} scrollable>
-          {visibleJournals.map(j => (
-            <div key={j.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{j.title}</p>
-                <p className="text-xs text-gray-500">{j.datePublished || ""}</p>
-              </div>
-              <div className="flex gap-2">
-                <Link href={`/dashboard/journal/edit?id=${j.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
-                <button onClick={() => j.id && handleDelete(j.id, j.title, "journal")} disabled={deletingId === j.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-          {journals.length === 0 && <p className="text-gray-400 text-sm p-3">No journal entries yet.</p>}
-        </Section>
-
-        <Section title="Scheduling Requests" count={eventRequests.length} href="#" allShown={showAllRequests} onToggle={() => setShowAllRequests(!showAllRequests)} scrollable>
-          {visibleRequests.map(r => (
-            <div key={r.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{r.eventTitle}</p>
-                <p className="text-xs text-gray-500">{r.organizer?.firstName} {r.organizer?.lastName}
-                  <span className={`ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
-                    r.status === "approved" ? "bg-green-100 text-green-700" :
-                    r.status === "rejected" ? "bg-red-100 text-red-700" :
-                    "bg-amber-100 text-amber-700"
-                  }`}>{r.status}</span>
-                </p>
-              </div>
-              <div className="flex gap-1">
-                {r.status === "pending" && (
-                  <>
-                    <button onClick={() => r.id && handleUpdateStatus(r.id, "request", "approved")}
-                      className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button>
-                    <button onClick={() => r.id && handleUpdateStatus(r.id, "request", "rejected")}
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                  </>
-                )}
-                <button onClick={() => r.id && handleDelete(r.id, r.eventTitle, "request")} disabled={deletingId === r.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-          {eventRequests.length === 0 && <p className="text-gray-400 text-sm p-3">No scheduling requests.</p>}
-        </Section>
-
-        <Section title="Enrollments" count={enrollments.length} href="#" allShown={showAllEnrollments} onToggle={() => setShowAllEnrollments(!showAllEnrollments)} scrollable>
-          {visibleEnrollments.map(e => (
-            <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{e.fullName} · {e.program}</p>
-                <p className="text-xs text-gray-500">{e.email}
-                  <span className={`ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
-                    e.status === "approved" ? "bg-green-100 text-green-700" :
-                    e.status === "rejected" ? "bg-red-100 text-red-700" :
-                    e.status === "completed" ? "bg-blue-100 text-blue-700" :
-                    "bg-amber-100 text-amber-700"
-                  }`}>{e.status}</span>
-                </p>
-              </div>
-              <div className="flex gap-1">
-                {e.status === "pending" && (
-                  <>
-                    <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "approved")}
-                      className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button>
-                    <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "rejected")}
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                  </>
-                )}
-                {e.status === "approved" && (
-                  <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "completed")}
-                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Mark Completed"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
-                )}
-                <button onClick={() => e.id && handleDelete(e.id, `${e.fullName} - ${e.program}`, "enrollment")} disabled={deletingId === e.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-          {enrollments.length === 0 && <p className="text-gray-400 text-sm p-3">No enrollments.</p>}
-        </Section>
-
-        <Section title="Contact Submissions" count={contactSubmissions.length} href="#" allShown={showAllSubmissions} onToggle={() => setShowAllSubmissions(!showAllSubmissions)} scrollable>
-          {visibleSubmissions.map(s => (
-            <div key={s.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">{s.subject || "(no subject)"}</p>
-                <p className="text-xs text-gray-500">{s.name} · {s.email}{!s.read ? <span className="text-amber-600 font-medium ml-2">NEW</span> : null}</p>
-              </div>
-              <div className="flex gap-1">
-                {!s.read && (
-                  <button onClick={() => s.id && handleMarkRead(s.id)}
-                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Mark as Read"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.66l5-3.33a2 2 0 012.22 0l5 3.33a2 2 0 01.89 1.66V19a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 11l9 6 9-6" /></svg></button>
-                )}
-                <button onClick={() => s.id && handleDelete(s.id, s.subject || "submission", "submission")} disabled={deletingId === s.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-          {contactSubmissions.length === 0 && <p className="text-gray-400 text-sm p-3">No contact submissions.</p>}
-        </Section>
-        <Section title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)} scrollable>
-          {codeMsg && (
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3 flex items-center justify-between">
-              <p className="text-sm text-purple-800 font-medium">{codeMsg}</p>
-              {codeMsg.startsWith("Generated:") && (
-                <button onClick={() => handleCopyCode(codeMsg.replace("Generated: ", ""))}
-                  className="ml-2 p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
-                  {copiedCode === codeMsg.replace("Generated: ", "") ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </button>
-              )}
-            </div>
-          )}
-          <button onClick={handleGenerateCode} disabled={generatingCode}
-            className="w-full mb-3 bg-purple-800 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-            <RefreshCw className={`w-4 h-4 ${generatingCode ? "animate-spin" : ""}`} />
-            {generatingCode ? "Generating..." : "Generate New Code"}
-          </button>
-          {visibleCodes.map(c => (
-            <div key={c.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-              <div className="flex-1 min-w-0">
-                <p className="font-mono font-bold text-lg text-purple-900 tracking-wider">{c.code}</p>
-                <p className="text-xs text-gray-500">
-                  {c.used ? `Used by ${c.usedBy || "someone"}` : "Available"}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {!c.used && (
-                  <button onClick={() => handleCopyCode(c.code)} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded">
-                    {copiedCode === c.code ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+        {layoutOrder.map((section, idx) => {
+          switch (section) {
+            case "programs":
+              return (
+                <Section key="programs" title="Programs" count={programs.length} href="/dashboard/programs/new" allShown={showAllPrograms} onToggle={() => setShowAllPrograms(!showAllPrograms)} scrollable>
+                  {visiblePrograms.map(p => (
+                    <div key={p.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{p.title}</p>
+                        <p className="text-xs text-gray-500">{p.id}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link href={`/dashboard/programs/edit?id=${p.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                        <button onClick={() => p.id && handleDelete(p.id, p.title, "program")} disabled={deletingId === p.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  {programs.length === 0 && <p className="text-gray-400 text-sm p-3">No programs yet.</p>}
+                </Section>
+              );
+            case "events":
+              return (
+                <Section key="events" title="Events" count={events.length} href="/dashboard/events/new" allShown={showAllEvents} onToggle={() => setShowAllEvents(!showAllEvents)} scrollable>
+                  {visibleEvents.map(e => (
+                    <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{e.title}</p>
+                        <p className="text-xs text-gray-500">{e.date || ""} {e.time || ""}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link href={`/dashboard/events/edit?id=${e.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                        <button onClick={() => e.id && handleDelete(e.id, e.title, "event")} disabled={deletingId === e.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  {events.length === 0 && <p className="text-gray-400 text-sm p-3">No events yet.</p>}
+                </Section>
+              );
+            case "journal":
+              return (
+                <Section key="journal" title="Journal" count={journals.length} href="/dashboard/journal/new" allShown={showAllJournals} onToggle={() => setShowAllJournals(!showAllJournals)} scrollable>
+                  {visibleJournals.map(j => (
+                    <div key={j.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{j.title}</p>
+                        <p className="text-xs text-gray-500">{j.datePublished || ""}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link href={`/dashboard/journal/edit?id=${j.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                        <button onClick={() => j.id && handleDelete(j.id, j.title, "journal")} disabled={deletingId === j.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  {journals.length === 0 && <p className="text-gray-400 text-sm p-3">No journal entries yet.</p>}
+                </Section>
+              );
+            case "requests":
+              return (
+                <Section key="requests" title="Scheduling Requests" count={eventRequests.length} href="#" allShown={showAllRequests} onToggle={() => setShowAllRequests(!showAllRequests)} scrollable>
+                  {visibleRequests.map(r => (
+                    <div key={r.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{r.eventTitle}</p>
+                        <p className="text-xs text-gray-500">{r.organizer?.firstName} {r.organizer?.lastName}
+                          <span className={`ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
+                            r.status === "approved" ? "bg-green-100 text-green-700" :
+                            r.status === "rejected" ? "bg-red-100 text-red-700" :
+                            "bg-amber-100 text-amber-700"
+                          }`}>{r.status}</span>
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        {r.status === "pending" && (
+                          <>
+                            <button onClick={() => r.id && handleUpdateStatus(r.id, "request", "approved")}
+                              className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button>
+                            <button onClick={() => r.id && handleUpdateStatus(r.id, "request", "rejected")}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                          </>
+                        )}
+                        <button onClick={() => r.id && handleDelete(r.id, r.eventTitle, "request")} disabled={deletingId === r.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  {eventRequests.length === 0 && <p className="text-gray-400 text-sm p-3">No scheduling requests.</p>}
+                </Section>
+              );
+            case "enrollments":
+              return (
+                <Section key="enrollments" title="Enrollments" count={enrollments.length} href="#" allShown={showAllEnrollments} onToggle={() => setShowAllEnrollments(!showAllEnrollments)} scrollable>
+                  {visibleEnrollments.map(e => (
+                    <div key={e.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{e.fullName} · {e.program}</p>
+                        <p className="text-xs text-gray-500">{e.email}
+                          <span className={`ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
+                            e.status === "approved" ? "bg-green-100 text-green-700" :
+                            e.status === "rejected" ? "bg-red-100 text-red-700" :
+                            e.status === "completed" ? "bg-blue-100 text-blue-700" :
+                            "bg-amber-100 text-amber-700"
+                          }`}>{e.status}</span>
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        {e.status === "pending" && (
+                          <>
+                            <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "approved")}
+                              className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Approve"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></button>
+                            <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "rejected")}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Reject"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                          </>
+                        )}
+                        {e.status === "approved" && (
+                          <button onClick={() => e.id && handleUpdateStatus(e.id, "enrollment", "completed")}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Mark Completed"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                        )}
+                        <button onClick={() => e.id && handleDelete(e.id, `${e.fullName} - ${e.program}`, "enrollment")} disabled={deletingId === e.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  {enrollments.length === 0 && <p className="text-gray-400 text-sm p-3">No enrollments.</p>}
+                </Section>
+              );
+            case "submissions":
+              return (
+                <Section key="submissions" title="Contact Submissions" count={contactSubmissions.length} href="#" allShown={showAllSubmissions} onToggle={() => setShowAllSubmissions(!showAllSubmissions)} scrollable>
+                  {visibleSubmissions.map(s => (
+                    <div key={s.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{s.subject || "(no subject)"}</p>
+                        <p className="text-xs text-gray-500">{s.name} · {s.email}{!s.read ? <span className="text-amber-600 font-medium ml-2">NEW</span> : null}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        {!s.read && (
+                          <button onClick={() => s.id && handleMarkRead(s.id)}
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Mark as Read"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.66l5-3.33a2 2 0 012.22 0l5 3.33a2 2 0 01.89 1.66V19a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 11l9 6 9-6" /></svg></button>
+                        )}
+                        <button onClick={() => s.id && handleDelete(s.id, s.subject || "submission", "submission")} disabled={deletingId === s.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  {contactSubmissions.length === 0 && <p className="text-gray-400 text-sm p-3">No contact submissions.</p>}
+                </Section>
+              );
+            case "codes":
+              return (
+                <Section key="codes" title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)} scrollable>
+                  {codeMsg && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3 flex items-center justify-between">
+                      <p className="text-sm text-purple-800 font-medium">{codeMsg}</p>
+                      {codeMsg.startsWith("Generated:") && (
+                        <button onClick={() => handleCopyCode(codeMsg.replace("Generated: ", ""))}
+                          className="ml-2 p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors">
+                          {copiedCode === codeMsg.replace("Generated: ", "") ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <button onClick={handleGenerateCode} disabled={generatingCode}
+                    className="w-full mb-3 bg-purple-800 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                    <RefreshCw className={`w-4 h-4 ${generatingCode ? "animate-spin" : ""}`} />
+                    {generatingCode ? "Generating..." : "Generate New Code"}
                   </button>
-                )}
-                <button onClick={() => c.id && handleDeleteCode(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-          {inviteCodes.length === 0 && !generatingCode && (
-            <p className="text-gray-400 text-sm p-3">No invite codes yet. Generate one to share with new board members.</p>
-          )}
-        </Section>
+                  {visibleCodes.map(c => (
+                    <div key={c.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-mono font-bold text-lg text-purple-900 tracking-wider">{c.code}</p>
+                        <p className="text-xs text-gray-500">
+                          {c.used ? `Used by ${c.usedBy || "someone"}` : "Available"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {!c.used && (
+                          <button onClick={() => handleCopyCode(c.code)} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded">
+                            {copiedCode === c.code ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        )}
+                        <button onClick={() => c.id && handleDeleteCode(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {inviteCodes.length === 0 && !generatingCode && (
+                    <p className="text-gray-400 text-sm p-3">No invite codes yet. Generate one to share with new board members.</p>
+                  )}
+                </Section>
+              );
+            default:
+              return null;
+          }
+        })}
         </div>
 
       </div>
+
+      {/* Customize Layout Modal */}
+      {showCustomize && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowCustomize(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Customize Dashboard Layout</h2>
+              <button onClick={() => setShowCustomize(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-gray-500 text-sm mb-4">Use the arrows to reorder sections. Changes are saved automatically.</p>
+            <div className="space-y-2">
+              {layoutOrder.map((section, idx) => (
+                <div key={section} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <span className="font-medium text-gray-900 capitalize">
+                    {section === "requests" ? "Scheduling Requests" : section === "codes" ? "Invite Codes" : section === "submissions" ? "Contact Submissions" : section}
+                  </span>
+                  <div className="flex gap-1">
+                    <button onClick={() => moveSection(idx, "up")} disabled={idx === 0}
+                      className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                      <ArrowUp className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => moveSection(idx, "down")} disabled={idx === layoutOrder.length - 1}
+                      className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                      <ArrowDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => {
+              saveLayoutOrder(["programs", "events", "journal", "requests", "enrollments", "submissions", "codes"]);
+            }} className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              Reset to Default
+            </button>
+          </div>
+        </div>
+      )}
 
       <footer className="bg-gray-100 py-8 border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4 text-center text-gray-500 text-sm">
