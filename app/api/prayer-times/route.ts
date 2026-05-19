@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firestore } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
+// Mountain House, CA coordinates
 const LATITUDE = 37.7782;
 const LONGITUDE = -121.5423;
 
@@ -14,23 +14,7 @@ interface PrayerTime {
 
 export async function GET(request: NextRequest) {
   try {
-    // Try Firestore first (admin-configured times)
-    const doc = await firestore.collection('siteContent').doc('prayerTimes').get();
-    if (doc.exists) {
-      const data = doc.data()!;
-      return NextResponse.json({
-        prayerTimes: [
-          { name: "Fajr", arabicName: "الفجر", time: data.fajr || "4:48 AM" },
-          { name: "Dhuhr", arabicName: "الظهر", time: data.dhuhr || "1:00 PM" },
-          { name: "Asr", arabicName: "العصر", time: data.asr || "5:56 PM" },
-          { name: "Maghrib", arabicName: "المغرب", time: data.maghrib || "7:58 PM" },
-          { name: "Isha", arabicName: "العشاء", time: data.isha || "9:19 PM" },
-        ],
-        source: 'firestore',
-      });
-    }
-
-    // Fallback: fetch from AlAdhan API
+    // Always fetch from AlAdhan API for accurate real-time prayer times
     const today = new Date();
     const day = String(today.getDate()).padStart(2, '0');
     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -60,6 +44,7 @@ export async function GET(request: NextRequest) {
 
       const prayerTimes: PrayerTime[] = [
         { name: "Fajr", arabicName: "الفجر", time: formatTime(timings.Fajr) },
+        { name: "Sunrise", arabicName: "الشروق", time: formatTime(timings.Sunrise) },
         { name: "Dhuhr", arabicName: "الظهر", time: formatTime(timings.Dhuhr) },
         { name: "Asr", arabicName: "العصر", time: formatTime(timings.Asr) },
         { name: "Maghrib", arabicName: "المغرب", time: formatTime(timings.Maghrib) },

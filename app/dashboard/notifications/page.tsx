@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Mail, Calendar, BookOpen } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { fetchEnrollments, fetchSchedulingRequests } from "@/lib/firebase";
+import { fetchEnrollments, fetchSchedulingRequests, fetchContactSubmissions } from "@/lib/firebase";
 import Navigation from "@/components/Navigation";
 
 type NotificationItem = {
@@ -31,22 +31,29 @@ export default function NotificationsPage() {
 
   const loadNotifications = async () => {
     try {
-      const [enrollments, requests] = await Promise.all([
+      const [enrollments, requests, contacts] = await Promise.all([
         fetchEnrollments(50),
         fetchSchedulingRequests(50),
+        fetchContactSubmissions(50),
       ]);
       const items: NotificationItem[] = [
         ...enrollments.map(e => ({
           id: e.id || "", type: "enrollment" as const,
           title: `New Enrollment: ${e.fullName}`,
           date: e.createdAt?.toDate?.()?.toISOString?.()?.split("T")[0] || "",
-          details: `${e.program} — ${e.email}`,
+          details: `${e.program} — ${e.email} — ${e.status}`,
         })),
         ...requests.map(r => ({
           id: r.id || "", type: "event_request" as const,
           title: `Event Request: ${r.eventTitle}`,
           date: r.createdAt?.toDate?.()?.toISOString?.()?.split("T")[0] || "",
           details: `${r.organizer?.firstName} ${r.organizer?.lastName} — ${r.status}`,
+        })),
+        ...contacts.map(c => ({
+          id: c.id || "", type: "contact" as const,
+          title: `Contact: ${c.subject || "(no subject)"}`,
+          date: c.createdAt?.toDate?.()?.toISOString?.()?.split("T")[0] || "",
+          details: `${c.name} · ${c.email}${!c.read ? " — NEW" : ""}`,
         })),
       ];
       items.sort((a, b) => b.date.localeCompare(a.date));

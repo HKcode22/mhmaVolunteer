@@ -19,7 +19,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [profile, setProfile] = useState({
-    phone: "", address: "", emergencyContactName: "", emergencyContactPhone: "",
+    firstName: "", lastName: "", phone: "", address: "", emergencyContactName: "", emergencyContactPhone: "",
     membershipDate: "", familySize: "", photoUrl: "",
   });
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -32,6 +32,8 @@ export default function ProfilePage() {
         if (snap.exists()) {
           const data = snap.data();
           setProfile({
+            firstName: data.firstName || "",
+            lastName: data.lastName || "",
             phone: data.phone || "",
             address: data.address || "",
             emergencyContactName: data.emergencyContactName || "",
@@ -137,6 +139,18 @@ export default function ProfilePage() {
           </div>
 
           <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <input type="text" value={profile.firstName} onChange={e => setProfile({ ...profile, firstName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="John" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <input type="text" value={profile.lastName} onChange={e => setProfile({ ...profile, lastName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="Doe" />
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>

@@ -504,7 +504,7 @@ useEffect(() => {
                 <p className="text-teal-800/80 text-sm">Mountain House, CA</p>
               </div>
               <div className="flex flex-wrap justify-center gap-4 md:gap-8 flex-1">
-                {prayerTimes.slice(0, 5).map((prayer, index) => (
+                {prayerTimes.map((prayer, index) => (
                   <div key={prayer.name} className="text-center px-3 md:px-4">
                     <p className="text-teal-800/80 text-xs uppercase tracking-wider">{prayer.name}</p>
                     <p className="text-teal-900 font-bold text-lg md:text-xl">{prayer.time}</p>

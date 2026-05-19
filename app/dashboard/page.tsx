@@ -104,6 +104,7 @@ export default function DashboardPage() {
     try {
       await deleteInviteCode(id);
       setInviteCodes(codes => codes.filter(c => c.id !== id));
+      setCodeMsg("");
     } catch (err) {
       console.error("Failed to delete code:", err);
     }
