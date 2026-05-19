@@ -297,24 +297,24 @@ const buildExclusionCombinations = () => {
 
 const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
-const UMMahAPI_KEY = "umh_c38ac44eef3e585d9df7b01e93eb19a12683a328";
+const UMMAH_API_KEY = "umh_c38ac44eef3e585d9df7b01e93eb19a12683a328";
 
 const fetchQuranVerse = async (): Promise<QuranVerse> => {
   try {
-    // Try UmmahAPI for verse of the day (random ayah with translation)
     const response = await fetch(
-      `https://ummahapi.com/api/quran/random?translations=en&api_key=${UMMahAPI_KEY}`,
-      { next: { revalidate: 86400 } } // cache for 24 hours
+      `https://ummahapi.com/api/quran/random?translations=en&api_key=${UMMAH_API_KEY}`,
+      { next: { revalidate: 86400 } }
     );
     if (response.ok) {
       const data = await response.json();
-      if (data && data.ayah) {
-        const ayah = data.ayah;
+      if (data && data.success && data.data) {
+        const verse = data.data.verse;
+        const surah = data.data.surah;
         return {
-          text: ayah.text || "",
-          translation: ayah.translation?.text || ayah.english || "",
-          reference: `[Quran, ${ayah.surah?.name || ayah.surahNumber}:${ayah.number || ayah.ayahNumber}]`,
-          arabic: ayah.text || ayah.arabic || "",
+          text: verse.arabic || "",
+          translation: verse.translations?.sahih_international || verse.translations?.yusuf_ali || "",
+          reference: `[Quran, ${surah.name_english} (${surah.number}:${verse.ayah})]`,
+          arabic: verse.arabic || "",
         };
       }
     }
@@ -401,6 +401,7 @@ export default function HomePage() {
     const setFallbackTimes = () => {
       setPrayerTimes([
         { name: "Fajr", arabicName: "الفجر", time: "4:48 AM" },
+        { name: "Sunrise", arabicName: "الشروق", time: "6:12 AM" },
         { name: "Dhuhr", arabicName: "الظهر", time: "1:00 PM" },
         { name: "Asr", arabicName: "العصر", time: "5:56 PM" },
         { name: "Maghrib", arabicName: "المغرب", time: "7:58 PM" },
@@ -410,6 +411,28 @@ export default function HomePage() {
     
     fetchPrayerTimes();
   }, []);
+
+  // Calculate which prayer is next
+  const getNextPrayerIndex = () => {
+    if (prayerTimes.length === 0) return 0;
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    for (let i = 0; i < prayerTimes.length; i++) {
+      const timeStr = prayerTimes[i].time;
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const ampm = match[3].toUpperCase();
+        if (ampm === "PM" && hours !== 12) hours += 12;
+        if (ampm === "AM" && hours === 12) hours = 0;
+        const prayerMinutes = hours * 60 + minutes;
+        if (prayerMinutes > currentMinutes) return i;
+      }
+    }
+    return 0; // After Isha, next is Fajr
+  };
 
 useEffect(() => {
   // Load Quran verse IMMEDIATELY (fast, from static JSON)
@@ -528,14 +551,18 @@ useEffect(() => {
                 <h3 className="text-teal-900 font-bold text-base uppercase tracking-wider mb-1">Today's Prayers</h3>
                 <p className="text-teal-800/80 text-sm">Mountain House, CA</p>
               </div>
-              <div className="flex flex-wrap justify-center gap-4 md:gap-8 flex-1">
-                {prayerTimes.map((prayer, index) => (
-                  <div key={prayer.name} className="text-center px-3 md:px-4">
-                    <p className="text-teal-800/80 text-xs uppercase tracking-wider">{prayer.name}</p>
-                    <p className="text-teal-900 font-bold text-lg md:text-xl">{prayer.time}</p>
-                    {index === 0 && <p className="text-teal-800/60 text-[10px] hidden md:block">Next</p>}
-                  </div>
-                ))}
+              <div className="flex flex-wrap justify-center gap-2 md:gap-4 flex-1">
+                {prayerTimes.map((prayer, index) => {
+                  const nextIdx = getNextPrayerIndex();
+                  const isNext = index === nextIdx;
+                  return (
+                    <div key={prayer.name} className={`text-center px-2 md:px-3 ${isNext ? 'bg-teal-900/10 rounded-lg px-3 py-1' : ''}`}>
+                      <p className="text-teal-800/80 text-[10px] md:text-xs uppercase tracking-wider">{prayer.name}</p>
+                      <p className="text-teal-900 font-bold text-sm md:text-lg">{prayer.time}</p>
+                      {isNext && <p className="text-teal-800/60 text-[9px] md:text-[10px] hidden md:block">Next</p>}
+                    </div>
+                  );
+                })}
               </div>
               <Link href="/prayer-times" className="text-teal-900 font-semibold text-sm hover:text-amber-100 transition-colors flex items-center gap-1 shrink-0">
                 Full Schedule <ChevronRight className="w-4 h-4" />
