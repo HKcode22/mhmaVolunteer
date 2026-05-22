@@ -14,11 +14,13 @@ import {
   MapPin,
   ArrowRight,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Edit3
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 import { renderMarkdown } from "@/lib/markdown";
+import { useAuth } from "@/lib/auth-context";
 
 interface Slide {
   id: number;
@@ -37,6 +39,7 @@ interface Slide {
 }
 
 export default function EventsPage() {
+  const { isBoardMember } = useAuth();
   const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -126,9 +129,14 @@ export default function EventsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {slides.map((slide) => (
-                <div key={slide.id} className="flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 group hover:border-mhma-gold transition-all duration-300">
+                <div key={slide.id} className="flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 group hover:border-mhma-gold transition-all duration-300 relative">
                   {/* Poster Area */}
                   <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
+                    {isBoardMember && (
+                      <Link href={`/dashboard/events/edit?id=${slide.id}`} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit event">
+                        <Edit3 className="w-3 h-3" /> EDIT
+                      </Link>
+                    )}
                     <img
                       src={slide.src}
                       alt={slide.alt}

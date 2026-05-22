@@ -107,5 +107,20 @@ service cloud.firestore {
       allow create: if isBoardMember();
       allow update, delete: if false;
     }
+
+    // ─── Analytics Snapshots ───
+    // Board members can read and create/update analytics snapshots.
+    match /analyticsSnapshots/{snapshot} {
+      allow read: if isBoardMember();
+      allow create, update: if isBoardMember();
+      allow delete: if false;
+    }
+
+    // ─── Masjid Construction Updates ───
+    // Anyone can read (public progress images). Board members can create/update/delete.
+    match /masjidConstruction/{update} {
+      allow read: if true;
+      allow create, update, delete: if isBoardMember();
+    }
   }
 }

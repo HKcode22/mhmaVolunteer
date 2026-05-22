@@ -4,14 +4,16 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, Clock, MapPin, ArrowLeft, Loader2, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, ArrowLeft, Loader2, Users, Edit3 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 import { renderMarkdown } from "@/lib/markdown";
+import { useAuth } from "@/lib/auth-context";
 
 export default function EventDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
+  const { isBoardMember } = useAuth();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -88,7 +90,12 @@ export default function EventDetailPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 relative">
+          {isBoardMember && (
+            <Link href={`/dashboard/events/edit?id=${event.id}`} className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-mhma-gold text-white text-xs font-bold rounded-lg hover:bg-mhma-gold-light transition-colors" title="Edit event">
+              <Edit3 className="w-3.5 h-3.5" /> EDIT
+            </Link>
+          )}
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 font-serif">{event.title}</h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

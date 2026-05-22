@@ -639,3 +639,38 @@ export async function fetchAnalyticsSnapshots(limitCount = 30): Promise<Analytic
   const snap = await getDocs(q);
   return collectionData<AnalyticsSnapshot>(snap);
 }
+
+// ─── Masjid Construction Updates ───
+
+const MASJID_CONSTRUCTION = "masjidConstruction";
+
+export interface FirebaseMasjidUpdate {
+  id?: string;
+  image: string;
+  caption: string;
+  phase: string;
+  raised: number;
+  goal: number;
+  progressDate: string;
+  createdBy?: string;
+  createdAt?: any;
+}
+
+export async function fetchMasjidUpdates(limitCount = 10): Promise<FirebaseMasjidUpdate[]> {
+  const q = query(collection(db, MASJID_CONSTRUCTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<FirebaseMasjidUpdate>(snap);
+}
+
+export async function addMasjidUpdate(data: Omit<FirebaseMasjidUpdate, "id" | "createdAt">): Promise<string> {
+  const ref = await addDoc(collection(db, MASJID_CONSTRUCTION), { ...data, createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function updateMasjidUpdate(id: string, data: Partial<FirebaseMasjidUpdate>): Promise<void> {
+  await updateDoc(doc(db, MASJID_CONSTRUCTION, id), { ...data, updatedAt: serverTimestamp() });
+}
+
+export async function deleteMasjidUpdate(id: string): Promise<void> {
+  await deleteDoc(doc(db, MASJID_CONSTRUCTION, id));
+}

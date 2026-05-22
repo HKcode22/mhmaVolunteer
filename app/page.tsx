@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText } from "lucide-react";
-import { fetchEvents, fetchPrograms, fetchJournalEntries } from "@/lib/firebase";
+import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
+import { fetchEvents, fetchPrograms, fetchJournalEntries, fetchMasjidUpdates } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/components/Navigation";
 
@@ -369,7 +369,7 @@ interface PrayerTime {
 }
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, isBoardMember } = useAuth();
   const [dailyVerse, setDailyVerse] = useState<QuranVerse | null>(null);
   const [verseLoading, setVerseLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
@@ -377,6 +377,8 @@ export default function HomePage() {
   const [journalEntries, setJournalEntries] = useState<any[]>([]);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -466,14 +468,25 @@ useEffect(() => {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [events, programs, journalEntries] = await Promise.all([
+      const [eventsData, programs, journalEntries, masjidData] = await Promise.all([
         fetchEvents(3),
         fetchPrograms(3),
         fetchJournalEntries(3),
+        fetchMasjidUpdates(1),
       ]);
-      setEvents(events);
+      setEvents(eventsData);
       setPrograms(programs);
       setJournalEntries(journalEntries);
+      setMasjidUpdates(masjidData);
+      // Prefer masjid construction image for hero, fall back to event poster
+      if (masjidData.length > 0 && masjidData[0].image) {
+        setHeroImage(masjidData[0].image || null);
+      } else {
+        const eventWithPoster = eventsData.find((e: any) => e.poster && e.poster.startsWith('data:'));
+        if (eventWithPoster && eventWithPoster.poster) {
+          setHeroImage(eventWithPoster.poster);
+        }
+      }
     } catch (error) {
       console.error("Data fetching error:", error);
     }
@@ -497,8 +510,8 @@ useEffect(() => {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-            <div className="lg:w-3/5 text-center lg:text-left">
+          <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+            <div className="lg:w-3/5 text-center lg:text-left lg:pl-2">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-[10px] tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
@@ -524,77 +537,65 @@ useEffect(() => {
 
             {/* Masjid illustration on right */}
             <div className="lg:w-2/5 flex justify-center">
-              <svg viewBox="0 0 400 320" className="w-full max-w-sm drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
-                {/* Sky background gradient */}
-                <defs>
-                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#1a365d"/>
-                    <stop offset="100%" stopColor="#2d6a4f"/>
-                  </linearGradient>
-                  <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#fffbeb"/>
-                    <stop offset="100%" stopColor="#fbbf24"/>
-                  </linearGradient>
-                  <linearGradient id="dome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#c9a227"/>
-                    <stop offset="100%" stopColor="#a17a1f"/>
-                  </linearGradient>
-                  <radialGradient id="glow" cx="0.5" cy="0.3" r="0.4">
-                    <stop offset="0%" stopColor="rgba(251,191,36,0.15)"/>
-                    <stop offset="100%" stopColor="rgba(251,191,36,0)"/>
-                  </radialGradient>
-                </defs>
-                {/* Background */}
-                <rect width="400" height="320" fill="url(#sky)" rx="16"/>
-                <rect width="400" height="320" fill="url(#glow)" rx="16"/>
-                {/* Stars */}
-                <circle cx="50" cy="40" r="1.5" fill="white" opacity="0.8"/>
-                <circle cx="120" cy="25" r="1" fill="white" opacity="0.6"/>
-                <circle cx="300" cy="35" r="1.5" fill="white" opacity="0.7"/>
-                <circle cx="350" cy="60" r="1" fill="white" opacity="0.5"/>
-                <circle cx="80" cy="70" r="1" fill="white" opacity="0.4"/>
-                {/* Moon */}
-                <circle cx="320" cy="50" r="18" fill="url(#moon)" opacity="0.9"/>
-                <circle cx="310" cy="45" r="14" fill="#1a365d" opacity="0.8"/>
-                {/* Ground */}
-                <rect x="0" y="270" width="400" height="50" fill="#1a3a2a"/>
-                {/* Main masjid body */}
-                <rect x="120" y="180" width="160" height="90" fill="#2d5a3d" rx="2"/>
-                {/* Side minarets */}
-                <rect x="95" y="120" width="14" height="150" fill="#3a7a4d" rx="2"/>
-                <rect x="291" y="120" width="14" height="150" fill="#3a7a4d" rx="2"/>
-                {/* Minaret tops (spires) */}
-                <polygon points="102,120 95,105 109,105" fill="#c9a227"/>
-                <polygon points="298,120 291,105 305,105" fill="#c9a227"/>
-                {/* Small crescent on left minaret */}
-                <circle cx="102" cy="100" r="4" fill="#c9a227"/>
-                <circle cx="105" cy="98" r="3.5" fill="#1a365d"/>
-                {/* Small crescent on right minaret */}
-                <circle cx="298" cy="100" r="4" fill="#c9a227"/>
-                <circle cx="301" cy="98" r="3.5" fill="#1a365d"/>
-                {/* Main dome */}
-                <ellipse cx="200" cy="180" rx="65" ry="45" fill="url(#dome)"/>
-                {/* Dome crescent */}
-                <circle cx="210" cy="132" r="5" fill="#c9a227"/>
-                <circle cx="213" cy="130" r="4" fill="#1a365d"/>
-                {/* Dome arch */}
-                <rect x="165" y="180" width="70" height="90" fill="#1a3a2a" rx="2"/>
-                <rect x="175" y="180" width="50" height="90" fill="#2d5a3d" rx="1"/>
-                {/* Arch entrance */}
-                <rect x="185" y="200" width="30" height="70" fill="#c9a227" rx="2"/>
-                <rect x="189" y="200" width="22" height="70" fill="#a17a1f" rx="1"/>
-                {/* Windows on main body */}
-                <rect x="130" y="195" width="16" height="20" fill="#c9a227" rx="8" opacity="0.7"/>
-                <rect x="254" y="195" width="16" height="20" fill="#c9a227" rx="8" opacity="0.7"/>
-                {/* Arched windows on minarets */}
-                <rect x="97" y="140" width="10" height="14" fill="#c9a227" rx="5" opacity="0.5"/>
-                <rect x="293" y="140" width="10" height="14" fill="#c9a227" rx="5" opacity="0.5"/>
-                {/* Additional architectural details */}
-                <rect x="120" y="265" width="160" height="5" fill="#c9a227" opacity="0.6"/>
-                {/* Small side domes */}
-                <ellipse cx="135" cy="190" rx="15" ry="10" fill="#3a7a4d"/>
-                <ellipse cx="265" cy="190" rx="15" ry="10" fill="#3a7a4d"/>
-              </svg>
+              {heroImage ? (
+                <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                  <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <svg viewBox="0 0 400 320" className="w-full max-w-sm drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#1a365d"/>
+                      <stop offset="100%" stopColor="#2d6a4f"/>
+                    </linearGradient>
+                    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#fffbeb"/>
+                      <stop offset="100%" stopColor="#fbbf24"/>
+                    </linearGradient>
+                    <linearGradient id="dome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#c9a227"/>
+                      <stop offset="100%" stopColor="#a17a1f"/>
+                    </linearGradient>
+                    <radialGradient id="glow" cx="0.5" cy="0.3" r="0.4">
+                      <stop offset="0%" stopColor="rgba(251,191,36,0.15)"/>
+                      <stop offset="100%" stopColor="rgba(251,191,36,0)"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="400" height="320" fill="url(#sky)" rx="16"/>
+                  <rect width="400" height="320" fill="url(#glow)" rx="16"/>
+                  <circle cx="50" cy="40" r="1.5" fill="white" opacity="0.8"/>
+                  <circle cx="120" cy="25" r="1" fill="white" opacity="0.6"/>
+                  <circle cx="300" cy="35" r="1.5" fill="white" opacity="0.7"/>
+                  <circle cx="350" cy="60" r="1" fill="white" opacity="0.5"/>
+                  <circle cx="80" cy="70" r="1" fill="white" opacity="0.4"/>
+                  <circle cx="320" cy="50" r="18" fill="url(#moon)" opacity="0.9"/>
+                  <circle cx="310" cy="45" r="14" fill="#1a365d" opacity="0.8"/>
+                  <rect x="0" y="270" width="400" height="50" fill="#1a3a2a"/>
+                  <rect x="120" y="180" width="160" height="90" fill="#2d5a3d" rx="2"/>
+                  <rect x="95" y="120" width="14" height="150" fill="#3a7a4d" rx="2"/>
+                  <rect x="291" y="120" width="14" height="150" fill="#3a7a4d" rx="2"/>
+                  <polygon points="102,120 95,105 109,105" fill="#c9a227"/>
+                  <polygon points="298,120 291,105 305,105" fill="#c9a227"/>
+                  <circle cx="102" cy="100" r="4" fill="#c9a227"/>
+                  <circle cx="105" cy="98" r="3.5" fill="#1a365d"/>
+                  <circle cx="298" cy="100" r="4" fill="#c9a227"/>
+                  <circle cx="301" cy="98" r="3.5" fill="#1a365d"/>
+                  <ellipse cx="200" cy="180" rx="65" ry="45" fill="url(#dome)"/>
+                  <circle cx="210" cy="132" r="5" fill="#c9a227"/>
+                  <circle cx="213" cy="130" r="4" fill="#1a365d"/>
+                  <rect x="165" y="180" width="70" height="90" fill="#1a3a2a" rx="2"/>
+                  <rect x="175" y="180" width="50" height="90" fill="#2d5a3d" rx="1"/>
+                  <rect x="185" y="200" width="30" height="70" fill="#c9a227" rx="2"/>
+                  <rect x="189" y="200" width="22" height="70" fill="#a17a1f" rx="1"/>
+                  <rect x="130" y="195" width="16" height="20" fill="#c9a227" rx="8" opacity="0.7"/>
+                  <rect x="254" y="195" width="16" height="20" fill="#c9a227" rx="8" opacity="0.7"/>
+                  <rect x="97" y="140" width="10" height="14" fill="#c9a227" rx="5" opacity="0.5"/>
+                  <rect x="293" y="140" width="10" height="14" fill="#c9a227" rx="5" opacity="0.5"/>
+                  <rect x="120" y="265" width="160" height="5" fill="#c9a227" opacity="0.6"/>
+                  <ellipse cx="135" cy="190" rx="15" ry="10" fill="#3a7a4d"/>
+                  <ellipse cx="265" cy="190" rx="15" ry="10" fill="#3a7a4d"/>
+                </svg>
+              )}
             </div>
           </div>
 
@@ -608,7 +609,7 @@ useEffect(() => {
             ) : (
               <div className="space-y-5">
                 {dailyVerse?.arabic && (
-                  <p className="text-2xl md:text-3xl lg:text-4xl text-amber-300 text-right quran-arabic" dir="rtl" style={{ lineHeight: "3" }}>
+                  <p className="text-2xl md:text-3xl lg:text-4xl text-amber-300 text-right quran-arabic" dir="rtl">
                     {dailyVerse.arabic}
                   </p>
                 )}
@@ -623,37 +624,37 @@ useEffect(() => {
       </section>
 
       {/* Golden Prayer Times Bar */}
-      <section className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 py-6 md:py-8 border-y-2 border-amber-600">
+      <section className="bg-gradient-to-r from-mhma-gold via-amber-400 to-mhma-gold py-6 md:py-8 border-y-2 border-mhma-gold">
         <div className="max-w-6xl mx-auto px-4">
           {prayerTimesLoading ? (
             <div className="flex justify-center items-center h-20">
-              <div className="animate-pulse text-teal-900 text-sm">Loading prayer times...</div>
+              <div className="animate-pulse text-mhma-forest text-sm">Loading prayer times...</div>
             </div>
           ) : prayerTimes.length > 0 ? (
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="text-center md:text-left shrink-0">
-                <h3 className="text-teal-900 font-bold text-base uppercase tracking-wider mb-1">Today's Prayers</h3>
-                <p className="text-teal-800/80 text-sm">Mountain House, CA</p>
+                <h3 className="text-mhma-forest font-bold text-base uppercase tracking-wider mb-1">Today's Prayers</h3>
+                <p className="text-mhma-forest/80 text-sm">Mountain House, CA</p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 flex-1">
                 {prayerTimes.map((prayer, index) => {
                   const nextIdx = getNextPrayerIndex();
                   const isNext = index === nextIdx;
                   return (
-                    <div key={prayer.name} className={`text-center px-2 md:px-3 ${isNext ? 'bg-teal-900/10 rounded-lg px-3 py-1' : ''}`}>
-                      <p className="text-teal-800/80 text-[10px] md:text-xs uppercase tracking-wider">{prayer.name}</p>
-                      <p className="text-teal-900 font-bold text-sm md:text-lg">{prayer.time}</p>
-                      {isNext && <p className="text-teal-800/60 text-[9px] md:text-[10px] hidden md:block">Next</p>}
+                    <div key={prayer.name} className={`text-center px-2 md:px-3 ${isNext ? 'bg-mhma-forest/10 rounded-lg px-3 py-1' : ''}`}>
+                      <p className="text-mhma-forest/80 text-[10px] md:text-xs uppercase tracking-wider">{prayer.name}</p>
+                      <p className="text-mhma-forest font-bold text-sm md:text-lg">{prayer.time}</p>
+                      {isNext && <p className="text-mhma-forest/60 text-[9px] md:text-[10px] hidden md:block">Next</p>}
                     </div>
                   );
                 })}
               </div>
-              <Link href="/prayer-times" className="text-teal-900 font-semibold text-sm hover:text-amber-100 transition-colors flex items-center gap-1 shrink-0">
+              <Link href="/prayer-times" className="text-mhma-forest font-semibold text-sm hover:text-amber-100 transition-colors flex items-center gap-1 shrink-0">
                 Full Schedule <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
           ) : (
-            <div className="text-center text-teal-900 text-sm">
+            <div className="text-center text-mhma-forest text-sm">
               Prayer times unavailable. <Link href="/prayer-times" className="underline">View full schedule</Link>
             </div>
           )}
@@ -661,27 +662,27 @@ useEffect(() => {
       </section>
 
       {/* Quick Links Section */}
-      <section className="bg-gray-50 border-b border-gray-200">
+      <section className="bg-mhma-cream border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Link href="/prayer-times" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-lg transition-all group">
+            <Link href="/prayer-times" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">🕌</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-amber-600">Prayer Times</h3>
+              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Prayer Times</h3>
               <p className="text-xs text-gray-500 mt-1">DailySalah times</p>
             </Link>
-            <Link href="/programs" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-lg transition-all group">
+            <Link href="/programs" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">📚</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-amber-600">Programs</h3>
+              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Programs</h3>
               <p className="text-xs text-gray-500 mt-1">Quran, Arabic, Hifz</p>
             </Link>
-            <Link href="/donate" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-lg transition-all group">
+            <Link href="/donate" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">💛</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-amber-600">Donate</h3>
+              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Donate</h3>
               <p className="text-xs text-gray-500 mt-1">Support the masjid</p>
             </Link>
-            <Link href="/contact" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-lg transition-all group">
+            <Link href="/contact" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">📞</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-amber-600">Contact</h3>
+              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Contact</h3>
               <p className="text-xs text-gray-500 mt-1">Get in touch</p>
             </Link>
           </div>
@@ -694,9 +695,9 @@ useEffect(() => {
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="lg:w-1/2">
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
-                About <span className="text-amber-600">MHMA</span>
+                About <span className="text-mhma-gold">MHMA</span>
               </h2>
-              <p className="text-amber-600 font-medium text-sm uppercase tracking-wider mb-4">
+              <p className="text-mhma-gold font-medium text-sm uppercase tracking-wider mb-4">
                 Serving Our Community with Transparency
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
@@ -705,18 +706,18 @@ useEffect(() => {
               <p className="text-gray-600 leading-relaxed mb-6">
                 Our masjid is a home for every Muslim — a center of worship, learning, and brotherhood. We welcome all and work to strengthen the bonds between our community and our neighbors.
               </p>
-              <Link href="/about" className="inline-flex items-center text-amber-600 font-semibold hover:translate-x-1 transition-transform">
+              <Link href="/about" className="inline-flex items-center text-mhma-gold font-semibold hover:translate-x-1 transition-transform">
                 Learn More About Us <ChevronRight className="ml-1 w-5 h-5" />
               </Link>
             </div>
             <div className="lg:w-1/2 grid grid-cols-3 gap-4">
               {[
-                { val: '15+', label: 'Years', color: 'bg-teal-800' },
-                { val: '500+', label: 'Families', color: 'bg-teal-700' },
-                { val: '10+', label: 'Programs', color: 'bg-teal-800' }
+                { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
+                { val: '500+', label: 'Families', color: 'bg-mhma-forest-mid' },
+                { val: '10+', label: 'Programs', color: 'bg-mhma-forest' }
               ].map((stat, i) => (
                 <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
-                  <p className="text-2xl font-bold text-amber-400 mb-1 font-serif">{stat.val}</p>
+                  <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
                   <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
                 </div>
               ))}
@@ -726,10 +727,10 @@ useEffect(() => {
       </section>
 
       {/* Programs Section */}
-      <section className="py-16 bg-gray-50 border-t border-gray-200">
+      <section className="py-16 bg-mhma-cream border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 text-center uppercase tracking-wide">
-            Our <span className="text-amber-600">Programs</span> & Classes
+            Our <span className="text-mhma-gold">Programs</span> & Classes
           </h2>
           <p className="text-gray-600 text-center mb-10 max-w-2xl mx-auto">
             Comprehensive Islamic education for children, youth, and adults — fostering faith and knowledge at every stage of life.
@@ -756,17 +757,22 @@ useEffect(() => {
                   title.toLowerCase().includes("3d") || title.toLowerCase().includes("print") ? "🖨️" : "🏫";
 
                 return (
-                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-amber-400 hover:shadow-xl transition-all group">
+                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
                     <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{icon}</div>
-                    <h3 className="font-bold text-gray-900 mb-2 group-hover:text-amber-600">{title}</h3>
+                    <h3 className="font-bold text-gray-900 mb-2 group-hover:text-mhma-gold">{title}</h3>
                     <p className="text-gray-500 text-sm line-clamp-2">{desc}</p>
+                    {isBoardMember && (
+                      <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 p-1.5 bg-gray-100 rounded hover:bg-mhma-gold transition-colors" title="Edit program">
+                        <Edit3 className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
+                      </Link>
+                    )}
                   </Link>
                 );
               });
             })()}
           </div>
           <div className="text-center">
-            <Link href="/programs" className="inline-flex items-center px-6 py-2.5 bg-teal-800 text-white font-semibold rounded-lg hover:bg-teal-700 hover:scale-105 transition-all shadow-lg">
+            <Link href="/programs" className="inline-flex items-center px-6 py-2.5 bg-mhma-forest text-white font-semibold rounded-lg hover:bg-mhma-forest-mid hover:scale-105 transition-all shadow-lg">
               View All Programs <ChevronRight className="ml-2 w-5 h-5" />
             </Link>
           </div>
@@ -777,21 +783,21 @@ useEffect(() => {
       <section id="prayer-times" className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
-            Today's <span className="text-amber-600">Prayer Times</span>
+            Today's <span className="text-mhma-gold">Prayer Times</span>
           </h2>
           
           {/* Jumu'ah box ABOVE - like netjoints */}
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-6 max-w-2xl mx-auto mb-8">
+          <div className="bg-mhma-cream border-2 border-mhma-gold/30 rounded-xl p-6 max-w-2xl mx-auto mb-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h3 className="font-bold text-xl text-gray-900">Jumu'ah — 1st Session</h3>
-                <p className="text-amber-600 font-bold text-lg">1:00 PM</p>
+                <p className="text-mhma-gold font-bold text-lg">1:00 PM</p>
                 <p className="text-gray-500 text-sm">Khutbah begins at 12:45 PM</p>
               </div>
-              <div className="border-t md:border-l border-amber-300 my-2 md:my-0"></div>
+              <div className="border-t md:border-l border-mhma-gold/40 my-2 md:my-0"></div>
               <div>
                 <h3 className="font-bold text-xl text-gray-900">Jumu'ah — 2nd Session</h3>
-                <p className="text-amber-600 font-bold text-lg">2:00 PM</p>
+                <p className="text-mhma-gold font-bold text-lg">2:00 PM</p>
                 <p className="text-gray-500 text-sm">Khutbah begins at 1:45 PM</p>
               </div>
             </div>
@@ -810,18 +816,53 @@ useEffect(() => {
           </div>
           
           <div className="text-center mt-6">
-            <Link href="/prayer-times" className="inline-flex items-center text-amber-600 font-semibold hover:text-amber-700 hover:underline">
+            <Link href="/prayer-times" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600 hover:underline">
               View Full Monthly Schedule <ChevronRight className="ml-1 w-5 h-5" />
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Masjid Construction Progress */}
+      {masjidUpdates.length > 0 && (
+        <section className="py-12 bg-mhma-forest">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="lg:w-1/3">
+                <img src={masjidUpdates[0].image} alt="Masjid Construction" className="w-full rounded-2xl shadow-2xl border-2 border-mhma-gold/20" />
+              </div>
+              <div className="lg:w-2/3 text-white">
+                <p className="text-mhma-gold text-xs font-bold uppercase tracking-widest mb-2">Masjid Construction</p>
+                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-3">{masjidUpdates[0].phase || "Progress Update"}</h2>
+                {masjidUpdates[0].caption && <p className="text-mhma-sage/90 mb-4">{masjidUpdates[0].caption}</p>}
+                {(masjidUpdates[0].raised > 0 || masjidUpdates[0].goal > 0) && (
+                  <div className="max-w-md">
+                    <div className="flex justify-between text-sm text-mhma-sage/80 mb-1">
+                      <span>${masjidUpdates[0].raised.toLocaleString()} raised</span>
+                      <span>Goal: ${masjidUpdates[0].goal.toLocaleString()}</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                      <div className="bg-mhma-gold h-full rounded-full" style={{ width: `${Math.min((masjidUpdates[0].raised / masjidUpdates[0].goal) * 100, 100)}%` }}></div>
+                    </div>
+                    <p className="text-xs text-mhma-sage/60 mt-2">{masjidUpdates[0].progressDate || ""}</p>
+                  </div>
+                )}
+                {isBoardMember && (
+                  <Link href="/dashboard/masjid-construction" className="inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 bg-mhma-gold/20 text-mhma-gold text-xs font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors">
+                    <Edit3 className="w-3 h-3" /> Manage Updates
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Upcoming Events - FIXED to show REAL data */}
-      <section className="py-16 bg-gray-50 border-t border-gray-200">
+      <section className="py-16 bg-mhma-cream border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
-            Upcoming <span className="text-amber-600">Events</span>
+            Upcoming <span className="text-mhma-gold">Events</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {displayEvents.map((event: any, i: number) => {
@@ -831,13 +872,18 @@ useEffect(() => {
                 ? new Date(eventDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
                 : "MAY";
               return (
-                <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-amber-300 transition-all group">
-                  <div className="w-full bg-teal-800 flex flex-col items-center justify-center text-white py-2">
+                <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-mhma-gold transition-all group relative">
+                  <div className="w-full bg-mhma-forest flex flex-col items-center justify-center text-white py-2">
                     <span className="text-xl font-bold">{day}</span>
                     <span className="text-xs uppercase">{month}</span>
+                    {isBoardMember && (
+                      <Link href={`/dashboard/events/edit?id=${event.id}`} className="absolute top-1 right-1 p-1.5 bg-black/20 rounded hover:bg-mhma-gold transition-colors" title="Edit event">
+                        <Edit3 className="w-3 h-3 text-mhma-gold" />
+                      </Link>
+                    )}
                   </div>
                   <div className="p-3">
-                    <h3 className="font-bold text-gray-900 mb-1 group-hover:text-amber-600 text-sm">{event.title || "Untitled"}</h3>
+                    <h3 className="font-bold text-gray-900 mb-1 group-hover:text-mhma-gold text-sm">{event.title || "Untitled"}</h3>
                     <div className="flex items-center text-gray-500 text-xs space-x-2 mb-2">
                       {event.time && (
                         <span className="flex items-center">
@@ -848,23 +894,19 @@ useEffect(() => {
                         <MapPin className="w-3 h-3 mr-1" /> {event.location || "MHMA"}
                       </span>
                     </div>
-                    {event.rsvpLink && (
-                      <a
-                        href={event.rsvpLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block w-full text-center px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded hover:bg-amber-600 transition-colors"
-                      >
-                        RSVP
-                      </a>
-                    )}
+                    <Link
+                      href={`/rsvp?eventId=${event.id}`}
+                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-white text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
+                    >
+                      RSVP
+                    </Link>
                   </div>
                 </div>
               );
             })}
           </div>
           <div className="text-center mt-8">
-            <Link href="/events" className="inline-flex items-center text-amber-600 font-semibold hover:text-amber-700">
+            <Link href="/events" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
               View All Events <ChevronRight className="ml-1 w-5 h-5" />
             </Link>
           </div>
@@ -872,7 +914,7 @@ useEffect(() => {
       </section>
 
       {/* Community Archive */}
-      <section className="py-16 bg-teal-900 text-white">
+      <section className="py-16 bg-mhma-forest text-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-serif font-bold mb-2 uppercase tracking-wide">Community Archive</h2>
@@ -880,18 +922,23 @@ useEffect(() => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {journalEntries.length > 0 ? journalEntries.slice(0, 3).map((entry: any) => (
-              <Link key={entry.id} href="/journal" className="bg-white/5 p-6 rounded-xl border border-white/10 hover:bg-white/10 hover:border-amber-400 transition-all">
-                <p className="text-amber-400 text-xs font-bold mb-3 uppercase tracking-wider">Journal Entry</p>
+              <Link key={entry.id} href="/journal" className="bg-white/5 p-6 rounded-xl border border-white/10 hover:bg-white/10 hover:border-mhma-gold transition-all relative block">
+                <p className="text-mhma-gold text-xs font-bold mb-3 uppercase tracking-wider">Journal Entry</p>
                 <h3 className="font-bold text-lg mb-3 line-clamp-2">{entry.title?.rendered}</h3>
                 <span className="text-gray-500 text-sm">Read More →</span>
+                {isBoardMember && entry.id && entry.id.length > 5 && (
+                  <Link href={`/dashboard/journal/edit?id=${entry.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 p-1.5 bg-white/10 rounded hover:bg-mhma-gold transition-colors" title="Edit entry">
+                    <Edit3 className="w-3.5 h-3.5 text-mhma-gold hover:text-white" />
+                  </Link>
+                )}
               </Link>
             )) : [
               { title: "Board Meeting Minutes - April 2026" },
               { title: "Community Iftar 2026" },
               { title: "Eid Preparation Committee" }
             ].map((e, i) => (
-              <Link key={i} href="/journal" className="bg-white/5 p-6 rounded-xl border border-white/10 hover:bg-white/10 hover:border-amber-400 transition-all">
-                <p className="text-amber-400 text-xs font-bold mb-3 uppercase tracking-wider">Journal Entry</p>
+              <Link key={i} href="/journal" className="bg-white/5 p-6 rounded-xl border border-white/10 hover:bg-white/10 hover:border-mhma-gold transition-all relative block">
+                <p className="text-mhma-gold text-xs font-bold mb-3 uppercase tracking-wider">Journal Entry</p>
                 <h3 className="font-bold text-lg mb-3 line-clamp-2">{e.title}</h3>
                 <span className="text-gray-500 text-sm">Read More →</span>
               </Link>
@@ -904,12 +951,12 @@ useEffect(() => {
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 uppercase tracking-wide">
-            Support Your <span className="text-amber-600">Masjid</span>
+            Support Your <span className="text-mhma-gold">Masjid</span>
           </h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Your generosity keeps our doors open and our programs running. Every contribution — small or large — makes a meaningful difference.
           </p>
-          <Link href="/donate" className="inline-flex items-center px-8 py-3 bg-amber-500 text-teal-900 font-bold rounded-lg hover:bg-amber-400 hover:scale-105 transition-all shadow-lg">
+          <Link href="/donate" className="inline-flex items-center px-8 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-mhma-gold-light hover:scale-105 transition-all shadow-lg">
             Donate Now
           </Link>
           <p className="text-gray-400 text-xs mt-4">Secure · Tax-Deductible · Barakah Multiplied</p>
@@ -917,7 +964,7 @@ useEffect(() => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-100 py-8 border-t border-gray-200">
+      <footer className="bg-mhma-cream py-8 border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
             <div>
@@ -939,10 +986,10 @@ useEffect(() => {
             <div>
               <h4 className="font-bold text-gray-700 mb-2">Quick Links</h4>
               <div className="flex flex-col gap-1 text-sm">
-                <Link href="/donate" className="text-amber-600 hover:underline">Donate</Link>
-                <Link href="/programs" className="text-amber-600 hover:underline">Programs</Link>
-                <Link href="/events" className="text-amber-600 hover:underline">Events</Link>
-                <Link href="/contact" className="text-amber-600 hover:underline">Contact</Link>
+                <Link href="/donate" className="text-mhma-gold hover:underline">Donate</Link>
+                <Link href="/programs" className="text-mhma-gold hover:underline">Programs</Link>
+                <Link href="/events" className="text-mhma-gold hover:underline">Events</Link>
+                <Link href="/contact" className="text-mhma-gold hover:underline">Contact</Link>
               </div>
             </div>
           </div>

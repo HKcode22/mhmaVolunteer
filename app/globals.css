@@ -25,8 +25,9 @@
 
 .quran-arabic {
   font-family: 'IndoPakNastaleeq', 'Amiri', 'Noto Nastaliq Urdu', serif;
-  line-height: 3;
-  word-spacing: 0.2em;
+  line-height: 1.6;
+  word-spacing: 0.02em;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
 }
 

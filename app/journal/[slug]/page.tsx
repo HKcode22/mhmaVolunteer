@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Edit3 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchJournalEntryBySlug } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
 
 const journalContent: Record<string, { title: string; content: string; date: string; attendees: string; data?: any; isImage?: boolean; imageUrl?: string }> = {
   "bod-minutes-for-mhma-board-of-directors-meeting-12-apr-26": {
@@ -1495,6 +1497,7 @@ function renderContent(content: string) {
 export default function JournalEntryPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const { isBoardMember } = useAuth();
 
   const [entry, setEntry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -1584,11 +1587,16 @@ export default function JournalEntryPage() {
 
       <main className="pt-20">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-br from-mhma-cream to-amber-50 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <Link href="/journal" className="text-[#c9a227] hover:underline mb-4 inline-block">
               ← Back to Journal
             </Link>
+            {isBoardMember && (
+              <Link href={`/dashboard/journal/edit?id=${slug}`} className="absolute top-0 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-mhma-gold text-white text-xs font-bold rounded-lg hover:bg-mhma-gold-light transition-colors" title="Edit entry">
+                <Edit3 className="w-3.5 h-3.5" /> EDIT
+              </Link>
+            )}
             <h1 className="text-4xl font-bold text-gray-900 mb-4">{entry.title}</h1>
             {(entry as any).datePublished ? (
               <p className="text-lg text-gray-600">Published On: {(entry as any).datePublished}</p>
