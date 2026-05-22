@@ -45,12 +45,12 @@ export default function ZakatPage() {
 
       <main className="pt-20">
         {/* Zakat Title Section */}
-        <section className="py-16 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <section className="py-16 px-4 bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Our Transparent Zakat Distribution Process
             </h1>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-gray-200 mb-8">
               The{" "}
               <Link
                 href="/committees/zakat-committee"

@@ -17,7 +17,7 @@ export default function FeedbackPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="mhma" />
 
       <main className="pt-20">

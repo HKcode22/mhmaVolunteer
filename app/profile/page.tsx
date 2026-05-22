@@ -121,14 +121,14 @@ export default function ProfilePage() {
   };
 
   if (authLoading || loading) return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="profile" />
       <div className="pt-32 text-center"><p className="text-gray-500">Loading...</p></div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="profile" />
       <PageBanner title="My Profile" highlightedText="Profile" subtitle="Manage your account and personal information." currentPage="profile" />
       <main className="max-w-3xl mx-auto px-4 py-12 space-y-8">

@@ -101,7 +101,7 @@ export default function EventsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="events" />
 
       <PageBanner
@@ -212,7 +212,7 @@ export default function EventsPage() {
       </main>
 
       {/* Call to Action */}
-      <section className="py-24 bg-mhma-dark mhma-pattern relative overflow-hidden">
+      <section className="py-24 bg-mhma-dark relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-8 font-serif italic">Together we are stronger.</h2>
           <p className="text-gray-400 text-lg mb-12 font-light leading-relaxed">

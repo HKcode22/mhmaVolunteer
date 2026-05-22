@@ -80,7 +80,7 @@ export default function LoginPage() {
   const current = tabConfig[tab];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="login" />
       <PageBanner
         title="Sign In"

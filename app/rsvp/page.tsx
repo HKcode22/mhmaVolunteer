@@ -83,7 +83,7 @@ function RSVPForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="events" />
       <PageBanner
         title="RSVP"
@@ -230,7 +230,7 @@ function RSVPForm() {
 
 export default function RSVPPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white"><Navigation currentPage="events" /><div className="pt-32 text-center"><p className="text-gray-500">Loading...</p></div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-mhma-cream"><Navigation currentPage="events" /><div className="pt-32 text-center"><p className="text-gray-500">Loading...</p></div></div>}>
       <RSVPForm />
     </Suspense>
   );

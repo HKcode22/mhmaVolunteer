@@ -82,7 +82,7 @@ export default function EnrollPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-mhma-cream flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-mhma-gold border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600">Checking authentication...</p>
@@ -96,7 +96,7 @@ export default function EnrollPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="enroll" />
       <PageBanner
         title="Program Enrollment"

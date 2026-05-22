@@ -378,6 +378,7 @@ export default function HomePage() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
   const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [heroLoading, setHeroLoading] = useState(true);
   const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
 
   // Fetch prayer times from AlAdhan API
@@ -489,6 +490,8 @@ useEffect(() => {
       }
     } catch (error) {
       console.error("Data fetching error:", error);
+    } finally {
+      setHeroLoading(false);
     }
   };
   loadData();
@@ -510,8 +513,8 @@ useEffect(() => {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-            <div className="lg:w-3/5 text-center lg:text-left lg:pl-2">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+            <div className="lg:w-1/2 text-center lg:text-left lg:pl-4">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-[10px] tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
@@ -529,20 +532,22 @@ useEffect(() => {
                 <Link href="/events" className="mhma-btn-gold">
                   Explore Events
                 </Link>
-                <Link href="/contact#directions" className="mhma-btn-ghost">
-                  Get Directions
+                <Link href="/masjid-construction" className="mhma-btn-ghost">
+                  Build Our Masjid
                 </Link>
               </div>
             </div>
 
             {/* Masjid illustration on right */}
-            <div className="lg:w-2/5 flex justify-center">
-              {heroImage ? (
-                <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+            <div className="lg:w-1/2 flex justify-center lg:justify-end">
+              {heroLoading ? (
+                <div className="w-full max-w-md aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
+              ) : heroImage ? (
+                <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
                   <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <svg viewBox="0 0 400 320" className="w-full max-w-sm drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 400 320" className="w-full max-w-md drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#1a365d"/>

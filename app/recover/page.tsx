@@ -35,7 +35,7 @@ export default function RecoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="login" />
       <PageBanner
         title="Reset Password"

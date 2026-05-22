@@ -10,7 +10,7 @@ import PageBanner from "@/components/PageBanner";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen font-sans">
+    <div className="min-h-screen bg-mhma-cream font-sans">
       <Navigation currentPage="about" />
 
       <PageBanner

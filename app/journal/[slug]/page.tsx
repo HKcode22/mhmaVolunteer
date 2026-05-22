@@ -1587,7 +1587,7 @@ export default function JournalEntryPage() {
 
       <main className="pt-20">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-mhma-cream to-amber-50 py-16">
+        <div className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <Link href="/journal" className="text-[#c9a227] hover:underline mb-4 inline-block">
               ← Back to Journal
@@ -1597,14 +1597,14 @@ export default function JournalEntryPage() {
                 <Edit3 className="w-3.5 h-3.5" /> EDIT
               </Link>
             )}
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{entry.title}</h1>
+            <h1 className="text-4xl font-bold text-white mb-4">{entry.title}</h1>
             {(entry as any).datePublished ? (
-              <p className="text-lg text-gray-600">Published On: {(entry as any).datePublished}</p>
+              <p className="text-lg text-gray-300">Published On: {(entry as any).datePublished}</p>
             ) : (
-              <p className="text-lg text-gray-600">{(entry as any).date || ""}</p>
+              <p className="text-lg text-gray-300">{(entry as any).date || ""}</p>
             )}
             {(entry as any).dateHeldOn && (
-              <p className="text-lg text-gray-600">Held On: {(entry as any).dateHeldOn}</p>
+              <p className="text-lg text-gray-300">Held On: {(entry as any).dateHeldOn}</p>
             )}
           </div>
         </div>

@@ -27,11 +27,11 @@ export default function DonatePage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="donate" />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
+      <section className="relative pt-28 pb-16 md:pt-32 md:pb-20 overflow-hidden bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-mhma-gold/30 bg-mhma-gold/10 backdrop-blur-sm text-mhma-gold text-xs font-bold tracking-widest uppercase">
             Support Our Community
@@ -143,7 +143,7 @@ export default function DonatePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-mhma-dark mhma-pattern py-20 text-white">
+      <footer className="bg-mhma-dark py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="Logo" width={220} height={45} className="mx-auto mb-12 opacity-90" />
           <div className="flex justify-center space-x-6 mb-12">

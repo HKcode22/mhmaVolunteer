@@ -108,7 +108,7 @@ export default function JournalPage() {
   const displayEntries = journalEntries;
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="journal" />
 
       <PageBanner
@@ -176,7 +176,7 @@ export default function JournalPage() {
         </main>
 
       {/* Footer */}
-      <footer className="bg-mhma-dark mhma-pattern py-20 text-white mt-auto">
+      <footer className="bg-mhma-dark py-20 text-white mt-auto">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="Logo" width={220} height={45} className="mx-auto mb-12 opacity-90" />
           <p className="text-gray-500 text-sm tracking-widest uppercase mb-4">© 2026 Mountain House Muslim Association</p>

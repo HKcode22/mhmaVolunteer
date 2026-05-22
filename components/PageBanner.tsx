@@ -16,7 +16,7 @@ export default function PageBanner({
   currentPage
 }: PageBannerProps) {
   return (
-    <section className="relative pt-32 pb-20 md:pt-36 md:pb-24 lg:pt-44 lg:pb-28 overflow-hidden bg-gradient-to-br from-mhma-forest to-mhma-forest-mid mhma-pattern">
+    <section className="relative pt-28 pb-16 md:pt-32 md:pb-20 overflow-hidden bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light">
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute top-10 right-10 w-64 h-64 bg-mhma-gold/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-32 h-32 bg-mhma-gold/10 rounded-full blur-2xl"></div>

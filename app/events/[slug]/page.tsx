@@ -48,7 +48,7 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FDFDFD]">
+      <div className="min-h-screen bg-mhma-cream">
         <Navigation currentPage="events" />
         <div className="pt-32 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
@@ -59,7 +59,7 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-[#FDFDFD]">
+      <div className="min-h-screen bg-mhma-cream">
         <Navigation currentPage="events" />
         <div className="pt-32 text-center">
           <p className="text-gray-500">Event not found.</p>
@@ -70,7 +70,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD]">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="events" />
       <PageBanner
         title={event.title || "Event Details"}

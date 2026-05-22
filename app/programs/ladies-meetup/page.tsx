@@ -15,11 +15,11 @@ import {
 
 export default function LadiesMeetupPage() {
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="programs" />
 
       {/* Hero Section - Consistent with Arabic Academy */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <Link href="/programs" className="inline-flex items-center text-mhma-gold font-bold mb-8 hover:-translate-x-2 transition-transform text-sm tracking-widest uppercase">
             <ChevronLeft className="w-4 h-4 mr-2" /> All Programs
@@ -89,7 +89,7 @@ export default function LadiesMeetupPage() {
               </div>
 
               {/* Testimonial */}
-              <div className="bg-mhma-dark p-10 rounded-3xl text-white relative mhma-pattern">
+              <div className="bg-mhma-dark p-10 rounded-3xl text-white relative">
                 <div className="text-4xl text-mhma-gold opacity-50 mb-4 font-serif">"</div>
                 <p className="text-lg italic font-light mb-6 leading-relaxed">It is great to have the opportunity to meet with other like minded people, and that too over some delicious snacks.</p>
                 <div className="flex items-center">

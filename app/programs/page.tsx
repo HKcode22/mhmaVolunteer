@@ -88,7 +88,7 @@ export default function ProgramsPage() {
   const displayPrograms = allPrograms;
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="programs" />
 
       <PageBanner
@@ -160,7 +160,7 @@ export default function ProgramsPage() {
       </main>
 
       {/* Secondary Banner */}
-      <section className="py-24 bg-mhma-dark mhma-pattern text-white">
+      <section className="py-24 bg-mhma-dark text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <Sparkles className="w-12 h-12 text-mhma-gold mx-auto mb-8" />
           <h2 className="text-3xl md:text-5xl font-bold mb-6 font-serif">Community Enrichment</h2>

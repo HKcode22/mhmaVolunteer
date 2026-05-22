@@ -23,22 +23,17 @@ import Image from 'next/image';
 
 export default function MHMAPage() {
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="mhma" />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
-          <div className="absolute top-10 left-10 w-32 h-32 border border-mhma-gold rounded-full blur-2xl"></div>
-          <div className="absolute bottom-10 right-10 w-64 h-64 border border-mhma-gold rounded-full blur-3xl"></div>
-        </div>
-
+      <section className="relative pt-28 pb-16 md:pt-32 md:pb-20 overflow-hidden bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-mhma-gold/30 bg-mhma-gold/10 backdrop-blur-sm">
-            <p className="text-mhma-gold font-bold tracking-widest uppercase text-xs md:text-sm">Our Mission & Values</p>
+          <div className="inline-block px-4 py-1.5 mb-6 rounded-sm border border-mhma-gold/40 bg-mhma-gold/10 backdrop-blur-sm text-mhma-gold text-xs font-medium tracking-widest uppercase">
+            Mountain House Muslim Association
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight font-serif max-w-5xl mx-auto">
-            We believe in <span className="text-mhma-gold italic">unity</span> and helping others.
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-serif uppercase tracking-tight">
+            About <span className="text-mhma-gold italic">MHMA</span>
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -136,7 +131,7 @@ export default function MHMAPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-mhma-dark mhma-pattern py-20 text-white mt-auto">
+      <footer className="bg-mhma-dark py-20 text-white mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
             <Image 

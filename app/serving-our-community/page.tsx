@@ -11,13 +11,13 @@ export default function ServingOurCommunityPage() {
 
       <main className="pt-20">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-16">
+        <div className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Link href="/mhmapage" className="text-[#c9a227] hover:underline mb-4 inline-block">
+            <Link href="/mhmapage" className="text-mhma-gold hover:underline mb-4 inline-block">
               ← Back to MHMA
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Serving Our Community with Transparency</h1>
-            <p className="text-xl text-gray-600">Building trust through open communication and accountability</p>
+            <h1 className="text-4xl font-bold text-white mb-4">Serving Our Community with Transparency</h1>
+            <p className="text-xl text-gray-300">Building trust through open communication and accountability</p>
           </div>
         </div>
 

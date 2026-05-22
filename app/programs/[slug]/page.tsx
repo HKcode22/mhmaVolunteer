@@ -65,7 +65,7 @@ export default function DynamicProgramPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col font-sans bg-[#FDFDFD]">
+      <div className="min-h-screen flex flex-col font-sans bg-mhma-cream">
         <Navigation currentPage="programs" />
         <div className="flex-grow flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-mhma-gold"></div>
@@ -82,11 +82,11 @@ export default function DynamicProgramPage() {
   const stats = programData.stats?.filter(s => s.label && s.value) || [];
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-[#FDFDFD]">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
       <Navigation currentPage="programs" />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden mhma-gradient mhma-pattern">
+      <section className="relative pt-28 pb-16 md:pt-32 md:pb-20 overflow-hidden bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <Link href="/programs" className="inline-flex items-center text-mhma-gold font-bold mb-8 hover:-translate-x-2 transition-transform text-sm tracking-widest uppercase">
             <ChevronLeft className="w-4 h-4 mr-2" /> All Programs
@@ -163,7 +163,7 @@ export default function DynamicProgramPage() {
               </div>
 
               {/* Quote Block */}
-              <div className="bg-mhma-dark p-10 rounded-3xl text-white relative mhma-pattern">
+              <div className="bg-mhma-dark p-10 rounded-3xl text-white relative">
                 <div className="text-4xl text-mhma-gold opacity-50 mb-4 font-serif">"</div>
                 <p className="text-lg italic font-light mb-6 leading-relaxed">Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)</p>
                 <div className="flex items-center">
