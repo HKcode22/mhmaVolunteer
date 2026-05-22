@@ -115,7 +115,7 @@ export default function DynamicProgramPage() {
                   </div>
                 )}
                 {programData.additionalContent && (
-                  <div className="mt-12 p-8 bg-gray-50 rounded-3xl border border-gray-100" dangerouslySetInnerHTML={{ __html: programData.additionalContent }} />
+                  <div className="mt-12 p-8 bg-mhma-cream rounded-3xl border border-gray-100" dangerouslySetInnerHTML={{ __html: programData.additionalContent }} />
                 )}
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function DynamicProgramPage() {
           <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="Logo" width={200} height={40} className="mx-auto mb-12 opacity-80" />
           <div className="flex justify-center space-x-6 mb-12">
              {[Facebook, Instagram, Twitter, Linkedin, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-mhma-gold hover:text-white transition-all border border-gray-100">
+                <a key={i} href="#" className="w-10 h-10 rounded-full bg-mhma-cream flex items-center justify-center text-gray-400 hover:bg-mhma-gold hover:text-white transition-all border border-gray-100">
                   <Icon className="w-4 h-4" />
                 </a>
              ))}

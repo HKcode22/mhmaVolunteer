@@ -100,7 +100,7 @@ export default function MHMAPage() {
       </section>
 
       {/* Program Pillars Section */}
-      <section className="bg-gray-50 border-y border-gray-100">
+      <section className="bg-mhma-cream border-y border-gray-100">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {[
             { title: 'Community Service', icon: Users2, color: 'bg-[#e57373]', desc: 'Continuous involvement in the local community to build strong bonds with our neighbors.' },
@@ -123,7 +123,7 @@ export default function MHMAPage() {
       {/* Values & Policy Section */}
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="bg-gray-50 rounded-3xl p-12 text-center border border-gray-100 relative overflow-hidden">
+           <div className="bg-mhma-cream rounded-3xl p-12 text-center border border-gray-100 relative overflow-hidden">
              <div className="absolute top-0 right-0 p-8 opacity-5">
                <ShieldCheck className="w-48 h-48" />
              </div>

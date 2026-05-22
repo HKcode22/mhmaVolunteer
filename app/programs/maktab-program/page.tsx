@@ -50,7 +50,7 @@ export default function MaktabProgramPage() {
                   Our Prophet (PBUH) said, <strong>"All of you are shepherds and you will all be asked about your flock." (Bukhari)</strong>. Our children are our greatest responsibility, and it is upon us to impart this religion to them.
                 </p>
 
-                <div className="my-12 p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                <div className="my-12 p-8 bg-mhma-cream rounded-3xl border border-gray-100">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4 font-serif">Curriculum</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start">
@@ -68,7 +68,7 @@ export default function MaktabProgramPage() {
                   </ul>
                 </div>
 
-                <div className="my-12 p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                <div className="my-12 p-8 bg-mhma-cream rounded-3xl border border-gray-100">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4 font-serif">Our Teachers</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start">
@@ -157,7 +157,7 @@ export default function MaktabProgramPage() {
           <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="Logo" width={200} height={40} className="mx-auto mb-12 opacity-80" />
           <div className="flex justify-center space-x-6 mb-12">
              {[Facebook, Instagram, Twitter, Linkedin, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-mhma-gold hover:text-white transition-all border border-gray-100">
+                <a key={i} href="#" className="w-10 h-10 rounded-full bg-mhma-cream flex items-center justify-center text-gray-400 hover:bg-mhma-gold hover:text-white transition-all border border-gray-100">
                   <Icon className="w-4 h-4" />
                 </a>
              ))}

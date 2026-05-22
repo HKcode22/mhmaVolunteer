@@ -25,7 +25,7 @@ export default function AboutPage() {
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="lg:w-1/2">
               <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
-                Our <span className="text-amber-600">Story</span>
+                Our <span className="text-mhma-gold">Story</span>
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
                 The Mountain House Muslim Association (MHMA) was established in 2010 with a Vision to serve the Muslim community of Mountain House and the surrounding Bay Area. What started as a small congregation has grown into a thriving community center that serves hundreds of families.
@@ -41,12 +41,12 @@ export default function AboutPage() {
               <div className="bg-teal-50 rounded-xl p-8 border border-teal-100">
                 <div className="grid grid-cols-3 gap-4">
                   {[
-                    { val: '15+', label: 'Years', color: 'bg-teal-800' },
+                    { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
                     { val: '500+', label: 'Families', color: 'bg-teal-700' },
-                    { val: '10+', label: 'Programs', color: 'bg-teal-800' }
+                    { val: '10+', label: 'Programs', color: 'bg-mhma-forest' }
                   ].map((stat, i) => (
                     <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
-                      <p className="text-2xl font-bold text-amber-400 mb-1 font-serif">{stat.val}</p>
+                      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
                       <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
                     </div>
                   ))}
@@ -81,7 +81,7 @@ export default function AboutPage() {
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-serif font-bold text-gray-900 mb-8 text-center">
-            Our <span className="text-amber-600">Values</span>
+            Our <span className="text-mhma-gold">Values</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
@@ -143,10 +143,10 @@ export default function AboutPage() {
             <div>
               <h4 className="font-bold text-gray-700 mb-2">Quick Links</h4>
               <div className="flex flex-col gap-1 text-sm">
-                <Link href="/donate" className="text-amber-600 hover:underline">Donate</Link>
-                <Link href="/programs" className="text-amber-600 hover:underline">Programs</Link>
-                <Link href="/events" className="text-amber-600 hover:underline">Events</Link>
-                <Link href="/contact" className="text-amber-600 hover:underline">Contact</Link>
+                <Link href="/donate" className="text-mhma-gold hover:underline">Donate</Link>
+                <Link href="/programs" className="text-mhma-gold hover:underline">Programs</Link>
+                <Link href="/events" className="text-mhma-gold hover:underline">Events</Link>
+                <Link href="/contact" className="text-mhma-gold hover:underline">Contact</Link>
               </div>
             </div>
           </div>

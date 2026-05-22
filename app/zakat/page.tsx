@@ -54,7 +54,7 @@ export default function ZakatPage() {
               The{" "}
               <Link
                 href="/committees/zakat-committee"
-                className="text-[#c9a227] hover:underline font-medium"
+                className="text-mhma-gold hover:underline font-medium"
               >
                 Zakat Committee
               </Link>{" "}
@@ -68,7 +68,7 @@ export default function ZakatPage() {
                 All zakat related requests should be emailed to{" "}
                 <a
                   href="mailto:zakat@mhma.info"
-                  className="text-[#c9a227] hover:underline font-medium inline-flex items-center"
+                  className="text-mhma-gold hover:underline font-medium inline-flex items-center"
                 >
                   <Mail className="w-4 h-4 mr-1" />
                   zakat@mhma.info
@@ -78,7 +78,7 @@ export default function ZakatPage() {
                 href="https://mhma.us/wp-content/uploads/2025/01/Zakat-and-Sadqah-Application.docx"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors"
+                className="inline-flex items-center bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-3 px-6 rounded transition-colors"
               >
                 <Download className="w-5 h-5 mr-2" />
                 Download Zakat Application
@@ -93,10 +93,10 @@ export default function ZakatPage() {
               {zakatSteps.map((step, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-[#c9a227] hover:shadow-md transition-shadow"
+                  className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-mhma-gold hover:shadow-md transition-shadow"
                 >
                   <h3 className="text-xl font-bold text-gray-800 mb-3">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-[#c9a227] text-white rounded-full text-sm font-bold mr-3">
+                    <span className="inline-flex items-center justify-center w-8 h-8 bg-mhma-gold text-white rounded-full text-sm font-bold mr-3">
                       {step.number}
                     </span>
                     {step.title}
@@ -132,7 +132,7 @@ export default function ZakatPage() {
                 href="https://www.facebook.com/mhma95391"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-mhma-gold transition-colors"
               >
                 <Facebook className="w-5 h-5" />
               </a>
@@ -140,7 +140,7 @@ export default function ZakatPage() {
                 href="https://www.instagram.com/mhma.ig/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-mhma-gold transition-colors"
               >
                 <Instagram className="w-5 h-5" />
               </a>
@@ -148,7 +148,7 @@ export default function ZakatPage() {
                 href="https://x.com/i/flow/login?redirect_after_login=%2Fmhmatweets"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-mhma-gold transition-colors"
               >
                 <Twitter className="w-5 h-5" />
               </a>
@@ -156,7 +156,7 @@ export default function ZakatPage() {
                 href="https://www.linkedin.com/company/mountain-house-muslim-association/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-mhma-gold transition-colors"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
@@ -164,7 +164,7 @@ export default function ZakatPage() {
                 href="https://www.youtube.com/@MHMAYouTube"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#c9a227] transition-colors"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-mhma-gold transition-colors"
               >
                 <Youtube className="w-5 h-5" />
               </a>

@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { addProgram } from "@/lib/firebase";
+import { addProgram, logActivity } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/components/Navigation";
 
 export default function NewProgramPage() {
   const router = useRouter();
-  const { isBoardMember, loading: authLoading } = useAuth();
+  const { user, isBoardMember, loading: authLoading } = useAuth();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -57,7 +57,7 @@ export default function NewProgramPage() {
         { label: formData.stat4Label, value: formData.stat4Value },
       ].filter(s => s.label || s.value);
 
-      await addProgram({
+      const programId = await addProgram({
         title: formData.title || formData.programTitle,
         slug,
         description: formData.programDescription,
@@ -69,6 +69,7 @@ export default function NewProgramPage() {
         createdBy: "board",
       });
       setSuccess("Program created!");
+      if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "program_create", details: `Created program: ${formData.title || formData.programTitle}`, targetType: "program", targetId: programId });
       setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to create program");
@@ -82,7 +83,7 @@ export default function NewProgramPage() {
       <Navigation currentPage="dashboard" />
       <main className="pt-20">
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <Link href="/dashboard" className="inline-flex items-center text-[#c9a227] hover:text-[#8c7622] mb-4">
+          <Link href="/dashboard" className="inline-flex items-center text-mhma-gold hover:text-[#8c7622] mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Add New Program</h1>
@@ -94,25 +95,25 @@ export default function NewProgramPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
                 <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
                 <input type="text" value={formData.slug} onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="Auto-generated if empty" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" placeholder="Auto-generated if empty" />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Program Title</label>
               <input type="text" value={formData.programTitle} onChange={e => setFormData({ ...formData, programTitle: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea value={formData.programDescription} onChange={e => setFormData({ ...formData, programDescription: e.target.value })} rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -120,15 +121,15 @@ export default function NewProgramPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
                 <div className="flex gap-2 items-start">
                   <div className="flex-1">
-                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors text-sm">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-mhma-gold transition-colors text-sm">
                       <Upload className="w-3 h-3" />
                       <span>{uploading === "programImage" ? "Uploading..." : "Upload"}</span>
                       <input type="file" accept="image/*" onChange={e => handleFileUpload(e, "programImage")} disabled={uploading !== null} className="hidden" />
                     </label>
-                    {uploading === "programImage" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-[#c9a227]" />}
+                    {uploading === "programImage" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-mhma-gold" />}
                   </div>
                   <input type="url" value={formData.programImage} onChange={e => setFormData({ ...formData, programImage: e.target.value })}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none text-sm"
                     placeholder="Or paste URL" />
                 </div>
                 {formData.programImage && <img src={formData.programImage} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
@@ -137,15 +138,15 @@ export default function NewProgramPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</label>
                 <div className="flex gap-2 items-start">
                   <div className="flex-1">
-                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-[#c9a227] transition-colors text-sm">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-mhma-gold transition-colors text-sm">
                       <Upload className="w-3 h-3" />
                       <span>{uploading === "programImagePoster" ? "Uploading..." : "Upload"}</span>
                       <input type="file" accept="image/*" onChange={e => handleFileUpload(e, "programImagePoster")} disabled={uploading !== null} className="hidden" />
                     </label>
-                    {uploading === "programImagePoster" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-[#c9a227]" />}
+                    {uploading === "programImagePoster" && <Loader2 className="w-3 h-3 mt-1 animate-spin text-mhma-gold" />}
                   </div>
                   <input type="url" value={formData.programImagePoster} onChange={e => setFormData({ ...formData, programImagePoster: e.target.value })}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none text-sm"
                     placeholder="Or paste URL" />
                 </div>
                 {formData.programImagePoster && <img src={formData.programImagePoster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
@@ -159,11 +160,11 @@ export default function NewProgramPage() {
                   <input type="text" placeholder={`Stat ${i} Label`}
                     value={(formData as any)[`stat${i}Label`]}
                     onChange={e => setFormData({ ...formData, [`stat${i}Label`]: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
                   <input type="text" placeholder={`Stat ${i} Value`}
                     value={(formData as any)[`stat${i}Value`]}
                     onChange={e => setFormData({ ...formData, [`stat${i}Value`]: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
                 </div>
               ))}
             </div>
@@ -171,11 +172,11 @@ export default function NewProgramPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Additional Content (HTML)</label>
               <textarea value={formData.additionalContent} onChange={e => setFormData({ ...formData, additionalContent: e.target.value })} rows={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none font-mono text-sm" />
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none font-mono text-sm" />
             </div>
 
             <button type="submit" disabled={saving}
-              className="w-full bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
+              className="w-full bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
               {saving ? "Saving..." : "Create Program"}
             </button>
           </form>

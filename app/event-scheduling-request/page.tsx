@@ -46,7 +46,15 @@ export default function EventSchedulingRequestPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "phone") {
+      const digits = value.replace(/\D/g, "").slice(0, 10);
+      let formatted = digits;
+      if (digits.length > 3) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+      if (digits.length > 6) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      setFormData((prev) => ({ ...prev, [name]: formatted }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleCheckboxChange = (name: string, value: string) => {
@@ -134,7 +142,7 @@ export default function EventSchedulingRequestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="event-scheduling-request" />
 
       {/* Main Content */}
@@ -169,7 +177,7 @@ export default function EventSchedulingRequestPage() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     required
                   />
                 </div>
@@ -183,7 +191,7 @@ export default function EventSchedulingRequestPage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     required
                   />
                 </div>
@@ -197,7 +205,7 @@ export default function EventSchedulingRequestPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     required
                   />
                 </div>
@@ -211,7 +219,7 @@ export default function EventSchedulingRequestPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                   />
                 </div>
               </div>
@@ -231,7 +239,7 @@ export default function EventSchedulingRequestPage() {
                     name="eventTitle"
                     value={formData.eventTitle}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     required
                   />
                 </div>
@@ -244,7 +252,7 @@ export default function EventSchedulingRequestPage() {
                     name="eventCategory"
                     value={formData.eventCategory}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     required
                   >
                     <option value="">Please Select Category</option>
@@ -267,7 +275,7 @@ export default function EventSchedulingRequestPage() {
                     value={formData.eventDescription}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Please provide as much information as possible, including event category detail if you selected other"
                     required
                   />
@@ -283,7 +291,7 @@ export default function EventSchedulingRequestPage() {
                       name="start"
                       value={formData.start}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                       required
                     />
                   </div>
@@ -297,7 +305,7 @@ export default function EventSchedulingRequestPage() {
                       name="end"
                       value={formData.end}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                       required
                     />
                   </div>
@@ -316,7 +324,7 @@ export default function EventSchedulingRequestPage() {
                     value="yes"
                     checked={formData.hasHostSpeaker === "yes"}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                    className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                   />
                   <span className="ml-2 text-gray-700">Yes</span>
                 </label>
@@ -327,7 +335,7 @@ export default function EventSchedulingRequestPage() {
                     value="no"
                     checked={formData.hasHostSpeaker === "no"}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                    className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                   />
                   <span className="ml-2 text-gray-700">No</span>
                 </label>
@@ -345,7 +353,7 @@ export default function EventSchedulingRequestPage() {
                     value="yes"
                     checked={formData.hasFood === "yes"}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                    className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                   />
                   <span className="ml-2 text-gray-700">Yes</span>
                 </label>
@@ -356,7 +364,7 @@ export default function EventSchedulingRequestPage() {
                     value="no"
                     checked={formData.hasFood === "no"}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                    className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                   />
                   <span className="ml-2 text-gray-700">No</span>
                 </label>
@@ -373,7 +381,7 @@ export default function EventSchedulingRequestPage() {
                           type="checkbox"
                           checked={formData.foodService.includes(option)}
                           onChange={() => handleCheckboxChange("foodService", option)}
-                          className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300 rounded"
+                          className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300 rounded"
                         />
                         <span className="ml-2 text-gray-700">{option}</span>
                       </label>
@@ -397,7 +405,7 @@ export default function EventSchedulingRequestPage() {
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Location"
                   />
                 </div>
@@ -410,7 +418,7 @@ export default function EventSchedulingRequestPage() {
                     name="facility"
                     value={formData.facility}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                   >
                     <option value="">Select Facility</option>
                     <option value="unity-center">Unity Center</option>
@@ -436,7 +444,7 @@ export default function EventSchedulingRequestPage() {
                     name="roundTables"
                     value={formData.roundTables}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Please enter the number of round tables needed"
                     min="0"
                   />
@@ -451,7 +459,7 @@ export default function EventSchedulingRequestPage() {
                     name="rectangularTables"
                     value={formData.rectangularTables}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Please enter the number of rectangular tables needed"
                     min="0"
                   />
@@ -466,7 +474,7 @@ export default function EventSchedulingRequestPage() {
                     name="chairs"
                     value={formData.chairs}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Please enter the number of chairs needed"
                     min="0"
                   />
@@ -481,7 +489,7 @@ export default function EventSchedulingRequestPage() {
                           type="checkbox"
                           checked={formData.equipment.includes(item)}
                           onChange={() => handleCheckboxChange("equipment", item)}
-                          className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300 rounded"
+                          className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300 rounded"
                         />
                         <span className="ml-2 text-gray-700">{item}</span>
                       </label>
@@ -505,7 +513,7 @@ export default function EventSchedulingRequestPage() {
                     name="volunteers"
                     value={formData.volunteers}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Please enter the number of volunteers needed"
                     min="0"
                   />
@@ -520,7 +528,7 @@ export default function EventSchedulingRequestPage() {
                     name="helpers"
                     value={formData.helpers}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                     placeholder="Please enter the number of paid helpers needed"
                     min="0"
                   />
@@ -542,7 +550,7 @@ export default function EventSchedulingRequestPage() {
                         value="yes"
                         checked={formData.rsvpRequired === "yes"}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                        className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                       />
                       <span className="ml-2 text-gray-700">Yes</span>
                     </label>
@@ -553,7 +561,7 @@ export default function EventSchedulingRequestPage() {
                         value="no"
                         checked={formData.rsvpRequired === "no"}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                        className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                       />
                       <span className="ml-2 text-gray-700">No</span>
                     </label>
@@ -569,7 +577,7 @@ export default function EventSchedulingRequestPage() {
                         value="yes"
                         checked={formData.paymentRequired === "yes"}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                        className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                       />
                       <span className="ml-2 text-gray-700">Yes</span>
                     </label>
@@ -580,7 +588,7 @@ export default function EventSchedulingRequestPage() {
                         value="no"
                         checked={formData.paymentRequired === "no"}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-[#c9a227] focus:ring-[#c9a227] border-gray-300"
+                        className="w-4 h-4 text-mhma-gold focus:ring-mhma-gold border-gray-300"
                       />
                       <span className="ml-2 text-gray-700">No</span>
                     </label>
@@ -602,7 +610,7 @@ export default function EventSchedulingRequestPage() {
                   value={formData.comments}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a227] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
                 />
               </div>
             </div>
@@ -611,7 +619,7 @@ export default function EventSchedulingRequestPage() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-[#c9a227] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#b89120] transition-colors focus:outline-none focus:ring-2 focus:ring-[#c9a227] focus:ring-offset-2"
+                className="bg-mhma-gold text-white px-8 py-3 rounded-lg font-semibold hover:bg-mhma-gold transition-colors focus:outline-none focus:ring-2 focus:ring-mhma-gold focus:ring-offset-2"
               >
                 Submit Request
               </button>

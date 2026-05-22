@@ -94,11 +94,11 @@ export default function DonatePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                   <div className="p-6 bg-mhma-cream rounded-2xl border border-gray-100">
                      <h4 className="font-bold text-gray-900 mb-2 font-serif uppercase tracking-tight">Recurring Donations</h4>
                      <p className="text-gray-500 text-sm font-light">Set up a monthly contribution to provide stable support for our operations and programs.</p>
                    </div>
-                   <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                   <div className="p-6 bg-mhma-cream rounded-2xl border border-gray-100">
                      <h4 className="font-bold text-gray-900 mb-2 font-serif uppercase tracking-tight">Zakat-ul-Maal</h4>
                      <p className="text-gray-500 text-sm font-light">Fulfill your religious obligation through our dedicated Zakat fund, distributed according to Islamic guidelines.</p>
                    </div>

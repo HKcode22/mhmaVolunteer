@@ -195,7 +195,7 @@ export default function MemberPage() {
       {/* Main Content */}
       <main className="pt-20">
         {/* Blog Posts Grid */}
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="py-16 px-4 bg-mhma-cream">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Member Resources</h1>

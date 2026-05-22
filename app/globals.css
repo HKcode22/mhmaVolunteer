@@ -2,10 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'IndoPakNastaleeq';
+  src: url('/font.woff2') format('woff2'),
+       url('https://static-cdn.tarteel.ai/qul/fonts/nastaleeq/Hanafi/normal-v4.2.2/with-waqf-lazmi/font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
   }
+}
+
+.font-arabic {
+  line-height: 2.2;
+  word-spacing: 0.1em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.quran-arabic {
+  font-family: 'IndoPakNastaleeq', 'Amiri', 'Noto Nastaliq Urdu', serif;
+  line-height: 3;
+  word-spacing: 0.2em;
+  -webkit-font-smoothing: antialiased;
 }
 
 .mhma-pattern {
@@ -14,6 +36,26 @@
 }
 
 .mhma-gradient {
-  @apply bg-gradient-to-br from-mhma-teal to-mhma-dark;
+  @apply bg-gradient-to-br from-mhma-forest to-mhma-forest-mid;
+}
+
+.mhma-gold-gradient {
+  @apply bg-gradient-to-r from-mhma-gold to-mhma-gold-light;
+}
+
+.mhma-section {
+  @apply bg-mhma-cream;
+}
+
+.mhma-card {
+  @apply bg-white border border-[#E8E2D4] rounded-sm;
+}
+
+.mhma-btn-gold {
+  @apply bg-mhma-gold text-mhma-forest font-medium text-xs uppercase tracking-[.06em] px-7 py-3.5 rounded-sm hover:bg-mhma-gold-light transition-all;
+}
+
+.mhma-btn-ghost {
+  @apply bg-transparent text-white border border-white/30 text-xs uppercase tracking-[.06em] px-7 py-3.5 rounded-sm hover:border-white/60 transition-all;
 }
 

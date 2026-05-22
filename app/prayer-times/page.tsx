@@ -89,18 +89,18 @@ export default function PrayerTimesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="prayer-times" />
 
-      <section className="pt-52 md:pt-56 pb-16 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 text-white relative overflow-hidden">
+      <section className="pt-52 md:pt-56 pb-16 bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <div className="absolute top-10 right-10 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute top-10 right-10 w-64 h-64 bg-mhma-gold/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-32 h-32 bg-mhma-gold/10 rounded-full blur-2xl"></div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
           <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold mb-5 uppercase tracking-wide leading-tight">
-            Prayer <span className="text-amber-400">Times</span>
+            Prayer <span className="text-mhma-gold italic">Times</span>
           </h1>
           <p className="text-xl md:text-2xl lg:text-3xl text-gray-200 max-w-3xl mx-auto font-light tracking-[0.2em] uppercase">
             Mountain House, California
@@ -120,34 +120,35 @@ export default function PrayerTimesPage() {
           ) : (
             <>
               <p className="text-gray-700 text-xl mb-1 font-medium">{currentDate}</p>
-              <p className="text-amber-600 font-semibold text-lg">{hijriDate}</p>
+              <p className="text-mhma-gold font-semibold text-lg">{hijriDate}</p>
             </>
           )}
         </div>
       </section>
 
-      <section className="py-12 bg-amber-50">
+      <section className="py-12 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
-              Jumu'ah <span className="text-amber-600">Prayer</span>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1C2A20] mb-2 uppercase tracking-wide">
+              Jumu'ah <span className="text-mhma-gold">Prayer</span>
             </h2>
-            <div className="w-24 h-1 bg-amber-400 mx-auto mb-4"></div>
+            <div className="w-24 h-px bg-mhma-gold mx-auto mb-4"></div>
             <p className="text-gray-600">Unity Center, Mountain House</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {jumuahTimes.map((session, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-lg border-2 border-amber-200 hover:shadow-xl transition-shadow">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{session.session}</h3>
+              <div key={index} className="bg-white rounded-sm p-6 shadow-lg border border-[#E8E2D4] hover:shadow-xl transition-shadow">
+                <div className="h-0.5 bg-mhma-gold w-full mb-4"></div>
+                <h3 className="text-xl font-bold text-[#1C2A20] mb-4">{session.session}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Khutbah Begins</span>
-                    <span className="text-amber-600 font-bold">{session.khutbah}</span>
+                    <span className="text-mhma-gold font-bold">{session.khutbah}</span>
                   </div>
                   <div className="flex justify-between items-center border-t border-gray-100 pt-2">
                     <span className="text-gray-600">Jumu'ah Prayer</span>
-                    <span className="text-amber-600 font-bold text-lg">{session.time}</span>
+                    <span className="text-mhma-gold font-bold text-lg">{session.time}</span>
                   </div>
                 </div>
               </div>

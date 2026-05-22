@@ -22,6 +22,17 @@ export default function EnrollPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setFormData({ ...formData, phone: formatPhone(value) });
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -73,7 +84,7 @@ export default function EnrollPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-[#c9a227] border-t-transparent rounded-full mx-auto mb-4"></div>
+          <div className="animate-spin w-8 h-8 border-4 border-mhma-gold border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600">Checking authentication...</p>
         </div>
       </div>
@@ -95,12 +106,12 @@ export default function EnrollPage() {
       />
 
       <main className="pt-8">
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="py-16 px-4 bg-mhma-cream">
           <div className="max-w-2xl mx-auto">
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-100">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">PROGRAM ENROLLMENT</h2>
-                <div className="w-16 h-1 bg-[#c9a227] mx-auto mt-4"></div>
+                <div className="w-16 h-1 bg-mhma-gold mx-auto mt-4"></div>
               </div>
 
               {success ? (
@@ -132,7 +143,7 @@ export default function EnrollPage() {
                         required
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -146,7 +157,7 @@ export default function EnrollPage() {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                         placeholder="your@email.com"
                       />
                     </div>
@@ -159,8 +170,8 @@ export default function EnrollPage() {
                         type="tel"
                         required
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all"
+                        onChange={(e) => handlePhoneChange(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                         placeholder="(555) 123-4567"
                       />
                     </div>
@@ -173,7 +184,7 @@ export default function EnrollPage() {
                         required
                         value={formData.program}
                         onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all bg-white"
                       >
                         <option value="">Choose a program...</option>
                         {programs.map((prog) => (
@@ -193,7 +204,7 @@ export default function EnrollPage() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] focus:border-transparent outline-none transition-all resize-none"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none"
                       placeholder="Any questions or special requests?"
                     />
                   </div>
@@ -201,7 +212,7 @@ export default function EnrollPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full px-8 py-4 bg-[#c9a227] text-white font-bold rounded-lg hover:bg-amber-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-8 py-4 bg-mhma-gold text-white font-bold rounded-lg hover:bg-amber-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Submitting..." : "Submit Enrollment"}
                   </button>
@@ -214,7 +225,7 @@ export default function EnrollPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <Link href="/programs" className="text-[#c9a227] hover:underline font-medium">
+              <Link href="/programs" className="text-mhma-gold hover:underline font-medium">
                 ← Back to Programs
               </Link>
             </div>

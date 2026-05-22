@@ -50,7 +50,7 @@ function EditJournalForm() {
       <Navigation currentPage="dashboard" />
       <main className="pt-20">
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <Link href="/dashboard" className="inline-flex items-center text-[#c9a227] hover:text-[#8c7622] mb-4">
+          <Link href="/dashboard" className="inline-flex items-center text-mhma-gold hover:text-[#8c7622] mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Journal Entry</h1>
@@ -61,38 +61,38 @@ function EditJournalForm() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input type="text" value={formData.title || ""} onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
                 <input type="text" value={formData.slug || ""} onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date Held On</label>
                 <input type="text" value={formData.dateHeldOn || ""} onChange={e => setFormData({ ...formData, dateHeldOn: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date Published</label>
                 <input type="text" value={formData.datePublished || ""} onChange={e => setFormData({ ...formData, datePublished: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Content (HTML)</label>
               <textarea value={formData.content || ""} onChange={e => setFormData({ ...formData, content: e.target.value })} rows={10}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none font-mono text-sm" />
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none font-mono text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Attendees</label>
               <input type="text" value={formData.attendees || ""} onChange={e => setFormData({ ...formData, attendees: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" />
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
             </div>
             <button type="submit" disabled={saving}
-              className="w-full bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
+              className="w-full bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">
               {saving ? "Saving..." : "Update Journal Entry"}
             </button>
           </form>

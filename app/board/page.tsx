@@ -155,7 +155,7 @@ export default function BoardPage() {
                 </div>
                 <div className="bg-white p-6 border border-gray-100 rounded shadow-sm">
                   <h3 className="text-lg font-bold text-gray-900 mb-1">{person.name}</h3>
-                  <p className="text-amber-500 text-sm uppercase tracking-wide mb-4">{person.title}</p>
+                  <p className="text-mhma-gold text-sm uppercase tracking-wide mb-4">{person.title}</p>
                   <div className="flex justify-center space-x-3">
                     {person.socials.map((social, idx) => (
                       <a
@@ -163,7 +163,7 @@ export default function BoardPage() {
                         href={social.url}
                         target={social.type !== 'email' && social.type !== 'phone' ? '_blank' : undefined}
                         rel={social.type !== 'email' && social.type !== 'phone' ? 'noopener noreferrer' : undefined}
-                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-amber-500 hover:text-white flex items-center justify-center transition-colors text-gray-600"
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-mhma-gold hover:text-white flex items-center justify-center transition-colors text-gray-600"
                         style={{ color: social.color }}
                         aria-label={social.type}
                       >
@@ -179,7 +179,7 @@ export default function BoardPage() {
       </section>
 
       {/* Board of Trustees Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-8 uppercase tracking-wide">
             Board of Trustees
@@ -200,7 +200,7 @@ export default function BoardPage() {
                 </div>
                 <div className="bg-white p-6 border border-gray-100 rounded shadow-sm">
                   <h3 className="text-lg font-bold text-gray-900 mb-1">{person.name}</h3>
-                  <p className="text-amber-500 text-sm uppercase tracking-wide mb-4">{person.title}</p>
+                  <p className="text-mhma-gold text-sm uppercase tracking-wide mb-4">{person.title}</p>
                   <div className="flex justify-center space-x-3">
                     {person.socials.map((social, idx) => (
                       <a
@@ -208,7 +208,7 @@ export default function BoardPage() {
                         href={social.url}
                         target={social.type !== 'email' ? '_blank' : undefined}
                         rel={social.type !== 'email' ? 'noopener noreferrer' : undefined}
-                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-amber-500 hover:text-white flex items-center justify-center transition-colors text-gray-600"
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-mhma-gold hover:text-white flex items-center justify-center transition-colors text-gray-600"
                         style={{ color: social.color }}
                         aria-label={social.type}
                       >
@@ -244,19 +244,19 @@ export default function BoardPage() {
               © Copyright 2010- 2026 | Mountain House Muslim Association
             </p>
             <div className="flex space-x-4">
-              <a href="https://www.facebook.com/mhma95391" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-colors" aria-label="Facebook">
+              <a href="https://www.facebook.com/mhma95391" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-mhma-gold flex items-center justify-center transition-colors" aria-label="Facebook">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="https://www.instagram.com/mhma.ig/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-colors" aria-label="Instagram">
+              <a href="https://www.instagram.com/mhma.ig/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-mhma-gold flex items-center justify-center transition-colors" aria-label="Instagram">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="https://twitter.com/mhmuslims" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-colors" aria-label="Twitter">
+              <a href="https://twitter.com/mhmuslims" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-mhma-gold flex items-center justify-center transition-colors" aria-label="Twitter">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="https://www.youtube.com/@mhmuslimassociation" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-colors" aria-label="YouTube">
+              <a href="https://www.youtube.com/@mhmuslimassociation" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-mhma-gold flex items-center justify-center transition-colors" aria-label="YouTube">
                 <Youtube className="w-5 h-5" />
               </a>
-              <a href="https://www.linkedin.com/company/mountain-house-muslim-association" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-colors" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/company/mountain-house-muslim-association" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 hover:bg-mhma-gold flex items-center justify-center transition-colors" aria-label="LinkedIn">
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>

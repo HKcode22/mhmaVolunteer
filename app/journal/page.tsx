@@ -132,15 +132,15 @@ export default function JournalPage() {
             </div>
             <div className="flex space-x-4">
               <button className="px-4 py-2 bg-mhma-teal text-white rounded-lg text-sm font-bold tracking-widest uppercase">All Posts</button>
-              <button className="px-4 py-2 bg-gray-50 text-gray-500 rounded-lg text-sm font-bold tracking-widest uppercase hover:bg-gray-100">Minutes</button>
-              <button className="px-4 py-2 bg-gray-50 text-gray-500 rounded-lg text-sm font-bold tracking-widest uppercase hover:bg-gray-100">Updates</button>
+              <button className="px-4 py-2 bg-mhma-cream text-gray-500 rounded-lg text-sm font-bold tracking-widest uppercase hover:bg-gray-100">Minutes</button>
+              <button className="px-4 py-2 bg-mhma-cream text-gray-500 rounded-lg text-sm font-bold tracking-widest uppercase hover:bg-gray-100">Updates</button>
             </div>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="animate-pulse bg-gray-50 rounded-3xl h-64 border border-gray-100"></div>
+                <div key={i} className="animate-pulse bg-mhma-cream rounded-3xl h-64 border border-gray-100"></div>
               ))}
             </div>
           ) : (
@@ -153,7 +153,7 @@ export default function JournalPage() {
                     className="flex flex-col bg-white p-8 rounded-3xl shadow-sm border border-gray-100 group hover:border-mhma-gold hover:shadow-xl transition-all duration-500"
                   >
                     <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-gray-50 rounded-xl text-mhma-teal group-hover:bg-mhma-teal group-hover:text-white transition-colors">
+                      <div className="p-3 bg-mhma-cream rounded-xl text-mhma-teal group-hover:bg-mhma-teal group-hover:text-white transition-colors">
                         <BookOpen className="w-5 h-5" />
                       </div>
                       <div className="flex items-center text-mhma-gold text-xs font-bold uppercase tracking-widest">

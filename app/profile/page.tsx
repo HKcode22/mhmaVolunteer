@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
@@ -13,7 +13,7 @@ import PageBanner from "@/components/PageBanner";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -31,9 +31,19 @@ export default function ProfilePage() {
       getDoc(doc(db, "users", user.uid)).then(snap => {
         if (snap.exists()) {
           const data = snap.data();
+          const existingFirst = data.firstName || "";
+          const existingLast = data.lastName || "";
+          const existingDisplayName = data.displayName || user.displayName || "";
+          let firstName = existingFirst;
+          let lastName = existingLast;
+          if (!firstName && !lastName && existingDisplayName) {
+            const parts = existingDisplayName.split(" ");
+            firstName = parts[0] || "";
+            lastName = parts.slice(1).join(" ");
+          }
           setProfile({
-            firstName: data.firstName || "",
-            lastName: data.lastName || "",
+            firstName,
+            lastName,
             phone: data.phone || "",
             address: data.address || "",
             emergencyContactName: data.emergencyContactName || "",
@@ -42,6 +52,15 @@ export default function ProfilePage() {
             familySize: data.familySize || "",
             photoUrl: data.photoUrl || "",
           });
+        } else {
+          let firstName = "";
+          let lastName = "";
+          if (user.displayName) {
+            const parts = user.displayName.split(" ");
+            firstName = parts[0] || "";
+            lastName = parts.slice(1).join(" ");
+          }
+          setProfile(prev => ({ ...prev, firstName, lastName }));
         }
         setLoading(false);
       }).catch(() => setLoading(false));
@@ -69,7 +88,12 @@ export default function ProfilePage() {
     if (!user) return;
     setSaving(true); setError(""); setSuccess("");
     try {
-      await setDoc(doc(db, "users", user.uid), { ...profile, updatedAt: serverTimestamp() }, { merge: true });
+      const displayName = `${profile.firstName} ${profile.lastName}`.trim() || undefined;
+      await setDoc(doc(db, "users", user.uid), { ...profile, displayName, updatedAt: serverTimestamp() }, { merge: true });
+      if (auth.currentUser && displayName) {
+        await updateProfile(auth.currentUser, { displayName });
+      }
+      if (refreshUser) await refreshUser();
       setSuccess("Profile updated!");
     } catch (err: any) {
       setError(err.message);
@@ -115,7 +139,7 @@ export default function ProfilePage() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Profile Information</h2>
           <p className="text-gray-500 text-sm mb-4">{user?.email} · {user?.displayName}</p>
 
-          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4 mb-6 p-4 bg-mhma-cream rounded-lg">
             <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
               {profile.photoUrl ? (
                 <img src={profile.photoUrl} alt="" className="w-full h-full object-cover" />
@@ -124,12 +148,12 @@ export default function ProfilePage() {
               )}
             </div>
             <div>
-              <label className="flex items-center gap-2 px-4 py-2 bg-teal-800 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-teal-700 transition-colors">
+              <label className="flex items-center gap-2 px-4 py-2 bg-mhma-forest text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-mhma-forest-light transition-colors">
                 <Upload className="w-4 h-4" />
                 {photoUploading ? "Uploading..." : "Upload Photo"}
                 <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={photoUploading} className="hidden" />
               </label>
-              {photoUploading && <Loader2 className="w-4 h-4 mt-1 animate-spin text-teal-700" />}
+              {photoUploading && <Loader2 className="w-4 h-4 mt-1 animate-spin text-mhma-gold" />}
               {profile.photoUrl && (
                 <button onClick={() => setProfile(prev => ({ ...prev, photoUrl: "" }))} className="text-xs text-red-600 mt-1 hover:underline">
                   Remove
@@ -181,7 +205,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <button type="submit" disabled={saving}
-              className="bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
+              className="bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
               {saving ? "Saving..." : "Save Profile"}
             </button>
           </form>

@@ -11,6 +11,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: ""
   });
@@ -18,16 +19,27 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setFormData({ ...formData, phone: formatPhone(value) });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setSubmitError("");
 
     try {
-      await addContactSubmission({ name: formData.name, email: formData.email, subject: formData.subject, message: formData.message, read: false });
+      await addContactSubmission({ name: formData.name, email: formData.email, phone: formData.phone, subject: formData.subject, message: formData.message, read: false });
 
       setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to send message");
@@ -37,7 +49,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="contact" />
 
       <PageBanner
@@ -60,29 +72,29 @@ export default function ContactPage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Email Card */}
-            <a href="mailto:info@mhma.info" className="group bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-all border border-gray-200 hover:border-amber-400">
+            <a href="mailto:info@mhma.info" className="group bg-mhma-cream rounded-xl p-6 hover:shadow-lg transition-all border border-gray-200 hover:border-amber-400">
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <Mail className="w-7 h-7 text-amber-600 group-hover:text-white" />
+                <Mail className="w-7 h-7 text-mhma-gold group-hover:text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2">Email Us</h3>
-              <p className="text-amber-600 font-medium">info@mhma.info</p>
+              <p className="text-mhma-gold font-medium">info@mhma.info</p>
               <p className="text-gray-500 text-sm mt-2">We typically respond within 24-48 hours</p>
             </a>
 
             {/* Phone Card */}
-            <div className="group bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-all border border-gray-200 hover:border-amber-400">
+            <div className="group bg-mhma-cream rounded-xl p-6 hover:shadow-lg transition-all border border-gray-200 hover:border-amber-400">
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <Phone className="w-7 h-7 text-amber-600 group-hover:text-white" />
+                <Phone className="w-7 h-7 text-mhma-gold group-hover:text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2">Call Us</h3>
-              <p className="text-amber-600 font-medium">(209) 555-0123</p>
+              <p className="text-mhma-gold font-medium">(209) 555-0123</p>
               <p className="text-gray-500 text-sm mt-2">Available during office hours</p>
             </div>
 
             {/* Location Card */}
-            <a href="#directions" className="group bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-all border border-gray-200 hover:border-amber-400">
+            <a href="#directions" className="group bg-mhma-cream rounded-xl p-6 hover:shadow-lg transition-all border border-gray-200 hover:border-amber-400">
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <MapPin className="w-7 h-7 text-amber-600 group-hover:text-white" />
+                <MapPin className="w-7 h-7 text-mhma-gold group-hover:text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2">Visit Us</h3>
               <p className="text-gray-700">250 E. Main St.</p>
@@ -93,11 +105,11 @@ export default function ContactPage() {
       </section>
 
       {/* Office Hours */}
-      <section className="py-12 bg-amber-50">
+      <section className="py-12 bg-mhma-cream">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-xl p-8 shadow-lg">
             <div className="flex items-center gap-3 mb-6">
-              <Clock className="w-6 h-6 text-amber-600" />
+              <Clock className="w-6 h-6 text-mhma-gold" />
               <h2 className="text-2xl font-serif font-bold text-gray-900">Office Hours</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
@@ -127,9 +139,9 @@ export default function ContactPage() {
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
-              Send Us a <span className="text-amber-600">Message</span>
+              Send Us a <span className="text-mhma-gold">Message</span>
             </h2>
-            <div className="w-24 h-1 bg-amber-400 mx-auto"></div>
+            <div className="w-24 h-1 bg-mhma-gold mx-auto"></div>
           </div>
 
           {submitted ? (
@@ -138,7 +150,7 @@ export default function ContactPage() {
               <p className="text-green-600">We'll get back to you as soon as possible.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-gray-50 rounded-xl p-8 shadow-lg">
+            <form onSubmit={handleSubmit} className="bg-mhma-cream rounded-xl p-8 shadow-lg">
               {submitError && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-800">{submitError}</p>
@@ -173,6 +185,20 @@ export default function ContactPage() {
                     placeholder="your@email.com"
                   />
                 </div>
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+                  placeholder="(555) 123-4567"
+                />
               </div>
 
               <div className="mb-6">
@@ -219,13 +245,13 @@ export default function ContactPage() {
       </section>
 
       {/* Directions Section */}
-      <section id="directions" className="py-16 bg-gray-50">
+      <section id="directions" className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
-              Get <span className="text-amber-600">Directions</span>
+              Get <span className="text-mhma-gold">Directions</span>
             </h2>
-            <div className="w-24 h-1 bg-amber-400 mx-auto mb-4"></div>
+            <div className="w-24 h-1 bg-mhma-gold mx-auto mb-4"></div>
             <p className="text-gray-600 max-w-2xl mx-auto">
               We're located at the Unity Center in Mountain House. Easy access from Highway 205 and surrounding areas.
             </p>
@@ -254,7 +280,7 @@ export default function ContactPage() {
                   href="https://maps.google.com/?q=250+E+Main+St+Mountain+House+CA+95391"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 bg-teal-800 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors shadow-lg"
+                  className="inline-flex items-center px-6 py-3 bg-mhma-forest text-white font-semibold rounded-lg hover:bg-mhma-forest-light transition-colors shadow-lg"
                 >
                   <MapPin className="w-5 h-5 mr-2" />
                   Open in Google Maps

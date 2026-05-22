@@ -297,32 +297,35 @@ const buildExclusionCombinations = () => {
 
 const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
 
-const UMMAH_API_KEY = "umh_c38ac44eef3e585d9df7b01e93eb19a12683a328";
+// UmmahAPI integration (commented out — currently using local quran-included.json)
+// To re-enable: uncomment the fetch block below and comment out the local JSON block
+// const UMMAH_API_KEY = "umh_c38ac44eef3e585d9df7b01e93eb19a12683a328";
 
 const fetchQuranVerse = async (): Promise<QuranVerse> => {
-  try {
-    const response = await fetch(
-      `https://ummahapi.com/api/quran/random?translations=en&api_key=${UMMAH_API_KEY}`,
-      { next: { revalidate: 86400 } }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.success && data.data) {
-        const verse = data.data.verse;
-        const surah = data.data.surah;
-        return {
-          text: verse.arabic || "",
-          translation: verse.translations?.sahih_international || verse.translations?.yusuf_ali || "",
-          reference: `[Quran, ${surah.name_english} (${surah.number}:${verse.ayah})]`,
-          arabic: verse.arabic || "",
-        };
-      }
-    }
-  } catch (error) {
-    console.warn("UmmahAPI verse fetch failed, falling back to local");
-  }
+  // ── UmmahAPI (commented out) ──
+  // try {
+  //   const response = await fetch(
+  //     `https://ummahapi.com/api/quran/random?translations=en&api_key=${UMMAH_API_KEY}`,
+  //     { next: { revalidate: 86400 } }
+  //   );
+  //   if (response.ok) {
+  //     const data = await response.json();
+  //     if (data && data.success && data.data) {
+  //       const verse = data.data.verse;
+  //       const surah = data.data.surah;
+  //       return {
+  //         text: verse.arabic || "",
+  //         translation: verse.translations?.sahih_international || verse.translations?.yusuf_ali || "",
+  //         reference: `[Quran, ${surah.name_english} (${surah.number}:${verse.ayah})]`,
+  //         arabic: verse.arabic || "",
+  //       };
+  //     }
+  //   }
+  // } catch (error) {
+  //   console.warn("UmmahAPI verse fetch failed, falling back to local");
+  // }
 
-  // Fallback: use local quran-included.json
+  // ── Local quran-included.json (active) ──
   try {
     const response = await fetch('/quran-included.json');
     if (!response.ok) throw new Error('Failed to load Quran data');
@@ -331,10 +334,15 @@ const fetchQuranVerse = async (): Promise<QuranVerse> => {
     const allVerses: any[] = [];
     (data.suras || []).forEach((sura: any) => {
       (sura.verses || []).forEach((verse: any) => {
+        const cleanEnglish = (verse.english || "")
+          .replace(/\[\d+\]/g, "")
+          .replace(/\b\d+\b/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
         allVerses.push({
-          text: verse.english,
-          translation: verse.english,
-          reference: `[Quran, ${sura.number}:${verse.aya}]`,
+          text: cleanEnglish,
+          translation: cleanEnglish,
+          reference: `[Quran, ${sura.name} (${sura.number}:${verse.aya})]`,
           arabic: verse.arabic
         });
       });
@@ -479,43 +487,128 @@ useEffect(() => {
     <div className="min-h-screen font-sans">
       <Navigation currentPage="home" />
 
-      {/* Hero Section with Beautiful Gradient */}
-      <section className="pt-32 md:pt-36 pb-12 md:pb-16 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 text-white relative overflow-hidden">
+      {/* Hero Section */}
+      <section className="pt-32 md:pt-36 pb-12 md:pb-16 bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light text-white relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl"></div>
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-400/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-mhma-gold/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-10 right-10 w-64 h-64 bg-mhma-gold/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-mhma-gold/5 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
-          <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
-          <p className="text-xs md:text-sm tracking-[0.3em] uppercase text-amber-400 mb-3 font-semibold">Est. 2010 · Mountain House, California</p>
-          {/* Arabic greeting temporarily commented out per meeting request
-          <div className="mb-6">
-            <p className="text-lg md:text-xl lg:text-2xl text-amber-300 font-arabic inline" dir="rtl">اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ</p>
-            <span className="text-amber-300 mx-3 hidden md:inline">·</span>
-            <p className="text-sm md:text-base text-amber-300/70 font-light inline md:inline">(May the peace, mercy, and blessings of Allah [The God] be upon you)</p>
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            <div className="lg:w-3/5 text-center lg:text-left">
+              <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
+                <span className="w-6 h-px bg-mhma-gold"></span>
+                <span className="text-[10px] tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
+              </div>
+              <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
+                Welcome to <span className="text-mhma-gold italic">MHMA</span>{user?.displayName ? (<>
+                  , <span className="whitespace-nowrap">{user.displayName}</span>!
+                </>) : '!'}
+              </h1>
+              <p className="text-base md:text-lg lg:text-xl text-mhma-sage/90 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">
+                Serving the Muslim Community in Mountain House since 2010
+              </p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                <Link href="/events" className="mhma-btn-gold">
+                  Explore Events
+                </Link>
+                <Link href="/contact#directions" className="mhma-btn-ghost">
+                  Get Directions
+                </Link>
+              </div>
+            </div>
+
+            {/* Masjid illustration on right */}
+            <div className="lg:w-2/5 flex justify-center">
+              <svg viewBox="0 0 400 320" className="w-full max-w-sm drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
+                {/* Sky background gradient */}
+                <defs>
+                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1a365d"/>
+                    <stop offset="100%" stopColor="#2d6a4f"/>
+                  </linearGradient>
+                  <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#fffbeb"/>
+                    <stop offset="100%" stopColor="#fbbf24"/>
+                  </linearGradient>
+                  <linearGradient id="dome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#c9a227"/>
+                    <stop offset="100%" stopColor="#a17a1f"/>
+                  </linearGradient>
+                  <radialGradient id="glow" cx="0.5" cy="0.3" r="0.4">
+                    <stop offset="0%" stopColor="rgba(251,191,36,0.15)"/>
+                    <stop offset="100%" stopColor="rgba(251,191,36,0)"/>
+                  </radialGradient>
+                </defs>
+                {/* Background */}
+                <rect width="400" height="320" fill="url(#sky)" rx="16"/>
+                <rect width="400" height="320" fill="url(#glow)" rx="16"/>
+                {/* Stars */}
+                <circle cx="50" cy="40" r="1.5" fill="white" opacity="0.8"/>
+                <circle cx="120" cy="25" r="1" fill="white" opacity="0.6"/>
+                <circle cx="300" cy="35" r="1.5" fill="white" opacity="0.7"/>
+                <circle cx="350" cy="60" r="1" fill="white" opacity="0.5"/>
+                <circle cx="80" cy="70" r="1" fill="white" opacity="0.4"/>
+                {/* Moon */}
+                <circle cx="320" cy="50" r="18" fill="url(#moon)" opacity="0.9"/>
+                <circle cx="310" cy="45" r="14" fill="#1a365d" opacity="0.8"/>
+                {/* Ground */}
+                <rect x="0" y="270" width="400" height="50" fill="#1a3a2a"/>
+                {/* Main masjid body */}
+                <rect x="120" y="180" width="160" height="90" fill="#2d5a3d" rx="2"/>
+                {/* Side minarets */}
+                <rect x="95" y="120" width="14" height="150" fill="#3a7a4d" rx="2"/>
+                <rect x="291" y="120" width="14" height="150" fill="#3a7a4d" rx="2"/>
+                {/* Minaret tops (spires) */}
+                <polygon points="102,120 95,105 109,105" fill="#c9a227"/>
+                <polygon points="298,120 291,105 305,105" fill="#c9a227"/>
+                {/* Small crescent on left minaret */}
+                <circle cx="102" cy="100" r="4" fill="#c9a227"/>
+                <circle cx="105" cy="98" r="3.5" fill="#1a365d"/>
+                {/* Small crescent on right minaret */}
+                <circle cx="298" cy="100" r="4" fill="#c9a227"/>
+                <circle cx="301" cy="98" r="3.5" fill="#1a365d"/>
+                {/* Main dome */}
+                <ellipse cx="200" cy="180" rx="65" ry="45" fill="url(#dome)"/>
+                {/* Dome crescent */}
+                <circle cx="210" cy="132" r="5" fill="#c9a227"/>
+                <circle cx="213" cy="130" r="4" fill="#1a365d"/>
+                {/* Dome arch */}
+                <rect x="165" y="180" width="70" height="90" fill="#1a3a2a" rx="2"/>
+                <rect x="175" y="180" width="50" height="90" fill="#2d5a3d" rx="1"/>
+                {/* Arch entrance */}
+                <rect x="185" y="200" width="30" height="70" fill="#c9a227" rx="2"/>
+                <rect x="189" y="200" width="22" height="70" fill="#a17a1f" rx="1"/>
+                {/* Windows on main body */}
+                <rect x="130" y="195" width="16" height="20" fill="#c9a227" rx="8" opacity="0.7"/>
+                <rect x="254" y="195" width="16" height="20" fill="#c9a227" rx="8" opacity="0.7"/>
+                {/* Arched windows on minarets */}
+                <rect x="97" y="140" width="10" height="14" fill="#c9a227" rx="5" opacity="0.5"/>
+                <rect x="293" y="140" width="10" height="14" fill="#c9a227" rx="5" opacity="0.5"/>
+                {/* Additional architectural details */}
+                <rect x="120" y="265" width="160" height="5" fill="#c9a227" opacity="0.6"/>
+                {/* Small side domes */}
+                <ellipse cx="135" cy="190" rx="15" ry="10" fill="#3a7a4d"/>
+                <ellipse cx="265" cy="190" rx="15" ry="10" fill="#3a7a4d"/>
+              </svg>
+            </div>
           </div>
-          */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
-            Welcome to <span className="text-amber-400">MHMA</span>{user?.displayName ? `, ${user.displayName}!` : '!'}
-          </h1>
-          <p className="text-base md:text-lg lg:text-xl text-gray-200 mb-2 max-w-3xl mx-auto font-light tracking-[0.15em] uppercase">
-            Serving the Muslim Community
-          </p>
 
           {/* Quran Verse Box - Beautiful translucent */}
-          <div className="max-w-5xl mx-auto mb-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl">
+          <div className="max-w-5xl mx-auto mt-8 mb-4 bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl">
             {verseLoading ? (
               <div className="animate-pulse space-y-6">
                 <div className="h-14 w-3/4 bg-white/20 mx-auto rounded"></div>
                 <div className="h-6 w-full bg-white/20 rounded"></div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {dailyVerse?.arabic && (
-                  <p className="text-2xl md:text-3xl lg:text-4xl text-amber-300 leading-relaxed text-right font-arabic" dir="rtl">
+                  <p className="text-2xl md:text-3xl lg:text-4xl text-amber-300 text-right quran-arabic" dir="rtl" style={{ lineHeight: "3" }}>
                     {dailyVerse.arabic}
                   </p>
                 )}
@@ -525,15 +618,6 @@ useEffect(() => {
                 <p className="text-amber-400 font-bold text-sm md:text-base tracking-widest uppercase">{dailyVerse?.reference}</p>
               </div>
             )}
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/events" className="px-8 py-3.5 bg-amber-500 text-teal-900 font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-400 hover:scale-105 transition-all shadow-lg">
-              Explore Events
-            </Link>
-            <Link href="/contact#directions" className="px-8 py-3.5 border-2 border-white/50 text-white font-semibold text-sm uppercase tracking-wider rounded-lg hover:bg-white hover:text-teal-900 transition-all">
-              Get Directions
-            </Link>
           </div>
         </div>
       </section>

@@ -10,10 +10,10 @@ export default function CommunityTransparencyPage() {
       <Navigation currentPage="community-transparency" />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-12 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 text-white">
+      <section className="pt-32 pb-12 bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light text-white">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4 uppercase tracking-wide">
-            Community <span className="text-amber-400">Transparency</span>
+            Community <span className="text-mhma-gold">Transparency</span>
           </h1>
           <p className="text-xl text-gray-200 max-w-3xl mx-auto">
             Serving our community with honesty, integrity, and accountability
@@ -22,7 +22,7 @@ export default function CommunityTransparencyPage() {
       </section>
 
       {/* Main Content - Image Display */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-mhma-cream">
         <div className="max-w-5xl mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
             <div className="p-8">

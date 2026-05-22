@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase-client";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { validateInviteCode, markInviteCodeUsed } from "@/lib/firebase";
+import { validateInviteCode, markInviteCodeUsed, logActivity } from "@/lib/firebase";
 import Navigation from "@/components/Navigation";
 import PageBanner from "@/components/PageBanner";
 
@@ -88,12 +88,14 @@ export default function RegisterPage() {
 
       if (tab === "board") {
         await markInviteCodeUsed(formData.inviteCode, cred.user.uid);
-        await addDoc(collection(db, "notifications"), {
-          type: "board_registration",
-          title: `New Board Member: ${formData.firstName} ${formData.lastName}`,
-          details: `${formData.email} registered using invite code ${formData.inviteCode}`,
-          read: false,
-          createdAt: serverTimestamp(),
+        logActivity({
+          userId: cred.user.uid,
+          userEmail: formData.email,
+          userName: `${formData.firstName} ${formData.lastName}`,
+          action: "board_registration",
+          details: `New board member registered: ${formData.firstName} ${formData.lastName} (${formData.email}) using invite code ${formData.inviteCode}`,
+          targetType: "user",
+          targetId: cred.user.uid,
         });
       }
 
@@ -138,14 +140,14 @@ export default function RegisterPage() {
                       onClick={() => { setTab(t); setError(""); }}
                       className={`flex-1 flex items-center justify-center gap-2.5 py-4 text-sm font-semibold transition-all duration-300 relative ${
                         isActive
-                          ? "text-[#c9a227]"
+                          ? "text-mhma-gold"
                           : "text-gray-400 hover:text-gray-600"
                       }`}
                     >
-                      <cfg.icon className={`w-4 h-4 ${isActive ? "text-[#c9a227]" : ""}`} />
+                      <cfg.icon className={`w-4 h-4 ${isActive ? "text-mhma-gold" : ""}`} />
                       {cfg.label}
                       {isActive && (
-                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c9a227] rounded-full" />
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-mhma-gold rounded-full" />
                       )}
                     </button>
                   );
@@ -179,7 +181,7 @@ export default function RegisterPage() {
                         type="text"
                         value={formData.firstName}
                         onChange={(e) => update("firstName", e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                         placeholder="John"
                         required
                       />
@@ -190,7 +192,7 @@ export default function RegisterPage() {
                         type="text"
                         value={formData.lastName}
                         onChange={(e) => update("lastName", e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                         placeholder="Doe"
                         required
                       />
@@ -206,7 +208,7 @@ export default function RegisterPage() {
                         value={formData.email}
                         onChange={(e) => update("email", e.target.value)}
                         autoComplete="username"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                         placeholder="you@example.com"
                         required
                       />
@@ -219,7 +221,7 @@ export default function RegisterPage() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => update("phone", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -234,7 +236,7 @@ export default function RegisterPage() {
                           value={formData.password}
                           onChange={(e) => update("password", e.target.value)}
                           autoComplete="new-password"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                           placeholder="Min 6 characters"
                           required
                         />
@@ -249,7 +251,7 @@ export default function RegisterPage() {
                           value={formData.confirmPassword}
                           onChange={(e) => update("confirmPassword", e.target.value)}
                           autoComplete="new-password"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                           placeholder="Repeat password"
                           required
                         />
@@ -262,26 +264,26 @@ export default function RegisterPage() {
                       id="showPass"
                       checked={showPassword}
                       onChange={() => setShowPassword(!showPassword)}
-                      className="rounded border-gray-300 text-[#c9a227] focus:ring-[#c9a227]"
+                      className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold"
                     />
                     <label htmlFor="showPass" className="text-xs text-gray-500 cursor-pointer">Show passwords</label>
                   </div>
 
                   {/* Invite Code - Board only */}
                   {tab === "board" && (
-                    <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 space-y-3">
+                    <div className="bg-mhma-cream border-2 border-mhma-gold/20 rounded-xl p-5 space-y-3">
                       <div className="flex items-center gap-2">
-                        <Key className="w-4 h-4 text-amber-700" />
+                        <Key className="w-4 h-4 text-mhma-gold" />
                         <label className="text-sm font-bold text-amber-900">Board Invite Code *</label>
                       </div>
-                      <p className="text-xs text-amber-700">
+                      <p className="text-xs text-mhma-gold">
                         Enter the invite code given to you by an existing board member. Codes are one-time use.
                       </p>
                       <input
                         type="text"
                         value={formData.inviteCode}
                         onChange={(e) => update("inviteCode", e.target.value.toUpperCase())}
-                        className="w-full px-4 py-3 border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all text-lg font-bold tracking-[0.3em] text-center uppercase bg-white"
+                        className="w-full px-4 py-3 border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all text-lg font-bold tracking-[0.3em] text-center uppercase bg-white"
                         placeholder="XXXX-XXXX"
                         required
                       />
@@ -291,7 +293,7 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-[#b49c2e] hover:bg-[#8c7622] text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200/50"
+                    className="w-full flex items-center justify-center gap-2 bg-mhma-gold hover:bg-mhma-gold-light text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200/50"
                   >
                     {loading ? (
                       <div className="flex items-center gap-2">
@@ -310,12 +312,12 @@ export default function RegisterPage() {
                 <div className="mt-8 text-center space-y-3">
                   <p className="text-sm text-gray-500">
                     Already have an account?{" "}
-                    <Link href="/login" className="text-[#c9a227] hover:text-amber-700 font-semibold inline-flex items-center gap-1">
+                    <Link href="/login" className="text-mhma-gold hover:text-mhma-gold font-semibold inline-flex items-center gap-1">
                       Sign in <ArrowRight className="w-3 h-3" />
                     </Link>
                   </p>
                   {tab === "board" && (
-                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-4 py-2 inline-block">
+                    <p className="text-xs text-amber-600 bg-mhma-cream rounded-lg px-4 py-2 inline-block">
                       Need an invite code? Ask an existing board member.
                     </p>
                   )}
@@ -323,7 +325,7 @@ export default function RegisterPage() {
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                       <p className="text-sm text-blue-800">
                         Already an MHMA member? Visit{" "}
-                        <a href="https://s.mhma.info/join" target="_blank" rel="noopener noreferrer" className="text-[#c9a227] hover:underline font-medium">
+                        <a href="https://s.mhma.info/join" target="_blank" rel="noopener noreferrer" className="text-mhma-gold hover:underline font-medium">
                           s.mhma.info/join
                         </a>{" "}
                         to sign up for official MHMA membership.

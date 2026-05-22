@@ -32,7 +32,7 @@ export async function GET() {
   }
 
   if (results.firestore?.status === "connected") {
-    const targets = ["events", "programs", "journal", "users", "inviteCodes", "enrollments", "schedulingRequests", "contactSubmissions", "notifications"];
+    const targets = ["events", "programs", "journal", "users", "inviteCodes", "enrollments", "schedulingRequests", "contactSubmissions", "activityLog"];
     results.collections = {};
     for (const name of targets) {
       try {

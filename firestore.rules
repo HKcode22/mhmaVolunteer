@@ -81,23 +81,31 @@ service cloud.firestore {
       allow read, update, delete: if isBoardMember();
     }
 
-    // ─── Notifications ───
-    // System-created. Board members can read them.
-    match /notifications/{notification} {
-      allow read: if isBoardMember();
-      allow create: if true;  // Allow creation from web during registration
-      allow update, delete: if isBoardMember();
-    }
-
     // ─── Invite Codes ───
     // Board members can generate, read, and delete invite codes.
     // validateInviteCode (read with where filter) needs read access.
     // markInviteCodeUsed (update) needs write access with a valid code.
     match /inviteCodes/{code} {
-      allow read: if isBoardMember();
+      allow read: if isAuthenticated() || isBoardMember();
       allow create: if isBoardMember();
       allow update: if isBoardMember();
       allow delete: if isBoardMember();
+    }
+
+    // ─── RSVPs ───
+    // Anyone (even unauthenticated) can submit an RSVP.
+    // Board members can read, update (confirm/cancel), and delete.
+    match /rsvps/{rsvp} {
+      allow create: if true;
+      allow read, update, delete: if isBoardMember();
+    }
+
+    // ─── Activity Log ───
+    // Board members can read and create activity log entries.
+    match /activityLog/{entry} {
+      allow read: if isBoardMember();
+      allow create: if isBoardMember();
+      allow update, delete: if false;
     }
   }
 }

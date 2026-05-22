@@ -1,22 +1,19 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Amiri } from "next/font/google";
+import { DM_Sans, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 
-const inter = Inter({
+const dmsans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-dmsans",
+  weight: ["300", "400", "500"],
 });
 
-const playfair = Playfair_Display({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-playfair",
-});
-
-const amiri = Amiri({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  variable: "--font-arabic",
+  variable: "--font-cormorant",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -30,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${amiri.variable}`}>
-      <body className="antialiased font-sans text-gray-900 bg-[#F8F9FA]">
+    <html lang="en" className={`${dmsans.variable} ${cormorant.variable}`}>
+      <body className="antialiased font-sans text-[#1C2A20] bg-[#F8F4EC]">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -32,7 +32,7 @@ export default function MasjidConstructionPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="donate" />
 
       <main className="pt-20">

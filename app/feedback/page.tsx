@@ -56,7 +56,7 @@ export default function FeedbackPage() {
                   <label className="block text-sm text-gray-600 mb-2">Details</label>
                   <div className="border border-gray-300 rounded-md">
                     {/* Toolbar */}
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 bg-gray-50">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 bg-mhma-cream">
                       <select className="text-sm bg-transparent border-none focus:outline-none">
                         <option>Paragraph</option>
                       </select>

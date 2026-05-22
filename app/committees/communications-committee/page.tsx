@@ -80,7 +80,7 @@ export default function CommunicationsCommitteePage() {
           <div className="max-w-6xl mx-auto text-center">
             <Link
               href="/committees"
-              className="inline-block bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-8 rounded transition-colors"
+              className="inline-block bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-3 px-8 rounded transition-colors"
             >
               Back to Committees
             </Link>

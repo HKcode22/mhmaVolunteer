@@ -111,6 +111,7 @@ export interface FirebaseContactSubmission {
   id?: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   read: boolean;
@@ -128,7 +129,7 @@ export const collections = {
   enrollments: "enrollments",
   schedulingRequests: "schedulingRequests",
   contactSubmissions: "contactSubmissions",
-  notifications: "notifications",
+
 };
 
 export async function fetchEvents(limitCount = 10): Promise<FirebaseEvent[]> {
@@ -410,12 +411,6 @@ export async function addContactSubmission(data: Omit<FirebaseContactSubmission,
   }
 }
 
-export async function fetchNotifications(limitCount = 50): Promise<any[]> {
-  const q = query(collection(db, collections.notifications), orderBy("createdAt", "desc"), limit(limitCount));
-  const snap = await getDocs(q);
-  return collectionData<any>(snap);
-}
-
 // ─── Invite Code Functions ───
 
 export interface InviteCode {
@@ -478,4 +473,169 @@ export async function deleteInviteCode(id: string): Promise<void> {
     console.error("Firestore: deleteInviteCode FAILED:", err);
     throw err;
   }
+}
+
+// ─── Users ───
+
+export interface FirebaseUser {
+  id?: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  role: string;
+  createdAt?: any;
+}
+
+const USERS_COLLECTION = "users";
+
+export async function fetchUsers(limitCount = 500): Promise<FirebaseUser[]> {
+  const q = query(collection(db, USERS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<FirebaseUser>(snap);
+}
+
+// ─── Activity Log ───
+
+export interface ActivityLogEntry {
+  id?: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  action: string;
+  details: string;
+  targetType?: string;
+  targetId?: string;
+  createdAt?: any;
+}
+
+const ACTIVITY_LOG_COLLECTION = "activityLog";
+
+export async function logActivity(entry: Omit<ActivityLogEntry, "id" | "createdAt">): Promise<string> {
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, ACTIVITY_LOG_COLLECTION), { ...entry, createdAt: serverTimestamp() }),
+      "logActivity"
+    );
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: logActivity FAILED:", err);
+    return "";
+  }
+}
+
+export async function fetchActivityLog(limitCount = 100): Promise<ActivityLogEntry[]> {
+  const q = query(collection(db, ACTIVITY_LOG_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<ActivityLogEntry>(snap);
+}
+
+// ─── RSVP Functions ───
+
+export interface FirebaseRSVP {
+  id?: string;
+  eventId?: string;
+  eventTitle: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  attendees: number;
+  notes?: string;
+  status: "pending" | "confirmed" | "cancelled";
+  createdAt?: any;
+}
+
+const RSVP_COLLECTION = "rsvps";
+
+export async function fetchRSVPs(limitCount = 100): Promise<FirebaseRSVP[]> {
+  const q = query(collection(db, RSVP_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<FirebaseRSVP>(snap);
+}
+
+export async function fetchRSVPsByEvent(eventId: string): Promise<FirebaseRSVP[]> {
+  const q = query(collection(db, RSVP_COLLECTION), where("eventId", "==", eventId), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return collectionData<FirebaseRSVP>(snap);
+}
+
+export async function addRSVP(data: Omit<FirebaseRSVP, "id" | "createdAt" | "status">): Promise<string> {
+  try {
+    const ref = await withTimeout(
+      addDoc(collection(db, RSVP_COLLECTION), { ...data, status: "pending", createdAt: serverTimestamp() }),
+      "addRSVP"
+    );
+    console.log("Firestore: addRSVP success, id:", ref.id);
+    return ref.id;
+  } catch (err) {
+    console.error("Firestore: addRSVP FAILED:", err);
+    throw err;
+  }
+}
+
+export async function updateRSVP(id: string, data: Partial<FirebaseRSVP>): Promise<void> {
+  try {
+    await withTimeout(
+      updateDoc(doc(db, RSVP_COLLECTION, id), { ...data, updatedAt: serverTimestamp() }),
+      "updateRSVP"
+    );
+    console.log("Firestore: updateRSVP success, id:", id);
+  } catch (err) {
+    console.error("Firestore: updateRSVP FAILED:", err);
+    throw err;
+  }
+}
+
+export async function deleteRSVP(id: string): Promise<void> {
+  try {
+    await withTimeout(deleteDoc(doc(db, RSVP_COLLECTION, id)), "deleteRSVP");
+    console.log("Firestore: deleteRSVP success, id:", id);
+  } catch (err) {
+    console.error("Firestore: deleteRSVP FAILED:", err);
+    throw err;
+  }
+}
+
+// ─── Analytics Snapshots ───
+
+const ANALYTICS_COLLECTION = "analyticsSnapshots";
+
+export interface AnalyticsSnapshot {
+  id?: string;
+  date: string;
+  totalUsers: number;
+  newUsers30d: number;
+  totalEnrollments: number;
+  totalRSVPs: number;
+  totalSubmissions: number;
+  totalEvents: number;
+  totalPrograms: number;
+  totalJournals: number;
+  totalInviteCodes: number;
+  enrollmentByStatus: { pending: number; approved: number; rejected: number; completed: number };
+  rsvpByStatus: { pending: number; confirmed: number; cancelled: number };
+  requestsByStatus: { pending: number; approved: number; rejected: number };
+  userRoleBreakdown: Record<string, number>;
+  engagementScore: number;
+  createdAt?: any;
+}
+
+export async function saveAnalyticsSnapshot(data: Omit<AnalyticsSnapshot, "id" | "createdAt" | "date">): Promise<void> {
+  const today = new Date().toISOString().split("T")[0];
+  const existing = await getDocs(
+    query(collection(db, ANALYTICS_COLLECTION), where("date", "==", today), limit(1))
+  );
+  if (!existing.empty) {
+    await updateDoc(doc(db, ANALYTICS_COLLECTION, existing.docs[0].id), { ...data, updatedAt: serverTimestamp() });
+    console.log("Firestore: analytics snapshot updated for", today);
+    return;
+  }
+  await addDoc(collection(db, ANALYTICS_COLLECTION), { ...data, date: today, createdAt: serverTimestamp() });
+  console.log("Firestore: analytics snapshot saved for", today);
+}
+
+export async function fetchAnalyticsSnapshots(limitCount = 30): Promise<AnalyticsSnapshot[]> {
+  const q = query(collection(db, ANALYTICS_COLLECTION), orderBy("date", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<AnalyticsSnapshot>(snap);
 }

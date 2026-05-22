@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 
 export default function ServingOurCommunityPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="mhma" />
 
       <main className="pt-20">

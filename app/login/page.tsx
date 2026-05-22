@@ -124,7 +124,7 @@ export default function LoginPage() {
                   <h2 className="text-xl font-bold text-gray-900 mb-2">{current.title}</h2>
                   <p className="text-gray-500 text-sm">{current.desc}</p>
                   {tab === "board" && (
-                    <p className="text-amber-700 text-xs mt-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block">
+                    <p className="text-mhma-gold text-xs mt-2 bg-mhma-cream border border-mhma-gold/20 rounded-sm px-4 py-2 inline-block">
                       {current.boardMsg}
                     </p>
                   )}
@@ -146,7 +146,7 @@ export default function LoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         autoComplete="username"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-mhma-cream/50"
                         placeholder="you@example.com"
                         required
                       />
@@ -162,7 +162,7 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         autoComplete="current-password"
-                        className="w-full pl-10 pr-11 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                        className="w-full pl-10 pr-11 py-3 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-mhma-cream/50"
                         placeholder="Enter your password"
                         required
                       />
@@ -179,7 +179,7 @@ export default function LoginPage() {
                   <div className="flex justify-end">
                     <Link
                       href="/recover"
-                      className="text-sm text-[#c9a227] hover:text-amber-700 font-medium transition-colors"
+                      className="text-sm text-mhma-gold hover:text-mhma-gold-light font-medium transition-colors"
                     >
                       Forgot password?
                     </Link>
@@ -188,7 +188,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-[#b49c2e] hover:bg-[#8c7622] text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200/50"
+                    className="w-full flex items-center justify-center gap-2 bg-mhma-gold hover:bg-mhma-gold-light text-mhma-forest font-medium py-3.5 px-6 rounded-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-sm"
                   >
                     {loading ? (
                       <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ export default function LoginPage() {
                 <div className="mt-8 text-center space-y-3">
                   <p className="text-sm text-gray-500">
                     Don&apos;t have an account?{" "}
-                    <Link href="/register" className="text-[#c9a227] hover:text-amber-700 font-semibold inline-flex items-center gap-1">
+                    <Link href="/register" className="text-mhma-gold hover:text-mhma-gold-light font-semibold inline-flex items-center gap-1">
                       Create one <ArrowRight className="w-3 h-3" />
                     </Link>
                   </p>

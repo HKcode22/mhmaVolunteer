@@ -75,7 +75,7 @@ export default function RecoverPage() {
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c9a227]/30 focus:border-[#c9a227] outline-none transition-all bg-gray-50/50"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                           placeholder="you@example.com"
                           required
                         />
@@ -85,7 +85,7 @@ export default function RecoverPage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full flex items-center justify-center gap-2 bg-[#b49c2e] hover:bg-[#8c7622] text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200/50"
+                      className="w-full flex items-center justify-center gap-2 bg-mhma-gold hover:bg-mhma-gold-light text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-200/50"
                     >
                       {loading ? (
                         <div className="flex items-center gap-2">
@@ -110,13 +110,13 @@ export default function RecoverPage() {
                   </p>
                   <p className="text-xs text-gray-400 mb-6">
                     Didn&apos;t receive it? Check your spam folder or{" "}
-                    <button onClick={() => setSent(false)} className="text-[#c9a227] hover:underline font-medium">
+                    <button onClick={() => setSent(false)} className="text-mhma-gold hover:underline font-medium">
                       try again
                     </button>
                   </p>
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-2 bg-[#b49c2e] hover:bg-[#8c7622] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+                    className="inline-flex items-center gap-2 bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
                   >
                     Back to Sign In <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -126,7 +126,7 @@ export default function RecoverPage() {
               <div className="mt-8 text-center">
                 <p className="text-sm text-gray-500">
                   Remember your password?{" "}
-                  <Link href="/login" className="text-[#c9a227] hover:text-amber-700 font-semibold">
+                  <Link href="/login" className="text-mhma-gold hover:text-amber-700 font-semibold">
                     Sign in
                   </Link>
                 </p>
