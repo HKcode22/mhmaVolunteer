@@ -423,9 +423,9 @@ useEffect(() => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-mhma-gold/5 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="max-w-6xl mx-auto lg:px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-            <div className="lg:w-3/5 text-center lg:text-left lg:pr-8">
+        <div className="relative z-10 w-full">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start">
+            <div className="px-4 lg:px-0 lg:w-3/5 text-center lg:text-left lg:pr-8 xl:pr-12">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-xs sm:text-sm tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
@@ -449,15 +449,15 @@ useEffect(() => {
             </div>
 
             {/* Masjid illustration on right */}
-            <div className="lg:w-2/5 flex justify-center lg:justify-end">
+            <div className="lg:w-2/5 flex justify-center lg:justify-end lg:pr-4 xl:pr-8">
               {heroLoading ? (
-                <div className="w-full max-w-2xl aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
+                <div className="w-full max-w-3xl aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
               ) : heroImage ? (
-                <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                <div className="w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
                   <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <svg viewBox="0 0 400 320" className="w-full max-w-md drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 400 320" className="w-full max-w-3xl drop-shadow-2xl" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#1a365d"/>
