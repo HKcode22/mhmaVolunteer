@@ -517,26 +517,38 @@ useEffect(() => {
       </section>
 
       {/* Fundraising Progress Bar */}
-      <section className="bg-[#F5F0EB] py-4 md:py-5 border-b border-gray-200">
+      <section className="bg-mhma-cream py-6 md:py-8 border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
-          {masjidUpdates.length > 0 && (masjidUpdates[0].raised > 0 || masjidUpdates[0].goal > 0) ? (
-            <div className="flex flex-col md:flex-row items-center gap-3">
+          {masjidUpdates.length > 0 && masjidUpdates[0].goal > 0 ? (
+            <div className="flex flex-col md:flex-row items-center gap-4">
               <div className="shrink-0 text-center md:text-left">
-                <p className="text-xs font-bold text-mhma-forest uppercase tracking-wider">Fundraising</p>
+                <p className="text-sm font-bold text-mhma-forest uppercase tracking-wider">Masjid Fund</p>
               </div>
-              <div className="flex-1 w-full">
-                <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner">
+              <div className="flex-1 w-full space-y-1">
+                <div className="w-full bg-white rounded-full h-5 overflow-hidden shadow-inner border border-gray-200">
                   <div className="bg-mhma-gold h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((masjidUpdates[0].raised / masjidUpdates[0].goal) * 100, 100)}%` }}></div>
                 </div>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>${(masjidUpdates[0].raised || 0).toLocaleString()} raised</span>
+                  <span>{Math.min(Math.round((masjidUpdates[0].raised / masjidUpdates[0].goal) * 100), 100)}%</span>
+                  <span>Goal: ${masjidUpdates[0].goal.toLocaleString()}</span>
+                </div>
               </div>
-              <div className="shrink-0 text-center md:text-right">
-                <p className="text-sm font-bold text-mhma-forest">${(masjidUpdates[0].raised || 0).toLocaleString()} <span className="font-normal text-gray-500">/ ${(masjidUpdates[0].goal || 0).toLocaleString()}</span></p>
+              <div className="shrink-0">
+                <Link href="/masjid-construction" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
+                  Pledge Today
+                </Link>
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <span className="w-2 h-2 bg-mhma-gold rounded-full"></span>
-              Help us build our masjid — <Link href="/masjid-construction" className="text-mhma-gold font-semibold hover:underline">Donate Today</Link>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
+                <p className="text-sm font-bold text-mhma-forest uppercase tracking-wider">Masjid Fund</p>
+                <p className="text-xs text-gray-500 mt-1">Campaign data coming soon</p>
+              </div>
+              <Link href="/masjid-construction" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
+                Pledge Today
+              </Link>
             </div>
           )}
         </div>
@@ -751,7 +763,13 @@ useEffect(() => {
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex flex-col lg:flex-row items-center gap-8">
               <div className="lg:w-1/3">
-                <img src={masjidUpdates[0].image} alt="Masjid Construction" className="w-full rounded-2xl shadow-2xl border-2 border-mhma-gold/20" />
+                {masjidUpdates[0].video ? (
+                  <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                    <iframe src={masjidUpdates[0].video} className="absolute inset-0 w-full h-full" allowFullScreen></iframe>
+                  </div>
+                ) : (
+                  <img src={masjidUpdates[0].image} alt="Masjid Construction" className="w-full rounded-2xl shadow-2xl border-2 border-mhma-gold/20" />
+                )}
               </div>
               <div className="lg:w-2/3 text-white">
                 <p className="text-mhma-gold text-xs font-bold uppercase tracking-widest mb-2">Masjid Construction</p>

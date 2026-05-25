@@ -62,8 +62,10 @@ function EditProgramForm() {
     if (!id) return;
     setSaving(true); setError(""); setSuccess("");
     try {
+      const slug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       await updateProgram(id, {
         ...formData,
+        slug,
         stats: statFields.filter(s => s.label || s.value),
       });
       setSuccess("Program updated! Redirecting...");

@@ -19,7 +19,7 @@ export default function MasjidConstructionPage() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    image: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "",
+    image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "",
   });
 
   useEffect(() => {
@@ -58,6 +58,7 @@ export default function MasjidConstructionPage() {
     try {
       await addMasjidUpdate({
         image: formData.image,
+        video: formData.video,
         caption: formData.caption,
         phase: formData.phase,
         raised: formData.raised,
@@ -65,7 +66,7 @@ export default function MasjidConstructionPage() {
         progressDate: formData.progressDate || new Date().toISOString().split("T")[0],
         createdBy: user?.uid,
       });
-      setFormData({ image: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "" });
+      setFormData({ image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "" });
       setShowForm(false);
       loadUpdates();
     } catch (err: any) {
@@ -116,6 +117,11 @@ export default function MasjidConstructionPage() {
               </div>
               {formData.image && <img src={formData.image} alt="Preview" className="mt-2 w-32 h-24 object-cover rounded-lg" />}
             </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Video URL (YouTube embed)</label>
+              <input type="url" value={formData.video} onChange={e => setFormData(p => ({ ...p, video: e.target.value }))} placeholder="https://www.youtube.com/embed/XXX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              <p className="text-xs text-gray-400 mt-1">Use YouTube embed URL for homepage video</p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Caption</label>
@@ -151,7 +157,13 @@ export default function MasjidConstructionPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {updates.map((u) => (
               <div key={u.id} className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-                {u.image && <img src={u.image} alt={u.caption} className="w-full h-48 object-cover" />}
+                {u.video ? (
+                  <div className="relative w-full aspect-video bg-black">
+                    <iframe src={u.video} className="absolute inset-0 w-full h-full" allowFullScreen></iframe>
+                  </div>
+                ) : u.image ? (
+                  <img src={u.image} alt={u.caption} className="w-full h-48 object-cover" />
+                ) : null}
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-2">
                     {u.phase && <span className="text-xs font-bold text-mhma-gold uppercase tracking-wider">{u.phase}</span>}

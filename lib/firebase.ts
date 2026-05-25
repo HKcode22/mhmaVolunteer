@@ -163,7 +163,7 @@ export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Pro
     // Save current state as a version before updating
     const currentSnap = await getDoc(doc(db, collections.events, id));
     if (currentSnap.exists()) {
-      await saveVersion("events", id, currentSnap.data());
+      await saveVersion("event", id, currentSnap.data());
     }
     await withTimeout(
       updateDoc(doc(db, collections.events, id), { ...data, updatedAt: serverTimestamp() }),
@@ -225,7 +225,7 @@ export async function updateProgram(id: string, data: Partial<FirebaseProgram>):
     // Save current state as a version before updating
     const currentSnap = await getDoc(doc(db, collections.programs, id));
     if (currentSnap.exists()) {
-      await saveVersion("programs", id, currentSnap.data());
+      await saveVersion("program", id, currentSnap.data());
     }
     await withTimeout(
       updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
@@ -499,6 +499,7 @@ export interface FirebaseUser {
   firstName?: string;
   lastName?: string;
   displayName?: string;
+  phone?: string;
   role: string;
   createdAt?: any;
 }
@@ -580,6 +581,11 @@ export async function fetchVersions(targetType: string, targetId: string): Promi
   return collectionData(snap);
 }
 
+const TARGET_TYPE_COLLECTION: Record<string, string> = {
+  program: "programs",
+  event: "events",
+};
+
 export async function restoreVersion(versionId: string, userId: string, userEmail: string, userName: string): Promise<boolean> {
   try {
     const versionSnap = await getDoc(doc(db, collections.versions, versionId));
@@ -588,8 +594,11 @@ export async function restoreVersion(versionId: string, userId: string, userEmai
     const { targetType, targetId, data } = version;
     if (!targetType || !targetId || !data) return false;
 
+    const collectionName = TARGET_TYPE_COLLECTION[targetType] || targetType;
+    if (!collectionName) return false;
+
     // Restore data to the original document
-    await updateDoc(doc(db, targetType, targetId), { ...data, restoredFromVersion: versionId, updatedAt: serverTimestamp() });
+    await updateDoc(doc(db, collectionName, targetId), { ...data, restoredFromVersion: versionId, updatedAt: serverTimestamp() });
     // Mark version as restored
     await updateDoc(doc(db, collections.versions, versionId), { restoredAt: serverTimestamp(), restoredBy: userId });
     // Log the restore action
@@ -724,6 +733,7 @@ const MASJID_CONSTRUCTION = "masjidConstruction";
 export interface FirebaseMasjidUpdate {
   id?: string;
   image: string;
+  video?: string;
   caption: string;
   phase: string;
   raised: number;

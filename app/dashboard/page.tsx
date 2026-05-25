@@ -11,13 +11,12 @@ import { auth, db } from "@/lib/firebase-client";
 import {
   fetchEvents, deleteEvent,
   fetchPrograms, deleteProgram,
-  fetchJournalEntries, deleteJournalEntry,
   fetchEnrollments, deleteEnrollment, updateEnrollment,
   fetchSchedulingRequests, deleteSchedulingRequest, updateSchedulingRequest,
   fetchContactSubmissions, deleteContactSubmission, markContactSubmissionRead,
   fetchRSVPs, deleteRSVP, updateRSVP,
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
-  FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
+  FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
 } from "@/lib/firebase";
 import Navigation from "@/components/Navigation";
 
@@ -26,7 +25,6 @@ export default function DashboardPage() {
   const { user, isBoardMember, loading: authLoading, signOut } = useAuth();
   const [programs, setPrograms] = useState<FirebaseProgram[]>([]);
   const [events, setEvents] = useState<FirebaseEvent[]>([]);
-  const [journals, setJournals] = useState<FirebaseJournalEntry[]>([]);
   const [eventRequests, setEventRequests] = useState<FirebaseSchedulingRequest[]>([]);
   const [enrollments, setEnrollments] = useState<FirebaseEnrollment[]>([]);
   const [contactSubmissions, setContactSubmissions] = useState<FirebaseContactSubmission[]>([]);
@@ -36,7 +34,6 @@ export default function DashboardPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showAllPrograms, setShowAllPrograms] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [showAllJournals, setShowAllJournals] = useState(false);
   const [showAllRequests, setShowAllRequests] = useState(false);
   const [showAllEnrollments, setShowAllEnrollments] = useState(false);
   const [showAllSubmissions, setShowAllSubmissions] = useState(false);
@@ -47,7 +44,7 @@ export default function DashboardPage() {
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
-  const defaultOrder = ["programs", "events", "journal", "requests", "enrollments", "rsvps", "submissions", "codes"];
+  const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
 
   useEffect(() => {
@@ -101,17 +98,15 @@ export default function DashboardPage() {
       const results = await Promise.allSettled([
         timeout(fetchPrograms(100), 15000).catch(() => [] as FirebaseProgram[]),
         timeout(fetchEvents(100), 15000).catch(() => [] as FirebaseEvent[]),
-        timeout(fetchJournalEntries(100), 15000).catch(() => [] as FirebaseJournalEntry[]),
         timeout(fetchSchedulingRequests(100), 15000).catch(() => [] as FirebaseSchedulingRequest[]),
         timeout(fetchEnrollments(100), 15000).catch(() => [] as FirebaseEnrollment[]),
         timeout(fetchRSVPs(100), 15000).catch(() => [] as FirebaseRSVP[]),
         timeout(fetchContactSubmissions(100), 15000).catch(() => [] as FirebaseContactSubmission[]),
         timeout(fetchInviteCodes(), 15000).catch(() => [] as InviteCode[]),
       ]);
-      const [p, e, j, er, en, rsvp, cs, codes] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
-      setJournals(j || []);
       setEventRequests(er || []);
       setEnrollments(en || []);
       setRSVPs(rsvp || []);
@@ -230,7 +225,7 @@ export default function DashboardPage() {
   const handleDelete = async (
     id: string,
     title: string,
-    type: "program" | "event" | "journal" | "request" | "enrollment" | "rsvp" | "submission"
+    type: "program" | "event" | "request" | "enrollment" | "rsvp" | "submission"
   ) => {
     if (deletingId === id) return;
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
@@ -239,7 +234,6 @@ export default function DashboardPage() {
       switch (type) {
         case "program": await deleteProgram(id); setPrograms(p => p.filter(x => x.id !== id)); break;
         case "event": await deleteEvent(id); setEvents(p => p.filter(x => x.id !== id)); break;
-        case "journal": await deleteJournalEntry(id); setJournals(p => p.filter(x => x.id !== id)); break;
         case "request": await deleteSchedulingRequest(id); setEventRequests(p => p.filter(x => x.id !== id)); break;
         case "enrollment": await deleteEnrollment(id); setEnrollments(p => p.filter(x => x.id !== id)); break;
         case "rsvp": await deleteRSVP(id); setRSVPs(p => p.filter(x => x.id !== id)); break;
@@ -263,7 +257,6 @@ export default function DashboardPage() {
 
   const visiblePrograms = showAllPrograms ? programs : programs.slice(0, 5);
   const visibleEvents = showAllEvents ? events : events.slice(0, 5);
-  const visibleJournals = showAllJournals ? journals : journals.slice(0, 5);
   const visibleRequests = showAllRequests ? eventRequests : eventRequests.slice(0, 5);
   const visibleEnrollments = showAllEnrollments ? enrollments : enrollments.slice(0, 5);
   const visibleRSVPs = showAllRSVPs ? rsvps : rsvps.slice(0, 5);
@@ -293,9 +286,6 @@ export default function DashboardPage() {
             <Link href="/dashboard/events/new" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Event</span>
             </Link>
-            <Link href="/dashboard/journal/new" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Journal</span>
-            </Link>
             <Link href="/dashboard/analytics" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <BarChart3 className="w-6 h-6" /><span className="font-semibold text-sm">Analytics</span>
             </Link>
@@ -308,6 +298,9 @@ export default function DashboardPage() {
             </button>
             <Link href="/dashboard/masjid-construction" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Building2 className="w-6 h-6" /><span className="font-semibold text-sm">Construction</span>
+            </Link>
+            <Link href="/dashboard/users" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Users className="w-6 h-6" /><span className="font-semibold text-sm">Members</span>
             </Link>
           </div>
 
@@ -349,24 +342,6 @@ export default function DashboardPage() {
                     </div>
                   ))}
                   {events.length === 0 && <p className="text-gray-400 text-sm p-3">No events yet.</p>}
-                </Section>
-              );
-            case "journal":
-              return (
-                <Section key="journal" title="Journal" count={journals.length} href="/dashboard/journal/new" allShown={showAllJournals} onToggle={() => setShowAllJournals(!showAllJournals)} scrollable>
-                  {visibleJournals.map(j => (
-                    <div key={j.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{j.title}</p>
-                        <p className="text-xs text-gray-500">{j.datePublished || ""}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Link href={`/dashboard/journal/edit?id=${j.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
-                        <button onClick={() => j.id && handleDelete(j.id, j.title, "journal")} disabled={deletingId === j.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
-                      </div>
-                    </div>
-                  ))}
-                  {journals.length === 0 && <p className="text-gray-400 text-sm p-3">No journal entries yet.</p>}
                 </Section>
               );
             case "requests":
@@ -593,7 +568,7 @@ export default function DashboardPage() {
               ))}
             </div>
             <button onClick={() => {
-              saveLayoutOrder(["programs", "events", "journal", "requests", "enrollments", "rsvps", "submissions", "codes"]);
+              saveLayoutOrder(["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes"]);
             }} className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               Reset to Default
             </button>

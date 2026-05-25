@@ -20,7 +20,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { fetchProgramBySlug } from "@/lib/firebase";
+import { fetchProgramBySlug, fetchPrograms } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 
 interface ProgramData {
@@ -48,7 +48,11 @@ export default function DynamicProgramPage() {
   useEffect(() => {
     const fetchProgramData = async () => {
       try {
-        const program = await fetchProgramBySlug(slug);
+        let program = await fetchProgramBySlug(slug);
+        if (!program) {
+          const allPrograms = await fetchPrograms(50);
+          program = allPrograms.find(p => p.slug === slug || p.id === slug) || null;
+        }
         if (program) {
           setProgramData(program);
           setImageUrl(program.image || "");

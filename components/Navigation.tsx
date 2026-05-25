@@ -125,9 +125,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 </div>
               </div>
 
+              {/* JOURNAL (commented out per board request)
               <Link href="/journal" className={`${navLinkClass("journal")} ${currentPage === "journal" ? "text-mhma-gold" : "text-gray-700"}`}>
                 JOURNAL
               </Link>
+              */}
 
               <div className="relative group">
                 <Link href="/programs" className={`${navLinkClass("programs")} ${currentPage === "programs" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
@@ -178,7 +180,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/about" className="block py-2 text-gray-700 border-b border-gray-100">ABOUT</Link>
             <Link href="/events" className="block py-2 text-gray-700 border-b border-gray-100">EVENTS</Link>
             <Link href="/rsvp" className="block py-2 text-gray-700 border-b border-gray-100">RSVP</Link>
-            <Link href="/journal" className="block py-2 text-gray-700 border-b border-gray-100">JOURNAL</Link>
+            {/* <Link href="/journal" className="block py-2 text-gray-700 border-b border-gray-100">JOURNAL</Link> */}
             <Link href="/programs" className="block py-2 text-gray-700 border-b border-gray-100">PROGRAMS</Link>
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/contact" className="block py-2 text-gray-700">CONTACT</Link>
