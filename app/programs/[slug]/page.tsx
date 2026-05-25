@@ -79,8 +79,20 @@ export default function DynamicProgramPage() {
   }
 
   if (!programData) {
-    router.push('/programs');
-    return null;
+    return (
+      <div className="min-h-screen flex flex-col font-sans bg-mhma-cream">
+        <Navigation currentPage="programs" />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Program Not Found</h1>
+            <p className="text-gray-500 mb-6">The program you&apos;re looking for doesn&apos;t exist or could not be found.</p>
+            <Link href="/programs" className="inline-flex items-center text-mhma-gold font-bold hover:underline">
+              <ChevronLeft className="w-4 h-4 mr-1" /> Back to All Programs
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const stats = programData.stats?.filter(s => s.label && s.value) || [];

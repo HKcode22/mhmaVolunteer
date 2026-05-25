@@ -425,7 +425,7 @@ useEffect(() => {
 
         <div className="max-w-6xl mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
-            <div className="lg:w-3/5 text-center lg:text-left lg:pr-4">
+            <div className="lg:w-1/2 text-center lg:text-left lg:pr-4">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-[10px] tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
@@ -448,11 +448,11 @@ useEffect(() => {
             </div>
 
             {/* Masjid illustration on right */}
-            <div className="lg:w-2/5 flex justify-center lg:justify-end">
+            <div className="lg:w-1/2 flex justify-center lg:justify-end">
               {heroLoading ? (
-                <div className="w-full max-w-lg aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
+                <div className="w-full max-w-2xl aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
               ) : heroImage ? (
-                <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
                   <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />
                 </div>
               ) : (

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Upload, Loader2, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, Trash2, Plus, Pencil } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { fetchMasjidUpdates, addMasjidUpdate, deleteMasjidUpdate, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { fetchMasjidUpdates, addMasjidUpdate, updateMasjidUpdate, deleteMasjidUpdate, FirebaseMasjidUpdate } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/components/Navigation";
 
@@ -16,8 +16,10 @@ export default function MasjidConstructionPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "",
   });
@@ -36,6 +38,13 @@ export default function MasjidConstructionPage() {
     setLoading(false);
   };
 
+  const resetForm = () => {
+    setFormData({ image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "" });
+    setEditingId(null);
+    setShowForm(false);
+    setError("");
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -50,13 +59,45 @@ export default function MasjidConstructionPage() {
     }
   };
 
+  const handleVideoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setFormData(prev => ({ ...prev, video: dataUrl }));
+      setUploadingVideo(false);
+    };
+    reader.onerror = () => {
+      setError("Video file read failed. Try a smaller file or use YouTube URL.");
+      setUploadingVideo(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEdit = (u: FirebaseMasjidUpdate) => {
+    setFormData({
+      image: u.image || "",
+      video: u.video || "",
+      caption: u.caption || "",
+      phase: u.phase || "",
+      raised: u.raised || 0,
+      goal: u.goal || 0,
+      progressDate: u.progressDate || "",
+    });
+    setEditingId(u.id || null);
+    setShowForm(true);
+    setError("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (uploading || !formData.image) return;
+    if (uploading) return;
     setSaving(true);
     setError("");
     try {
-      await addMasjidUpdate({
+      const data = {
         image: formData.image,
         video: formData.video,
         caption: formData.caption,
@@ -65,9 +106,13 @@ export default function MasjidConstructionPage() {
         goal: formData.goal,
         progressDate: formData.progressDate || new Date().toISOString().split("T")[0],
         createdBy: user?.uid,
-      });
-      setFormData({ image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "" });
-      setShowForm(false);
+      };
+      if (editingId) {
+        await updateMasjidUpdate(editingId, data);
+      } else {
+        await addMasjidUpdate(data);
+      }
+      resetForm();
       loadUpdates();
     } catch (err: any) {
       setError(err.message || "Failed to save");
@@ -98,9 +143,9 @@ export default function MasjidConstructionPage() {
               <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
             </Link>
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900">Masjid Construction</h1>
-            <p className="text-gray-500 mt-1">Manage progress updates, photos, and fundraising stats.</p>
+            <p className="text-gray-500 mt-1">Manage progress updates, photos, videos, and fundraising stats.</p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2.5 bg-mhma-gold text-white font-bold rounded-lg hover:bg-mhma-gold-light transition-all">
+          <button onClick={() => showForm ? resetForm() : setShowForm(true)} className="flex items-center gap-2 px-4 py-2.5 bg-mhma-gold text-white font-bold rounded-lg hover:bg-mhma-gold-light transition-all">
             <Plus className="w-4 h-4" /> {showForm ? "Cancel" : "Add Update"}
           </button>
         </div>
@@ -109,8 +154,9 @@ export default function MasjidConstructionPage() {
 
         {showForm && (
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mb-8 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900">{editingId ? "Edit Update" : "New Update"}</h2>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Image *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Image</label>
               <div className="flex items-center gap-4">
                 <input type="file" accept="image/*" onChange={handleFileUpload} className="text-sm" />
                 {uploading && <Loader2 className="w-4 h-4 animate-spin text-mhma-gold" />}
@@ -118,9 +164,16 @@ export default function MasjidConstructionPage() {
               {formData.image && <img src={formData.image} alt="Preview" className="mt-2 w-32 h-24 object-cover rounded-lg" />}
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Video URL (YouTube embed)</label>
-              <input type="url" value={formData.video} onChange={e => setFormData(p => ({ ...p, video: e.target.value }))} placeholder="https://www.youtube.com/embed/XXX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-              <p className="text-xs text-gray-400 mt-1">Use YouTube embed URL for homepage video</p>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Video</label>
+              <div className="flex flex-col gap-2">
+                <input type="url" value={formData.video} onChange={e => setFormData(p => ({ ...p, video: e.target.value }))} placeholder="https://www.youtube.com/embed/XXX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Or upload from computer:</span>
+                  <input type="file" accept="video/*" onChange={handleVideoFileUpload} className="text-sm" />
+                  {uploadingVideo && <Loader2 className="w-4 h-4 animate-spin text-mhma-gold" />}
+                </div>
+                <p className="text-xs text-gray-400">Uploaded video is stored as Base64 in Firestore (larger files may be rejected if they exceed the 1MB document size limit).</p>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -140,9 +193,12 @@ export default function MasjidConstructionPage() {
                 <input type="number" value={formData.goal} onChange={e => setFormData(p => ({ ...p, goal: Number(e.target.value) }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
-            <button type="submit" disabled={saving || uploading || !formData.image} className="px-6 py-2.5 bg-mhma-gold text-white font-bold rounded-lg hover:bg-mhma-gold-light disabled:opacity-50 transition-all">
-              {saving ? "Saving..." : "Save Update"}
-            </button>
+            <div className="flex gap-2">
+              <button type="submit" disabled={saving || uploading} className="px-6 py-2.5 bg-mhma-gold text-white font-bold rounded-lg hover:bg-mhma-gold-light disabled:opacity-50 transition-all">
+                {saving ? "Saving..." : (editingId ? "Update Update" : "Save Update")}
+              </button>
+              <button type="button" onClick={resetForm} className="px-4 py-2.5 border border-gray-300 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-all">Cancel</button>
+            </div>
           </form>
         )}
 
@@ -159,7 +215,11 @@ export default function MasjidConstructionPage() {
               <div key={u.id} className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                 {u.video ? (
                   <div className="relative w-full aspect-video bg-black">
-                    <iframe src={u.video} className="absolute inset-0 w-full h-full" allowFullScreen></iframe>
+                    {u.video.startsWith("data:") ? (
+                      <video src={u.video} className="w-full h-full object-contain" controls />
+                    ) : (
+                      <iframe src={u.video} className="absolute inset-0 w-full h-full" allowFullScreen></iframe>
+                    )}
                   </div>
                 ) : u.image ? (
                   <img src={u.image} alt={u.caption} className="w-full h-48 object-cover" />
@@ -167,9 +227,14 @@ export default function MasjidConstructionPage() {
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-2">
                     {u.phase && <span className="text-xs font-bold text-mhma-gold uppercase tracking-wider">{u.phase}</span>}
-                    <button onClick={() => u.id && handleDelete(u.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex gap-1">
+                      <button onClick={() => handleEdit(u)} className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors" title="Edit">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => u.id && handleDelete(u.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   {u.caption && <p className="text-gray-700 text-sm mb-3">{u.caption}</p>}
                   {(u.raised > 0 || u.goal > 0) && (

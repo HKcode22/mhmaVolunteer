@@ -60,14 +60,16 @@ function EditProgramForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
+    if (!formData.title?.trim()) { setError("Title is required."); return; }
     setSaving(true); setError(""); setSuccess("");
     try {
       const slug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      await updateProgram(id, {
-        ...formData,
-        slug,
-        stats: statFields.filter(s => s.label || s.value),
-      });
+      const { id: _ignoreId, ...cleanData } = formData;
+      const payload: Record<string, any> = {};
+      Object.entries(cleanData).forEach(([k, v]) => { if (v !== undefined) payload[k] = v; });
+      payload.slug = slug;
+      payload.stats = statFields.filter(s => s.label || s.value);
+      await updateProgram(id, payload);
       setSuccess("Program updated! Redirecting...");
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "program_update", details: `Updated program: ${formData.title}`, targetType: "program", targetId: id });
       setTimeout(() => router.push("/dashboard"), 1500);

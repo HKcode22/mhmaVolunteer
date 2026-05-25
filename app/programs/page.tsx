@@ -88,7 +88,7 @@ export default function ProgramsPage() {
     const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
     if (slug && !existingSlugs.includes(slug)) {
       allPrograms.push({
-        title: fp.title || "Untitled",
+        title: fp.title || "Unnamed Program",
         description: fp.description || "",
         image: fp.image || "",
         href: `/programs/${slug}`,

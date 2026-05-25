@@ -53,8 +53,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
                       <Link href="/dashboard" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">DASHBOARD</Link>
                       <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ANALYTICS</Link>
-                      <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
                       <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ACTIVITY LOG</Link>
+                      <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MEMBERS</Link>
+                      <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
                     </div>
                   </div>
                 </div>
@@ -189,8 +190,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
                 <Link href="/dashboard" className="block py-2 text-mhma-gold font-semibold">DASHBOARD</Link>
                 <Link href="/dashboard/analytics" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Analytics</Link>
-                <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
                 <Link href="/dashboard/activity" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Activity Log</Link>
+                <Link href="/dashboard/users" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Members</Link>
+                <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
               </>
             ) : isLoggedIn ? (
               <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>

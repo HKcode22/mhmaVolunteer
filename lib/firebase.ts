@@ -574,11 +574,12 @@ export async function fetchVersions(targetType: string, targetId: string): Promi
     collection(db, collections.versions),
     where("targetType", "==", targetType),
     where("targetId", "==", targetId),
-    orderBy("createdAt", "desc"),
     limit(10)
   );
   const snap = await getDocs(q);
-  return collectionData(snap);
+  const data = collectionData(snap);
+  data.sort((a: any, b: any) => ((b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)));
+  return data;
 }
 
 const TARGET_TYPE_COLLECTION: Record<string, string> = {

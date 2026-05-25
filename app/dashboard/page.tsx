@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2 } from "lucide-react";
+import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -289,6 +289,9 @@ export default function DashboardPage() {
             <Link href="/dashboard/analytics" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <BarChart3 className="w-6 h-6" /><span className="font-semibold text-sm">Analytics</span>
             </Link>
+            <Link href="/dashboard/activity" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Activity className="w-6 h-6" /><span className="font-semibold text-sm">Activity Log</span>
+            </Link>
             <Link href="/dashboard/notifications" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
             </Link>
@@ -313,12 +316,12 @@ export default function DashboardPage() {
                   {visiblePrograms.map(p => (
                     <div key={p.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{p.title}</p>
+                        <p className="font-semibold text-gray-900 truncate">{p.title || "Unnamed Program"}</p>
                         <p className="text-xs text-gray-500">{p.id}</p>
                       </div>
                       <div className="flex gap-2">
                         <Link href={`/dashboard/programs/edit?id=${p.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
-                        <button onClick={() => p.id && handleDelete(p.id, p.title, "program")} disabled={deletingId === p.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                        <button onClick={() => p.id && handleDelete(p.id, p.title || "Unnamed Program", "program")} disabled={deletingId === p.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
                   ))}
