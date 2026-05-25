@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { fetchProgramBySlug, updateProgram, logActivity, FirebaseProgram } from "@/lib/firebase";
+import { fetchProgramById, updateProgram, logActivity, FirebaseProgram } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/components/Navigation";
 
@@ -30,7 +30,7 @@ function EditProgramForm() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (!authLoading && id) {
-      fetchProgramBySlug(id).then(p => {
+      fetchProgramById(id).then(p => {
         if (p) {
           setFormData(p);
           const stats = p.stats || [];
@@ -66,8 +66,9 @@ function EditProgramForm() {
         ...formData,
         stats: statFields.filter(s => s.label || s.value),
       });
-      setSuccess("Program updated!");
+      setSuccess("Program updated! Redirecting...");
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "program_update", details: `Updated program: ${formData.title}`, targetType: "program", targetId: id });
+      setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to update");
     } finally {

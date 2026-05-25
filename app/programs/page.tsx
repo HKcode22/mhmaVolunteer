@@ -4,20 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Linkedin,
-  Youtube,
-  Heart,
-  BookOpen,
-  ArrowRight,
-  ChevronRight,
-  Sparkles,
-  Zap,
-  Star
+  Facebook, Instagram, Twitter, Linkedin, Youtube,
+  Heart, BookOpen, ArrowRight, ChevronRight, Sparkles, Zap, Star, Edit3
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { useAuth } from "@/lib/auth-context";
 
 interface Program {
   id: string;
@@ -46,31 +37,38 @@ const hardcodedPrograms = [
 import PageBanner from "@/components/PageBanner";
 
 export default function ProgramsPage() {
+  const { isBoardMember } = useAuth();
   const [wpPrograms, setWpPrograms] = useState<Program[]>([]);
+  const [firestorePrograms, setFirestorePrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPrograms = async () => {
+    const fetchAllPrograms = async () => {
       try {
-        // Use API proxy for reliable fetching (handles CORS, retries, and media resolution)
         const timestamp = Date.now();
-        const response = await fetch(`/api/programs?_=${timestamp}`, {
-          cache: 'no-store',
-        });
-        if (!response.ok) throw new Error("Failed to fetch programs");
-        const data = await response.json();
-        setWpPrograms(data);
+        const [wpRes, fsPrograms] = await Promise.all([
+          fetch(`/api/programs?_=${timestamp}`, { cache: 'no-store' }),
+          import('@/lib/firebase').then(m => m.fetchPrograms(20)),
+        ]);
+
+        if (wpRes.ok) {
+          const data = await wpRes.json();
+          setWpPrograms(data);
+        }
+        setFirestorePrograms(fsPrograms || []);
       } catch (err) {
         console.error("Failed to fetch programs:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchPrograms();
+    fetchAllPrograms();
   }, []);
 
-  // Merge programs from Firestore with hardcoded fallback
-  const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string }> = [...hardcodedPrograms];
+  // Merge programs from Firestore, WordPress API, and hardcoded fallback
+  const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string; id?: string; isFirestore?: boolean }> = [...hardcodedPrograms];
+
+  // Add WordPress API programs
   wpPrograms.forEach(wpProgram => {
     const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
     if (!existingSlugs.includes(wpProgram.slug)) {
@@ -79,12 +77,28 @@ export default function ProgramsPage() {
         description: wpProgram.description || "",
         image: wpProgram.image || "",
         href: `/programs/${wpProgram.slug}`,
-        slug: wpProgram.slug
+        slug: wpProgram.slug,
       });
     }
   });
 
-  // Show ALL programs (removed limit to fix missing programs issue)
+  // Add Firestore programs
+  firestorePrograms.forEach((fp: any) => {
+    const slug = fp.slug || fp.title?.toLowerCase().replace(/\s+/g, '-');
+    const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
+    if (slug && !existingSlugs.includes(slug)) {
+      allPrograms.push({
+        title: fp.title || "Untitled",
+        description: fp.description || "",
+        image: fp.image || "",
+        href: `/programs/${slug}`,
+        slug,
+        id: fp.id,
+        isFirestore: true,
+      });
+    }
+  });
+
   const displayPrograms = allPrograms;
 
   return (
@@ -117,8 +131,13 @@ export default function ProgramsPage() {
                   <Link 
                     key={program.href} 
                     href={program.href}
-                    className="flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 group hover:border-mhma-gold hover:shadow-xl transition-all duration-500 overflow-hidden"
+                    className="flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 group hover:border-mhma-gold hover:shadow-xl transition-all duration-500 overflow-hidden relative"
                   >
+                    {isBoardMember && program.isFirestore && (
+                      <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit program">
+                        <Edit3 className="w-3 h-3" /> EDIT
+                      </Link>
+                    )}
                     <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
                       <Image
                         src={program.image}

@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
-import { fetchEvents, fetchPrograms, fetchJournalEntries, fetchMasjidUpdates } from "@/lib/firebase";
+import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/components/Navigation";
 
+/* ── Quran Verse (commented out per board request) ──
 interface QuranVerse {
   text: string;
   translation: string;
@@ -296,71 +297,7 @@ const buildExclusionCombinations = () => {
 };
 
 const EXCLUSION_COMBINATIONS = buildExclusionCombinations();
-
-// UmmahAPI integration (commented out — currently using local quran-included.json)
-// To re-enable: uncomment the fetch block below and comment out the local JSON block
-// const UMMAH_API_KEY = "umh_c38ac44eef3e585d9df7b01e93eb19a12683a328";
-
-const fetchQuranVerse = async (): Promise<QuranVerse> => {
-  // ── UmmahAPI (commented out) ──
-  // try {
-  //   const response = await fetch(
-  //     `https://ummahapi.com/api/quran/random?translations=en&api_key=${UMMAH_API_KEY}`,
-  //     { next: { revalidate: 86400 } }
-  //   );
-  //   if (response.ok) {
-  //     const data = await response.json();
-  //     if (data && data.success && data.data) {
-  //       const verse = data.data.verse;
-  //       const surah = data.data.surah;
-  //       return {
-  //         text: verse.arabic || "",
-  //         translation: verse.translations?.sahih_international || verse.translations?.yusuf_ali || "",
-  //         reference: `[Quran, ${surah.name_english} (${surah.number}:${verse.ayah})]`,
-  //         arabic: verse.arabic || "",
-  //       };
-  //     }
-  //   }
-  // } catch (error) {
-  //   console.warn("UmmahAPI verse fetch failed, falling back to local");
-  // }
-
-  // ── Local quran-included.json (active) ──
-  try {
-    const response = await fetch('/quran-included.json');
-    if (!response.ok) throw new Error('Failed to load Quran data');
-    const data = await response.json();
-
-    const allVerses: any[] = [];
-    (data.suras || []).forEach((sura: any) => {
-      (sura.verses || []).forEach((verse: any) => {
-        const cleanEnglish = (verse.english || "")
-          .replace(/\[\d+\]/g, "")
-          .replace(/\b\d+\b/g, "")
-          .replace(/\s+/g, " ")
-          .trim();
-        allVerses.push({
-          text: cleanEnglish,
-          translation: cleanEnglish,
-          reference: `[Quran, ${sura.name} (${sura.number}:${verse.aya})]`,
-          arabic: verse.arabic
-        });
-      });
-    });
-
-    if (allVerses.length === 0) throw new Error('No verses available');
-
-    const index = Math.floor(Math.random() * allVerses.length);
-    return allVerses[index];
-  } catch (error) {
-    return {
-      text: "And hold fast by the covenant of Allah all together and be not disunited",
-      translation: "And hold fast by the covenant of Allah all together and be not disunited",
-      reference: "[Quran, 3:103]",
-      arabic: "وَاعْتَصِمُوا بِحَبْلِ اللَّهِ جَمِيعًا وَلَا تَفَرَّقُوا"
-    };
-  }
-};
+── End commented-out Quran verse code ── */
 
 interface PrayerTime {
   name: string;
@@ -370,11 +307,8 @@ interface PrayerTime {
 
 export default function HomePage() {
   const { user, isBoardMember } = useAuth();
-  const [dailyVerse, setDailyVerse] = useState<QuranVerse | null>(null);
-  const [verseLoading, setVerseLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
-  const [journalEntries, setJournalEntries] = useState<any[]>([]);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
   const [heroImage, setHeroImage] = useState<string | null>(null);
@@ -446,38 +380,15 @@ export default function HomePage() {
   };
 
 useEffect(() => {
-  // Load Quran verse IMMEDIATELY (fast, from static JSON)
-  // Use ref to prevent double-fetch in React StrictMode
-  const hasLoaded = { current: false };
-  
-  if (!hasLoaded.current) {
-    hasLoaded.current = true;
-    const loadVerse = async () => {
-      try {
-        const verse = await fetchQuranVerse();
-        setDailyVerse(verse);
-      } catch (error) {
-        console.error("Verse loading error:", error);
-      } finally {
-        setVerseLoading(false);
-      }
-    };
-    loadVerse();
-  }
-}, []);
-
-useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, journalEntries, masjidData] = await Promise.all([
+      const [eventsData, programs, masjidData] = await Promise.all([
         fetchEvents(3),
         fetchPrograms(3),
-        fetchJournalEntries(3),
         fetchMasjidUpdates(1),
       ]);
       setEvents(eventsData);
       setPrograms(programs);
-      setJournalEntries(journalEntries);
       setMasjidUpdates(masjidData);
       // Prefer masjid construction image for hero, fall back to event poster
       if (masjidData.length > 0 && masjidData[0].image) {
@@ -514,16 +425,14 @@ useEffect(() => {
 
         <div className="max-w-6xl mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
-            <div className="lg:w-1/2 text-center lg:text-left lg:pl-4">
+            <div className="lg:w-3/5 text-center lg:text-left lg:pr-4">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-[10px] tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
               </div>
               <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
-                Welcome to <span className="text-mhma-gold italic">MHMA</span>{user?.displayName ? (<>
-                  , <span className="whitespace-nowrap">{user.displayName}</span>!
-                </>) : '!'}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight whitespace-normal">
+                Welcome to <span className="text-mhma-gold italic whitespace-nowrap">MHMA</span>{user?.displayName ? (<span className="whitespace-nowrap">, {user.displayName}!</span>) : '!'}
               </h1>
               <p className="text-base md:text-lg lg:text-xl text-mhma-sage/90 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">
                 Serving the Muslim Community in Mountain House since 2010
@@ -532,18 +441,18 @@ useEffect(() => {
                 <Link href="/events" className="mhma-btn-gold">
                   Explore Events
                 </Link>
-                <Link href="/masjid-construction" className="mhma-btn-ghost">
-                  Build Our Masjid
+                <Link href="/masjid-construction" className="mhma-btn-gold">
+                  MASJID CONSTRUCTION
                 </Link>
               </div>
             </div>
 
             {/* Masjid illustration on right */}
-            <div className="lg:w-1/2 flex justify-center lg:justify-end">
+            <div className="lg:w-2/5 flex justify-center lg:justify-end">
               {heroLoading ? (
-                <div className="w-full max-w-md aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
+                <div className="w-full max-w-lg aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
               ) : heroImage ? (
-                <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
                   <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />
                 </div>
               ) : (
@@ -604,27 +513,32 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Quran Verse Box - Beautiful translucent */}
-          <div className="max-w-5xl mx-auto mt-8 mb-4 bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl">
-            {verseLoading ? (
-              <div className="animate-pulse space-y-6">
-                <div className="h-14 w-3/4 bg-white/20 mx-auto rounded"></div>
-                <div className="h-6 w-full bg-white/20 rounded"></div>
+        </div>
+      </section>
+
+      {/* Fundraising Progress Bar */}
+      <section className="bg-[#F5F0EB] py-4 md:py-5 border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4">
+          {masjidUpdates.length > 0 && (masjidUpdates[0].raised > 0 || masjidUpdates[0].goal > 0) ? (
+            <div className="flex flex-col md:flex-row items-center gap-3">
+              <div className="shrink-0 text-center md:text-left">
+                <p className="text-xs font-bold text-mhma-forest uppercase tracking-wider">Fundraising</p>
               </div>
-            ) : (
-              <div className="space-y-5">
-                {dailyVerse?.arabic && (
-                  <p className="text-2xl md:text-3xl lg:text-4xl text-amber-300 text-right quran-arabic" dir="rtl">
-                    {dailyVerse.arabic}
-                  </p>
-                )}
-                <p className="text-lg md:text-xl lg:text-2xl text-gray-100 italic font-light leading-relaxed">
-                  "{dailyVerse?.translation}"
-                </p>
-                <p className="text-amber-400 font-bold text-sm md:text-base tracking-widest uppercase">{dailyVerse?.reference}</p>
+              <div className="flex-1 w-full">
+                <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner">
+                  <div className="bg-mhma-gold h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((masjidUpdates[0].raised / masjidUpdates[0].goal) * 100, 100)}%` }}></div>
+                </div>
               </div>
-            )}
-          </div>
+              <div className="shrink-0 text-center md:text-right">
+                <p className="text-sm font-bold text-mhma-forest">${(masjidUpdates[0].raised || 0).toLocaleString()} <span className="font-normal text-gray-500">/ ${(masjidUpdates[0].goal || 0).toLocaleString()}</span></p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <span className="w-2 h-2 bg-mhma-gold rounded-full"></span>
+              Help us build our masjid — <Link href="/masjid-construction" className="text-mhma-gold font-semibold hover:underline">Donate Today</Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -743,11 +657,14 @@ useEffect(() => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {(() => {
               const validPrograms = programs.filter((p: any) => p.title && p.slug);
-              const programsToShow = validPrograms.length > 0 ? validPrograms.slice(0, 3) : [
-                { title: "Quran Maktab", desc: "Foundational Quran recitation for children with Tajweed instruction.", slug: "maktab-program" },
-                { title: "Hifz Program", desc: "Structured memorization of the Holy Quran guided by qualified teachers.", slug: "quran-hifz-program" },
-                { title: "Arabic Language", desc: "Conversational and classical Arabic for all levels.", slug: "arabic-academy" }
+              const fallbacks = [
+                { title: "Quran Maktab", description: "Foundational Quran recitation for children with Tajweed instruction.", slug: "maktab-program" },
+                { title: "Hifz Program", description: "Structured memorization of the Holy Quran guided by qualified teachers.", slug: "quran-hifz-program" },
+                { title: "Arabic Language", description: "Conversational and classical Arabic for all levels.", slug: "arabic-academy" }
               ];
+              const programsToShow = validPrograms.length >= 3 ? validPrograms.slice(0, 3) : (
+                validPrograms.length > 0 ? [...validPrograms, ...fallbacks].slice(0, 3) : fallbacks
+              );
 
               return programsToShow.map((program: any, i: number) => {
                 const title = program.title || "Program";
@@ -918,7 +835,7 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* Community Archive */}
+      {/* ── Community Archive / Journal (commented out per board request) ──
       <section className="py-16 bg-mhma-forest text-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
@@ -951,6 +868,7 @@ useEffect(() => {
           </div>
         </div>
       </section>
+      ── End commented-out journal section ── */}
 
       {/* Donate Section */}
       <section className="py-16 bg-white">

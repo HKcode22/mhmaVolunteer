@@ -52,8 +52,9 @@ function EditEventForm() {
     setSaving(true); setError(""); setSuccess("");
     try {
       await updateEvent(id, formData);
-      setSuccess("Event updated!");
+      setSuccess("Event updated! Redirecting...");
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "event_update", details: `Updated event: ${formData.title}`, targetType: "event", targetId: id });
+      setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to update");
     } finally {

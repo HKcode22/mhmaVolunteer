@@ -187,3 +187,7 @@ Track volunteers, their skills, and availability.
 ---
 
 > **Note**: All features should maintain the $0 cost principle where possible. Paid features should use pay-per-transaction models with no monthly fees.
+
+
+Thoughts:
+- i was thinking about if the progress of money fundraising was tracked through whwenever a trasnaction would be done using the strip or thing from the website and then the numbers are udpated automatcily? i dont know will need to dig in more

@@ -195,6 +195,12 @@ export async function fetchProgramBySlug(slug: string): Promise<FirebaseProgram 
   return { id: doc.id, ...doc.data() } as FirebaseProgram;
 }
 
+export async function fetchProgramById(id: string): Promise<FirebaseProgram | null> {
+  const snap = await getDoc(doc(db, collections.programs, id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as FirebaseProgram;
+}
+
 export async function addProgram(data: Omit<FirebaseProgram, "id" | "createdAt">): Promise<string> {
   try {
     const ref = await withTimeout(
