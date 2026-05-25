@@ -82,9 +82,10 @@ function EditEventForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
                 <input type="text" value={formData.title || ""} onChange={e => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
+                <p className="text-xs text-amber-600 mt-1">Title is required — without it, the event cannot be viewed on the site.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
