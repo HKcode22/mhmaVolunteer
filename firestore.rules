@@ -116,6 +116,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ─── Quotes ───
+    // Anyone can read quotes (displayed on program pages).
+    // Board members can create and delete quotes.
+    match /quotes/{quote} {
+      allow read: if true;
+      allow create, delete: if isBoardMember();
+      allow update: if false;
+    }
+
     // ─── Masjid Construction Updates ───
     // Anyone can read (public progress images). Board members can create/update/delete.
     match /masjidConstruction/{update} {

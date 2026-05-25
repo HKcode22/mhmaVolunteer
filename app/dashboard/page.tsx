@@ -305,6 +305,9 @@ export default function DashboardPage() {
             <Link href="/dashboard/users" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Users className="w-6 h-6" /><span className="font-semibold text-sm">Members</span>
             </Link>
+            <Link href="/dashboard/quotes" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <BookOpen className="w-6 h-6" /><span className="font-semibold text-sm">Quotes</span>
+            </Link>
           </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -320,6 +323,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-gray-500">{p.id}</p>
                       </div>
                       <div className="flex gap-2">
+                        <Link href={`/programs/${p.slug}`} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded" title="View"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></Link>
                         <Link href={`/dashboard/programs/edit?id=${p.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
                         <button onClick={() => p.id && handleDelete(p.id, p.title || "Unnamed Program", "program")} disabled={deletingId === p.id} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                       </div>

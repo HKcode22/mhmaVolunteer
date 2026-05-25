@@ -517,7 +517,7 @@ useEffect(() => {
       </section>
 
       {/* Fundraising Progress Bar */}
-      <section className="bg-mhma-cream py-6 md:py-8 border-b border-gray-200">
+      <section className="bg-mhma-cream py-8 md:py-12 border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           {masjidUpdates.length > 0 && masjidUpdates[0].goal > 0 ? (
             <div className="flex flex-col md:flex-row items-center gap-4">
@@ -564,7 +564,7 @@ useEffect(() => {
           ) : prayerTimes.length > 0 ? (
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="text-center md:text-left shrink-0">
-                <h3 className="text-mhma-forest font-bold text-base uppercase tracking-wider mb-1">Today's Prayers</h3>
+                <h3 className="text-mhma-forest font-bold text-base uppercase tracking-wider mb-1">Prayer Times</h3>
                 <p className="text-mhma-forest/80 text-sm">Mountain House, CA</p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 flex-1">
@@ -717,16 +717,16 @@ useEffect(() => {
       <section id="prayer-times" className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
-            Today's <span className="text-mhma-gold">Prayer Times</span>
+            Prayer <span className="text-mhma-gold">Times</span>
           </h2>
           
-          {/* Jumu'ah box ABOVE - like netjoints */}
+          {/* Jumu'ah box */}
           <div className="bg-mhma-cream border-2 border-mhma-gold/30 rounded-xl p-6 max-w-2xl mx-auto mb-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h3 className="font-bold text-xl text-gray-900">Jumu'ah — 1st Session</h3>
-                <p className="text-mhma-gold font-bold text-lg">1:00 PM</p>
-                <p className="text-gray-500 text-sm">Khutbah begins at 12:45 PM</p>
+                <h3 className="font-bold text-xl text-gray-900">Jumu'ah</h3>
+                <p className="text-mhma-gold font-bold text-lg">2:15 PM</p>
+                <p className="text-gray-500 text-sm">Khutbah begins at 1:45 PM</p>
               </div>
               <div className="border-t md:border-l border-mhma-gold/40 my-2 md:my-0"></div>
               <div>
@@ -758,46 +758,6 @@ useEffect(() => {
       </section>
 
       {/* Masjid Construction Progress */}
-      {masjidUpdates.length > 0 && (
-        <section className="py-12 bg-mhma-forest">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="lg:w-1/3">
-                {masjidUpdates[0].video ? (
-                  <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
-                    <iframe src={masjidUpdates[0].video} className="absolute inset-0 w-full h-full" allowFullScreen></iframe>
-                  </div>
-                ) : (
-                  <img src={masjidUpdates[0].image} alt="Masjid Construction" className="w-full rounded-2xl shadow-2xl border-2 border-mhma-gold/20" />
-                )}
-              </div>
-              <div className="lg:w-2/3 text-white">
-                <p className="text-mhma-gold text-xs font-bold uppercase tracking-widest mb-2">Masjid Construction</p>
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-3">{masjidUpdates[0].phase || "Progress Update"}</h2>
-                {masjidUpdates[0].caption && <p className="text-mhma-sage/90 mb-4">{masjidUpdates[0].caption}</p>}
-                {(masjidUpdates[0].raised > 0 || masjidUpdates[0].goal > 0) && (
-                  <div className="max-w-md">
-                    <div className="flex justify-between text-sm text-mhma-sage/80 mb-1">
-                      <span>${masjidUpdates[0].raised.toLocaleString()} raised</span>
-                      <span>Goal: ${masjidUpdates[0].goal.toLocaleString()}</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
-                      <div className="bg-mhma-gold h-full rounded-full" style={{ width: `${Math.min((masjidUpdates[0].raised / masjidUpdates[0].goal) * 100, 100)}%` }}></div>
-                    </div>
-                    <p className="text-xs text-mhma-sage/60 mt-2">{masjidUpdates[0].progressDate || ""}</p>
-                  </div>
-                )}
-                {isBoardMember && (
-                  <Link href="/dashboard/masjid-construction" className="inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 bg-mhma-gold/20 text-mhma-gold text-xs font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors">
-                    <Edit3 className="w-3 h-3" /> Manage Updates
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Upcoming Events - FIXED to show REAL data */}
       <section className="py-16 bg-mhma-cream border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">

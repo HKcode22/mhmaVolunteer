@@ -51,10 +51,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   <div className="absolute top-full right-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[70]">
                     <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
-                      <Link href="/dashboard" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">DASHBOARD</Link>
                       <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ANALYTICS</Link>
                       <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ACTIVITY LOG</Link>
                       <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MEMBERS</Link>
+                      <Link href="/dashboard/quotes" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">QUOTES</Link>
                       <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
                     </div>
                   </div>
@@ -103,7 +103,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/about" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ABOUT US</Link>
                     <Link href="/board" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">BOARD</Link>
                     <Link href="/committees" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">COMMITTEES</Link>
                     <Link href="/bylaws" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">BYLAWS</Link>
@@ -119,7 +118,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/events" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ALL EVENTS</Link>
                     <Link href="/rsvp" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">RSVP</Link>
                     <Link href="/event-scheduling-request" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SCHEDULING REQUEST</Link>
                   </div>
@@ -139,7 +137,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/programs" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ALL PROGRAMS</Link>
                     <Link href="/enroll" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ENROLL NOW</Link>
                     <Link href="/zakat" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ZAKAT</Link>
                   </div>
@@ -192,6 +189,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/dashboard/analytics" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Analytics</Link>
                 <Link href="/dashboard/activity" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Activity Log</Link>
                 <Link href="/dashboard/users" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Members</Link>
+                <Link href="/dashboard/quotes" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Quotes</Link>
                 <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
               </>
             ) : isLoggedIn ? (

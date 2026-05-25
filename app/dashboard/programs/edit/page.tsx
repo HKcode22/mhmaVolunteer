@@ -172,6 +172,20 @@ function EditProgramForm() {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Content Layout</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="layout" value="text_first" checked={(formData.layout || "text_first") === "text_first"} onChange={() => setFormData({ ...formData, layout: "text_first" })} />
+                  <span className="text-sm">Text before poster image</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="layout" value="poster_first" checked={formData.layout === "poster_first"} onChange={() => setFormData({ ...formData, layout: "poster_first" })} />
+                  <span className="text-sm">Poster image before text</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Additional Content (HTML)</label>
               <textarea value={formData.additionalContent || ""} onChange={e => setFormData({ ...formData, additionalContent: e.target.value })} rows={6}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none font-mono text-sm" />

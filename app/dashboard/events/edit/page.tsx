@@ -49,9 +49,13 @@ function EditEventForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
+    if (!formData.title?.trim()) { setError("Title is required."); return; }
     setSaving(true); setError(""); setSuccess("");
     try {
-      await updateEvent(id, formData);
+      const { id: _ignoreId, ...cleanData } = formData;
+      const payload: Record<string, any> = {};
+      Object.entries(cleanData).forEach(([k, v]) => { if (v !== undefined) payload[k] = v; });
+      await updateEvent(id, payload);
       setSuccess("Event updated! Redirecting...");
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "event_update", details: `Updated event: ${formData.title}`, targetType: "event", targetId: id });
       setTimeout(() => router.push("/dashboard"), 1500);

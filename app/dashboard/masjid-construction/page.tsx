@@ -21,7 +21,7 @@ export default function MasjidConstructionPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "",
+    image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "",
   });
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function MasjidConstructionPage() {
   };
 
   const resetForm = () => {
-    setFormData({ image: "", video: "", caption: "", phase: "", raised: 0, goal: 0, progressDate: "" });
+    setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "" });
     setEditingId(null);
     setShowForm(false);
     setError("");
@@ -82,13 +82,20 @@ export default function MasjidConstructionPage() {
       video: u.video || "",
       caption: u.caption || "",
       phase: u.phase || "",
-      raised: u.raised || 0,
-      goal: u.goal || 0,
+      raised: String(u.raised || 0),
+      goal: String(u.goal || 0),
       progressDate: u.progressDate || "",
     });
     setEditingId(u.id || null);
     setShowForm(true);
     setError("");
+  };
+
+  const parseAmount = (val: string): number => {
+    const s = val.trim().toUpperCase();
+    if (s.endsWith("M")) return parseFloat(s) * 1000000;
+    if (s.endsWith("K")) return parseFloat(s) * 1000;
+    return parseFloat(s) || 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,8 +109,8 @@ export default function MasjidConstructionPage() {
         video: formData.video,
         caption: formData.caption,
         phase: formData.phase,
-        raised: formData.raised,
-        goal: formData.goal,
+        raised: parseAmount(formData.raised),
+        goal: parseAmount(formData.goal),
         progressDate: formData.progressDate || new Date().toISOString().split("T")[0],
         createdBy: user?.uid,
       };
@@ -186,16 +193,16 @@ export default function MasjidConstructionPage() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Raised ($)</label>
-                <input type="number" value={formData.raised} onChange={e => setFormData(p => ({ ...p, raised: Number(e.target.value) }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <input type="text" value={formData.raised} onChange={e => setFormData(p => ({ ...p, raised: e.target.value }))} placeholder="e.g., 500000 or 500K or 0.5M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Goal ($)</label>
-                <input type="number" value={formData.goal} onChange={e => setFormData(p => ({ ...p, goal: Number(e.target.value) }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <input type="text" value={formData.goal} onChange={e => setFormData(p => ({ ...p, goal: e.target.value }))} placeholder="e.g., 1000000 or 1M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
             <div className="flex gap-2">
               <button type="submit" disabled={saving || uploading} className="px-6 py-2.5 bg-mhma-gold text-white font-bold rounded-lg hover:bg-mhma-gold-light disabled:opacity-50 transition-all">
-                {saving ? "Saving..." : (editingId ? "Update Update" : "Save Update")}
+                {saving ? "Saving..." : (editingId ? "Update Construction" : "Save Update")}
               </button>
               <button type="button" onClick={resetForm} className="px-4 py-2.5 border border-gray-300 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-all">Cancel</button>
             </div>

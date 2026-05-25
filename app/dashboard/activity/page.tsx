@@ -33,13 +33,16 @@ export default function ActivityLogPage() {
     setRestoring(entry.id || "reverting");
     setMessage("");
     try {
+      console.log("Revert: fetching versions for", entry.targetType, entry.targetId);
       const versions = await fetchVersions(entry.targetType, entry.targetId);
+      console.log("Revert: found versions count:", versions.length);
       if (versions.length === 0) {
-        setMessage("No previous versions available for this item.");
+        setMessage("No previous versions available for this item. Versions are saved automatically when you update a program or event from the dashboard. Make sure you have made updates first.");
         setRestoring(null);
         return;
       }
       const latestVersion = versions[0];
+      console.log("Revert: latest version id:", latestVersion.id);
       const success = await restoreVersion(
         latestVersion.id,
         user.uid,
@@ -53,7 +56,8 @@ export default function ActivityLogPage() {
         setMessage("Failed to restore version.");
       }
     } catch (err) {
-      setMessage("Error during restore.");
+      console.error("Revert: error during restore:", err);
+      setMessage("Error during restore. Check browser console for details.");
     } finally {
       setRestoring(null);
     }
