@@ -52,6 +52,8 @@ export interface FirebaseProgram {
   additionalContent?: string;
   stats?: { label: string; value: string }[];
   layout?: "text_first" | "poster_first";
+  quote?: string;
+  quoteAuthor?: string;
   useHardcodedVersion?: boolean;
   createdBy?: string;
   createdAt?: any;
@@ -764,32 +766,6 @@ export async function deleteMasjidUpdate(id: string): Promise<void> {
   await deleteDoc(doc(db, MASJID_CONSTRUCTION, id));
 }
 
-// ─── Quotes ───
-
-export interface Quote {
-  id?: string;
-  text: string;
-  author: string;
-  createdAt?: any;
-}
-
-const QUOTES_COLLECTION = "quotes";
-
-export async function fetchQuotes(): Promise<Quote[]> {
-  const q = query(collection(db, QUOTES_COLLECTION), orderBy("createdAt", "desc"), limit(50));
-  const snap = await getDocs(q);
-  return collectionData<Quote>(snap);
-}
-
-export async function addQuote(data: Omit<Quote, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, QUOTES_COLLECTION), { ...data, createdAt: serverTimestamp() });
-  return ref.id;
-}
-
-export async function deleteQuote(id: string): Promise<void> {
-  await deleteDoc(doc(db, QUOTES_COLLECTION, id));
-}
-
 const FALLBACK_QUOTES = [
   { text: "Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)", author: "Oussama Saafien • Board Trustee" },
   { text: "The best of you are those who learn the Quran and teach it.", author: "Prophet Muhammad (ﷺ)" },
@@ -797,14 +773,3 @@ const FALLBACK_QUOTES = [
   { text: "Indeed, with hardship comes ease.", author: "Quran 94:6" },
   { text: "Whoever travels a path in search of knowledge, Allah will make easy for them a path to Paradise.", author: "Prophet Muhammad (ﷺ)" },
 ];
-
-export async function getRandomQuote(): Promise<{ text: string; author: string }> {
-  try {
-    const quotes = await fetchQuotes();
-    if (quotes.length > 0) {
-      const q = quotes[Math.floor(Math.random() * quotes.length)];
-      return { text: q.text, author: q.author };
-    }
-  } catch { /* fallback */ }
-  return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
-}

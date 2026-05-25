@@ -20,7 +20,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { fetchProgramBySlug, fetchPrograms, getRandomQuote } from "@/lib/firebase";
+import { fetchProgramBySlug, fetchPrograms } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 
 interface ProgramData {
@@ -33,6 +33,8 @@ interface ProgramData {
   additionalContent?: string;
   stats?: { label: string; value: string }[];
   layout?: "text_first" | "poster_first";
+  quote?: string;
+  quoteAuthor?: string;
   useHardcodedVersion?: boolean;
 }
 
@@ -44,7 +46,6 @@ export default function DynamicProgramPage() {
   const [loading, setLoading] = useState(true);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [posterImageUrl, setPosterImageUrl] = useState<string>("");
-  const [quote, setQuote] = useState<{ text: string; author: string } | null>(null);
   const { isBoardMember } = useAuth();
 
   useEffect(() => {
@@ -60,8 +61,6 @@ export default function DynamicProgramPage() {
           setImageUrl(program.image || "");
           setPosterImageUrl(program.imagePoster || "");
         }
-        const q = await getRandomQuote();
-        setQuote(q);
       } catch (error) {
         console.error("Error fetching program:", error);
       } finally {
@@ -129,8 +128,8 @@ export default function DynamicProgramPage() {
                 {programData.layout === "poster_first" ? (
                   <>
                     {posterImageUrl && (
-                      <div className="my-16">
-                        <img src={posterImageUrl} alt="Program Poster" className="rounded-3xl shadow-2xl w-full border border-gray-100" />
+                      <div className="my-12">
+                        <img src={posterImageUrl} alt="Program Poster" className="rounded-2xl shadow-xl w-full max-w-lg mx-auto border border-gray-100" />
                       </div>
                     )}
                     {programData.description && (
@@ -143,8 +142,8 @@ export default function DynamicProgramPage() {
                       <div className="mb-12" dangerouslySetInnerHTML={{ __html: programData.description }} />
                     )}
                     {posterImageUrl && (
-                      <div className="my-16">
-                        <img src={posterImageUrl} alt="Program Poster" className="rounded-3xl shadow-2xl w-full border border-gray-100" />
+                      <div className="my-12">
+                        <img src={posterImageUrl} alt="Program Poster" className="rounded-2xl shadow-xl w-full max-w-lg mx-auto border border-gray-100" />
                       </div>
                     )}
                   </>
@@ -200,10 +199,10 @@ export default function DynamicProgramPage() {
               {/* Quote Block */}
               <div className="bg-mhma-dark p-10 rounded-3xl text-white relative">
                 <div className="text-4xl text-mhma-gold opacity-50 mb-4 font-serif">"</div>
-                <p className="text-lg italic font-light mb-6 leading-relaxed">{quote?.text || "Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)"}</p>
+                <p className="text-lg italic font-light mb-6 leading-relaxed">{programData.quote || "Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)"}</p>
                 <div className="flex items-center">
                   <div className="w-10 h-0.5 bg-mhma-gold mr-4"></div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-mhma-gold">{quote?.author || "Oussama Saafien • Board Trustee"}</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-mhma-gold">{programData.quoteAuthor || "Oussama Saafien • Board Trustee"}</p>
                 </div>
               </div>
             </div>

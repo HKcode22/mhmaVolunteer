@@ -25,6 +25,7 @@ export default function NewProgramPage() {
     stat3Label: "", stat3Value: "",
     stat4Label: "", stat4Value: "",
     additionalContent: "",
+    quote: "", quoteAuthor: "",
   });
 
   useEffect(() => {
@@ -66,6 +67,8 @@ export default function NewProgramPage() {
         image: formData.programImage,
         imagePoster: formData.programImagePoster,
         additionalContent: formData.additionalContent,
+        quote: formData.quote,
+        quoteAuthor: formData.quoteAuthor,
         stats,
         useHardcodedVersion: false,
         createdBy: "board",
@@ -170,6 +173,19 @@ export default function NewProgramPage() {
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" />
                 </div>
               ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quote Text</label>
+                <input type="text" value={formData.quote} onChange={e => setFormData({ ...formData, quote: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" placeholder="Optional custom quote" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quote Author</label>
+                <input type="text" value={formData.quoteAuthor} onChange={e => setFormData({ ...formData, quoteAuthor: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" placeholder="e.g., Prophet Muhammad (ﷺ)" />
+              </div>
             </div>
 
             <div>

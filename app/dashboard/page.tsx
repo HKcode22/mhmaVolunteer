@@ -305,9 +305,6 @@ export default function DashboardPage() {
             <Link href="/dashboard/users" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Users className="w-6 h-6" /><span className="font-semibold text-sm">Members</span>
             </Link>
-            <Link href="/dashboard/quotes" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <BookOpen className="w-6 h-6" /><span className="font-semibold text-sm">Quotes</span>
-            </Link>
           </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

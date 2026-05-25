@@ -54,7 +54,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ANALYTICS</Link>
                       <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ACTIVITY LOG</Link>
                       <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MEMBERS</Link>
-                      <Link href="/dashboard/quotes" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">QUOTES</Link>
                       <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
                     </div>
                   </div>
@@ -189,7 +188,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/dashboard/analytics" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Analytics</Link>
                 <Link href="/dashboard/activity" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Activity Log</Link>
                 <Link href="/dashboard/users" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Members</Link>
-                <Link href="/dashboard/quotes" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Quotes</Link>
                 <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
               </>
             ) : isLoggedIn ? (
