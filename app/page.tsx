@@ -424,15 +424,16 @@ useEffect(() => {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
-            <div className="lg:w-1/2 text-center lg:text-left lg:pr-4">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+            <div className="lg:w-2/5 text-center lg:text-left lg:pr-4 lg:pl-2">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-[10px] tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
               </div>
               <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight whitespace-normal">
-                Welcome to <span className="text-mhma-gold italic whitespace-nowrap">MHMA</span>{user?.displayName ? (<span className="whitespace-nowrap">, {user.displayName}!</span>) : '!'}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
+                <span className="whitespace-nowrap">Welcome to <span className="text-mhma-gold italic">MHMA</span></span>
+                {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block">{user.displayName}</span></> : '!'}
               </h1>
               <p className="text-base md:text-lg lg:text-xl text-mhma-sage/90 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">
                 Serving the Muslim Community in Mountain House since 2010
@@ -448,11 +449,11 @@ useEffect(() => {
             </div>
 
             {/* Masjid illustration on right */}
-            <div className="lg:w-1/2 flex justify-center lg:justify-end">
+            <div className="lg:w-3/5 flex justify-center lg:justify-end">
               {heroLoading ? (
-                <div className="w-full max-w-2xl aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
+                <div className="w-full max-w-3xl aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
               ) : heroImage ? (
-                <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                <div className="w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
                   <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />
                 </div>
               ) : (
@@ -728,12 +729,7 @@ useEffect(() => {
                 <p className="text-mhma-gold font-bold text-lg">2:15 PM</p>
                 <p className="text-gray-500 text-sm">Khutbah begins at 1:45 PM</p>
               </div>
-              <div className="border-t md:border-l border-mhma-gold/40 my-2 md:my-0"></div>
-              <div>
-                <h3 className="font-bold text-xl text-gray-900">Jumu'ah — 2nd Session</h3>
-                <p className="text-mhma-gold font-bold text-lg">2:00 PM</p>
-                <p className="text-gray-500 text-sm">Khutbah begins at 1:45 PM</p>
-              </div>
+
             </div>
           </div>
 
