@@ -1,30 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, User, Activity } from "lucide-react";
+import { ArrowLeft, Clock, User, Activity, RotateCcw } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { fetchActivityLog, ActivityLogEntry } from "@/lib/firebase";
+import { fetchActivityLog, fetchVersions, restoreVersion, ActivityLogEntry } from "@/lib/firebase";
 import Navigation from "@/components/Navigation";
 
 export default function ActivityLogPage() {
   const router = useRouter();
-  const { isBoardMember, loading: authLoading } = useAuth();
+  const { user, isBoardMember, loading: authLoading } = useAuth();
   const [entries, setEntries] = useState<ActivityLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [restoring, setRestoring] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (!authLoading && !isBoardMember) router.push("/login");
+  const loadEntries = useCallback(() => {
     if (authLoading) return;
+    if (!isBoardMember) { router.push("/login"); return; }
     fetchActivityLog(200).then(data => {
       setEntries(data);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
+  useEffect(() => { loadEntries(); }, [loadEntries]);
+
+  const handleRevert = async (entry: ActivityLogEntry) => {
+    if (!entry.targetType || !entry.targetId || !user) return;
+    if (!window.confirm(`Revert this ${entry.targetType} to a previous version? This will restore the last saved snapshot.`)) return;
+    setRestoring(entry.id || "reverting");
+    setMessage("");
+    try {
+      const versions = await fetchVersions(entry.targetType, entry.targetId);
+      if (versions.length === 0) {
+        setMessage("No previous versions available for this item.");
+        setRestoring(null);
+        return;
+      }
+      const latestVersion = versions[0];
+      const success = await restoreVersion(
+        latestVersion.id,
+        user.uid,
+        user.email || "",
+        user.displayName || user.email || "Board Member"
+      );
+      if (success) {
+        setMessage(`Restored ${entry.targetType} to previous version. Refreshing log...`);
+        setTimeout(() => { loadEntries(); setMessage(""); }, 1500);
+      } else {
+        setMessage("Failed to restore version.");
+      }
+    } catch (err) {
+      setMessage("Error during restore.");
+    } finally {
+      setRestoring(null);
+    }
+  };
+
   const actionIcon = (action: string) => {
-    if (action.includes("create")) return "➕";
+    if (action.includes("create") || action === "restore") return "➕";
     if (action.includes("update") || action.includes("status")) return "✏️";
     if (action.includes("view")) return "👁️";
     if (action.includes("read")) return "📖";
@@ -43,6 +79,10 @@ export default function ActivityLogPage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Activity Log</h1>
           <p className="text-gray-500 mb-6 text-sm">Board member actions and changes across the site</p>
+
+          {message && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">{message}</div>
+          )}
 
           {entries.length === 0 ? (
             <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
@@ -74,6 +114,16 @@ export default function ActivityLogPage() {
                         )}
                       </div>
                     </div>
+                    {(entry.action === "program_update" || entry.action === "event_update") && entry.targetType && entry.targetId && (
+                      <button
+                        onClick={() => handleRevert(entry)}
+                        disabled={restoring !== null}
+                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 border border-amber-200 transition-colors disabled:opacity-50"
+                      >
+                        <RotateCcw className={`w-3 h-3 ${restoring === (entry.id || "reverting") ? "animate-spin" : ""}`} />
+                        {restoring === (entry.id || "reverting") ? "..." : "Revert"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

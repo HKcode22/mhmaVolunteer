@@ -129,7 +129,7 @@ export const collections = {
   enrollments: "enrollments",
   schedulingRequests: "schedulingRequests",
   contactSubmissions: "contactSubmissions",
-
+  versions: "versions",
 };
 
 export async function fetchEvents(limitCount = 10): Promise<FirebaseEvent[]> {
@@ -160,6 +160,11 @@ export async function addEvent(data: Omit<FirebaseEvent, "id" | "createdAt">): P
 
 export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Promise<void> {
   try {
+    // Save current state as a version before updating
+    const currentSnap = await getDoc(doc(db, collections.events, id));
+    if (currentSnap.exists()) {
+      await saveVersion("events", id, currentSnap.data());
+    }
     await withTimeout(
       updateDoc(doc(db, collections.events, id), { ...data, updatedAt: serverTimestamp() }),
       "updateEvent"
@@ -217,6 +222,11 @@ export async function addProgram(data: Omit<FirebaseProgram, "id" | "createdAt">
 
 export async function updateProgram(id: string, data: Partial<FirebaseProgram>): Promise<void> {
   try {
+    // Save current state as a version before updating
+    const currentSnap = await getDoc(doc(db, collections.programs, id));
+    if (currentSnap.exists()) {
+      await saveVersion("programs", id, currentSnap.data());
+    }
     await withTimeout(
       updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
       "updateProgram"
@@ -534,6 +544,67 @@ export async function fetchActivityLog(limitCount = 100): Promise<ActivityLogEnt
   const q = query(collection(db, ACTIVITY_LOG_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<ActivityLogEntry>(snap);
+}
+
+// ─── Versioning / Revert Functions ───
+
+export async function saveVersion(targetType: string, targetId: string, data: any): Promise<string> {
+  try {
+    if (!targetId || !data) return "";
+    const ref = await withTimeout(
+      addDoc(collection(db, collections.versions), {
+        targetType,
+        targetId,
+        data,
+        createdAt: serverTimestamp(),
+        restoredAt: null,
+      }),
+      "saveVersion"
+    );
+    return ref.id;
+  } catch (err) {
+    return "";
+  }
+}
+
+export async function fetchVersions(targetType: string, targetId: string): Promise<any[]> {
+  if (!targetId) return [];
+  const q = query(
+    collection(db, collections.versions),
+    where("targetType", "==", targetType),
+    where("targetId", "==", targetId),
+    orderBy("createdAt", "desc"),
+    limit(10)
+  );
+  const snap = await getDocs(q);
+  return collectionData(snap);
+}
+
+export async function restoreVersion(versionId: string, userId: string, userEmail: string, userName: string): Promise<boolean> {
+  try {
+    const versionSnap = await getDoc(doc(db, collections.versions, versionId));
+    if (!versionSnap.exists()) return false;
+    const version = versionSnap.data() as any;
+    const { targetType, targetId, data } = version;
+    if (!targetType || !targetId || !data) return false;
+
+    // Restore data to the original document
+    await updateDoc(doc(db, targetType, targetId), { ...data, restoredFromVersion: versionId, updatedAt: serverTimestamp() });
+    // Mark version as restored
+    await updateDoc(doc(db, collections.versions, versionId), { restoredAt: serverTimestamp(), restoredBy: userId });
+    // Log the restore action
+    await logActivity({
+      userId, userEmail, userName,
+      action: "restore",
+      details: `Restored ${targetType}: ${data.title || data.name || targetId}`,
+      targetType,
+      targetId,
+    });
+    return true;
+  } catch (err) {
+    console.error("Failed to restore version:", err);
+    return false;
+  }
 }
 
 // ─── RSVP Functions ───
