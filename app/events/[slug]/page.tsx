@@ -85,8 +85,8 @@ export default function EventDetailPage() {
         </Link>
 
         {event.poster && (
-          <div className="w-full max-h-96 overflow-hidden rounded-2xl mb-8 shadow-lg">
-            <img src={event.poster} alt={event.title} className="w-full h-full object-contain bg-gray-50" />
+          <div className="w-full flex justify-center mb-8">
+            <img src={event.poster} alt={event.title} className="w-full max-w-3xl rounded-2xl shadow-lg" />
           </div>
         )}
 
