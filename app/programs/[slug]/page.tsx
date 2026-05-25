@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   ChevronRight
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { fetchProgramBySlug, fetchPrograms } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 

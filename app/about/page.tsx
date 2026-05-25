@@ -3,10 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { ChevronRight } from "lucide-react";
 
-import PageBanner from "@/components/PageBanner";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function AboutPage() {
   return (

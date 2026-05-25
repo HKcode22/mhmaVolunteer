@@ -6,7 +6,7 @@ import { ArrowLeft, Clock, User, Activity, RotateCcw } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchActivityLog, fetchVersions, restoreVersion, ActivityLogEntry } from "@/lib/firebase";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function ActivityLogPage() {
   const router = useRouter();

@@ -18,7 +18,7 @@ import {
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
 } from "@/lib/firebase";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function DashboardPage() {
   const router = useRouter();

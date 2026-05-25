@@ -17,8 +17,8 @@ import {
   ChevronLeft,
   Edit3
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 import { renderMarkdown } from "@/lib/markdown";
 import { useAuth } from "@/lib/auth-context";
 

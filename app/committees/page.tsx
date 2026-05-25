@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+import Navigation from '@/app/components/Navigation';
 
 export default function CommitteesPage() {
 

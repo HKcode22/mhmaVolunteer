@@ -13,7 +13,7 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function MasjidConstructionPage() {
   const [countersLoaded, setCountersLoaded] = useState(false);

@@ -6,7 +6,7 @@ import { ArrowLeft, User, Search, Mail, Phone, Shield, Clock } from "lucide-reac
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchUsers, FirebaseUser } from "@/lib/firebase";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function UsersPage() {
   const router = useRouter();

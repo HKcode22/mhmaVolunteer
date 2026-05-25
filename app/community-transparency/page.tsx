@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react";
 
 export default function CommunityTransparencyPage() {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, Mail, Phone, Map, BookMarked, MessageSquare, DollarSign } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+import Navigation from '@/app/components/Navigation';
 
 export default function BoardPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

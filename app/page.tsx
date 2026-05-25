@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
 import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 /* ── Quran Verse (commented out per board request) ──
 interface QuranVerse {
@@ -425,14 +425,14 @@ useEffect(() => {
 
         <div className="relative z-10 w-full">
           <div className="flex flex-col lg:flex-row items-center lg:items-start">
-            <div className="px-4 lg:px-0 lg:w-3/5 text-center lg:text-left lg:pr-8 xl:pr-12">
+            <div className="px-4 lg:pl-4 xl:pl-8 lg:pr-8 xl:pr-12 lg:w-3/5 text-center lg:text-left">
               <div className="flex items-center gap-2 justify-center lg:justify-start mb-4">
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-xs sm:text-sm tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
               </div>
               <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
-                <span className="whitespace-nowrap">Welcome to <span className="text-mhma-gold italic">MHMA</span></span>
+                <span className="whitespace-nowrap">welcome to <span className="text-mhma-gold italic">MHMA</span></span>
                 {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block">{user.displayName}</span></> : '!'}
               </h1>
               <p className="text-base md:text-lg lg:text-xl text-mhma-sage/90 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">

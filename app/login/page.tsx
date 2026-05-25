@@ -6,8 +6,8 @@ import { Mail, Lock, User, ShieldCheck, LogIn, Eye, EyeOff, ArrowRight } from "l
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 type TabType = "member" | "board";
 

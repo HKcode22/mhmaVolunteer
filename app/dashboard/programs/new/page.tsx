@@ -7,7 +7,7 @@ import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { addProgram, logActivity } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function NewProgramPage() {
   const router = useRouter();

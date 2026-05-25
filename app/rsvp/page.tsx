@@ -4,8 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Calendar, Loader2, AlertCircle, Check } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 import { fetchEvents } from "@/lib/firebase";
 
 function RSVPForm() {

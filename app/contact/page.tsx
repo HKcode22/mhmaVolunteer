@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { MapPin, Mail, Phone, Send, ChevronRight, Clock, Users } from "lucide-react";
 
 import { addContactSubmission } from "@/lib/firebase";
-import PageBanner from "@/components/PageBanner";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

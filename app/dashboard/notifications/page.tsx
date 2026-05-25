@@ -6,7 +6,7 @@ import { ArrowLeft, Mail, Calendar, BookOpen, Users, ChevronDown, ChevronUp, X, 
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchEnrollments, fetchSchedulingRequests, fetchContactSubmissions, fetchRSVPs, updateRSVP, updateEnrollment, updateSchedulingRequest, markContactSubmissionRead, logActivity } from "@/lib/firebase";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 type NotificationItem = {
   id: string;

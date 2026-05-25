@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Mail, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase-client";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function RecoverPage() {
   const [email, setEmail] = useState("");

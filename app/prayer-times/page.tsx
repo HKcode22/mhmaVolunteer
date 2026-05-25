@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { MapPin, Clock, Calendar, ChevronRight, Loader2 } from "lucide-react";
 
 interface PrayerTime {

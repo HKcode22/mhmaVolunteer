@@ -7,7 +7,7 @@ import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProgramById, updateProgram, logActivity, FirebaseProgram } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 function EditProgramForm() {
   const router = useRouter();

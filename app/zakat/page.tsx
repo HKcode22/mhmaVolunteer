@@ -3,7 +3,7 @@
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, Download, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 const zakatSteps = [
   {

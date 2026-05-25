@@ -6,7 +6,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Edit3 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { fetchJournalEntryBySlug } from "@/lib/firebase";

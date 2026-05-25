@@ -17,7 +17,7 @@ import {
   Globe,
   ArrowRight
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function DonatePage() {
   const stats = [

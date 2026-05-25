@@ -7,7 +7,7 @@ import {
   Facebook, Instagram, Twitter, Linkedin, Youtube,
   Heart, BookOpen, ArrowRight, ChevronRight, Sparkles, Zap, Star, Edit3
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { useAuth } from "@/lib/auth-context";
 
 interface Program {
@@ -34,7 +34,7 @@ const hardcodedPrograms = [
   { title: "Arabic Academy", description: "Arabic language course for Quranic understanding.", image: "https://mhma.us/wp-content/uploads/2016/08/Arabic.png", href: "/programs/arabic-academy" },
 ];
 
-import PageBanner from "@/components/PageBanner";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function ProgramsPage() {
   const { isBoardMember } = useAuth();

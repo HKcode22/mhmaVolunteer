@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchMasjidUpdates, addMasjidUpdate, updateMasjidUpdate, deleteMasjidUpdate, FirebaseMasjidUpdate } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 export default function MasjidConstructionPage() {
   const router = useRouter();

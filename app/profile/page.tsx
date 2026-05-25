@@ -8,8 +8,8 @@ import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
 import { Upload, Loader2, User } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function ProfilePage() {
   const router = useRouter();

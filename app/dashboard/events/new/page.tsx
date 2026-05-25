@@ -7,8 +7,8 @@ import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { addEvent, logActivity } from "@/lib/firebase";
 import { uploadImage } from "@/lib/upload";
-import Navigation from "@/components/Navigation";
-import TimePicker from "@/components/TimePicker";
+import Navigation from "@/app/components/Navigation";
+import TimePicker from "@/app/components/TimePicker";
 
 export default function NewEventPage() {
   const router = useRouter();

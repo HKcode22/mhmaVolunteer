@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   Edit
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { useAuth } from "@/lib/auth-context";
 
 export default function ArabicAcademyPage() {

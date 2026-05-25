@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 import { addSchedulingRequest } from "@/lib/firebase";
 
 export default function EventSchedulingRequestPage() {

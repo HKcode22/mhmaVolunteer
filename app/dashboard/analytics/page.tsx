@@ -12,7 +12,7 @@ import {
   FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission,
   FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, InviteCode, FirebaseRSVP, FirebaseUser,
 } from "@/lib/firebase";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/app/components/Navigation";
 
 interface AnalyticsData {
   enrollments: FirebaseEnrollment[];

@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, Clock, MapPin, ArrowLeft, Loader2, Users, Edit3 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 import { renderMarkdown } from "@/lib/markdown";
 import { useAuth } from "@/lib/auth-context";
 

@@ -17,7 +17,7 @@ import {
   ChevronRight,
   Landmark
 } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+import Navigation from '@/app/components/Navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 

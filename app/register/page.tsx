@@ -8,8 +8,8 @@ import { auth, db } from "@/lib/firebase-client";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { validateInviteCode, markInviteCodeUsed, logActivity } from "@/lib/firebase";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 type TabType = "member" | "board";
 

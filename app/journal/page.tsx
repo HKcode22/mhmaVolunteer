@@ -16,8 +16,8 @@ import {
   Search,
   BookOpen
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import PageBanner from "@/components/PageBanner";
+import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 interface JournalEntry {
   id: string;
