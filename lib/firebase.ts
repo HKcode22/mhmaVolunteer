@@ -839,6 +839,47 @@ export async function deleteSubscriber(id: string): Promise<void> {
   await deleteDoc(doc(db, SUBSCRIBERS, id));
 }
 
+// ─── Donations ───
+
+export interface Donation {
+  id?: string;
+  donorId: string;
+  donorName: string;
+  donorEmail: string;
+  amount: number;
+  designation: string;
+  method: string;
+  stripePaymentId: string;
+  stripeSessionId: string;
+  status: string;
+  createdAt?: any;
+  notes?: string;
+  recordedBy?: string;
+}
+
+const DONATIONS_COLLECTION = "donations";
+
+export async function fetchDonations(limitCount = 200): Promise<Donation[]> {
+  const q = query(collection(db, DONATIONS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<Donation>(snap);
+}
+
+export async function fetchDonationsByUser(userId: string): Promise<Donation[]> {
+  const q = query(collection(db, DONATIONS_COLLECTION), where("donorId", "==", userId), orderBy("createdAt", "desc"), limit(50));
+  const snap = await getDocs(q);
+  return collectionData<Donation>(snap);
+}
+
+export async function addManualDonation(data: Omit<Donation, "id" | "createdAt" | "stripePaymentId" | "stripeSessionId">): Promise<string> {
+  const ref = await addDoc(collection(db, DONATIONS_COLLECTION), { ...data, stripePaymentId: "", stripeSessionId: "", createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function deleteDonation(id: string): Promise<void> {
+  await deleteDoc(doc(db, DONATIONS_COLLECTION, id));
+}
+
 const FALLBACK_QUOTES = [
   { text: "Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)", author: "Oussama Saafien • Board Trustee" },
   { text: "The best of you are those who learn the Quran and teach it.", author: "Prophet Muhammad (ﷺ)" },

@@ -8,6 +8,7 @@ import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
 import { Upload, Loader2, User, Eye, EyeOff, Smartphone } from "lucide-react";
+import { fetchDonationsByUser, Donation } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -566,10 +567,51 @@ export default function ProfilePage() {
             </div>
           </form>
         </div>
+
+        {/* Donation History */}
+        <DonationHistory userId={user?.uid} />
       </main>
 
       {/* Hidden recaptcha container for Firebase Phone Auth */}
       <div ref={recaptchaRef}></div>
+    </div>
+  );
+}
+
+function DonationHistory({ userId }: { userId?: string }) {
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    setLoading(true);
+    fetchDonationsByUser(userId).then(d => { setDonations(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [userId]);
+
+  if (!userId) return null;
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">Donation History</h2>
+      {loading ? (
+        <p className="text-gray-400 text-sm">Loading...</p>
+      ) : donations.length === 0 ? (
+        <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
+          <p className="text-gray-500 text-sm">No donations yet. When you donate through our site, your contributions will appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {donations.map(d => (
+            <div key={d.id} className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</p>
+                <p className="text-xs text-gray-500 capitalize">{d.designation} · {d.method} · {d.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+              </div>
+              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{d.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

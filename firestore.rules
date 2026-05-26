@@ -147,5 +147,14 @@ service cloud.firestore {
       allow update: if isBoardMember();
       allow delete: if false;
     }
+
+    // ─── Donations ───
+    // Board members can read/create/delete. Donors can read their own.
+    match /donations/{donation} {
+      allow read: if isBoardMember() || (isAuthenticated() && resource.data.donorId == request.auth.uid);
+      allow create: if isBoardMember();
+      allow update: if isBoardMember();
+      allow delete: if isBoardMember();
+    }
   }
 }

@@ -16,9 +16,9 @@ import {
   fetchContactSubmissions, deleteContactSubmission, markContactSubmissionRead,
   fetchRSVPs, deleteRSVP, updateRSVP,
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
-  fetchUsers, fetchSubscribers, fetchPledges,
+  fetchUsers, fetchSubscribers, fetchPledges, fetchDonations,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
-  FirebaseUser, Subscriber, Pledge,
+  FirebaseUser, Subscriber, Pledge, Donation,
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const [users, setUsers] = useState<FirebaseUser[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [pledges, setPledges] = useState<Pledge[]>([]);
+  const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showAllPrograms, setShowAllPrograms] = useState(false);
@@ -47,12 +48,13 @@ export default function DashboardPage() {
   const [showAllUsers, setShowAllUsers] = useState(false);
   const [showAllSubscribers, setShowAllSubscribers] = useState(false);
   const [showAllPledges, setShowAllPledges] = useState(false);
+  const [showAllDonations, setShowAllDonations] = useState(false);
   const [expandedDashboardId, setExpandedDashboardId] = useState<string | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
-  const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges"];
+  const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
 
   useEffect(() => {
@@ -114,8 +116,9 @@ export default function DashboardPage() {
         timeout(fetchUsers(100), 15000).catch(() => [] as FirebaseUser[]),
         timeout(fetchSubscribers(100), 15000).catch(() => [] as Subscriber[]),
         timeout(fetchPledges(100), 15000).catch(() => [] as Pledge[]),
+        timeout(fetchDonations(100), 15000).catch(() => [] as Donation[]),
       ]);
-      const [p, e, er, en, rsvp, cs, codes, u, subs, pl] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -126,6 +129,7 @@ export default function DashboardPage() {
       setUsers(u || []);
       setSubscribers(subs || []);
       setPledges(pl || []);
+      setDonations(d || []);
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
     };
@@ -279,6 +283,7 @@ export default function DashboardPage() {
   const visibleUsers = showAllUsers ? users : users.slice(0, 5);
   const visibleSubscribers = showAllSubscribers ? subscribers : subscribers.slice(0, 5);
   const visiblePledges = showAllPledges ? pledges : pledges.slice(0, 5);
+  const visibleDonations = showAllDonations ? donations : donations.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-mhma-cream">
@@ -317,6 +322,9 @@ export default function DashboardPage() {
             </Link>
             <Link href="/dashboard/subscribers" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Mail className="w-6 h-6" /><span className="font-semibold text-sm">Subscribers</span>
+            </Link>
+            <Link href="/dashboard/donations" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Heart className="w-6 h-6" /><span className="font-semibold text-sm">Donations</span>
             </Link>
             <Link href="/dashboard/masjid-construction" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Building2 className="w-6 h-6" /><span className="font-semibold text-sm">Construction</span>
@@ -603,6 +611,21 @@ export default function DashboardPage() {
                   {pledges.length === 0 && <p className="text-gray-400 text-sm p-3">No pledges yet.</p>}
                 </Section>
               );
+            case "donations":
+              return (
+                <Section key="donations" title="Donations" count={donations.length} href="/dashboard/donations" allShown={showAllDonations} onToggle={() => setShowAllDonations(!showAllDonations)} scrollable>
+                  {visibleDonations.map(d => (
+                    <div key={d.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{d.donorName}</p>
+                        <p className="text-xs text-gray-500">${((d.amount || 0) / 100).toLocaleString()} · {d.designation} · {d.method} <span className={`ml-1 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{d.status}</span></p>
+                      </div>
+                      <Link href={`/dashboard/donations`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                    </div>
+                  ))}
+                  {donations.length === 0 && <p className="text-gray-400 text-sm p-3">No donations yet.</p>}
+                </Section>
+              );
             default:
               return null;
           }
@@ -624,7 +647,7 @@ export default function DashboardPage() {
               {layoutOrder.map((section, idx) => (
                 <div key={section} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <span className="font-medium text-gray-900 capitalize">
-                    {section === "requests" ? "Scheduling Requests" : section === "codes" ? "Invite Codes" : section === "submissions" ? "Contact Submissions" : section === "rsvps" ? "Event RSVPs" : section === "users" ? "Members" : section === "subscribers" ? "Subscribers" : section === "pledges" ? "Pledges" : section}
+                    {section === "requests" ? "Scheduling Requests" : section === "codes" ? "Invite Codes" : section === "submissions" ? "Contact Submissions" : section === "rsvps" ? "Event RSVPs" : section === "users" ? "Members" : section === "subscribers" ? "Subscribers" : section === "pledges" ? "Pledges" : section === "donations" ? "Donations" : section}
                   </span>
                   <div className="flex gap-1">
                     <button onClick={() => moveSection(idx, "up")} disabled={idx === 0}
@@ -640,7 +663,7 @@ export default function DashboardPage() {
               ))}
             </div>
             <button onClick={() => {
-              saveLayoutOrder(["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges"]);
+              saveLayoutOrder(["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"]);
             }} className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               Reset to Default
             </button>
