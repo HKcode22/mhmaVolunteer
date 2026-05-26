@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Mail, Lock, User, ShieldCheck, LogIn, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase-client";
+import { auth, db } from "@/lib/firebase-client";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -50,7 +51,15 @@ export default function LoginPage() {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const tokenResult = await cred.user.getIdTokenResult();
-      const role = (tokenResult.claims.role as string) || "member";
+      const claimRole = tokenResult.claims.role as string | undefined;
+
+      // Fallback: check Firestore for role if custom claims aren't set
+      let firestoreRole: string | undefined;
+      try {
+        const snap = await getDoc(doc(db, "users", cred.user.uid));
+        if (snap.exists()) firestoreRole = snap.data().role;
+      } catch {}
+      const role = claimRole || firestoreRole || "member";
       const isBoard = role === "board_member" || role === "administrator";
 
       if (tab === "board" && !isBoard) {

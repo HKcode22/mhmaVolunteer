@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
+import { updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
   const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+  const [emailForm, setEmailForm] = useState({ password: "", newEmail: "" });
+  const [changingEmail, setChangingEmail] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
@@ -121,6 +123,24 @@ export default function ProfilePage() {
     }
   };
 
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.email) { setError("No email on file"); return; }
+    setChangingEmail(true); setError(""); setSuccess("");
+    try {
+      const credential = EmailAuthProvider.credential(user.email, emailForm.password);
+      await reauthenticateWithCredential(auth.currentUser!, credential);
+      await updateEmail(auth.currentUser!, emailForm.newEmail);
+      await setDoc(doc(db, "users", user.uid), { email: emailForm.newEmail }, { merge: true });
+      setSuccess("Email changed to " + emailForm.newEmail);
+      setEmailForm({ password: "", newEmail: "" });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setChangingEmail(false);
+    }
+  };
+
   if (authLoading || loading) return (
     <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="profile" />
@@ -208,6 +228,29 @@ export default function ProfilePage() {
             <button type="submit" disabled={saving}
               className="bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
               {saving ? "Saving..." : "Save Profile"}
+            </button>
+          </form>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Change Email</h2>
+          <p className="text-sm text-gray-500 mb-4">Current email: <strong>{user?.email}</strong></p>
+          <form onSubmit={handleChangeEmail} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Email Address</label>
+              <input type="email" value={emailForm.newEmail} onChange={e => setEmailForm({ ...emailForm, newEmail: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="new@example.com" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password (to confirm)</label>
+              <div className="relative">
+                <input type="password" value={emailForm.password} onChange={e => setEmailForm({ ...emailForm, password: e.target.value })}
+                  autoComplete="current-password" className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" required />
+              </div>
+            </div>
+            <button type="submit" disabled={changingEmail}
+              className="bg-blue-700 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
+              {changingEmail ? "Updating..." : "Change Email"}
             </button>
           </form>
         </div>

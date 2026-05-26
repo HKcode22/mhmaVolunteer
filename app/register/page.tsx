@@ -97,12 +97,18 @@ export default function RegisterPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: formData.inviteCode, usedBy: cred.user.uid }),
         });
+        // Set custom claims so Firestore rules work immediately
+        await fetch("/api/set-claims", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid: cred.user.uid }),
+        });
         logActivity({
           userId: cred.user.uid,
           userEmail: formData.email,
           userName: `${formData.firstName} ${formData.lastName}`,
           action: "board_registration",
-          details: `New board member registered: ${formData.firstName} ${formData.lastName} (${formData.email}) using invite code ${formData.inviteCode}`,
+          details: `New board member registered: ${formData.firstName} ${formData.lastName} (${formData.email})`,
           targetType: "user",
           targetId: cred.user.uid,
         });
