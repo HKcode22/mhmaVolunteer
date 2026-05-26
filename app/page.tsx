@@ -7,6 +7,7 @@ import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } 
 import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
+import NewsletterSignup from "@/app/components/NewsletterSignup";
 
 /* ── Quran Verse (commented out per board request) ──
 interface QuranVerse {
@@ -873,6 +874,11 @@ useEffect(() => {
                 className="mx-auto md:mx-0 mb-4 opacity-70"
               />
               <p className="text-gray-400 text-xs uppercase tracking-wider">© 2026 Mountain House Muslim Association</p>
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-700 mb-2">Stay Updated</h4>
+              <p className="text-gray-600 text-xs mb-3">Get MHMA news and event updates.</p>
+              <NewsletterSignup variant="footer" source="footer" />
             </div>
             <div>
               <h4 className="font-bold text-gray-700 mb-2">Contact Us</h4>

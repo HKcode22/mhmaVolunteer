@@ -298,6 +298,9 @@ export default function DashboardPage() {
             <Link href="/dashboard/pledges" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Heart className="w-6 h-6" /><span className="font-semibold text-sm">Pledges</span>
             </Link>
+            <Link href="/dashboard/subscribers" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Mail className="w-6 h-6" /><span className="font-semibold text-sm">Subscribers</span>
+            </Link>
             <Link href="/dashboard/masjid-construction" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Building2 className="w-6 h-6" /><span className="font-semibold text-sm">Construction</span>
             </Link>

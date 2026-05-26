@@ -130,6 +130,14 @@ service cloud.firestore {
       allow read, update, delete: if isBoardMember();
     }
 
+    // ─── Subscribers (Newsletter) ───
+    // Anyone can subscribe. Board members can read, unsubscribe, delete.
+    match /subscribers/{subscriber} {
+      allow create: if true;
+      allow read: if isBoardMember();
+      allow update, delete: if isBoardMember();
+    }
+
     // ─── Versions (document snapshots for revert) ───
     // Board members can read and create version snapshots.
     // Update is allowed for marking restoredAt.

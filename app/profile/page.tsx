@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
+import { updatePassword, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
@@ -126,16 +126,17 @@ export default function ProfilePage() {
   const handleChangeEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.email) { setError("No email on file"); return; }
+    if (emailForm.newEmail === user.email) { setError("New email is the same as current."); return; }
     setChangingEmail(true); setError(""); setSuccess("");
     try {
       const credential = EmailAuthProvider.credential(user.email, emailForm.password);
       await reauthenticateWithCredential(auth.currentUser!, credential);
-      await updateEmail(auth.currentUser!, emailForm.newEmail);
-      await setDoc(doc(db, "users", user.uid), { email: emailForm.newEmail }, { merge: true });
-      setSuccess("Email changed to " + emailForm.newEmail);
+      await verifyBeforeUpdateEmail(auth.currentUser!, emailForm.newEmail);
+      setSuccess("Verification email sent to " + emailForm.newEmail + ". Click the link in that email to confirm the change.");
       setEmailForm({ password: "", newEmail: "" });
     } catch (err: any) {
-      setError(err.message);
+      const msg = err.code === "auth/requires-recent-login" ? "Please log out and log back in before changing your email." : err.message;
+      setError(msg);
     } finally {
       setChangingEmail(false);
     }

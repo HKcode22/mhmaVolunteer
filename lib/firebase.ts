@@ -806,6 +806,39 @@ export async function deletePledge(id: string): Promise<void> {
   await deleteDoc(doc(db, PLEDGES, id));
 }
 
+// ─── Subscribers / Newsletter ───
+
+export interface Subscriber {
+  id?: string;
+  email: string;
+  name?: string;
+  source?: string;
+  status: "active" | "unsubscribed";
+  createdAt?: any;
+  unsubscribedAt?: any;
+}
+
+const SUBSCRIBERS = "subscribers";
+
+export async function addSubscriber(data: Omit<Subscriber, "id" | "createdAt" | "status">): Promise<string> {
+  const ref = await addDoc(collection(db, SUBSCRIBERS), { ...data, status: "active", createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function fetchSubscribers(limitCount = 200): Promise<Subscriber[]> {
+  const q = query(collection(db, SUBSCRIBERS), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<Subscriber>(snap);
+}
+
+export async function unsubscribeSubscriber(id: string): Promise<void> {
+  await updateDoc(doc(db, SUBSCRIBERS, id), { status: "unsubscribed", unsubscribedAt: serverTimestamp() });
+}
+
+export async function deleteSubscriber(id: string): Promise<void> {
+  await deleteDoc(doc(db, SUBSCRIBERS, id));
+}
+
 const FALLBACK_QUOTES = [
   { text: "Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)", author: "Oussama Saafien • Board Trustee" },
   { text: "The best of you are those who learn the Quran and teach it.", author: "Prophet Muhammad (ﷺ)" },
