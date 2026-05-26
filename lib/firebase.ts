@@ -766,6 +766,46 @@ export async function deleteMasjidUpdate(id: string): Promise<void> {
   await deleteDoc(doc(db, MASJID_CONSTRUCTION, id));
 }
 
+// ─── Pledges ───
+
+export interface Pledge {
+  id?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  amount: number;
+  message?: string;
+  status: "pending" | "fulfilled" | "cancelled";
+  userUid?: string;
+  createdAt?: any;
+  fulfilledAt?: any;
+  cancelledAt?: any;
+}
+
+const PLEDGES = "pledges";
+
+export async function createPledge(data: Omit<Pledge, "id" | "createdAt" | "status">): Promise<string> {
+  const ref = await addDoc(collection(db, PLEDGES), { ...data, status: "pending", createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function fetchPledges(limitCount = 100): Promise<Pledge[]> {
+  const q = query(collection(db, PLEDGES), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<Pledge>(snap);
+}
+
+export async function updatePledgeStatus(id: string, status: "fulfilled" | "cancelled"): Promise<void> {
+  const update: Record<string, any> = { status };
+  if (status === "fulfilled") update.fulfilledAt = serverTimestamp();
+  if (status === "cancelled") update.cancelledAt = serverTimestamp();
+  await updateDoc(doc(db, PLEDGES, id), update);
+}
+
+export async function deletePledge(id: string): Promise<void> {
+  await deleteDoc(doc(db, PLEDGES, id));
+}
+
 const FALLBACK_QUOTES = [
   { text: "Understanding the language of the Quran gives the reader a better understanding of the message from Allah (SWT)", author: "Oussama Saafien • Board Trustee" },
   { text: "The best of you are those who learn the Quran and teach it.", author: "Prophet Muhammad (ﷺ)" },

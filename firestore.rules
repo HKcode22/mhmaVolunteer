@@ -123,6 +123,13 @@ service cloud.firestore {
       allow create, update, delete: if isBoardMember();
     }
 
+    // ─── Pledges ───
+    // Anyone can create a pledge. Board members can read and update status.
+    match /pledges/{pledge} {
+      allow create: if true;
+      allow read, update, delete: if isBoardMember();
+    }
+
     // ─── Versions (document snapshots for revert) ───
     // Board members can read and create version snapshots.
     // Update is allowed for marking restoredAt.

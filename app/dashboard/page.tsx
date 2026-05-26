@@ -295,6 +295,9 @@ export default function DashboardPage() {
             <Link href="/dashboard/notifications" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
             </Link>
+            <Link href="/dashboard/pledges" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Heart className="w-6 h-6" /><span className="font-semibold text-sm">Pledges</span>
+            </Link>
             <button onClick={handleGenerateCode} disabled={generatingCode}
               className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2 disabled:opacity-50">
               <Key className="w-6 h-6" /><span className="font-semibold text-sm">Invite Code</span>

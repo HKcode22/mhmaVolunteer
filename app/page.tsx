@@ -536,7 +536,7 @@ useEffect(() => {
                 </div>
               </div>
               <div className="shrink-0">
-                <Link href="/masjid-construction" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
+                <Link href="/pledge" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
                   Pledge Today
                 </Link>
               </div>
@@ -547,7 +547,7 @@ useEffect(() => {
                 <p className="text-sm font-bold text-mhma-forest uppercase tracking-wider">Masjid Fund</p>
                 <p className="text-xs text-gray-500 mt-1">Campaign data coming soon</p>
               </div>
-              <Link href="/masjid-construction" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
+              <Link href="/pledge" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
                 Pledge Today
               </Link>
             </div>
