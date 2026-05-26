@@ -18,13 +18,17 @@ import {
   ArrowRight
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
+import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
 
 export default function DonatePage() {
-  const stats = [
-    { label: "Phase 1 Target", value: "$1.5M", color: "bg-mhma-teal" },
-    { label: "Pledged to Date", value: "$750K", color: "bg-mhma-gold" },
-    { label: "Current Balance", value: "$350K", color: "bg-mhma-dark" },
-  ];
+  const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
+  useEffect(() => {
+    fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
+  }, []);
+
+  const goal = latest?.goal || 1500000;
+  const raised = latest?.raised || 350000;
+  const remaining = goal - raised;
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
@@ -109,12 +113,18 @@ export default function DonatePage() {
               <div className="lg:w-5/12 flex flex-col gap-8">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-4">
-                  {stats.map((stat, i) => (
-                    <div key={i} className={`${stat.color} p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform`}>
-                       <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">{stat.label}</p>
-                       <p className="text-4xl md:text-5xl font-bold font-serif">{stat.value}</p>
-                    </div>
-                  ))}
+                  <div className="bg-mhma-teal p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
+                    <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Campaign Goal</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">${(goal / 1000000).toFixed(1)}M</p>
+                  </div>
+                  <div className="bg-mhma-gold p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
+                    <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Raised to Date</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">${(raised / 1000000).toFixed(1)}M</p>
+                  </div>
+                  <div className="bg-mhma-dark p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
+                    <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Remaining</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">${(remaining / 1000000).toFixed(1)}M</p>
+                  </div>
                 </div>
 
                 {/* Info Grid */}
