@@ -279,33 +279,33 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Link href="/dashboard/programs/new" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Plus className="w-5 h-5" /><span className="font-semibold text-xs">Add Program</span>
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
+            <Link href="/dashboard/programs/new" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Program</span>
             </Link>
-            <Link href="/dashboard/events/new" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Plus className="w-5 h-5" /><span className="font-semibold text-xs">Add Event</span>
+            <Link href="/dashboard/events/new" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Event</span>
             </Link>
-            <Link href="/dashboard/analytics" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <BarChart3 className="w-5 h-5" /><span className="font-semibold text-xs">Analytics</span>
+            <Link href="/dashboard/analytics" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <BarChart3 className="w-6 h-6" /><span className="font-semibold text-sm">Analytics</span>
             </Link>
-            <Link href="/dashboard/activity" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Activity className="w-5 h-5" /><span className="font-semibold text-xs">Activity Log</span>
+            <Link href="/dashboard/activity" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Activity className="w-6 h-6" /><span className="font-semibold text-sm">Activity Log</span>
             </Link>
-            <Link href="/dashboard/notifications" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Bell className="w-5 h-5" /><span className="font-semibold text-xs">Notifications</span>
+            <Link href="/dashboard/notifications" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
             </Link>
-            <Link href="/dashboard/pledges" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Heart className="w-5 h-5" /><span className="font-semibold text-xs">Pledges</span>
+            <Link href="/dashboard/pledges" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Heart className="w-6 h-6" /><span className="font-semibold text-sm">Pledges</span>
             </Link>
-            <Link href="/dashboard/subscribers" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Mail className="w-5 h-5" /><span className="font-semibold text-xs">Subscribers</span>
+            <Link href="/dashboard/subscribers" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Mail className="w-6 h-6" /><span className="font-semibold text-sm">Subscribers</span>
             </Link>
-            <Link href="/dashboard/masjid-construction" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Building2 className="w-5 h-5" /><span className="font-semibold text-xs">Construction</span>
+            <Link href="/dashboard/masjid-construction" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Building2 className="w-6 h-6" /><span className="font-semibold text-sm">Construction</span>
             </Link>
-            <Link href="/dashboard/users" className="bg-mhma-forest text-white p-3 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1.5">
-              <Users className="w-5 h-5" /><span className="font-semibold text-xs">Members</span>
+            <Link href="/dashboard/users" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Users className="w-6 h-6" /><span className="font-semibold text-sm">Members</span>
             </Link>
           </div>
 

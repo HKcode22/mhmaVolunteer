@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
   const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+  const [showEmailPassword, setShowEmailPassword] = useState(false);
   const [emailForm, setEmailForm] = useState({ password: "", newEmail: "" });
   const [changingEmail, setChangingEmail] = useState(false);
 
@@ -262,8 +263,11 @@ export default function ProfilePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Current Password (to confirm)</label>
               <div className="relative">
-                <input type="password" value={emailForm.password} onChange={e => setEmailForm({ ...emailForm, password: e.target.value })}
+                <input type={showEmailPassword ? "text" : "password"} value={emailForm.password} onChange={e => setEmailForm({ ...emailForm, password: e.target.value })}
                   autoComplete="current-password" className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" required />
+                <button type="button" onClick={() => setShowEmailPassword(!showEmailPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showEmailPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
             <button type="submit" disabled={changingEmail}
