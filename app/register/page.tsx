@@ -231,13 +231,14 @@ export default function RegisterPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone (optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => update("phone", e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 focus:border-mhma-gold outline-none transition-all bg-gray-50/50"
                       placeholder="(555) 123-4567"
+                      required
                     />
                   </div>
 

@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { updatePassword, sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
+import { updatePassword, sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile, verifyBeforeUpdateEmail } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
-import { Upload, Loader2, User, Eye, EyeOff } from "lucide-react";
+import { Upload, Loader2, User, Eye, EyeOff, Smartphone, Send } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -26,8 +26,27 @@ export default function ProfilePage() {
   const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
   const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
   const [showEmailPassword, setShowEmailPassword] = useState(false);
+
+  // Email change state
   const [emailForm, setEmailForm] = useState({ password: "", newEmail: "" });
   const [changingEmail, setChangingEmail] = useState(false);
+  const [emailStep, setEmailStep] = useState<"form" | "sms" | "done">("form");
+  const [smsCode, setSmsCode] = useState("");
+  const [smsSending, setSmsSending] = useState(false);
+  const [smsVerifying, setSmsVerifying] = useState(false);
+  const [smsError, setSmsError] = useState("");
+  const [smsConfigured, setSmsConfigured] = useState(true);
+
+  // Phone change
+  const [newPhone, setNewPhone] = useState("");
+  const [phoneFormPassword, setPhoneFormPassword] = useState("");
+  const [showPhonePassword, setShowPhonePassword] = useState(false);
+  const [changingPhone, setChangingPhone] = useState(false);
+  const [phoneStep, setPhoneStep] = useState<"form" | "sms" | "done">("form");
+  const [phoneSmsCode, setPhoneSmsCode] = useState("");
+  const [phoneSmsSending, setPhoneSmsSending] = useState(false);
+  const [phoneSmsVerifying, setPhoneSmsVerifying] = useState(false);
+  const [phoneSmsError, setPhoneSmsError] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
@@ -132,22 +151,147 @@ export default function ProfilePage() {
     try {
       const credential = EmailAuthProvider.credential(user.email, emailForm.password);
       await reauthenticateWithCredential(auth.currentUser!, credential);
-      // Get fresh ID token for API auth
-      const idToken = await auth.currentUser!.getIdToken();
-      const res = await fetch("/api/change-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
-        body: JSON.stringify({ oldEmail: user.email, newEmail: emailForm.newEmail }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to initiate email change");
-      setSuccess("Verification emails sent to both addresses. Check your inboxes and click the links to complete the change.");
-      setEmailForm({ password: "", newEmail: "" });
+
+      // If has phone + SMS configured, move to SMS step
+      if (profile.phone) {
+        const idToken = await auth.currentUser!.getIdToken();
+        const smsRes = await fetch("/api/send-sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+          body: JSON.stringify({ phone: profile.phone }),
+        });
+        const smsData = await smsRes.json();
+        if (smsData.notConfigured) {
+          setSmsConfigured(false);
+          // Skip SMS, proceed directly
+          await finishEmailChange(user.email!, emailForm.newEmail);
+          return;
+        }
+        if (!smsRes.ok) throw new Error(smsData.error || "Failed to send SMS");
+        setEmailStep("sms");
+        setSmsSending(false);
+        setSuccess("SMS verification code sent to your phone.");
+        return;
+      }
+
+      // No phone on file, proceed directly
+      await finishEmailChange(user.email!, emailForm.newEmail);
     } catch (err: any) {
       const msg = err.code === "auth/requires-recent-login" ? "Please log out and log back in before changing your email." : err.message;
       setError(msg);
+      setEmailStep("form");
     } finally {
       setChangingEmail(false);
+    }
+  };
+
+  const handleSmsVerify = async () => {
+    if (!user?.email || !profile.phone) return;
+    setSmsVerifying(true); setSmsError(""); setError("");
+    try {
+      const idToken = await auth.currentUser!.getIdToken();
+      const res = await fetch("/api/verify-sms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ code: smsCode, phone: profile.phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid code");
+      await finishEmailChange(user.email!, emailForm.newEmail);
+    } catch (err: any) {
+      setSmsError(err.message);
+    } finally {
+      setSmsVerifying(false);
+    }
+  };
+
+  const finishEmailChange = async (oldEmail: string, newEmail: string) => {
+    // 1) Notify old email via API
+    const idToken = await auth.currentUser!.getIdToken();
+    const notifyRes = await fetch("/api/change-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ oldEmail, newEmail }),
+    });
+    const notifyData = await notifyRes.json();
+    if (!notifyRes.ok) console.error("Old email notification failed:", notifyData.error);
+
+    // 2) Firebase's built-in verification to new email (reliable delivery)
+    const actionCodeSettings = {
+      url: `${window.location.origin}/profile`,
+      handleCodeInApp: false,
+    };
+    await verifyBeforeUpdateEmail(auth.currentUser!, newEmail, actionCodeSettings);
+
+    setEmailStep("done");
+    setSuccess(
+      `Verification sent to ${newEmail}. Check your inbox and click the link from Firebase to complete the change. ` +
+      (notifyData.oldEmailSent ? `A notification was also sent to ${oldEmail}.` :
+       `Note: The notification to ${oldEmail} could not be delivered (you may be using a test email address).`)
+    );
+    setEmailForm({ password: "", newEmail: "" });
+  };
+
+  const handleChangePhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.email || !profile.phone) { setError("You need a current phone number on file to change it."); return; }
+    if (newPhone === profile.phone) { setError("New phone is the same as current."); return; }
+    setChangingPhone(true); setError(""); setSuccess("");
+    try {
+      const credential = EmailAuthProvider.credential(user.email, phoneFormPassword);
+      await reauthenticateWithCredential(auth.currentUser!, credential);
+
+      const idToken = await auth.currentUser!.getIdToken();
+      const smsRes = await fetch("/api/send-sms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ phone: profile.phone }),
+      });
+      const smsData = await smsRes.json();
+      if (smsData.notConfigured) {
+        // No Twilio — update directly
+        await setDoc(doc(db, "users", user.uid), { phone: newPhone }, { merge: true });
+        setProfile(prev => ({ ...prev, phone: newPhone }));
+        setSuccess("Phone number updated!");
+        setNewPhone("");
+        setPhoneFormPassword("");
+        setChangingPhone(false);
+        return;
+      }
+      if (!smsRes.ok) throw new Error(smsData.error || "Failed to send SMS");
+      setPhoneStep("sms");
+      setSuccess("SMS verification code sent to your current phone.");
+    } catch (err: any) {
+      setError(err.message);
+      setPhoneStep("form");
+    } finally {
+      setChangingPhone(false);
+    }
+  };
+
+  const handlePhoneSmsVerify = async () => {
+    if (!profile.phone) return;
+    setPhoneSmsVerifying(true); setPhoneSmsError(""); setError("");
+    try {
+      const idToken = await auth.currentUser!.getIdToken();
+      const res = await fetch("/api/verify-sms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ code: phoneSmsCode, phone: profile.phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid code");
+
+      await setDoc(doc(db, "users", user!.uid), { phone: newPhone }, { merge: true });
+      setProfile(prev => ({ ...prev, phone: newPhone }));
+      setPhoneStep("done");
+      setSuccess("Phone number updated to " + newPhone);
+      setNewPhone("");
+      setPhoneFormPassword("");
+    } catch (err: any) {
+      setPhoneSmsError(err.message);
+    } finally {
+      setPhoneSmsVerifying(false);
     }
   };
 
@@ -219,8 +363,10 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input type="text" value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="(555) 123-4567" />
+                <div className="w-full px-4 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-700 flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-gray-400" />
+                  <span>{profile.phone || "(not set)"}</span>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Family Size</label>
@@ -252,31 +398,117 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Change Email</h2>
-          <p className="text-sm text-gray-500 mb-4">Current email: <strong>{user?.email}</strong></p>
-          <form onSubmit={handleChangeEmail} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Email Address</label>
-              <input type="email" value={emailForm.newEmail} onChange={e => setEmailForm({ ...emailForm, newEmail: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="new@example.com" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password (to confirm)</label>
-              <div className="relative">
-                <input type={showEmailPassword ? "text" : "password"} value={emailForm.password} onChange={e => setEmailForm({ ...emailForm, password: e.target.value })}
-                  autoComplete="current-password" className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" required />
-                <button type="button" onClick={() => setShowEmailPassword(!showEmailPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showEmailPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+          <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Change Email</h2>
+            <p className="text-sm text-gray-500 mb-4">Current email: <strong>{user?.email}</strong></p>
+
+            {emailStep === "sms" && (
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-sm text-amber-800 font-medium mb-3">SMS code sent to your phone ({profile.phone}). Enter it below:</p>
+                <div className="flex gap-2">
+                  <input type="text" value={smsCode} onChange={e => setSmsCode(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-amber-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-lg font-mono tracking-widest text-center"
+                    placeholder="000000" maxLength={6} />
+                  <button onClick={handleSmsVerify} disabled={smsVerifying || smsCode.length < 6}
+                    className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-6 py-2 rounded-md transition-colors disabled:opacity-50">
+                    {smsVerifying ? "Verifying..." : "Verify"}
+                  </button>
+                </div>
+                {smsError && <p className="text-red-600 text-xs mt-2">{smsError}</p>}
+                <button onClick={() => { setEmailStep("form"); setSmsCode(""); setSmsError(""); }}
+                  className="text-xs text-gray-500 mt-2 hover:underline">Cancel</button>
               </div>
-            </div>
-            <button type="submit" disabled={changingEmail}
-              className="bg-blue-700 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
-              {changingEmail ? "Updating..." : "Change Email"}
-            </button>
-          </form>
-        </div>
+            )}
+
+            {emailStep === "done" ? (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-800">
+                  Verification sent to <strong>{emailForm.newEmail || "your new email"}</strong>. Check your inbox and click the link from Firebase to complete the change.
+                </p>
+                <button onClick={() => { setEmailStep("form"); setSmsCode(""); }}
+                  className="text-xs text-mhma-gold mt-2 hover:underline">Change again</button>
+              </div>
+            ) : emailStep === "form" && (
+              <form onSubmit={handleChangeEmail} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Email Address</label>
+                  <input type="email" value={emailForm.newEmail} onChange={e => setEmailForm({ ...emailForm, newEmail: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="new@example.com" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password (to confirm)</label>
+                  <div className="relative">
+                    <input type={showEmailPassword ? "text" : "password"} value={emailForm.password} onChange={e => setEmailForm({ ...emailForm, password: e.target.value })}
+                      autoComplete="current-password" className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" required />
+                    <button type="button" onClick={() => setShowEmailPassword(!showEmailPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      {showEmailPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                {!smsConfigured && profile.phone && (
+                  <p className="text-xs text-amber-600">SMS verification is not configured. Email change will proceed without phone verification.</p>
+                )}
+                <button type="submit" disabled={changingEmail}
+                  className="bg-blue-700 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
+                  {changingEmail ? "Processing..." : "Change Email"}
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Change Phone Number</h2>
+            <p className="text-sm text-gray-500 mb-4">Current phone: <strong>{profile.phone || "(none)"}</strong></p>
+
+            {phoneStep === "sms" && (
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-sm text-amber-800 font-medium mb-3">SMS code sent to your current phone ({profile.phone}). Enter it below:</p>
+                <div className="flex gap-2">
+                  <input type="text" value={phoneSmsCode} onChange={e => setPhoneSmsCode(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-amber-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none text-lg font-mono tracking-widest text-center"
+                    placeholder="000000" maxLength={6} />
+                  <button onClick={handlePhoneSmsVerify} disabled={phoneSmsVerifying || phoneSmsCode.length < 6}
+                    className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-6 py-2 rounded-md transition-colors disabled:opacity-50">
+                    {phoneSmsVerifying ? "Verifying..." : "Verify"}
+                  </button>
+                </div>
+                {phoneSmsError && <p className="text-red-600 text-xs mt-2">{phoneSmsError}</p>}
+                <button onClick={() => { setPhoneStep("form"); setPhoneSmsCode(""); setPhoneSmsError(""); }}
+                  className="text-xs text-gray-500 mt-2 hover:underline">Cancel</button>
+              </div>
+            )}
+
+            {phoneStep === "done" ? (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-800">Phone number updated successfully.</p>
+                <button onClick={() => { setPhoneStep("form"); setPhoneSmsCode(""); }}
+                  className="text-xs text-mhma-gold mt-2 hover:underline">Change again</button>
+              </div>
+            ) : phoneStep === "form" && (
+              <form onSubmit={handleChangePhone} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Phone Number</label>
+                  <input type="tel" value={newPhone} onChange={e => setNewPhone(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" placeholder="(555) 123-4567" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password (to confirm)</label>
+                  <div className="relative">
+                    <input type={showPhonePassword ? "text" : "password"} value={phoneFormPassword} onChange={e => setPhoneFormPassword(e.target.value)}
+                      autoComplete="current-password" className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9a227] outline-none" required />
+                    <button type="button" onClick={() => setShowPhonePassword(!showPhonePassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      {showPhonePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <button type="submit" disabled={changingPhone}
+                  className="bg-teal-700 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50 flex items-center gap-2">
+                  <Smartphone className="w-4 h-4" />
+                  {changingPhone ? "Sending SMS..." : "Change Phone"}
+                </button>
+              </form>
+            )}
+          </div>
 
         <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Change Password</h2>
