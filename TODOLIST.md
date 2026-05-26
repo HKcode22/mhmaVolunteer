@@ -146,3 +146,4 @@
 - Use subcollections or top-level collections for scalability
 - Index queries that need filtering (e.g., donations by user, pledges by status)
 - Keep donor PII minimal — use Firebase Auth UID as reference where possible
+- i would also want u to analyze the current data abse we have and check and see if everything is organzied 

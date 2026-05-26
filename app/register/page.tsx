@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase-client";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { validateInviteCode, markInviteCodeUsed, logActivity } from "@/lib/firebase";
+import { logActivity } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -65,8 +65,13 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       if (tab === "board") {
-        const valid = await validateInviteCode(formData.inviteCode);
-        if (!valid) {
+        const res = await fetch("/api/validate-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: formData.inviteCode }),
+        });
+        const data = await res.json();
+        if (!data.valid) {
           setError("Invalid or expired invite code. Contact a board member to get a new code.");
           setLoading(false);
           return;
@@ -87,7 +92,11 @@ export default function RegisterPage() {
       });
 
       if (tab === "board") {
-        await markInviteCodeUsed(formData.inviteCode, cred.user.uid);
+        await fetch("/api/use-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: formData.inviteCode, usedBy: cred.user.uid }),
+        });
         logActivity({
           userId: cred.user.uid,
           userEmail: formData.email,
