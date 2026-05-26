@@ -5,6 +5,7 @@ import {
   getDocs,
   getDoc,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -211,8 +212,10 @@ export async function fetchProgramById(id: string): Promise<FirebaseProgram | nu
 
 export async function addProgram(data: Omit<FirebaseProgram, "id" | "createdAt">): Promise<string> {
   try {
-    const ref = await withTimeout(
-      addDoc(collection(db, collections.programs), { ...data, createdAt: serverTimestamp() }),
+    const slug = data.slug || data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const ref = doc(db, collections.programs, slug);
+    await withTimeout(
+      setDoc(ref, { ...data, slug, createdAt: serverTimestamp() }),
       "addProgram"
     );
     console.log("Firestore: addProgram success, id:", ref.id);
@@ -225,16 +228,23 @@ export async function addProgram(data: Omit<FirebaseProgram, "id" | "createdAt">
 
 export async function updateProgram(id: string, data: Partial<FirebaseProgram>): Promise<void> {
   try {
-    // Save current state as a version before updating
     const currentSnap = await getDoc(doc(db, collections.programs, id));
     if (currentSnap.exists()) {
       await saveVersion("program", id, currentSnap.data());
     }
-    await withTimeout(
-      updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
-      "updateProgram"
-    );
-    console.log("Firestore: updateProgram success, id:", id);
+    const newSlug = data.slug || data.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    if (newSlug && newSlug !== id) {
+      const newData = { ...data, slug: newSlug, updatedAt: serverTimestamp() };
+      await setDoc(doc(db, collections.programs, newSlug), { ...currentSnap.data(), ...newData });
+      await deleteDoc(doc(db, collections.programs, id));
+      console.log("Firestore: updateProgram migrated from", id, "to", newSlug);
+    } else {
+      await withTimeout(
+        updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
+        "updateProgram"
+      );
+      console.log("Firestore: updateProgram success, id:", id);
+    }
   } catch (err) {
     console.error("Firestore: updateProgram FAILED:", err);
     throw err;

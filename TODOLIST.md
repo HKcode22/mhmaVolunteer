@@ -67,11 +67,11 @@
 
 ### 9. Payment Records in Firestore
 **Board member said**: "payment records in firestore is a good idea but we need to first think about doing this correctly since its nosql to make sure its not a messy database"
-- [ ] Design Firestore schema for donations (consider: donor info, amount, designation, date, pledge reference)
-- [ ] Stripe webhook endpoint to capture successful payments
-- [ ] Store donation records in `donations` collection
-- [ ] Dashboard to view donation history
-- [ ] Donor can view their own donation history in profile
+- [x] Design Firestore schema for donations (consider: donor info, amount, designation, date, pledge reference)
+- [x] Stripe webhook endpoint to capture successful payments
+- [x] Store donation records in `donations` collection
+- [x] Dashboard to view donation history (with manual entry for offline donations)
+- [x] Donor can view their own donation history in profile
 
 ### 10. SMS Phone Verification (Identity Platform Upgrade)
 **Removed from current scope — revisit later. User wants phone mandatory on register (done) but SMS verification for email/phone changes requires Identity Platform upgrade.**
@@ -151,8 +151,18 @@
 - `donations` — { id, donorId, amount, designation, stripePaymentId, pledgeRef, createdAt }
 - `masjidConstruction` — already exists, will be the source of truth for campaign data
 
-### Notes
+### Notes - will do these later  
 - Use subcollections or top-level collections for scalability
 - Index queries that need filtering (e.g., donations by user, pledges by status)
 - Keep donor PII minimal — use Firebase Auth UID as reference where possible
 - i would also want u to analyze the current data abse we have and check and see if everything is organzied 
+-Setup Needed
+To make Stripe webhook work:
+1. Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in Vercel dashboard
+2. In Stripe Dashboard → Webhooks, add endpoint https://mhma.us/api/stripe-webhook
+3. Add designation to each buy button's metadata in Stripe Dashboard (optional — defaults to "general")
+- i dont know or think we should have analytical snapshot because we need to think about if this is right or wrong in the sense of computations
+- - i was thinking about if the progress of money fundraising was tracked through whwenever a trasnaction would be done using the strip or thing from the website and then the numbers are udpated automatcily? i dont know will need to dig in more
+- also am thinking about integrating more data science or more realistically more data analytical or data related configruitation or things in it like data sets or things of data used or solved in the real world creating something that is good for my skills and
+- I was also thinking about big o of n time space concepts about the analytical computations and resources meaning where the analytical parts of code would be at firebase or in codebase github vercel, if its on my computer or on vercels servers, and where is better so resrouces are used correctly and moderatley
+- is it possible if every regular memeber can have their own dashbaord where they can see how many events theyve rvsped too, and their own data tracking thing?
