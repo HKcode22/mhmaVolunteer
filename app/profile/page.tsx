@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { updatePassword, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
+import { updatePassword, sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
@@ -131,14 +131,31 @@ export default function ProfilePage() {
     try {
       const credential = EmailAuthProvider.credential(user.email, emailForm.password);
       await reauthenticateWithCredential(auth.currentUser!, credential);
-      await verifyBeforeUpdateEmail(auth.currentUser!, emailForm.newEmail);
-      setSuccess("Verification email sent to " + emailForm.newEmail + ". Click the link in that email to confirm the change.");
+      // Use Admin SDK API to change email (bypasses email verification requirement)
+      const res = await fetch("/api/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, newEmail: emailForm.newEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to change email");
+      setSuccess("Email changed to " + emailForm.newEmail);
       setEmailForm({ password: "", newEmail: "" });
     } catch (err: any) {
       const msg = err.code === "auth/requires-recent-login" ? "Please log out and log back in before changing your email." : err.message;
       setError(msg);
     } finally {
       setChangingEmail(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!user?.email) return;
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      setSuccess("Password reset email sent to " + user.email);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
@@ -292,10 +309,16 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            <button type="submit" disabled={saving}
-              className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
-              {saving ? "Updating..." : "Change Password"}
-            </button>
+            <div className="flex items-center gap-3">
+              <button type="submit" disabled={saving}
+                className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
+                {saving ? "Updating..." : "Change Password"}
+              </button>
+              <button type="button" onClick={handleForgotPassword}
+                className="text-sm text-mhma-gold hover:text-amber-600 font-medium underline underline-offset-2">
+                Forgot current password?
+              </button>
+            </div>
           </form>
         </div>
       </main>
