@@ -73,11 +73,20 @@
 - [ ] Dashboard to view donation history
 - [ ] Donor can view their own donation history in profile
 
+### 10. SMS Phone Verification (Identity Platform Upgrade)
+**Removed from current scope — revisit later. User wants phone mandatory on register (done) but SMS verification for email/phone changes requires Identity Platform upgrade.**
+- [x] Phone field mandatory on registration — DONE
+- [ ] Firebase Phone Auth requires upgrading to Identity Platform (still free Spark plan)
+- [ ] Upgrade impact: 3,000 DAU limit (currently unlimited). With ~641 members, this is not a concern.
+- [ ] After upgrade: Phone Auth OTP sent to current Firestore phone for email changes / phone changes
+- [ ] Without upgrade: falls back gracefully to password-only verification
+- [ ] Action: Click "Upgrade" in Firebase Console Authentication page → enable Phone provider → SMS works immediately
+
 ---
 
 ## 🟡 Important Features
 
-### 10. Calendar View for Events
+### 11. Calendar View for Events
 **Board member agreed this is needed**
 - [ ] Monthly calendar grid view
 - [ ] Events displayed on correct dates
@@ -85,11 +94,11 @@
 - [ ] Week/day toggle options
 - [ ] Fix ordering — sort by event date, not createdAt
 
-### 11. Construction Page Ignoring Firestore
+### 12. Construction Page Ignoring Firestore
 **Board member said**: "yes we need to fix the construction page that ignores firestore"
 - [ ] Covered under #5 and #6 above — connect to Firestore data
 
-### 12. Recurring Donation Toggle
+### 13. Recurring Donation Toggle
 **Board member said**: "yes i agree with you on no recurring donation toggle"
 - [ ] Monthly vs one-time toggle on donate page
 - [ ] Stripe recurring price/subscription setup
@@ -99,35 +108,35 @@
 
 ## 🟢 Nice-to-Have
 
-### 13. Construction Photo Gallery / Timeline
+### 14. Construction Photo Gallery / Timeline
 **Board member said**: "those are good too"
 - [ ] Photo gallery component with lightbox
 - [ ] Timeline view of construction milestones
 - [ ] Admin can upload photos from dashboard
 
-### 14. Donor Wall / Social Proof
+### 15. Donor Wall / Social Proof
 **Board member said**: "those are good too"
 - [ ] Display donor names (with permission)
 - [ ] Anonymous option for donors
 - [ ] Fundraising thermometer / goal visualization
 
-### 15. iCal / Google Calendar Export
+### 16. iCal / Google Calendar Export
 **Board member said**: "those are good too"
 - [ ] Add to Calendar button on events
 - [ ] iCal download / Google Calendar link
 
-### 16. Program Enrollment Tied to Specific Programs
+### 17. Program Enrollment Tied to Specific Programs
 **Board member said**: "those are good too"
 - [ ] Enroll button per program
 - [ ] Enrollment data includes which program
 - [ ] Dashboard shows enrollments by program
 
-### 17. Hero Video Background
+### 18. Hero Video Background
 **Board member said**: "those are good too"
 - [ ] Optional video background for hero
 - [ ] Fallback to image if video not available
 
-### 18. Testimonials / Impact Stories
+### 19. Testimonials / Impact Stories
 **Board member said**: "those are good too"
 - [ ] Testimonial carousel/section
 - [ ] Board members can add via dashboard

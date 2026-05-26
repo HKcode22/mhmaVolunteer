@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Mail, Lock, User, ShieldCheck, Key, UserPlus, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase-client";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { logActivity } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
@@ -114,7 +114,10 @@ export default function RegisterPage() {
         });
       }
 
-      setSuccess(`Account created! Redirecting to login...`);
+      // Send email verification
+      await sendEmailVerification(cred.user);
+
+      setSuccess(`Account created! A verification email has been sent to ${formData.email}. Please verify before logging in.`);
       setTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       const msg =
