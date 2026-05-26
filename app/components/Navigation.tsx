@@ -54,6 +54,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ANALYTICS</Link>
                       <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ACTIVITY LOG</Link>
                       <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MEMBERS</Link>
+                      <Link href="/dashboard/pledges" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">PLEDGES</Link>
+                      <Link href="/dashboard/subscribers" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SUBSCRIBERS</Link>
+                      <Link href="/dashboard/masjid-construction" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">CONSTRUCTION</Link>
                       <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
                     </div>
                   </div>
@@ -188,6 +191,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/dashboard/analytics" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Analytics</Link>
                 <Link href="/dashboard/activity" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Activity Log</Link>
                 <Link href="/dashboard/users" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Members</Link>
+                <Link href="/dashboard/pledges" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Pledges</Link>
+                <Link href="/dashboard/subscribers" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Subscribers</Link>
+                <Link href="/dashboard/masjid-construction" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Construction</Link>
                 <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
               </>
             ) : isLoggedIn ? (

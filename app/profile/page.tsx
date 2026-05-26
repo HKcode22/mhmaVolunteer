@@ -132,15 +132,16 @@ export default function ProfilePage() {
     try {
       const credential = EmailAuthProvider.credential(user.email, emailForm.password);
       await reauthenticateWithCredential(auth.currentUser!, credential);
-      // Use Admin SDK API to change email (bypasses email verification requirement)
+      // Get fresh ID token for API auth
+      const idToken = await auth.currentUser!.getIdToken();
       const res = await fetch("/api/change-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, newEmail: emailForm.newEmail }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ oldEmail: user.email, newEmail: emailForm.newEmail }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to change email");
-      setSuccess("Email changed to " + emailForm.newEmail);
+      if (!res.ok) throw new Error(data.error || "Failed to initiate email change");
+      setSuccess("Verification emails sent to both addresses. Check your inboxes and click the links to complete the change.");
       setEmailForm({ password: "", newEmail: "" });
     } catch (err: any) {
       const msg = err.code === "auth/requires-recent-login" ? "Please log out and log back in before changing your email." : err.message;

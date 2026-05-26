@@ -16,7 +16,9 @@ import {
   fetchContactSubmissions, deleteContactSubmission, markContactSubmissionRead,
   fetchRSVPs, deleteRSVP, updateRSVP,
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
+  fetchUsers, fetchSubscribers, fetchPledges,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
+  FirebaseUser, Subscriber, Pledge,
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
@@ -30,6 +32,9 @@ export default function DashboardPage() {
   const [contactSubmissions, setContactSubmissions] = useState<FirebaseContactSubmission[]>([]);
   const [rsvps, setRSVPs] = useState<FirebaseRSVP[]>([]);
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
+  const [users, setUsers] = useState<FirebaseUser[]>([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [pledges, setPledges] = useState<Pledge[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showAllPrograms, setShowAllPrograms] = useState(false);
@@ -39,12 +44,15 @@ export default function DashboardPage() {
   const [showAllSubmissions, setShowAllSubmissions] = useState(false);
   const [showAllRSVPs, setShowAllRSVPs] = useState(false);
   const [showAllCodes, setShowAllCodes] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(false);
+  const [showAllSubscribers, setShowAllSubscribers] = useState(false);
+  const [showAllPledges, setShowAllPledges] = useState(false);
   const [expandedDashboardId, setExpandedDashboardId] = useState<string | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
-  const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes"];
+  const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
 
   useEffect(() => {
@@ -103,8 +111,11 @@ export default function DashboardPage() {
         timeout(fetchRSVPs(100), 15000).catch(() => [] as FirebaseRSVP[]),
         timeout(fetchContactSubmissions(100), 15000).catch(() => [] as FirebaseContactSubmission[]),
         timeout(fetchInviteCodes(), 15000).catch(() => [] as InviteCode[]),
+        timeout(fetchUsers(100), 15000).catch(() => [] as FirebaseUser[]),
+        timeout(fetchSubscribers(100), 15000).catch(() => [] as Subscriber[]),
+        timeout(fetchPledges(100), 15000).catch(() => [] as Pledge[]),
       ]);
-      const [p, e, er, en, rsvp, cs, codes] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -112,6 +123,9 @@ export default function DashboardPage() {
       setRSVPs(rsvp || []);
       setContactSubmissions(cs || []);
       setInviteCodes(codes || []);
+      setUsers(u || []);
+      setSubscribers(subs || []);
+      setPledges(pl || []);
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
     };
@@ -262,6 +276,9 @@ export default function DashboardPage() {
   const visibleRSVPs = showAllRSVPs ? rsvps : rsvps.slice(0, 5);
   const visibleSubmissions = showAllSubmissions ? contactSubmissions : contactSubmissions.slice(0, 5);
   const visibleCodes = showAllCodes ? inviteCodes : inviteCodes.slice(0, 5);
+  const visibleUsers = showAllUsers ? users : users.slice(0, 5);
+  const visibleSubscribers = showAllSubscribers ? subscribers : subscribers.slice(0, 5);
+  const visiblePledges = showAllPledges ? pledges : pledges.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-mhma-cream">
@@ -537,6 +554,55 @@ export default function DashboardPage() {
                   )}
                 </Section>
               );
+            case "users":
+              return (
+                <Section key="users" title="Members" count={users.length} href="/dashboard/users" allShown={showAllUsers} onToggle={() => setShowAllUsers(!showAllUsers)} scrollable>
+                  {visibleUsers.map(u => (
+                    <div key={u.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{u.displayName || u.firstName || u.lastName || "Unnamed"}</p>
+                        <p className="text-xs text-gray-500">{u.email} <span className="ml-1 inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-mhma-cream text-mhma-forest">{u.role}</span></p>
+                      </div>
+                      <Link href={`/dashboard/users`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                    </div>
+                  ))}
+                  {users.length === 0 && <p className="text-gray-400 text-sm p-3">No members yet.</p>}
+                </Section>
+              );
+            case "subscribers":
+              return (
+                <Section key="subscribers" title="Subscribers" count={subscribers.length} href="/dashboard/subscribers" allShown={showAllSubscribers} onToggle={() => setShowAllSubscribers(!showAllSubscribers)} scrollable>
+                  {visibleSubscribers.map(s => (
+                    <div key={s.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{s.email}</p>
+                        <p className="text-xs text-gray-500">{s.name || "No name"} · {s.source || "signup"} <span className={`ml-1 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${s.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{s.status}</span></p>
+                      </div>
+                      <Link href={`/dashboard/subscribers`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                    </div>
+                  ))}
+                  {subscribers.length === 0 && <p className="text-gray-400 text-sm p-3">No subscribers yet.</p>}
+                </Section>
+              );
+            case "pledges":
+              return (
+                <Section key="pledges" title="Pledges" count={pledges.length} href="/dashboard/pledges" allShown={showAllPledges} onToggle={() => setShowAllPledges(!showAllPledges)} scrollable>
+                  {visiblePledges.map(p => (
+                    <div key={p.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{p.name}</p>
+                        <p className="text-xs text-gray-500">${(p.amount || 0).toLocaleString()} · {p.email} <span className={`ml-1 inline-block px-1.5 py-0.5 rounded text-xs font-medium ${
+                          p.status === "fulfilled" ? "bg-green-100 text-green-700" :
+                          p.status === "cancelled" ? "bg-red-100 text-red-700" :
+                          "bg-amber-100 text-amber-700"
+                        }`}>{p.status}</span></p>
+                      </div>
+                      <Link href={`/dashboard/pledges`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                    </div>
+                  ))}
+                  {pledges.length === 0 && <p className="text-gray-400 text-sm p-3">No pledges yet.</p>}
+                </Section>
+              );
             default:
               return null;
           }
@@ -558,7 +624,7 @@ export default function DashboardPage() {
               {layoutOrder.map((section, idx) => (
                 <div key={section} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <span className="font-medium text-gray-900 capitalize">
-                    {section === "requests" ? "Scheduling Requests" : section === "codes" ? "Invite Codes" : section === "submissions" ? "Contact Submissions" : section === "rsvps" ? "Event RSVPs" : section}
+                    {section === "requests" ? "Scheduling Requests" : section === "codes" ? "Invite Codes" : section === "submissions" ? "Contact Submissions" : section === "rsvps" ? "Event RSVPs" : section === "users" ? "Members" : section === "subscribers" ? "Subscribers" : section === "pledges" ? "Pledges" : section}
                   </span>
                   <div className="flex gap-1">
                     <button onClick={() => moveSection(idx, "up")} disabled={idx === 0}
@@ -574,7 +640,7 @@ export default function DashboardPage() {
               ))}
             </div>
             <button onClick={() => {
-              saveLayoutOrder(["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes"]);
+              saveLayoutOrder(["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges"]);
             }} className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               Reset to Default
             </button>
