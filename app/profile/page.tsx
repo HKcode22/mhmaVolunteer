@@ -158,7 +158,14 @@ export default function ProfilePage() {
     const verifier = getRecaptchaVerifier();
     if (!verifier) throw new Error("Recaptcha not ready");
     const provider = new PhoneAuthProvider(auth);
-    return await provider.verifyPhoneNumber(phone, verifier);
+    try {
+      return await provider.verifyPhoneNumber(phone, verifier);
+    } catch (err: any) {
+      if (err.code === "auth/operation-not-allowed") {
+        throw new Error("PHONE_AUTH_DISABLED");
+      }
+      throw err;
+    }
   };
 
   const verifySmsCode = async (vId: string, code: string): Promise<void> => {
@@ -185,10 +192,20 @@ export default function ProfilePage() {
 
       if (profile.phone) {
         setSmsSending(true);
-        const vId = await sendSmsCode(profile.phone);
-        setVerificationId(vId);
-        setEmailStep("sms");
-        setSmsSending(false);
+        try {
+          const vId = await sendSmsCode(profile.phone);
+          setVerificationId(vId);
+          setEmailStep("sms");
+        } catch (smsErr: any) {
+          if (smsErr.message === "PHONE_AUTH_DISABLED") {
+            // Phone Auth not enabled in Firebase Console — fall back to password-only
+            await finishEmailChange(user.email!, emailForm.newEmail);
+            return;
+          }
+          throw smsErr;
+        } finally {
+          setSmsSending(false);
+        }
         setSuccess("SMS verification code sent to your phone.");
         return;
       }
@@ -246,10 +263,22 @@ export default function ProfilePage() {
       const credential = EmailAuthProvider.credential(user.email, phoneFormPassword);
       await reauthenticateWithCredential(auth.currentUser!, credential);
 
-      const vId = await sendSmsCode(profile.phone);
-      setVerificationId(vId);
-      setPhoneStep("sms");
-      setSuccess("SMS verification code sent to your current phone.");
+      try {
+        const vId = await sendSmsCode(profile.phone);
+        setVerificationId(vId);
+        setPhoneStep("sms");
+        setSuccess("SMS verification code sent to your current phone.");
+      } catch (smsErr: any) {
+        if (smsErr.message === "PHONE_AUTH_DISABLED") {
+          await setDoc(doc(db, "users", user!.uid), { phone: newPhone }, { merge: true });
+          setProfile(prev => ({ ...prev, phone: newPhone }));
+          setSuccess("Phone number updated! (SMS verification not available — set up Phone Auth in Firebase Console)");
+          setNewPhone("");
+          setPhoneFormPassword("");
+          return;
+        }
+        throw smsErr;
+      }
     } catch (err: any) {
       setError(err.message);
       setPhoneStep("form");
