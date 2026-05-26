@@ -189,5 +189,8 @@ Track volunteers, their skills, and availability.
 > **Note**: All features should maintain the $0 cost principle where possible. Paid features should use pay-per-transaction models with no monthly fees.
 
 
-Thoughts:
+Thoughts:whe
 - i was thinking about if the progress of money fundraising was tracked through whwenever a trasnaction would be done using the strip or thing from the website and then the numbers are udpated automatcily? i dont know will need to dig in more
+
+- also am thinking about integrating more data science or more realistically more data analytical or data related configruitation or things in it like data sets or things of data used or solved in the real world creating something that is good for my skills and
+- I was also thinking about big o of n time space concepts about the analytical computations and resources meaning where the analytical parts of code would be at firebase or in codebase github vercel, if its on my computer or on vercels servers, and where is better so resrouces are used correctly and moderatley

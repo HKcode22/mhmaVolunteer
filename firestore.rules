@@ -86,7 +86,7 @@ service cloud.firestore {
     // validateInviteCode (read with where filter) needs read access.
     // markInviteCodeUsed (update) needs write access with a valid code.
     match /inviteCodes/{code} {
-      allow read: if isAuthenticated() || isBoardMember();
+      allow read: if true;
       allow create: if isBoardMember();
       allow update: if isBoardMember();
       allow delete: if isBoardMember();
