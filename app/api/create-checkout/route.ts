@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
+import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
+  const stripeSecret = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecret) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
   }
 
   try {
+    const stripe = new Stripe(stripeSecret);
     const { amount, designation, recurring } = await req.json();
 
     if (!amount || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    const stripe = require("stripe")(stripeSecret);
     const origin = req.headers.get("origin") || "https://mhma-update.vercel.app";
 
     const session = await stripe.checkout.sessions.create({
@@ -41,6 +41,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
     console.error("Checkout creation failed:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
   }
 }

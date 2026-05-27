@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { firestore } from "@/lib/firebase-admin";
+import Stripe from "stripe";
 
 const stripe = process.env.STRIPE_SECRET_KEY
-  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
 export async function POST(req: Request) {
