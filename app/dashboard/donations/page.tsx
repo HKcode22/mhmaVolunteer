@@ -74,6 +74,28 @@ export default function DashboardDonationsPage() {
 
   const totalAmount = donations.reduce((s, d) => s + (d.amount || 0), 0);
 
+  const downloadCSV = () => {
+    const headers = ["Donor Name", "Email", "Amount", "Designation", "Method", "Status", "Date", "Notes"];
+    const rows = filtered.map(d => [
+      d.donorName,
+      d.donorEmail,
+      ((d.amount || 0) / 100).toFixed(2),
+      d.designation,
+      d.method,
+      d.status,
+      d.createdAt?.toDate?.()?.toLocaleDateString() || "",
+      d.notes || "",
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "donations.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
 
   return (
@@ -89,9 +111,15 @@ export default function DashboardDonationsPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Donations</h1>
               <p className="text-gray-500 text-sm">Payment records from Stripe and manual entries.</p>
             </div>
-            <button onClick={() => setShowManual(true)} className="flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
-              <Plus className="w-4 h-4" /> Record Donation
-            </button>
+            <div className="flex gap-2">
+              <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm border border-gray-200">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                Export CSV
+              </button>
+              <button onClick={() => setShowManual(true)} className="flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
+                <Plus className="w-4 h-4" /> Record Donation
+              </button>
+            </div>
           </div>
 
           {/* Manual Donation Form */}
