@@ -8,6 +8,7 @@ import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
+import EventCalendar from "@/app/components/EventCalendar";
 
 /* ── Quran Verse (commented out per board request) ──
 interface QuranVerse {
@@ -411,6 +412,16 @@ useEffect(() => {
 
   const displayEvents = events.length > 0 ? events.slice(0, 3) : [];
 
+  const formatTime = (t?: string) => {
+    if (!t) return "";
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) {
+      const [h, m] = t.split(":");
+      const hour = parseInt(h, 10);
+      return `${hour % 12 || 12}:${m}${hour >= 12 ? "pm" : "am"}`;
+    }
+    return t;
+  };
+
   return (
     <div className="min-h-screen font-sans">
       <Navigation currentPage="home" />
@@ -784,7 +795,7 @@ useEffect(() => {
                     <div className="flex items-center text-gray-500 text-xs space-x-2 mb-2">
                       {event.time && (
                         <span className="flex items-center">
-                          <Clock className="w-3 h-3 mr-1" /> {event.time}
+                          <Clock className="w-3 h-3 mr-1" /> {formatTime(event.time)}
                         </span>
                       )}
                       <span className="flex items-center truncate">
@@ -807,6 +818,12 @@ useEffect(() => {
               View All Events <ChevronRight className="ml-1 w-5 h-5" />
             </Link>
           </div>
+
+          {events.length > 0 && (
+            <div className="mt-12">
+              <EventCalendar events={events} />
+            </div>
+          )}
         </div>
       </section>
 

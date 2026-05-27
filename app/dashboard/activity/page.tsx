@@ -21,6 +21,7 @@ export default function ActivityLogPage() {
   const [tab, setTab] = useState<"activity" | "reverts">("activity");
   const [myActivityOnly, setMyActivityOnly] = useState(false);
   const [revertFilter, setRevertFilter] = useState<"all" | "mine" | "others">("all");
+  const [memberFilter, setMemberFilter] = useState<string>("all");
 
   useEffect(() => {
     fetch("/api/cleanup-activity", { method: "POST" }).catch(() => {});
@@ -106,6 +107,7 @@ export default function ActivityLogPage() {
     if (tab === "reverts" && e.action !== "restore") return false;
     if (tab === "activity" && e.action === "restore") return false;
     if (myActivityOnly && e.userId !== user?.uid) return false;
+    if (memberFilter !== "all" && e.userId !== memberFilter) return false;
     if (tab === "reverts") {
       if (revertFilter === "mine" && e.userId !== user?.uid) return false;
       if (revertFilter === "others" && e.userId === user?.uid) return false;
@@ -113,11 +115,20 @@ export default function ActivityLogPage() {
     return true;
   });
 
-  const actionIcon = (action: string) => {
-    if (action.includes("create") || action === "restore") return "➕";
-    if (action.includes("update") || action.includes("status")) return "✏️";
-    if (action.includes("view")) return "👁️";
-    if (action.includes("read")) return "📖";
+  // Build list of unique board members from entries
+  const boardMembers = entries.reduce((acc: { id: string; name: string }[], e) => {
+    if (!acc.find(m => m.id === e.userId)) {
+      acc.push({ id: e.userId, name: e.userName || e.userEmail || "Unknown" });
+    }
+    return acc;
+  }, []);
+
+  const actionIcon = (action?: string) => {
+    const a = action || "";
+    if (a.includes("create") || a === "restore") return "➕";
+    if (a.includes("update") || a.includes("status")) return "✏️";
+    if (a.includes("view")) return "👁️";
+    if (a.includes("read")) return "📖";
     return "📋";
   };
 
@@ -149,6 +160,17 @@ export default function ActivityLogPage() {
                 <input type="checkbox" checked={myActivityOnly} onChange={toggleMyActivity} className="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
                 <Filter className="w-3 h-3" /> My activity only
               </label>
+
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="text-xs text-gray-400">Member:</span>
+                <select value={memberFilter} onChange={e => setMemberFilter(e.target.value)}
+                  className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                  <option value="all">All members</option>
+                  {boardMembers.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}{m.id === user?.uid ? " (you)" : ""}</option>
+                  ))}
+                </select>
+              </div>
 
               {tab === "reverts" && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -192,7 +214,7 @@ export default function ActivityLogPage() {
                             <User className="w-3 h-3" /> {entry.userName}{entry.userId === user?.uid ? " (you)" : ""}
                           </span>
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {entry.action.replace(/_/g, " ")}
+                            <Clock className="w-3 h-3" /> {(entry.action || "").replace(/_/g, " ")}
                           </span>
                           {entry.targetType && (
                             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{entry.targetType}</span>

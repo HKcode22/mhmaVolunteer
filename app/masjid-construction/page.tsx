@@ -17,6 +17,11 @@ export default function MasjidConstructionPage() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
+    const saved = localStorage.getItem("constructionGalleryView");
+    if (saved === "grid" || saved === "timeline") setGalleryView(saved);
+  }, []);
+
+  useEffect(() => {
     fetchMasjidUpdates(20).then(data => { setUpdates(data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
@@ -120,11 +125,11 @@ export default function MasjidConstructionPage() {
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Construction Progress</h2>
                 <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                  <button onClick={() => setGalleryView("grid")}
+                  <button onClick={() => { setGalleryView("grid"); localStorage.setItem("constructionGalleryView", "grid"); }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${galleryView === "grid" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                     <ImageIcon className="w-3.5 h-3.5" /> Grid
                   </button>
-                  <button onClick={() => setGalleryView("timeline")}
+                  <button onClick={() => { setGalleryView("timeline"); localStorage.setItem("constructionGalleryView", "timeline"); }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${galleryView === "timeline" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                     <ListOrdered className="w-3.5 h-3.5" /> Timeline
                   </button>

@@ -28,6 +28,42 @@ export async function POST(req: NextRequest) {
       createdAt: Timestamp.now(),
     });
 
+    // Send welcome email via Resend
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey) {
+      try {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${resendKey}`,
+          },
+          body: JSON.stringify({
+            from: "MHMA <onboarding@resend.dev>",
+            to: [email.trim().toLowerCase()],
+            subject: "Welcome to the MHMA Newsletter!",
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #0d9488;">JazakAllahu Khairan!</h2>
+                <p>Thank you for subscribing to the MHMA mailing list.</p>
+                <p>You'll now receive updates about:</p>
+                <ul style="color: #4b5563;">
+                  <li>Upcoming events and programs</li>
+                  <li>Community announcements</li>
+                  <li>Masjid construction progress</li>
+                  <li>Volunteer opportunities</li>
+                </ul>
+                <p style="color: #6b7280; font-size: 14px;">If you did not subscribe, you can ignore this email.</p>
+                <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">Mountain House Muslim Association</p>
+              </div>
+            `,
+          }),
+        });
+      } catch (emailErr) {
+        console.error("Welcome email error:", emailErr);
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("subscribe error:", err);

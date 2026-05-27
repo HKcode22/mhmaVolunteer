@@ -67,11 +67,11 @@ export default function NewsletterSignup({ source = "website", className = "", v
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div>
         <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name (optional)"
-          className="w-full px-3 py-2 text-sm border border-gray-600 rounded-lg bg-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold/30 outline-none" />
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold/30 outline-none" />
       </div>
       <div className="flex gap-2">
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address"
-          className="flex-1 px-3 py-2 text-sm border border-gray-600 rounded-lg bg-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold/30 outline-none" required />
+          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold/30 outline-none" required />
         <button type="submit" disabled={submitting}
           className="shrink-0 px-4 py-2 bg-mhma-gold hover:bg-amber-500 text-mhma-forest font-bold text-sm rounded-lg transition-all disabled:opacity-50">
           {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Join"}

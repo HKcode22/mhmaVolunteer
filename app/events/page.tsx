@@ -47,6 +47,11 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const saved = localStorage.getItem("eventsViewMode");
+    if (saved === "cards" || saved === "calendar") setViewMode(saved);
+  }, []);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       try {
         // Use API proxy for reliable fetching (handles CORS and retries)
@@ -136,11 +141,11 @@ export default function EventsPage() {
               {/* View Toggle */}
               <div className="flex items-center justify-end mb-6">
                 <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                  <button onClick={() => setViewMode("cards")}
+                  <button onClick={() => { setViewMode("cards"); localStorage.setItem("eventsViewMode", "cards"); }}
                     className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${viewMode === "cards" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                     Card View
                   </button>
-                  <button onClick={() => setViewMode("calendar")}
+                  <button onClick={() => { setViewMode("calendar"); localStorage.setItem("eventsViewMode", "calendar"); }}
                     className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${viewMode === "calendar" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                     Calendar View
                   </button>

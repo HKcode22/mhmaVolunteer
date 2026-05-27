@@ -162,6 +162,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
               <Link href="/contact" className={`${navLinkClass("contact")} ${currentPage === "contact" ? "text-mhma-gold" : "text-gray-700"}`}>
                 CONTACT
               </Link>
+
+              <Link href="/subscribe" className={`${navLinkClass("subscribe")} ${currentPage === "subscribe" ? "text-mhma-gold" : "text-mhma-gold"} font-bold`}>
+                NEWSLETTER
+              </Link>
             </div>
 
             <button
@@ -185,6 +189,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/programs" className="block py-2 text-gray-700 border-b border-gray-100">PROGRAMS</Link>
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/contact" className="block py-2 text-gray-700">CONTACT</Link>
+            <Link href="/subscribe" className="block py-2 text-mhma-gold font-semibold">NEWSLETTER</Link>
             {isBoardMember ? (
               <>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
