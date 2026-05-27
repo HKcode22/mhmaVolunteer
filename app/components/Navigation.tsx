@@ -159,13 +159,18 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 </div>
               </div>
 
-              <Link href="/contact" className={`${navLinkClass("contact")} ${currentPage === "contact" ? "text-mhma-gold" : "text-gray-700"}`}>
-                CONTACT
-              </Link>
-
-              <Link href="/subscribe" className={`${navLinkClass("subscribe")} ${currentPage === "subscribe" ? "text-mhma-gold" : "text-mhma-gold"} font-bold`}>
-                NEWSLETTER
-              </Link>
+              <div className="relative group">
+                <span className={`${navLinkClass("contact")} ${currentPage === "contact" || currentPage === "subscribe" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1 cursor-pointer`}>
+                  CONTACT<span className="text-[10px]">▼</span>
+                </span>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="h-0.5 bg-mhma-gold w-full"></div>
+                    <Link href="/contact" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">CONTACT US</Link>
+                    <Link href="/subscribe" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NEWSLETTER</Link>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button
@@ -189,7 +194,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/programs" className="block py-2 text-gray-700 border-b border-gray-100">PROGRAMS</Link>
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/contact" className="block py-2 text-gray-700">CONTACT</Link>
-            <Link href="/subscribe" className="block py-2 text-mhma-gold font-semibold">NEWSLETTER</Link>
+            <Link href="/subscribe" className="block py-2 text-gray-700 border-b border-gray-100">↳ NEWSLETTER</Link>
             {isBoardMember ? (
               <>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
