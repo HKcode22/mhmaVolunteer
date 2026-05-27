@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { addEnrollment } from "@/lib/firebase";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import PageBanner from "@/app/components/PageBanner";
 
 export default function EnrollPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isBoardMember, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -18,6 +19,16 @@ export default function EnrollPage() {
     program: "",
     message: "",
   });
+
+  useEffect(() => {
+    const programParam = searchParams.get("program");
+    if (programParam) {
+      const match = programs.find(p => p.value === programParam || p.label.toLowerCase().replace(/\s+/g, "_") === programParam);
+      if (match) {
+        setFormData(prev => ({ ...prev, program: match.value }));
+      }
+    }
+  }, [searchParams]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");

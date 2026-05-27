@@ -47,6 +47,8 @@ export async function POST(req: Request) {
         stripePaymentId: session.payment_intent || "",
         stripeSessionId: session.id,
         status: "completed",
+        showOnWall: true,
+        anonymous: false,
         createdAt: new Date().toISOString(),
       });
       console.log(`Donation recorded: $${((session.amount_total || 0) / 100).toFixed(2)} for ${designation}`);

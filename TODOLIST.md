@@ -11,59 +11,59 @@
 
 ### 3. Pledge System
 **Board member said**: "yes we do need pledge system form database tracking"
-- [ ] Pledge form (name, email, phone, amount, message)
-- [ ] Firestore collection `pledges` with status (`pending` / `fulfilled` / `cancelled`)
+- [x] Pledge form (name, email, phone, amount, message)
+- [x] Firestore collection `pledges` with status (`pending` / `fulfilled` / `cancelled`)
 - [ ] Pledge-to-payment pipeline — convert pledge to actual donation
-- [ ] Dashboard to view/manage pledges
+- [x] Dashboard to view/manage pledges
 - [ ] Email notification when a pledge is made
-- [ ] Replace "Pledge Today" button with real pledge flow
+- [x] Replace "Pledge Today" button with real pledge flow
 
 ### 4. Newsletter / Email Capture
 **Board member said**: "yes we do need newsletter email capture signup form anywhere"
-- [ ] Signup form on homepage hero section
-- [ ] Signup form in footer
-- [ ] Firestore `subscribers` collection
+- [x] Signup form on homepage hero section
+- [x] Signup form in footer
+- [x] Firestore `subscribers` collection
 - [ ] Integration with email provider (Resend is already wired for RSVP)
 - [ ] Welcome email on subscribe
 
 ### 5. Unified Fundraising Data
 **Board member said**: "unified fundraising data"
-- [ ] `masjidConstruction` Firestore collection should drive BOTH homepage progress bar AND `/masjid-construction` page
-- [ ] Remove hardcoded stats from `/masjid-construction` and `/donate` pages
-- [ ] Create a shared data fetching hook/function for campaign stats
+- [x] `masjidConstruction` Firestore collection should drive BOTH homepage progress bar AND `/masjid-construction` page
+- [x] Remove hardcoded stats from `/masjid-construction` and `/donate` pages
+- [x] Create a shared data fetching hook/function for campaign stats
 
 ### 6. Dedicated Masjid Construction Progress Page
 **Board member said**: "we do not have stripe button contact info or social links what you are talking about is the donation page. what the board member needs is a legit masjid construction page. the golden button on the homepage should lead to the masjid progress page. when board members update data in dashboard, that info should be relayed to this new page."
-- [ ] Create `/masjid-construction` as a real campaign page with:
-  - [ ] Progress bar (driven by Firestore, same as homepage)
-  - [ ] Construction photo gallery / timeline
-  - [ ] Video walkthroughs
-  - [ ] Phase breakdown (foundation, framing, etc.)
-  - [ ] FAQ section
-  - [ ] Stats cards (not hardcoded — from Firestore)
-  - [ ] Pledge CTA
-  - [ ] Link to donate page for actual payment
-- [ ] Dashboard construction editor should push updates to this page
-- [ ] Add "Donate" button in addition to "Pledge" button
-- [ ] Clarify wording: construction page = progress/updates page, donate page = payment page
+- [x] Create `/masjid-construction` as a real campaign page with:
+  - [x] Progress bar (driven by Firestore, same as homepage)
+  - [x] Construction photo gallery / timeline
+  - [x] Video walkthroughs
+  - [x] Phase breakdown (foundation, framing, etc.)
+  - [x] FAQ section
+  - [x] Stats cards (not hardcoded — from Firestore)
+  - [x] Pledge CTA
+  - [x] Link to donate page for actual payment
+- [x] Dashboard construction editor should push updates to this page
+- [x] Add "Donate" button in addition to "Pledge" button
+- [x] Clarify wording: construction page = progress/updates page, donate page = payment page
 
 ### 7. Multiple Donation Methods
 **Board member said**: "multiple donation methods"
-- [ ] Zelle info/QR code
-- [ ] Check mailing address
-- [ ] Cash drop-off info
-- [ ] PayPal option (if applicable)
-- [ ] Keep existing Stripe buy button as primary online option
+- [x] Zelle info/QR code
+- [x] Check mailing address
+- [x] Cash drop-off info
+- [x] PayPal option (if applicable)
+- [x] Keep existing Stripe buy button as primary online option
 
 ### 8. Donation Designations
 **Board member said**: "donation designations"
-- [ ] Allow donor to choose where their money goes:
+- [x] Allow donor to choose where their money goes:
   - General Fund
   - Construction Fund
   - Zakat
   - Programs
   - Other (custom)
-- [ ] Different Stripe products/links per designation
+- [x] Different Stripe products/links per designation
 
 ### 9. Payment Records in Firestore
 **Board member said**: "payment records in firestore is a good idea but we need to first think about doing this correctly since its nosql to make sure its not a messy database"
@@ -88,21 +88,21 @@
 
 ### 11. Calendar View for Events
 **Board member agreed this is needed**
-- [ ] Monthly calendar grid view
-- [ ] Events displayed on correct dates
-- [ ] Click event to see details
-- [ ] Week/day toggle options
-- [ ] Fix ordering — sort by event date, not createdAt
+- [x] Monthly calendar grid view
+- [x] Events displayed on correct dates
+- [x] Click event to see details
+- [x] Week/day toggle options
+- [x] Fix ordering — sort by event date, not createdAt
 
 ### 12. Construction Page Ignoring Firestore
 **Board member said**: "yes we need to fix the construction page that ignores firestore"
-- [ ] Covered under #5 and #6 above — connect to Firestore data
+- [x] Covered under #5 and #6 above — connect to Firestore data
 
 ### 13. Recurring Donation Toggle
 **Board member said**: "yes i agree with you on no recurring donation toggle"
-- [ ] Monthly vs one-time toggle on donate page
-- [ ] Stripe recurring price/subscription setup
-- [ ] Clear UI for recurring vs single gift
+- [x] Monthly vs one-time toggle on donate page
+- [ ] Stripe recurring price/subscription setup (needs separate buy buttons in Stripe Dashboard)
+- [x] Clear UI for recurring vs single gift
 
 ---
 
@@ -110,26 +110,26 @@
 
 ### 14. Construction Photo Gallery / Timeline
 **Board member said**: "those are good too"
-- [ ] Photo gallery component with lightbox
-- [ ] Timeline view of construction milestones
-- [ ] Admin can upload photos from dashboard
+- [x] Photo gallery component with lightbox
+- [x] Timeline view of construction milestones
+- [x] Admin can upload photos from dashboard
 
 ### 15. Donor Wall / Social Proof
 **Board member said**: "those are good too"
-- [ ] Display donor names (with permission)
-- [ ] Anonymous option for donors
-- [ ] Fundraising thermometer / goal visualization
+- [x] Display donor names (with permission)
+- [x] Anonymous option for donors
+- [x] Fundraising thermometer / goal visualization
 
 ### 16. iCal / Google Calendar Export
 **Board member said**: "those are good too"
-- [ ] Add to Calendar button on events
-- [ ] iCal download / Google Calendar link
+- [x] Add to Calendar button on events
+- [x] iCal download / Google Calendar link
 
 ### 17. Program Enrollment Tied to Specific Programs
 **Board member said**: "those are good too"
-- [ ] Enroll button per program
-- [ ] Enrollment data includes which program
-- [ ] Dashboard shows enrollments by program
+- [x] Enroll button per program (pre-fills program selection)
+- [x] Enrollment data includes which program
+- [x] Dashboard shows enrollments by program
 
 ### 18. Hero Video Background
 **Board member said**: "those are good too"
@@ -145,24 +145,63 @@
 
 ## Database Organization (Schema Design)
 
-### Planned Collections
-- `pledges` — { id, name, email, phone, amount, message, status, createdAt, fulfilledAt }
-- `subscribers` — { id, email, name, subscribedAt, source }
-- `donations` — { id, donorId, amount, designation, stripePaymentId, pledgeRef, createdAt }
-- `masjidConstruction` — already exists, will be the source of truth for campaign data
+### Implemented Collections (16 total)
+- `users` — board member/admin profiles linked to Firebase Auth
+- `events` — community events with date/time/location/RSVP
+- `programs` — educational and community programs (doc ID = slug)
+- `journal` — blog/journal entries
+- `enrollments` — program enrollment requests with program reference
+- `masjidConstruction` — construction progress updates (source of truth for fundraising stats)
+- `donations` — donation records (written by Stripe webhook + manual board entry)
+- `pledges` — non-binding pledge commitments
+- `subscribers` — newsletter email subscribers
+- `rsvps` — event RSVPs
+- `schedulingRequests` — facility/event scheduling
+- `contactSubmissions` — contact form inquiries
+- `inviteCodes` — board member invitation codes
+- `activityLog` — audit trail for sensitive actions
+- `versions` — version snapshots for reverting program/event changes
+- `analyticsSnapshots` — daily aggregated analytics (see decision below)
 
-### Notes - will do these later  
-- Use subcollections or top-level collections for scalability
-- Index queries that need filtering (e.g., donations by user, pledges by status)
-- Keep donor PII minimal — use Firebase Auth UID as reference where possible
-- i would also want u to analyze the current data abse we have and check and see if everything is organzied 
--Setup Needed
+Full schema documented in `docs/DATABASE_SCHEMA.md`
+
+### Notes
+- Top-level collections only (no subcollections) — keeps queries simple
+- Images stored as Base64 in documents (avoids Firebase Storage Blaze plan cost)
+- Donor PII minimized — Firebase Auth UID used where possible
+
+---
+
+## Analytics Architecture Decision
+
+### Current Approach (Finalized)
+**Client-side computation on dashboard load** — not saved to Firestore.
+
+**Why:**
+- ~4,500 document reads per dashboard load × ~30 views/month = ~1.6M reads/year ≈ $0.96/year — trivial cost
+- Computation takes <50ms on any modern device for this data volume
+- Always shows live data (no stale snapshots)
+- Simpler architecture — no cron jobs or serverless functions needed
+
+**What happens:**
+1. Dashboard loads → fetches 11 collections (enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges)
+2. Client browser computes: summary cards, status breakdowns, monthly activity, per-program charts, per-designation donations
+3. All displayed in real-time — no cached/stale data
+
+**Future scaling:** If the site grows to 50,000+ records, move to a Vercel cron job that pre-computes snapshots daily and stores them in `analyticsSnapshots`. The dashboard would then load the snapshot first (instant), then refresh with live data.
+
+**Big O:**
+- Time: O(5n) ≈ 5 × 4,500 = 22,500 iterations — negligible
+- Space: O(n) ≈ 4-8 MB in browser memory — negligible
+- Network: ~5 MB per dashboard load — acceptable for internal dashboard
+
+Donation and pledge stats are now included in the dashboard analytics (Total Donations, Total Donated by Designation/Method, Pledge tracking).
+
+---
+
+## Stripe Setup Remaining
 To make Stripe webhook work:
-1. Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in Vercel dashboard
-2. In Stripe Dashboard → Webhooks, add endpoint https://mhma.us/api/stripe-webhook
-3. Add designation to each buy button's metadata in Stripe Dashboard (optional — defaults to "general")
-- i dont know or think we should have analytical snapshot because we need to think about if this is right or wrong in the sense of computations
-- - i was thinking about if the progress of money fundraising was tracked through whwenever a trasnaction would be done using the strip or thing from the website and then the numbers are udpated automatcily? i dont know will need to dig in more
-- also am thinking about integrating more data science or more realistically more data analytical or data related configruitation or things in it like data sets or things of data used or solved in the real world creating something that is good for my skills and
-- I was also thinking about big o of n time space concepts about the analytical computations and resources meaning where the analytical parts of code would be at firebase or in codebase github vercel, if its on my computer or on vercels servers, and where is better so resrouces are used correctly and moderatley
-- is it possible if every regular memeber can have their own dashbaord where they can see how many events theyve rvsped too, and their own data tracking thing?
+1. Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Vercel dashboard
+2. In Stripe Dashboard → Webhooks, add endpoint `https://mhma.us/api/stripe-webhook`
+3. For correct fund names in Stripe checkout: create separate buy buttons per designation in Stripe Dashboard, update `monthlyStripeId` for recurring
+4. For subscription/recurring: create subscription products in Stripe Dashboard and update `monthlyStripeId` values

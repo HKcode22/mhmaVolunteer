@@ -8,9 +8,10 @@ import { useRouter } from "next/navigation";
 import {
   fetchEnrollments, fetchSchedulingRequests, fetchContactSubmissions,
   fetchEvents, fetchPrograms, fetchJournalEntries, fetchInviteCodes, fetchRSVPs, fetchUsers,
-  saveAnalyticsSnapshot,
+  fetchDonations, fetchPledges,
   FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission,
   FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, InviteCode, FirebaseRSVP, FirebaseUser,
+  Donation, Pledge,
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
@@ -24,6 +25,8 @@ interface AnalyticsData {
   inviteCodes: InviteCode[];
   rsvps: FirebaseRSVP[];
   users: FirebaseUser[];
+  donations: Donation[];
+  pledges: Pledge[];
 }
 
 export default function AnalyticsPage() {
@@ -41,7 +44,7 @@ export default function AnalyticsPage() {
     if (authLoading) return;
 
     const loadAll = async () => {
-      const [enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users] = await Promise.all([
+      const [enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges] = await Promise.all([
         fetchEnrollments(500),
         fetchSchedulingRequests(500),
         fetchContactSubmissions(500),
@@ -51,46 +54,11 @@ export default function AnalyticsPage() {
         fetchInviteCodes(),
         fetchRSVPs(500),
         fetchUsers(500),
+        fetchDonations(500),
+        fetchPledges(200),
       ]);
-      setData({ enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users });
+      setData({ enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges });
       setLoading(false);
-      saveAnalyticsSnapshot({
-        totalUsers: users.length,
-        newUsers30d: users.filter(u => {
-          if (!u.createdAt) return false;
-          const d = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
-          return d >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        }).length,
-        totalEnrollments: enrollments.length,
-        totalRSVPs: rsvps.length,
-        totalSubmissions: submissions.length,
-        totalEvents: events.length,
-        totalPrograms: programs.length,
-        totalJournals: journals.length,
-        totalInviteCodes: inviteCodes.length,
-        enrollmentByStatus: {
-          pending: enrollments.filter(e => e.status === "pending").length,
-          approved: enrollments.filter(e => e.status === "approved").length,
-          rejected: enrollments.filter(e => e.status === "rejected").length,
-          completed: enrollments.filter(e => e.status === "completed").length,
-        },
-        rsvpByStatus: {
-          pending: rsvps.filter(r => r.status === "pending").length,
-          confirmed: rsvps.filter(r => r.status === "confirmed").length,
-          cancelled: rsvps.filter(r => r.status === "cancelled").length,
-        },
-        requestsByStatus: {
-          pending: requests.filter(r => r.status === "pending").length,
-          approved: requests.filter(r => r.status === "approved").length,
-          rejected: requests.filter(r => r.status === "rejected").length,
-        },
-        userRoleBreakdown: users.reduce((acc: Record<string, number>, u) => {
-          const role = u.role || "member";
-          acc[role] = (acc[role] || 0) + 1;
-          return acc;
-        }, {}),
-        engagementScore: enrollments.length + rsvps.length + submissions.length,
-      }).catch(() => {});
     };
     loadAll();
   }, [authLoading, isBoardMember, router]);
@@ -180,6 +148,26 @@ export default function AnalyticsPage() {
 
   const engagementScore = totalEnrollments + totalRSVPs + totalSubmissions;
 
+  // Donation stats
+  const totalDonations = data.donations.length;
+  const totalDonationAmount = data.donations.reduce((s, d) => s + (d.amount || 0), 0);
+  const donationByDesignation: Record<string, { count: number; total: number }> = {};
+  data.donations.forEach(d => {
+    const des = d.designation || "other";
+    if (!donationByDesignation[des]) donationByDesignation[des] = { count: 0, total: 0 };
+    donationByDesignation[des].count++;
+    donationByDesignation[des].total += d.amount;
+  });
+  const donationByMethod: Record<string, number> = {};
+  data.donations.forEach(d => {
+    const method = d.method || "other";
+    donationByMethod[method] = (donationByMethod[method] || 0) + d.amount;
+  });
+  const stripeDonations = data.donations.filter(d => d.method === "stripe").length;
+  const pendingPledges = data.pledges.filter(p => p.status === "pending").length;
+  const fulfilledPledges = data.pledges.filter(p => p.status === "fulfilled").length;
+  const totalPledgeAmount = data.pledges.reduce((s, p) => s + (p.amount || 0), 0);
+
   return (
     <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="dashboard" />
@@ -213,12 +201,19 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatCard icon={<Users className="w-5 h-5" />} label="Total Users" value={totalUsers} color="bg-blue-50 text-blue-700" iconBg="bg-blue-100" />
           <StatCard icon={<UserPlus className="w-5 h-5" />} label="New Users" value={recentUsers} color="bg-indigo-50 text-indigo-700" iconBg="bg-indigo-100" />
           <StatCard icon={<Activity className="w-5 h-5" />} label="Engagement Score" value={engagementScore} color="bg-purple-50 text-purple-700" iconBg="bg-purple-100" />
           <StatCard icon={<CheckCircle className="w-5 h-5" />} label="Approval Rate" value={`${approvalRate}%`} color="bg-green-50 text-green-700" iconBg="bg-green-100" />
-          <StatCard icon={<Calendar className="w-5 h-5" />} label="Events" value={data.events.length} color="bg-amber-50 text-amber-700" iconBg="bg-amber-100" />
+        </div>
+
+        {/* Donation Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <StatCard icon={<TrendingUp className="w-5 h-5" />} label="Total Donations" value={totalDonations} color="bg-amber-50 text-amber-700" iconBg="bg-amber-100" />
+          <StatCard icon={<TrendingUp className="w-5 h-5" />} label="Total Donated" value={`$${(totalDonationAmount / 100).toLocaleString()}`} color="bg-green-50 text-green-700" iconBg="bg-green-100" />
+          <StatCard icon={<Calendar className="w-5 h-5" />} label="Stripe Payments" value={stripeDonations} color="bg-blue-50 text-blue-700" iconBg="bg-blue-100" />
+          <StatCard icon={<Calendar className="w-5 h-5" />} label="Pledges Pending" value={pendingPledges} color="bg-purple-50 text-purple-700" iconBg="bg-purple-100" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -312,6 +307,26 @@ export default function AnalyticsPage() {
             <HorizontalBarChart data={rsvpByEvent} color="#14b8a6" />
           </Card>
 
+          {/* Donations by Designation */}
+          <Card title="Donations by Designation">
+            <HorizontalBarChart
+              data={Object.fromEntries(
+                Object.entries(donationByDesignation).map(([k, v]) => [k, v.count])
+              )}
+              color="#f59e0b"
+            />
+          </Card>
+
+          {/* Donations by Method (Amount) */}
+          <Card title="Donation Amount by Method">
+            <HorizontalBarChart
+              data={Object.fromEntries(
+                Object.entries(donationByMethod).map(([k, v]) => [k, Math.round(v / 100)])
+              )}
+              color="#3b82f6"
+            />
+          </Card>
+
           {/* Quick Stats */}
           <Card title="Quick Stats">
             <div className="space-y-3">
@@ -323,6 +338,8 @@ export default function AnalyticsPage() {
               <QuickStat label="Total RSVPs" value={totalRSVPs} icon={<Users className="w-4 h-4" />} />
               <QuickStat label="Invite Codes Generated" value={data.inviteCodes.length} icon={<UserPlus className="w-4 h-4" />} />
               <QuickStat label="Invite Codes Used" value={data.inviteCodes.filter(c => c.used).length} icon={<CheckCircle className="w-4 h-4" />} />
+              <QuickStat label="Pending Pledges" value={pendingPledges} icon={<Clock className="w-4 h-4" />} />
+              <QuickStat label="Fulfilled Pledges" value={fulfilledPledges} icon={<CheckCircle className="w-4 h-4" />} />
             </div>
           </Card>
 

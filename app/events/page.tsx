@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
+import EventCalendar from "@/app/components/EventCalendar";
 import { renderMarkdown } from "@/lib/markdown";
 import { useAuth } from "@/lib/auth-context";
 
@@ -40,7 +41,9 @@ interface Slide {
 
 export default function EventsPage() {
   const { isBoardMember } = useAuth();
+  const [viewMode, setViewMode] = useState<"cards" | "calendar">("cards");
   const [slides, setSlides] = useState<Slide[]>([]);
+  const [rawEvents, setRawEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,6 +56,8 @@ export default function EventsPage() {
         });
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
+
+        setRawEvents(data);
 
         const eventSlides: Slide[] = data.map((event: any) => {
           let formattedDate = event.date || "";
@@ -127,86 +132,106 @@ export default function EventsPage() {
               <Link href="/" className="mt-4 inline-block text-mhma-gold font-bold">Return Home →</Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {slides.map((slide) => (
-                <div key={slide.id} className="flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 group hover:border-mhma-gold transition-all duration-300 relative">
-                  {/* Poster Area */}
-                  <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
-                    {isBoardMember && (
-                      <Link href={`/dashboard/events/edit?id=${slide.id}`} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit event">
-                        <Edit3 className="w-3 h-3" /> EDIT
-                      </Link>
-                    )}
-                    <img
-                      src={slide.src}
-                      alt={slide.alt}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-mhma-dark/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                  </div>
-
-                  {/* Info Area */}
-                  <div className="p-6 bg-white">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 font-serif group-hover:text-mhma-gold transition-colors">{slide.eventName}</h3>
-                    
-                    <div className="grid grid-cols-1 gap-4 mb-8">
-                      {slide.showDate && slide.eventDate && (
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-5 h-5 mr-3 text-mhma-gold" />
-                          <span className="font-light">{slide.eventDate}</span>
-                        </div>
-                      )}
-                      {slide.showTime && slide.eventTime && (
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="w-5 h-5 mr-3 text-mhma-gold" />
-                          <span className="font-light">{slide.eventTime}</span>
-                        </div>
-                      )}
-                      {slide.showLocation && slide.eventLocation && (
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-5 h-5 mr-3 text-mhma-gold" />
-                          <span className="font-light">{slide.eventLocation}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {slide.showDescription && slide.eventDescription && (
-                      <div className="text-gray-500 text-sm leading-relaxed mb-4 font-light border-l-2 border-mhma-gold/20 pl-4 prose-sm max-h-24 overflow-hidden" dangerouslySetInnerHTML={{ __html: renderMarkdown(slide.eventDescription) }} />
-                    )}
-                    {slide.showDescription && (
-                      <Link href={`/events/${slide.id}`} className="text-mhma-gold font-semibold text-sm mb-4 inline-block hover:underline">View Full Details →</Link>
-                    )}
-
-                    {slide.eventRsvpLink && (
-                      <div className="space-y-3">
-                        <Link
-                          href={`/rsvp?eventId=${slide.id}`}
-                          className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
-                        >
-                          RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
-                        </Link>
-                        <a
-                          href={slide.eventRsvpLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex w-full justify-center items-center px-8 py-3 border-2 border-mhma-gold text-mhma-gold font-bold rounded-xl hover:bg-mhma-gold/10 transition-all text-sm"
-                        >
-                          External RSVP Form <ArrowRight className="ml-2 w-4 h-4" />
-                        </a>
-                      </div>
-                    )}
-                    {!slide.eventRsvpLink && (
-                      <Link
-                        href={`/rsvp?eventId=${slide.id}`}
-                        className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
-                      >
-                        RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
-                      </Link>
-                    )}
-                  </div>
+            <>
+              {/* View Toggle */}
+              <div className="flex items-center justify-end mb-6">
+                <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                  <button onClick={() => setViewMode("cards")}
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${viewMode === "cards" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    Card View
+                  </button>
+                  <button onClick={() => setViewMode("calendar")}
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${viewMode === "calendar" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    Calendar View
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {viewMode === "cards" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {slides.map((slide) => (
+                    <div key={slide.id} className="flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 group hover:border-mhma-gold transition-all duration-300 relative">
+                      {/* Poster Area */}
+                      <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
+                        {isBoardMember && (
+                          <Link href={`/dashboard/events/edit?id=${slide.id}`} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit event">
+                            <Edit3 className="w-3 h-3" /> EDIT
+                          </Link>
+                        )}
+                        <img
+                          src={slide.src}
+                          alt={slide.alt}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-mhma-dark/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                      </div>
+
+                      {/* Info Area */}
+                      <div className="p-6 bg-white">
+                        <h3 className="text-xl font-bold text-gray-900 mb-4 font-serif group-hover:text-mhma-gold transition-colors">{slide.eventName}</h3>
+
+                        <div className="grid grid-cols-1 gap-4 mb-8">
+                          {slide.showDate && slide.eventDate && (
+                            <div className="flex items-center text-gray-600">
+                              <Calendar className="w-5 h-5 mr-3 text-mhma-gold" />
+                              <span className="font-light">{slide.eventDate}</span>
+                            </div>
+                          )}
+                          {slide.showTime && slide.eventTime && (
+                            <div className="flex items-center text-gray-600">
+                              <Clock className="w-5 h-5 mr-3 text-mhma-gold" />
+                              <span className="font-light">{slide.eventTime}</span>
+                            </div>
+                          )}
+                          {slide.showLocation && slide.eventLocation && (
+                            <div className="flex items-center text-gray-600">
+                              <MapPin className="w-5 h-5 mr-3 text-mhma-gold" />
+                              <span className="font-light">{slide.eventLocation}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {slide.showDescription && slide.eventDescription && (
+                          <div className="text-gray-500 text-sm leading-relaxed mb-4 font-light border-l-2 border-mhma-gold/20 pl-4 prose-sm max-h-24 overflow-hidden" dangerouslySetInnerHTML={{ __html: renderMarkdown(slide.eventDescription) }} />
+                        )}
+                        {slide.showDescription && (
+                          <Link href={`/events/${slide.id}`} className="text-mhma-gold font-semibold text-sm mb-4 inline-block hover:underline">View Full Details →</Link>
+                        )}
+
+                        {slide.eventRsvpLink && (
+                          <div className="space-y-3">
+                            <Link
+                              href={`/rsvp?eventId=${slide.id}`}
+                              className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
+                            >
+                              RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
+                            </Link>
+                            <a
+                              href={slide.eventRsvpLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex w-full justify-center items-center px-8 py-3 border-2 border-mhma-gold text-mhma-gold font-bold rounded-xl hover:bg-mhma-gold/10 transition-all text-sm"
+                            >
+                              External RSVP Form <ArrowRight className="ml-2 w-4 h-4" />
+                            </a>
+                          </div>
+                        )}
+                        {!slide.eventRsvpLink && (
+                          <Link
+                            href={`/events/${slide.id}`}
+                            className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
+                          >
+                            RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EventCalendar events={rawEvents} />
+              )}
+            </>
           )}
         </div>
       </main>

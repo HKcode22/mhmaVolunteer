@@ -46,6 +46,9 @@ NotBeingUsedTrash/
 .windsurf
 .windsurf/workflows
 
+# Personal notes (not for public)
+TEXT_MSG.md
+
 # Firebase service account keys (keep secure!)
 *firebase-adminsdk*
 *.service-account/

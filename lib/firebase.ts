@@ -697,48 +697,50 @@ export async function deleteRSVP(id: string): Promise<void> {
 }
 
 // ─── Analytics Snapshots ───
+// Commented out — client-side compute is used instead (standard practice for this scale).
+// Uncomment and wire into a Vercel cron job if the site grows to 50,000+ records.
 
-const ANALYTICS_COLLECTION = "analyticsSnapshots";
+// const ANALYTICS_COLLECTION = "analyticsSnapshots";
 
-export interface AnalyticsSnapshot {
-  id?: string;
-  date: string;
-  totalUsers: number;
-  newUsers30d: number;
-  totalEnrollments: number;
-  totalRSVPs: number;
-  totalSubmissions: number;
-  totalEvents: number;
-  totalPrograms: number;
-  totalJournals: number;
-  totalInviteCodes: number;
-  enrollmentByStatus: { pending: number; approved: number; rejected: number; completed: number };
-  rsvpByStatus: { pending: number; confirmed: number; cancelled: number };
-  requestsByStatus: { pending: number; approved: number; rejected: number };
-  userRoleBreakdown: Record<string, number>;
-  engagementScore: number;
-  createdAt?: any;
-}
+// export interface AnalyticsSnapshot {
+//   id?: string;
+//   date: string;
+//   totalUsers: number;
+//   newUsers30d: number;
+//   totalEnrollments: number;
+//   totalRSVPs: number;
+//   totalSubmissions: number;
+//   totalEvents: number;
+//   totalPrograms: number;
+//   totalJournals: number;
+//   totalInviteCodes: number;
+//   enrollmentByStatus: { pending: number; approved: number; rejected: number; completed: number };
+//   rsvpByStatus: { pending: number; confirmed: number; cancelled: number };
+//   requestsByStatus: { pending: number; approved: number; rejected: number };
+//   userRoleBreakdown: Record<string, number>;
+//   engagementScore: number;
+//   createdAt?: any;
+// }
 
-export async function saveAnalyticsSnapshot(data: Omit<AnalyticsSnapshot, "id" | "createdAt" | "date">): Promise<void> {
-  const today = new Date().toISOString().split("T")[0];
-  const existing = await getDocs(
-    query(collection(db, ANALYTICS_COLLECTION), where("date", "==", today), limit(1))
-  );
-  if (!existing.empty) {
-    await updateDoc(doc(db, ANALYTICS_COLLECTION, existing.docs[0].id), { ...data, updatedAt: serverTimestamp() });
-    console.log("Firestore: analytics snapshot updated for", today);
-    return;
-  }
-  await addDoc(collection(db, ANALYTICS_COLLECTION), { ...data, date: today, createdAt: serverTimestamp() });
-  console.log("Firestore: analytics snapshot saved for", today);
-}
+// export async function saveAnalyticsSnapshot(data: Omit<AnalyticsSnapshot, "id" | "createdAt" | "date">): Promise<void> {
+//   const today = new Date().toISOString().split("T")[0];
+//   const existing = await getDocs(
+//     query(collection(db, ANALYTICS_COLLECTION), where("date", "==", today), limit(1))
+//   );
+//   if (!existing.empty) {
+//     await updateDoc(doc(db, ANALYTICS_COLLECTION, existing.docs[0].id), { ...data, updatedAt: serverTimestamp() });
+//     console.log("Firestore: analytics snapshot updated for", today);
+//     return;
+//   }
+//   await addDoc(collection(db, ANALYTICS_COLLECTION), { ...data, date: today, createdAt: serverTimestamp() });
+//   console.log("Firestore: analytics snapshot saved for", today);
+// }
 
-export async function fetchAnalyticsSnapshots(limitCount = 30): Promise<AnalyticsSnapshot[]> {
-  const q = query(collection(db, ANALYTICS_COLLECTION), orderBy("date", "desc"), limit(limitCount));
-  const snap = await getDocs(q);
-  return collectionData<AnalyticsSnapshot>(snap);
-}
+// export async function fetchAnalyticsSnapshots(limitCount = 30): Promise<AnalyticsSnapshot[]> {
+//   const q = query(collection(db, ANALYTICS_COLLECTION), orderBy("date", "desc"), limit(limitCount));
+//   const snap = await getDocs(q);
+//   return collectionData<AnalyticsSnapshot>(snap);
+// }
 
 // ─── Masjid Construction Updates ───
 
@@ -862,6 +864,8 @@ export interface Donation {
   stripePaymentId: string;
   stripeSessionId: string;
   status: string;
+  showOnWall?: boolean;
+  anonymous?: boolean;
   createdAt?: any;
   notes?: string;
   recordedBy?: string;
@@ -881,7 +885,7 @@ export async function fetchDonationsByUser(userId: string): Promise<Donation[]> 
   return collectionData<Donation>(snap);
 }
 
-export async function addManualDonation(data: Omit<Donation, "id" | "createdAt" | "stripePaymentId" | "stripeSessionId">): Promise<string> {
+export async function addManualDonation(data: Omit<Donation, "id" | "createdAt" | "stripePaymentId" | "stripeSessionId"> & { showOnWall?: boolean; anonymous?: boolean }): Promise<string> {
   const ref = await addDoc(collection(db, DONATIONS_COLLECTION), { ...data, stripePaymentId: "", stripeSessionId: "", createdAt: serverTimestamp() });
   return ref.id;
 }

@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin, Mail, Phone, Heart, ChevronRight } from "lucide-react";
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin, Mail, Phone, Heart, ChevronRight, ImageIcon, ListOrdered } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
+import GalleryLightbox from "@/app/components/GalleryLightbox";
 import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
 
 export default function MasjidConstructionPage() {
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [galleryView, setGalleryView] = useState<"grid" | "timeline">("grid");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     fetchMasjidUpdates(20).then(data => { setUpdates(data); setLoading(false); }).catch(() => setLoading(false));
@@ -20,7 +24,20 @@ export default function MasjidConstructionPage() {
   const goal = latest?.goal || 0;
   const raised = latest?.raised || 0;
   const pct = goal > 0 ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
-  const images = updates.filter(u => u.image);
+  const images = useMemo(() => {
+    return updates
+      .filter(u => u.image)
+      .sort((a, b) => {
+        const da = a.progressDate || "";
+        const db = b.progressDate || "";
+        return da.localeCompare(db); // ascending by date
+      });
+  }, [updates]);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-mhma-cream">
@@ -100,25 +117,86 @@ export default function MasjidConstructionPage() {
         {images.length > 0 && (
           <section className="bg-white py-12 border-y border-gray-200">
             <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Construction Progress</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {images.map((u, i) => (
-                  <div key={u.id || i} className="bg-mhma-cream rounded-2xl overflow-hidden shadow-md border border-gray-200">
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <img src={u.image} alt={u.caption || "Construction"} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                    </div>
-                    <div className="p-4">
-                      {u.phase && (
-                        <span className="inline-block text-xs font-semibold bg-mhma-gold/20 text-mhma-forest px-2 py-0.5 rounded-full mb-2">{u.phase}</span>
-                      )}
-                      {u.caption && <p className="text-sm text-gray-700">{u.caption}</p>}
-                      {u.progressDate && <p className="text-xs text-gray-400 mt-1">{u.progressDate}</p>}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">Construction Progress</h2>
+                <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                  <button onClick={() => setGalleryView("grid")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${galleryView === "grid" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    <ImageIcon className="w-3.5 h-3.5" /> Grid
+                  </button>
+                  <button onClick={() => setGalleryView("timeline")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${galleryView === "timeline" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    <ListOrdered className="w-3.5 h-3.5" /> Timeline
+                  </button>
+                </div>
               </div>
+
+              {galleryView === "grid" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {images.map((u, i) => (
+                    <div key={u.id || i} onClick={() => openLightbox(i)} className="bg-mhma-cream rounded-2xl overflow-hidden shadow-md border border-gray-200 cursor-pointer group">
+                      <div className="aspect-[4/3] overflow-hidden">
+                        <img src={u.image} alt={u.caption || "Construction"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                      <div className="p-4">
+                        {u.phase && (
+                          <span className="inline-block text-xs font-semibold bg-mhma-gold/20 text-mhma-forest px-2 py-0.5 rounded-full mb-2">{u.phase}</span>
+                        )}
+                        {u.caption && <p className="text-sm text-gray-700">{u.caption}</p>}
+                        {u.progressDate && <p className="text-xs text-gray-400 mt-1">{u.progressDate}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {galleryView === "timeline" && (
+                <div className="relative">
+                  <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-mhma-gold/30 -translate-x-1/2" />
+                  {images.map((u, i) => (
+                    <div key={u.id || i} className="relative mb-8 md:mb-12">
+                      <div className={`flex flex-col md:flex-row items-start gap-4 md:gap-8 ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}>
+                        {/* Timeline dot */}
+                        <div className="absolute left-4 md:left-1/2 w-4 h-4 rounded-full bg-mhma-gold border-4 border-white shadow -translate-x-1/2 mt-2 z-10" />
+
+                        {/* Content */}
+                        <div className={`ml-10 md:ml-0 md:w-1/2 ${i % 2 === 0 ? "md:pr-8 md:text-right" : "md:pl-8"}`}>
+                          <div onClick={() => openLightbox(i)} className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-200 cursor-pointer group transition-shadow hover:shadow-lg">
+                            <div className="aspect-[16/9] overflow-hidden">
+                              <img src={u.image} alt={u.caption || "Construction"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            </div>
+                            <div className="p-4">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                {u.progressDate && <span className="text-xs font-bold text-mhma-gold">{u.progressDate}</span>}
+                                {u.phase && (
+                                  <span className="text-xs font-semibold bg-mhma-forest/10 text-mhma-forest px-2 py-0.5 rounded-full">{u.phase}</span>
+                                )}
+                              </div>
+                              {u.caption && <p className="text-sm text-gray-700">{u.caption}</p>}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Spacer for alternating layout */}
+                        <div className="hidden md:block md:w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
+        )}
+
+        {/* Lightbox */}
+        {lightboxOpen && (
+          <GalleryLightbox
+            images={images.map(u => ({ src: u.image!, caption: u.caption, phase: u.phase, date: u.progressDate }))}
+            currentIndex={lightboxIndex}
+            onClose={() => setLightboxOpen(false)}
+            onPrev={() => setLightboxIndex(i => (i - 1 + images.length) % images.length)}
+            onNext={() => setLightboxIndex(i => (i + 1) % images.length)}
+          />
         )}
 
         {/* Videos */}

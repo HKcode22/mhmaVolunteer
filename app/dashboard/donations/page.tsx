@@ -18,7 +18,7 @@ export default function DashboardDonationsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showManual, setShowManual] = useState(false);
-  const [manual, setManual] = useState({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "" });
+  const [manual, setManual] = useState({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "", showOnWall: true, anonymous: false });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -46,10 +46,12 @@ export default function DashboardDonationsPage() {
         designation: manual.designation,
         method: manual.method,
         status: "completed",
+        showOnWall: manual.showOnWall,
+        anonymous: manual.anonymous,
         notes: manual.notes || "",
         recordedBy: user.uid,
       });
-      setManual({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "" });
+      setManual({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "", showOnWall: true, anonymous: false });
       setShowManual(false);
       const updated = await fetchDonations(200);
       setDonations(updated);
@@ -133,6 +135,18 @@ export default function DashboardDonationsPage() {
                   <label className="block text-xs font-medium text-gray-500 mb-1">Notes</label>
                   <input type="text" value={manual.notes} onChange={e => setManual(p => ({ ...p, notes: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={manual.showOnWall} onChange={e => setManual(p => ({ ...p, showOnWall: e.target.checked }))}
+                      className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
+                    <span className="text-xs text-gray-600">Show on donor wall</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={manual.anonymous} onChange={e => setManual(p => ({ ...p, anonymous: e.target.checked }))}
+                      className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
+                    <span className="text-xs text-gray-600">Anonymous (hide name)</span>
+                  </label>
                 </div>
               </div>
               <div className="mt-4 flex justify-end gap-2">

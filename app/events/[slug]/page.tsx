@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Calendar, Clock, MapPin, ArrowLeft, Loader2, Users, Edit3 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
+import AddToCalendar from "@/app/components/AddToCalendar";
 import { renderMarkdown } from "@/lib/markdown";
 import { useAuth } from "@/lib/auth-context";
 
@@ -140,6 +141,16 @@ export default function EventDetailPage() {
                 External RSVP Form →
               </a>
             )}
+          </div>
+
+          <div className="mt-4">
+            <AddToCalendar
+              title={event.title}
+              description={event.description}
+              date={event.date}
+              time={event.time}
+              location={event.location}
+            />
           </div>
         </div>
       </main>

@@ -25,21 +25,23 @@ import {
   Copy,
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
+import DonorWall from "@/app/components/DonorWall";
 import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
 
 type Designation = "general" | "construction" | "zakat" | "programs" | "other";
 
-const designations: { key: Designation; label: string; icon: any; description: string; color: string; stripeId: string }[] = [
-  { key: "general", label: "General Fund", icon: Heart, description: "Support MHMA's daily operations, programs, and community services. Your gift helps us serve the Mountain House community.", color: "bg-mhma-teal", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
-  { key: "construction", label: "Construction", icon: Building2, description: "Direct your donation to the Masjid construction fund. Help us build a permanent Islamic Center for our growing community.", color: "bg-mhma-gold", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
-  { key: "zakat", label: "Zakat-ul-Maal", icon: HandCoins, description: "Fulfill your Zakat obligation. Funds are distributed according to Islamic guidelines to those in need.", color: "bg-mhma-forest", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
-  { key: "programs", label: "Programs", icon: BookOpen, description: "Support our educational and youth programs — Quran, Arabic, youth sports, and family events.", color: "bg-emerald-700", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
-  { key: "other", label: "Other", icon: Globe, description: "Choose your own amount for any other purpose. Every contribution makes a difference.", color: "bg-gray-700", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
+const designations: { key: Designation; label: string; icon: any; description: string; color: string; stripeId: string; monthlyStripeId: string }[] = [
+  { key: "general", label: "General Fund", icon: Heart, description: "Support MHMA's daily operations, programs, and community services. Your gift helps us serve the Mountain House community.", color: "bg-mhma-teal", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq", monthlyStripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
+  { key: "construction", label: "Construction", icon: Building2, description: "Direct your donation to the Masjid construction fund. Help us build a permanent Islamic Center for our growing community.", color: "bg-mhma-gold", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq", monthlyStripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
+  { key: "zakat", label: "Zakat-ul-Maal", icon: HandCoins, description: "Fulfill your Zakat obligation. Funds are distributed according to Islamic guidelines to those in need.", color: "bg-mhma-forest", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq", monthlyStripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
+  { key: "programs", label: "Programs", icon: BookOpen, description: "Support our educational and youth programs — Quran, Arabic, youth sports, and family events.", color: "bg-emerald-700", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq", monthlyStripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
+  { key: "other", label: "Other", icon: Globe, description: "Choose your own amount for any other purpose. Every contribution makes a difference.", color: "bg-gray-700", stripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq", monthlyStripeId: "buy_btn_1O6UR8KkhNmRB0QYd4bijFKq" },
 ];
 
 export default function DonatePage() {
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [designation, setDesignation] = useState<Designation>("general");
+  const [recurring, setRecurring] = useState(false);
   const [copied, setCopied] = useState("");
 
   useEffect(() => {
@@ -129,9 +131,28 @@ export default function DonatePage() {
                     <ShieldCheck className="w-6 h-6 text-mhma-gold" />
                     Donate Online — {current.label}
                   </h3>
-                  <p className="text-sm text-gray-500 mb-8">Secure payment via Stripe. Credit/debit cards accepted.</p>
+                  <p className="text-sm text-gray-500 mb-6">Secure payment via Stripe. Credit/debit cards accepted.</p>
+
+                  {/* Recurring Toggle */}
+                  <div className="flex items-center justify-center gap-4 mb-6 p-2 bg-gray-50 rounded-xl border border-gray-200">
+                    <span className={`text-xs font-bold uppercase tracking-wide ${!recurring ? "text-gray-900" : "text-gray-400"}`}>One-Time</span>
+                    <button
+                      onClick={() => setRecurring(!recurring)}
+                      className={`relative w-14 h-7 rounded-full transition-colors ${recurring ? "bg-mhma-gold" : "bg-gray-300"}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-sm transition-transform ${recurring ? "translate-x-7" : ""}`} />
+                    </button>
+                    <span className={`text-xs font-bold uppercase tracking-wide ${recurring ? "text-gray-900" : "text-gray-400"}`}>Monthly</span>
+                  </div>
+
+                  {recurring && (
+                    <p className="text-xs text-amber-600 font-medium text-center mb-4">
+                      You will be charged monthly. Cancel anytime.
+                    </p>
+                  )}
+
                   <div className="min-h-[100px] flex justify-center">
-                    <div className="w-full" key={designation} ref={(el) => {
+                    <div className="w-full" key={`${designation}-${recurring}`} ref={(el) => {
                       if (el && typeof window !== 'undefined') {
                         el.innerHTML = '';
                         const script = document.createElement('script');
@@ -140,8 +161,10 @@ export default function DonatePage() {
                         el.appendChild(script);
 
                         const button = document.createElement('stripe-buy-button');
-                        button.setAttribute('buy-button-id', current.stripeId);
+                        const stripeId = recurring ? current.monthlyStripeId : current.stripeId;
+                        button.setAttribute('buy-button-id', stripeId);
                         button.setAttribute('publishable-key', 'pk_live_51Nz3brKkhNmRB0QYiQmU7j48IR0VIVgI5fUW9boK2NGoz2ZzhCSn8n4EivbkAzovFpZja1l4mAyFshV5izioBIJK00h8ttma6x');
+                        if (recurring) button.setAttribute('mode', 'subscription');
                         el.appendChild(button);
                       }
                     }} />
@@ -150,6 +173,9 @@ export default function DonatePage() {
                     All donations are 100% Tax Deductible
                   </p>
                 </div>
+
+                {/* Donor Wall */}
+                <DonorWall />
 
                 {/* Other Ways to Give */}
                 <div>
