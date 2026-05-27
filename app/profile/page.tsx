@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { updatePassword, sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential, updateProfile, verifyBeforeUpdateEmail, PhoneAuthProvider, RecaptchaVerifier, linkWithCredential } from "firebase/auth";
+import { updatePassword, sendPasswordResetEmail, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, updateProfile, verifyBeforeUpdateEmail, PhoneAuthProvider, RecaptchaVerifier, linkWithCredential } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
@@ -236,21 +236,27 @@ export default function ProfilePage() {
 
   const finishEmailChange = async (oldEmail: string, newEmail: string) => {
     const idToken = await auth.currentUser!.getIdToken();
-    const notifyRes = await fetch("/api/change-email", {
+    const apiRes = await fetch("/api/change-email", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({ oldEmail, newEmail }),
     });
-    const notifyData = await notifyRes.json();
-    if (!notifyRes.ok) console.error("Old email notification failed:", notifyData.error);
+    if (!apiRes.ok) {
+      const err = await apiRes.json().catch(() => ({ error: "Server error" }));
+      throw new Error(err.error);
+    }
 
+    // Firebase sends email verification to the current (old) email
+    await sendEmailVerification(auth.currentUser!);
+
+    // Firebase sends email change verification to the new email
     await verifyBeforeUpdateEmail(auth.currentUser!, newEmail);
 
     setEmailStep("done");
     setSuccess(
-      `Verification sent to ${newEmail}. Check your inbox and click the link from Firebase to complete the change. ` +
-      (notifyData.oldEmailSent ? `A notification was also sent to ${oldEmail}.` :
-       `Note: The notification to ${oldEmail} could not be delivered (you may be using a test email address).`)
+      `A verification email has been sent to both addresses. ` +
+      `Check ${oldEmail} (your current email) and ${newEmail} (your new email) ` +
+      `for emails from Firebase. Click the link in the new email to complete the change.`
     );
     setEmailForm({ password: "", newEmail: "" });
   };
