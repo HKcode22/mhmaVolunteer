@@ -14,6 +14,9 @@ interface AuthUser {
   uid: string;
   email: string | null;
   displayName: string | null;
+  firstName: string;
+  lastName: string;
+  phone: string;
   role: string;
 }
 
@@ -39,20 +42,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (uid: string): Promise<{ role: string; displayName: string }> => {
+  const fetchUserData = async (uid: string): Promise<{ role: string; displayName: string; firstName: string; lastName: string; phone: string }> => {
     try {
       const docSnap = await getDoc(doc(db, "users", uid));
       if (docSnap.exists()) {
         const data = docSnap.data();
         return {
           role: data.role || "member",
-          displayName: data.displayName || data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : "",
+          displayName: data.displayName || (data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : ""),
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          phone: data.phone || "",
         };
       }
     } catch (err) {
       console.warn("Auth: Firestore unavailable, skipping role fetch:", err);
     }
-    return { role: "member", displayName: "" };
+    return { role: "member", displayName: "", firstName: "", lastName: "", phone: "" };
   };
 
   useEffect(() => {
@@ -71,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
 
           const claimRole = idTokenResult?.claims?.role as string | undefined;
-          let firestoreData: { role: string; displayName: string } = { role: "member", displayName: "" };
+          let firestoreData: { role: string; displayName: string; firstName: string; lastName: string; phone: string } = { role: "member", displayName: "", firstName: "", lastName: "", phone: "" };
           try {
             firestoreData = await fetchUserData(firebaseUser.uid);
           } catch {}
@@ -84,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               displayName,
+              firstName: firestoreData.firstName,
+              lastName: firestoreData.lastName,
+              phone: firestoreData.phone,
               role,
             });
           }
@@ -116,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         idTokenResult = await auth.currentUser.getIdTokenResult(true);
       } catch {}
       const claimRole = idTokenResult?.claims?.role as string | undefined;
-      let firestoreData = { role: "member", displayName: "" };
+      let firestoreData = { role: "member", displayName: "", firstName: "", lastName: "", phone: "" };
       try {
         firestoreData = await fetchUserData(auth.currentUser.uid);
       } catch {}
@@ -126,6 +135,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         uid: auth.currentUser.uid,
         email: auth.currentUser.email,
         displayName,
+        firstName: firestoreData.firstName,
+        lastName: firestoreData.lastName,
+        phone: firestoreData.phone,
         role,
       });
     }
@@ -141,3 +153,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+export function fullName(user: AuthUser | null): string {
+  if (!user) return "";
+  if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
+  return user.displayName || "";
+}

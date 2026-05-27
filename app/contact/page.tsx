@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navigation from "@/app/components/Navigation";
 import { MapPin, Mail, Phone, Send, ChevronRight, Clock, Users, Youtube, Instagram, Globe } from "lucide-react";
 
 import { addContactSubmission } from "@/lib/firebase";
+import { useAuth, fullName } from "@/lib/auth-context";
 import PageBanner from "@/app/components/PageBanner";
 
 export default function ContactPage() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,6 +17,17 @@ export default function ContactPage() {
     subject: "",
     message: ""
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || fullName(user) || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");

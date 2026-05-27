@@ -7,9 +7,11 @@ import { Calendar, Loader2, AlertCircle, Check } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 import { fetchEvents } from "@/lib/firebase";
+import { useAuth, fullName } from "@/lib/auth-context";
 
 function RSVPForm() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState("");
@@ -20,6 +22,17 @@ function RSVPForm() {
     attendees: "1",
     notes: "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: prev.fullName || fullName(user) || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");

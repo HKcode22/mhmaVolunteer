@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Heart, CheckCircle, Loader2 } from "lucide-react";
 import { createPledge } from "@/lib/firebase";
 import { auth } from "@/lib/firebase-client";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth, fullName } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
 export default function PledgePage() {
   const { user } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", phone: "", amount: "", message: "" });
+
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        name: prev.name || fullName(user) || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);

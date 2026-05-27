@@ -1,13 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
 import { addSchedulingRequest } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
 
 export default function EventSchedulingRequestPage() {
+  const { user } = useAuth();
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: prev.firstName || user.firstName || "",
+        lastName: prev.lastName || user.lastName || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
   const [formData, setFormData] = useState({
     // Organizer
     firstName: "",

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth, fullName } from "@/lib/auth-context";
 import { addEnrollment } from "@/lib/firebase";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
@@ -19,6 +19,17 @@ function EnrollForm() {
     program: "",
     message: "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: prev.fullName || fullName(user) || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     const programParam = searchParams.get("program");
