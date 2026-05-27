@@ -42,11 +42,35 @@ export default function DonatePage() {
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [designation, setDesignation] = useState<Designation>("general");
   const [recurring, setRecurring] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [processing, setProcessing] = useState(false);
   const [copied, setCopied] = useState("");
 
   useEffect(() => {
     fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
   }, []);
+
+  const handleDonate = async () => {
+    if (!amount || parseFloat(amount) < 1) return;
+    setProcessing(true);
+    try {
+      const res = await fetch("/api/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: parseFloat(amount), designation, recurring }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Failed to create checkout session.");
+      }
+    } catch {
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   const goal = latest?.goal || 1500000;
   const raised = latest?.raised || 350000;
@@ -122,57 +146,66 @@ export default function DonatePage() {
                   </div>
                 </div>
 
-                {/* Stripe Payment */}
-                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-5">
-                    <Heart className="w-24 h-24 text-mhma-gold" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <ShieldCheck className="w-6 h-6 text-mhma-gold" />
-                    Donate Online — {current.label}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-6">Secure payment via Stripe. Credit/debit cards accepted.</p>
+                  {/* Stripe Donation Form */}
+                  <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-5">
+                      <Heart className="w-24 h-24 text-mhma-gold" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                      <ShieldCheck className="w-6 h-6 text-mhma-gold" />
+                      Donate Online — {current.label}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-6">Secure payment via Stripe. Credit/debit cards accepted.</p>
 
-                  {/* Recurring Toggle */}
-                  <div className="flex items-center justify-center gap-4 mb-6 p-2 bg-gray-50 rounded-xl border border-gray-200">
-                    <span className={`text-xs font-bold uppercase tracking-wide ${!recurring ? "text-gray-900" : "text-gray-400"}`}>One-Time</span>
-                    <button
-                      onClick={() => setRecurring(!recurring)}
-                      className={`relative w-14 h-7 rounded-full transition-colors ${recurring ? "bg-mhma-gold" : "bg-gray-300"}`}
-                    >
-                      <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-sm transition-transform ${recurring ? "translate-x-7" : ""}`} />
-                    </button>
-                    <span className={`text-xs font-bold uppercase tracking-wide ${recurring ? "text-gray-900" : "text-gray-400"}`}>Monthly</span>
-                  </div>
+                    {/* Recurring Toggle */}
+                    <div className="flex items-center justify-center gap-4 mb-6 p-2 bg-gray-50 rounded-xl border border-gray-200">
+                      <span className={`text-xs font-bold uppercase tracking-wide ${!recurring ? "text-gray-900" : "text-gray-400"}`}>One-Time</span>
+                      <button
+                        onClick={() => setRecurring(!recurring)}
+                        className={`relative w-14 h-7 rounded-full transition-colors ${recurring ? "bg-mhma-gold" : "bg-gray-300"}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-sm transition-transform ${recurring ? "translate-x-7" : ""}`} />
+                      </button>
+                      <span className={`text-xs font-bold uppercase tracking-wide ${recurring ? "text-gray-900" : "text-gray-400"}`}>Monthly</span>
+                    </div>
 
-                  {recurring && (
-                    <p className="text-xs text-amber-600 font-medium text-center mb-4">
-                      You will be charged monthly. Cancel anytime.
+                    {recurring && (
+                      <p className="text-xs text-amber-600 font-medium text-center mb-4">
+                        You will be charged monthly. Cancel anytime.
+                      </p>
+                    )}
+
+                    {/* Amount Input + Checkout Button */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Amount ($)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          value={amount}
+                          onChange={e => setAmount(e.target.value)}
+                          placeholder="Enter amount"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none text-lg font-bold text-gray-900"
+                        />
+                      </div>
+                      <button
+                        onClick={handleDonate}
+                        disabled={!amount || parseFloat(amount) < 1 || processing}
+                        className="w-full py-3.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light font-bold text-lg disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {processing ? (
+                          <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Processing...</>
+                        ) : (
+                          <><Heart className="w-5 h-5" /> Donate ${parseFloat(amount || "0").toFixed(2)}</>
+                        )}
+                      </button>
+                    </div>
+
+                    <p className="mt-8 text-xs text-gray-400 text-center uppercase tracking-widest font-medium">
+                      All donations are 100% Tax Deductible
                     </p>
-                  )}
-
-                  <div className="min-h-[100px] flex justify-center">
-                    <div className="w-full" key={`${designation}-${recurring}`} ref={(el) => {
-                      if (el && typeof window !== 'undefined') {
-                        el.innerHTML = '';
-                        const script = document.createElement('script');
-                        script.src = 'https://js.stripe.com/v3/buy-button.js';
-                        script.async = true;
-                        el.appendChild(script);
-
-                        const button = document.createElement('stripe-buy-button');
-                        const stripeId = recurring ? current.monthlyStripeId : current.stripeId;
-                        button.setAttribute('buy-button-id', stripeId);
-                        button.setAttribute('publishable-key', 'pk_live_51Nz3brKkhNmRB0QYiQmU7j48IR0VIVgI5fUW9boK2NGoz2ZzhCSn8n4EivbkAzovFpZja1l4mAyFshV5izioBIJK00h8ttma6x');
-                        if (recurring) button.setAttribute('mode', 'subscription');
-                        el.appendChild(button);
-                      }
-                    }} />
                   </div>
-                  <p className="mt-8 text-xs text-gray-400 text-center uppercase tracking-widest font-medium">
-                    All donations are 100% Tax Deductible
-                  </p>
-                </div>
 
                 {/* Donor Wall */}
                 <DonorWall />
