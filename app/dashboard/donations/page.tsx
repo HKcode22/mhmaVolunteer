@@ -17,6 +17,10 @@ export default function DashboardDonationsPage() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [designationFilter, setDesignationFilter] = useState<string>(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("donationDesignationFilter") || "all";
+    return "all";
+  });
   const [showManual, setShowManual] = useState(false);
   const [manual, setManual] = useState({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "", showOnWall: true, anonymous: false });
   const [saving, setSaving] = useState(false);
@@ -29,8 +33,22 @@ export default function DashboardDonationsPage() {
 
   const filtered = donations.filter(d => {
     const q = search.toLowerCase();
-    return !q || d.donorName.toLowerCase().includes(q) || d.donorEmail.toLowerCase().includes(q) || d.designation.includes(q);
+    const matchesSearch = !q || d.donorName.toLowerCase().includes(q) || d.donorEmail.toLowerCase().includes(q) || d.designation.includes(q);
+    const matchesDesignation = designationFilter === "all" || d.designation === designationFilter;
+    return matchesSearch && matchesDesignation;
   });
+
+  const onChangeDesignation = (val: string) => {
+    setDesignationFilter(val);
+    localStorage.setItem("donationDesignationFilter", val);
+  };
+
+  const fmtDate = (d: Donation) => {
+    if (!d.createdAt) return "";
+    if (typeof d.createdAt === "string") return new Date(d.createdAt).toLocaleDateString();
+    if (d.createdAt.toDate) return d.createdAt.toDate().toLocaleDateString();
+    return "";
+  };
 
   const handleManualSubmit = async () => {
     if (!user) return;
@@ -214,6 +232,20 @@ export default function DashboardDonationsPage() {
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
           </div>
 
+          {/* Filter Chips */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button onClick={() => onChangeDesignation("all")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${designationFilter === "all" ? "bg-mhma-forest text-white" : "bg-white text-gray-600 border border-gray-200 hover:border-mhma-forest"}`}>
+              All
+            </button>
+            {designations.map(d => (
+              <button key={d} onClick={() => onChangeDesignation(d)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${designationFilter === d ? "bg-mhma-forest text-white" : "bg-white text-gray-600 border border-gray-200 hover:border-mhma-forest"}`}>
+                {d}
+              </button>
+            ))}
+          </div>
+
           {/* Table */}
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
             {filtered.length === 0 ? (
@@ -255,7 +287,7 @@ export default function DashboardDonationsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-gray-500">
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {d.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span>
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {fmtDate(d)}</span>
                         </td>
                         <td className="px-4 py-3">
                           <button onClick={() => handleDelete(d.id!)} title="Delete"

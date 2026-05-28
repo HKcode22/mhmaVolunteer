@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { firestore } from "@/lib/firebase-admin";
+import { firestore, FieldValue } from "@/lib/firebase-admin";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       status: "completed",
       showOnWall: true,
       anonymous: false,
-      createdAt: new Date().toISOString(),
+      createdAt: FieldValue.serverTimestamp(),
     });
     console.log(`Donation recorded: $${(amount / 100).toFixed(2)} for ${designation}`);
   } catch (err) {

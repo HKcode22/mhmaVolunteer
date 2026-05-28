@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/lib/auth-context";
 import {
   Facebook,
   Instagram,
@@ -39,6 +40,7 @@ const designations: { key: Designation; label: string; icon: any; description: s
 ];
 
 export default function DonatePage() {
+  const { user } = useAuth();
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [designation, setDesignation] = useState<Designation>("general");
   const [recurring, setRecurring] = useState(false);
@@ -62,7 +64,7 @@ export default function DonatePage() {
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(amount), designation, recurring }),
+        body: JSON.stringify({ amount: parseFloat(amount), designation, recurring, firebaseUid: user?.uid || "" }),
       });
       const data = await res.json();
       if (data.url) {

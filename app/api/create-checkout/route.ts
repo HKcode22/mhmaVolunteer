@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { amount, designation, recurring } = await req.json();
+    const { amount, designation, recurring, firebaseUid } = await req.json();
 
     if (!amount || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         },
         quantity: 1,
       }],
-      metadata: { designation, source: "web" },
+      metadata: { designation, source: "web", firebaseUid: firebaseUid || "" },
       success_url: `${origin}/donate?success=true`,
       cancel_url: `${origin}/donate?canceled=true`,
     };
