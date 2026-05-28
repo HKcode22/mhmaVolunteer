@@ -198,5 +198,7 @@ Thoughts:whe
 
 - I was also thinking about big o of n time space concepts about the analytical computations and resources meaning where the analytical parts of code would be at firebase or in codebase github vercel, if its on my computer or on vercels servers, and where is better so resrouces are used correctly and moderatley - kind of already done doingit right now 
 
--
+- later i need to relay the msg to board memeber about having the domain info access so that the email that is sent is using that domain instead of the firebase backend email for now
+
+
 

@@ -802,16 +802,30 @@ export async function createPledge(data: Omit<Pledge, "id" | "createdAt" | "stat
 }
 
 export async function fetchPledgesByUser(userId: string, email?: string): Promise<Pledge[]> {
-  const constraints: any[] = [orderBy("createdAt", "desc"), limit(50)];
-  if (userId) constraints.unshift(where("userUid", "==", userId));
-  const q = query(collection(db, PLEDGES), ...constraints);
-  const snap = await getDocs(q);
-  let results = collectionData<Pledge>(snap);
-  if (email && results.length === 0) {
-    const q2 = query(collection(db, PLEDGES), where("email", "==", email), orderBy("createdAt", "desc"), limit(50));
-    const snap2 = await getDocs(q2);
-    results = collectionData<Pledge>(snap2);
+  const results: Pledge[] = [];
+  if (userId) {
+    try {
+      const q = query(collection(db, PLEDGES), where("userUid", "==", userId), limit(50));
+      const snap = await getDocs(q);
+      results.push(...collectionData<Pledge>(snap));
+    } catch (e) {
+      console.error("pledge userUid query failed:", e);
+    }
   }
+  if (email && results.length === 0) {
+    try {
+      const q2 = query(collection(db, PLEDGES), where("email", "==", email), limit(50));
+      const snap2 = await getDocs(q2);
+      results.push(...collectionData<Pledge>(snap2));
+    } catch (e) {
+      console.error("pledge email query failed:", e);
+    }
+  }
+  results.sort((a, b) => {
+    const ta = a.createdAt?.toDate?.()?.getTime() || (typeof a.createdAt === "string" ? new Date(a.createdAt).getTime() : 0);
+    const tb = b.createdAt?.toDate?.()?.getTime() || (typeof b.createdAt === "string" ? new Date(b.createdAt).getTime() : 0);
+    return tb - ta;
+  });
   return results;
 }
 
@@ -888,22 +902,53 @@ export interface Donation {
 const DONATIONS_COLLECTION = "donations";
 
 export async function fetchDonations(limitCount = 200): Promise<Donation[]> {
-  const q = query(collection(db, DONATIONS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
-  const snap = await getDocs(q);
-  return collectionData<Donation>(snap);
+  try {
+    const q = query(collection(db, DONATIONS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+    const snap = await getDocs(q);
+    return collectionData<Donation>(snap);
+  } catch (e) {
+    console.error("fetchDonations (with orderBy) failed, falling back:", e);
+    // Fallback: query without orderBy, sort client-side
+    const q = query(collection(db, DONATIONS_COLLECTION), limit(limitCount));
+    const snap = await getDocs(q);
+    const results = collectionData<Donation>(snap);
+    results.sort((a, b) => {
+      const ta = a.createdAt?.toDate?.()?.getTime() || (typeof a.createdAt === "string" ? new Date(a.createdAt).getTime() : 0);
+      const tb = b.createdAt?.toDate?.()?.getTime() || (typeof b.createdAt === "string" ? new Date(b.createdAt).getTime() : 0);
+      return tb - ta;
+    });
+    return results;
+  }
 }
 
 export async function fetchDonationsByUser(userId: string, email?: string): Promise<Donation[]> {
-  const constraints: any[] = [orderBy("createdAt", "desc"), limit(50)];
-  if (userId) constraints.unshift(where("donorId", "==", userId));
-  const q = query(collection(db, DONATIONS_COLLECTION), ...constraints);
-  const snap = await getDocs(q);
-  let results = collectionData<Donation>(snap);
-  if (email && results.length === 0) {
-    const q2 = query(collection(db, DONATIONS_COLLECTION), where("donorEmail", "==", email), orderBy("createdAt", "desc"), limit(50));
-    const snap2 = await getDocs(q2);
-    results = collectionData<Donation>(snap2);
+  const results: Donation[] = [];
+  // Try donorId first (avoids composite index — no orderBy needed)
+  if (userId) {
+    try {
+      const q = query(collection(db, DONATIONS_COLLECTION), where("donorId", "==", userId), limit(50));
+      const snap = await getDocs(q);
+      results.push(...collectionData<Donation>(snap));
+    } catch (e) {
+      console.error("donorId query failed:", e);
+    }
   }
+  // Fallback by email
+  if (email && results.length === 0) {
+    try {
+      const q2 = query(collection(db, DONATIONS_COLLECTION), where("donorEmail", "==", email), limit(50));
+      const snap2 = await getDocs(q2);
+      results.push(...collectionData<Donation>(snap2));
+    } catch (e) {
+      console.error("donorEmail query failed:", e);
+    }
+  }
+  // Sort by createdAt descending client-side
+  results.sort((a, b) => {
+    const ta = a.createdAt?.toDate?.()?.getTime() || (typeof a.createdAt === "string" ? new Date(a.createdAt).getTime() : 0);
+    const tb = b.createdAt?.toDate?.()?.getTime() || (typeof b.createdAt === "string" ? new Date(b.createdAt).getTime() : 0);
+    return tb - ta;
+  });
   return results;
 }
 
