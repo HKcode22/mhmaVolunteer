@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import DonorWall from "@/app/components/DonorWall";
-import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { fetchMasjidUpdates, fetchDonations, FirebaseMasjidUpdate } from "@/lib/firebase";
 
 type Designation = "general" | "construction" | "zakat" | "programs" | "other";
 
@@ -42,6 +42,7 @@ const designations: { key: Designation; label: string; icon: any; description: s
 export default function DonatePage() {
   const { user } = useAuth();
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
+  const [raisedFromDonations, setRaisedFromDonations] = useState(0);
   const [designation, setDesignation] = useState<Designation>("general");
   const [recurring, setRecurring] = useState(false);
   const [amount, setAmount] = useState("");
@@ -55,6 +56,10 @@ export default function DonatePage() {
       window.history.replaceState({}, "", "/donate");
     }
     fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
+    fetchDonations(200).then(d => {
+      const constructionTotal = d.filter(d => d.designation === "construction").reduce((s, d) => s + (d.amount || 0), 0);
+      setRaisedFromDonations(constructionTotal);
+    }).catch(() => {});
   }, []);
 
   const handleDonate = async () => {
@@ -80,7 +85,7 @@ export default function DonatePage() {
   };
 
   const goal = latest?.goal || 1500000;
-  const raised = latest?.raised || 350000;
+  const raised = Math.max(latest?.raised || 0, raisedFromDonations);
   const remaining = goal - raised;
   const current = designations.find(d => d.key === designation) || designations[0];
 

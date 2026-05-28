@@ -303,6 +303,59 @@ export default function DashboardDonationsPage() {
             )}
           </div>
           <p className="text-xs text-gray-400 mt-4">{filtered.length} donation{filtered.length !== 1 ? "s" : ""}</p>
+
+          {/* Donation Charts */}
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* By Designation */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4">By Designation</h3>
+              <div className="space-y-3">
+                {designations.map(d => {
+                  const total = donations.filter(dd => dd.designation === d).reduce((s, dd) => s + (dd.amount || 0), 0);
+                  const maxTotal = Math.max(...designations.map(dd => donations.filter(x => x.designation === dd).reduce((s, x) => s + (x.amount || 0), 0)), 1);
+                  const pct = (total / maxTotal) * 100;
+                  return (
+                    <div key={d}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="capitalize font-medium text-gray-700">{d}</span>
+                        <span className="font-bold text-gray-900">${(total / 100).toLocaleString()}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div className="h-full rounded-full bg-mhma-gold transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* By Method */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4">By Method</h3>
+              <div className="space-y-3">
+                {["stripe", "zelle", "check", "cash", "paypal"].map(m => {
+                  const total = donations.filter(dd => dd.method === m).reduce((s, dd) => s + (dd.amount || 0), 0);
+                  const maxTotal = Math.max(...["stripe", "zelle", "check", "cash", "paypal"].map(mm => donations.filter(x => x.method === mm).reduce((s, x) => s + (x.amount || 0), 0)), 1);
+                  const pct = (total / maxTotal) * 100;
+                  if (total === 0) return null;
+                  return (
+                    <div key={m}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="capitalize font-medium text-gray-700">{m}</span>
+                        <span className="font-bold text-gray-900">${(total / 100).toLocaleString()}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div className="h-full rounded-full bg-mhma-forest transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                {donations.filter(dd => !["stripe", "zelle", "check", "cash", "paypal"].includes(dd.method)).length === 0 && (
+                  <p className="text-xs text-gray-400">Only Stripe donations recorded so far.</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>

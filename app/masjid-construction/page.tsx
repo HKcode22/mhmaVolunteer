@@ -7,10 +7,11 @@ import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin, Mail, Phone, H
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import GalleryLightbox from "@/app/components/GalleryLightbox";
-import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { fetchMasjidUpdates, fetchDonations, FirebaseMasjidUpdate } from "@/lib/firebase";
 
 export default function MasjidConstructionPage() {
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
+  const [raisedFromDonations, setRaisedFromDonations] = useState(0);
   const [loading, setLoading] = useState(true);
   const [galleryView, setGalleryView] = useState<"grid" | "timeline">("grid");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -23,11 +24,16 @@ export default function MasjidConstructionPage() {
 
   useEffect(() => {
     fetchMasjidUpdates(20).then(data => { setUpdates(data); setLoading(false); }).catch(() => setLoading(false));
+    fetchDonations(200).then(d => {
+      const construction = d.filter(d => d.designation === "construction");
+      const total = construction.reduce((s, d) => s + (d.amount || 0), 0);
+      setRaisedFromDonations(total);
+    }).catch(() => {});
   }, []);
 
   const latest = updates[0];
-  const goal = latest?.goal || 0;
-  const raised = latest?.raised || 0;
+  const goal = latest?.goal || 1500000;
+  const raised = Math.max(latest?.raised || 0, raisedFromDonations);
   const pct = goal > 0 ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
   const images = useMemo(() => {
     return updates
@@ -229,19 +235,9 @@ export default function MasjidConstructionPage() {
               Your donation brings us closer to having a permanent masjid. Every contribution counts.
             </p>
             <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-lg mx-auto">
-              <div ref={(el) => {
-                if (el && typeof window !== 'undefined') {
-                  el.innerHTML = '';
-                  const script = document.createElement('script');
-                  script.src = 'https://js.stripe.com/v3/buy-button.js';
-                  script.async = true;
-                  el.appendChild(script);
-                  const button = document.createElement('stripe-buy-button');
-                  button.setAttribute('buy-button-id', 'buy_btn_1O6UR8KkhNmRB0QYd4bijFKq');
-                  button.setAttribute('publishable-key', 'pk_live_51Nz3brKkhNmRB0QYiQmU7j48IR0VIVgI5fUW9boK2NGoz2ZzhCSn8n4EivbkAzovFpZja1l4mAyFshV5izioBIJK00h8ttma6x');
-                  el.appendChild(button);
-                }
-              }} />
+              <Link href="/donate" className="inline-flex items-center gap-2 px-8 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-lg text-lg">
+              <Heart className="w-5 h-5" /> Donate Now
+            </Link>
             </div>
           </div>
         </section>
