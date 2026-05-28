@@ -146,6 +146,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 </div>
               </div>
 
+              <Link href="/volunteer" className={`${navLinkClass("volunteer")} ${currentPage === "volunteer" ? "text-mhma-gold" : "text-gray-700"}`}>
+                VOLUNTEER
+              </Link>
+
               <div className="relative group">
                 <Link href="/donate" className={`${navLinkClass("donate")} ${currentPage === "donate" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   DONATE<span className="text-[10px]">▼</span>
@@ -191,6 +195,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/rsvp" className="block py-2 text-gray-700 border-b border-gray-100">RSVP</Link>
             {/* <Link href="/journal" className="block py-2 text-gray-700 border-b border-gray-100">JOURNAL</Link> */}
             <Link href="/programs" className="block py-2 text-gray-700 border-b border-gray-100">PROGRAMS</Link>
+            <Link href="/volunteer" className="block py-2 text-gray-700 border-b border-gray-100">VOLUNTEER</Link>
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/pledge" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ PLEDGE</Link>
             <Link href="/masjid-construction" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ CONSTRUCTION</Link>

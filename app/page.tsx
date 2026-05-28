@@ -384,34 +384,42 @@ export default function HomePage() {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, masjidData, allDonations] = await Promise.all([
+      const [eventsData, programs, masjidData, allDonations] = await Promise.allSettled([
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(1),
-        fetchDonations(10000),
+        fetchDonations(1000),
       ]);
-      setEvents(eventsData);
-      setPrograms(programs);
+
+      const events = eventsData.status === "fulfilled" ? eventsData.value : [];
+      const prog = programs.status === "fulfilled" ? programs.value : [];
+      const masjid = masjidData.status === "fulfilled" ? masjidData.value : [];
+      const donations = allDonations.status === "fulfilled" ? allDonations.value : [];
+
+      setEvents(events);
+      setPrograms(prog);
+
       // Compute raised from actual donation data
-      const constructionTotal = allDonations
+      const constructionTotal = donations
         .filter(d => d.designation === "construction" && d.status === "completed")
         .reduce((s, d) => s + (d.amount || 0), 0);
-      const latest = masjidData[0] || {};
+      const latest = masjid[0] || {};
       if (constructionTotal > 0) {
         latest.raised = Math.max(latest.raised || 0, constructionTotal / 100);
       }
       setMasjidUpdates([latest]);
+
       // Prefer masjid construction image for hero, fall back to event poster
-      if (masjidData.length > 0 && masjidData[0].image) {
-        setHeroImage(masjidData[0].image || null);
+      if (masjid.length > 0 && masjid[0].image) {
+        setHeroImage(masjid[0].image || null);
       } else {
-        const eventWithPoster = eventsData.find((e: any) => e.poster && e.poster.startsWith('data:'));
+        const eventWithPoster = events.find((e: any) => e.poster && e.poster.startsWith('data:'));
         if (eventWithPoster && eventWithPoster.poster) {
           setHeroImage(eventWithPoster.poster);
         }
       }
     } catch (error) {
-      console.error("Data fetching error:", error);
+      console.error("Failed to load homepage data:", error);
     } finally {
       setHeroLoading(false);
     }

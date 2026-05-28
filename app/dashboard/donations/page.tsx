@@ -275,6 +275,7 @@ export default function DashboardDonationsPage() {
                           {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">
                             <Mail className="w-3 h-3" /> {d.donorEmail}
                           </a>}
+                          {d.donorId && <p className="text-xs text-gray-400 mt-0.5">ID: {d.donorId.slice(0, 12)}...</p>}
                         </td>
                         <td className="px-4 py-3 font-bold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</td>
                         <td className="px-4 py-3">
