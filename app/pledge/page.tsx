@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Heart, CheckCircle, Loader2 } from "lucide-react";
+import { fetchPledgesByUser, Pledge } from "@/lib/firebase";
 import { useAuth, fullName } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -138,6 +139,50 @@ export default function PledgePage() {
           </div>
         </div>
       </main>
+
+      {user && <PledgeHistorySection userId={user.uid} email={user.email || undefined} />}
     </div>
+  );
+}
+
+function PledgeHistorySection({ userId, email }: { userId: string; email?: string }) {
+  const [pledges, setPledges] = useState<Pledge[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchPledgesByUser(userId, email).then(d => {
+      setPledges(d);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [userId, email]);
+
+  return (
+    <section className="py-16 bg-white border-t border-gray-200">
+      <div className="max-w-4xl mx-auto px-4">
+        <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">Your Pledges</h2>
+        {loading ? (
+          <p className="text-gray-400 text-sm">Loading...</p>
+        ) : pledges.length === 0 ? (
+          <div className="bg-mhma-cream p-8 rounded-xl border border-gray-200 text-center">
+            <p className="text-gray-500 text-sm">No pledges yet. Submit one above and it&apos;ll appear here.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {pledges.map(d => (
+              <div key={d.id} className="bg-mhma-cream p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-gray-900">${(d.amount || 0).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    Status: {d.status} · {(() => { if (!d.createdAt) return ""; if (typeof d.createdAt === "string") return new Date(d.createdAt).toLocaleDateString(); if (d.createdAt.toDate) return d.createdAt.toDate().toLocaleDateString(); return ""; })()}
+                  </p>
+                </div>
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${d.status === "fulfilled" ? "bg-green-100 text-green-700" : d.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>{d.status}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

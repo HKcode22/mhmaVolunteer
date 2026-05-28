@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
-import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
+import { fetchEvents, fetchPrograms, fetchMasjidUpdates, fetchDonations } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
@@ -384,14 +384,23 @@ export default function HomePage() {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, masjidData] = await Promise.all([
+      const [eventsData, programs, masjidData, allDonations] = await Promise.all([
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(1),
+        fetchDonations(10000),
       ]);
       setEvents(eventsData);
       setPrograms(programs);
-      setMasjidUpdates(masjidData);
+      // Compute raised from actual donation data
+      const constructionTotal = allDonations
+        .filter(d => d.designation === "construction" && d.status === "completed")
+        .reduce((s, d) => s + (d.amount || 0), 0);
+      const latest = masjidData[0] || {};
+      if (constructionTotal > 0) {
+        latest.raised = Math.max(latest.raised || 0, constructionTotal);
+      }
+      setMasjidUpdates([latest]);
       // Prefer masjid construction image for hero, fall back to event poster
       if (masjidData.length > 0 && masjidData[0].image) {
         setHeroImage(masjidData[0].image || null);

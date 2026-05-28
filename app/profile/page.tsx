@@ -8,7 +8,7 @@ import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
 import { Upload, Loader2, User, Eye, EyeOff, Smartphone } from "lucide-react";
-import { fetchDonationsByUser, Donation } from "@/lib/firebase";
+import { fetchDonationsByUser, fetchPledgesByUser, Donation, Pledge } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -575,7 +575,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Donation History */}
-        <DonationHistory userId={user?.uid} />
+        <DonationHistory userId={user?.uid} email={user?.email || undefined} />
+        <PledgeHistory userId={user?.uid} email={user?.email || undefined} />
       </main>
 
       {/* Hidden recaptcha container for Firebase Phone Auth */}
@@ -584,17 +585,57 @@ export default function ProfilePage() {
   );
 }
 
-function DonationHistory({ userId }: { userId?: string }) {
+function PledgeHistory({ userId, email }: { userId?: string; email?: string }) {
+  const [pledges, setPledges] = useState<Pledge[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!userId && !email) return;
+    setLoading(true);
+    fetchPledgesByUser(userId || "", email).then(d => { setPledges(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [userId, email]);
+
+  if (!userId && !email) return null;
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">Pledge History</h2>
+      {loading ? (
+        <p className="text-gray-400 text-sm">Loading...</p>
+      ) : pledges.length === 0 ? (
+        <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
+          <p className="text-gray-500 text-sm">No pledges yet. When you submit a pledge, it will appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {pledges.map(d => (
+            <div key={d.id} className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-gray-900">${(d.amount || 0).toLocaleString()}</p>
+                <p className="text-xs text-gray-500 capitalize">
+                  Status: {d.status} · {(() => { if (!d.createdAt) return ""; if (typeof d.createdAt === "string") return new Date(d.createdAt).toLocaleDateString(); if (d.createdAt.toDate) return d.createdAt.toDate().toLocaleDateString(); return ""; })()}
+                </p>
+              </div>
+              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${d.status === "fulfilled" ? "bg-green-100 text-green-700" : d.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>{d.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DonationHistory({ userId, email }: { userId?: string; email?: string }) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId && !email) return;
     setLoading(true);
-    fetchDonationsByUser(userId).then(d => { setDonations(d); setLoading(false); }).catch(() => setLoading(false));
-  }, [userId]);
+    fetchDonationsByUser(userId || "", email).then(d => { setDonations(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [userId, email]);
 
-  if (!userId) return null;
+  if (!userId && !email) return null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -611,7 +652,7 @@ function DonationHistory({ userId }: { userId?: string }) {
             <div key={d.id} className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</p>
-                <p className="text-xs text-gray-500 capitalize">{d.designation} · {d.method} · {d.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                <p className="text-xs text-gray-500 capitalize">{d.designation} · {d.method} · {(() => { if (!d.createdAt) return ""; if (typeof d.createdAt === "string") return new Date(d.createdAt).toLocaleDateString(); if (d.createdAt.toDate) return d.createdAt.toDate().toLocaleDateString(); return ""; })()}</p>
               </div>
               <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{d.status}</span>
             </div>

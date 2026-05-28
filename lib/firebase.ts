@@ -801,6 +801,20 @@ export async function createPledge(data: Omit<Pledge, "id" | "createdAt" | "stat
   return ref.id;
 }
 
+export async function fetchPledgesByUser(userId: string, email?: string): Promise<Pledge[]> {
+  const constraints: any[] = [orderBy("createdAt", "desc"), limit(50)];
+  if (userId) constraints.unshift(where("userUid", "==", userId));
+  const q = query(collection(db, PLEDGES), ...constraints);
+  const snap = await getDocs(q);
+  let results = collectionData<Pledge>(snap);
+  if (email && results.length === 0) {
+    const q2 = query(collection(db, PLEDGES), where("email", "==", email), orderBy("createdAt", "desc"), limit(50));
+    const snap2 = await getDocs(q2);
+    results = collectionData<Pledge>(snap2);
+  }
+  return results;
+}
+
 export async function fetchPledges(limitCount = 100): Promise<Pledge[]> {
   const q = query(collection(db, PLEDGES), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
@@ -879,10 +893,18 @@ export async function fetchDonations(limitCount = 200): Promise<Donation[]> {
   return collectionData<Donation>(snap);
 }
 
-export async function fetchDonationsByUser(userId: string): Promise<Donation[]> {
-  const q = query(collection(db, DONATIONS_COLLECTION), where("donorId", "==", userId), orderBy("createdAt", "desc"), limit(50));
+export async function fetchDonationsByUser(userId: string, email?: string): Promise<Donation[]> {
+  const constraints: any[] = [orderBy("createdAt", "desc"), limit(50)];
+  if (userId) constraints.unshift(where("donorId", "==", userId));
+  const q = query(collection(db, DONATIONS_COLLECTION), ...constraints);
   const snap = await getDocs(q);
-  return collectionData<Donation>(snap);
+  let results = collectionData<Donation>(snap);
+  if (email && results.length === 0) {
+    const q2 = query(collection(db, DONATIONS_COLLECTION), where("donorEmail", "==", email), orderBy("createdAt", "desc"), limit(50));
+    const snap2 = await getDocs(q2);
+    results = collectionData<Donation>(snap2);
+  }
+  return results;
 }
 
 export async function addManualDonation(data: Omit<Donation, "id" | "createdAt" | "stripePaymentId" | "stripeSessionId"> & { showOnWall?: boolean; anonymous?: boolean }): Promise<string> {
