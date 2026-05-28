@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
-import { addSchedulingRequest } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 
 export default function EventSchedulingRequestPage() {
@@ -93,34 +92,39 @@ export default function EventSchedulingRequestPage() {
     setSubmitError("");
 
     try {
-      await addSchedulingRequest({
-        organizer: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-        },
-        eventTitle: formData.eventTitle,
-        category: formData.eventCategory,
-        description: formData.eventDescription,
-        start: formData.start,
-        end: formData.end,
-        hasHostSpeaker: formData.hasHostSpeaker,
-        hasFood: formData.hasFood,
-        foodService: formData.foodService,
-        location: formData.location,
-        facility: formData.facility,
-        roundTables: formData.roundTables ? Number(formData.roundTables) : undefined,
-        rectangularTables: formData.rectangularTables ? Number(formData.rectangularTables) : undefined,
-        chairs: formData.chairs ? Number(formData.chairs) : undefined,
-        equipment: formData.equipment,
-        volunteers: formData.volunteers ? Number(formData.volunteers) : undefined,
-        helpers: formData.helpers ? Number(formData.helpers) : undefined,
-        rsvpRequired: formData.rsvpRequired,
-        paymentRequired: formData.paymentRequired,
-        comments: formData.comments,
-        status: "pending",
+      const res = await fetch("/api/event-scheduling", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizer: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+          },
+          eventTitle: formData.eventTitle,
+          category: formData.eventCategory,
+          description: formData.eventDescription,
+          start: formData.start,
+          end: formData.end,
+          hasHostSpeaker: formData.hasHostSpeaker,
+          hasFood: formData.hasFood,
+          foodService: formData.foodService,
+          location: formData.location,
+          facility: formData.facility,
+          roundTables: formData.roundTables ? Number(formData.roundTables) : undefined,
+          rectangularTables: formData.rectangularTables ? Number(formData.rectangularTables) : undefined,
+          chairs: formData.chairs ? Number(formData.chairs) : undefined,
+          equipment: formData.equipment,
+          volunteers: formData.volunteers ? Number(formData.volunteers) : undefined,
+          helpers: formData.helpers ? Number(formData.helpers) : undefined,
+          rsvpRequired: formData.rsvpRequired,
+          paymentRequired: formData.paymentRequired,
+          comments: formData.comments,
+        }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
 
       setSubmitSuccess(true);
       setFormData({

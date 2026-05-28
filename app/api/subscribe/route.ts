@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
                   <li>Volunteer opportunities</li>
                 </ul>
                 <p style="color: #6b7280; font-size: 14px;">If you did not subscribe, you can ignore this email.</p>
+                <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+                  <a href="https://mhma-update.vercel.app/subscribe" style="color: #c9a227;">Unsubscribe</a> at any time.
+                </p>
                 <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">Mountain House Muslim Association</p>
               </div>
             `,

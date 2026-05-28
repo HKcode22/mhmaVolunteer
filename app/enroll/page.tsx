@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, fullName } from "@/lib/auth-context";
-import { addEnrollment } from "@/lib/firebase";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -84,7 +83,13 @@ function EnrollForm() {
     setLoading(true);
 
     try {
-      await addEnrollment({ fullName: formData.fullName, email: formData.email, phone: formData.phone, program: formData.program, message: formData.message, status: "pending" });
+      const res = await fetch("/api/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName: formData.fullName, email: formData.email, phone: formData.phone, program: formData.program, message: formData.message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
 
       setSuccess(true);
       setFormData({

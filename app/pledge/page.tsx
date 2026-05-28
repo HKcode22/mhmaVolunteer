@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Heart, CheckCircle, Loader2 } from "lucide-react";
-import { createPledge } from "@/lib/firebase";
-import { auth } from "@/lib/firebase-client";
 import { useAuth, fullName } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -39,14 +37,20 @@ export default function PledgePage() {
     }
     setSubmitting(true);
     try {
-      await createPledge({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim() || undefined,
-        amount: amountNum,
-        message: form.message.trim() || undefined,
-        userUid: user?.uid,
+      const res = await fetch("/api/pledge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || undefined,
+          amount: amountNum,
+          message: form.message.trim() || undefined,
+          userUid: user?.uid,
+        }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
       setDone(true);
     } catch (err: any) {
       setError(err.message || "Failed to submit pledge.");

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Navigation from "@/app/components/Navigation";
 import { MapPin, Mail, Phone, Send, ChevronRight, Clock, Users, Youtube, Instagram, Globe } from "lucide-react";
 
-import { addContactSubmission } from "@/lib/firebase";
 import { useAuth, fullName } from "@/lib/auth-context";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -49,7 +48,13 @@ export default function ContactPage() {
     setSubmitError("");
 
     try {
-      await addContactSubmission({ name: formData.name, email: formData.email, phone: formData.phone, subject: formData.subject, message: formData.message, read: false });
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, subject: formData.subject, message: formData.message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
 
       setSubmitted(true);
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
