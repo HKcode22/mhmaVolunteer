@@ -124,10 +124,14 @@ service cloud.firestore {
     }
 
     // ─── Pledges ───
-    // Anyone can create a pledge. Board members can read and update status.
+    // Anyone can create a pledge. Donors can read their own (by userUid or email). Board members can read/update/delete.
     match /pledges/{pledge} {
       allow create: if true;
-      allow read, update, delete: if isBoardMember();
+      allow read: if isBoardMember()
+        || (isAuthenticated() && resource.data.userUid == request.auth.uid)
+        || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow update: if isBoardMember();
+      allow delete: if isBoardMember();
     }
 
     // ─── Subscribers (Newsletter) ───
@@ -149,9 +153,12 @@ service cloud.firestore {
     }
 
     // ─── Donations ───
-    // Board members can read/create/delete. Donors can read their own.
+    // Any authenticated user can read completed donations (for public tracking on homepage/donate/construction).
+    // Donors can read their own (by donorId or email). Board members can read/write all.
     match /donations/{donation} {
-      allow read: if isBoardMember() || (isAuthenticated() && resource.data.donorId == request.auth.uid);
+      allow read: if isBoardMember()
+        || (isAuthenticated() && resource.data.status == "completed")
+        || (isAuthenticated() && resource.data.donorId == request.auth.uid);
       allow create: if isBoardMember();
       allow update: if isBoardMember();
       allow delete: if isBoardMember();

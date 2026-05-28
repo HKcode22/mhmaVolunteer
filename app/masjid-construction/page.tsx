@@ -27,7 +27,7 @@ export default function MasjidConstructionPage() {
     fetchDonations(200).then(d => {
       const construction = d.filter(d => d.designation === "construction");
       const total = construction.reduce((s, d) => s + (d.amount || 0), 0);
-      setRaisedFromDonations(total);
+      setRaisedFromDonations(total / 100);
     }).catch(() => {});
   }, []);
 

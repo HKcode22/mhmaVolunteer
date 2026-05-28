@@ -398,7 +398,7 @@ useEffect(() => {
         .reduce((s, d) => s + (d.amount || 0), 0);
       const latest = masjidData[0] || {};
       if (constructionTotal > 0) {
-        latest.raised = Math.max(latest.raised || 0, constructionTotal);
+        latest.raised = Math.max(latest.raised || 0, constructionTotal / 100);
       }
       setMasjidUpdates([latest]);
       // Prefer masjid construction image for hero, fall back to event poster

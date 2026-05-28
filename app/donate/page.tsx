@@ -58,7 +58,7 @@ export default function DonatePage() {
     fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
     fetchDonations(200).then(d => {
       const constructionTotal = d.filter(d => d.designation === "construction").reduce((s, d) => s + (d.amount || 0), 0);
-      setRaisedFromDonations(constructionTotal);
+      setRaisedFromDonations(constructionTotal / 100);
     }).catch(() => {});
   }, []);
 
@@ -140,7 +140,7 @@ export default function DonatePage() {
                       return (
                         <button
                           key={d.key}
-                          onClick={() => setDesignation(d.key)}
+                          onClick={() => { setDesignation(d.key); if (success) setSuccess(false); }}
                           className={`p-4 rounded-2xl border-2 text-center transition-all duration-200 ${
                             active
                               ? `${d.color} text-white border-transparent shadow-lg scale-[1.02]`
@@ -194,7 +194,11 @@ export default function DonatePage() {
                         </div>
                         <h3 className="text-xl font-bold text-green-800 mb-2">Thank You for Your Donation!</h3>
                         <p className="text-green-600">Your donation has been received. JazakAllah Khair!</p>
-                        <p className="text-xs text-green-500 mt-4">It may take a moment to appear in donation history.</p>
+                        <p className="text-xs text-green-500 mt-2">It may take a moment to appear in donation history.</p>
+                        <button onClick={() => { setSuccess(false); setAmount(""); }}
+                          className="mt-6 inline-flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-semibold text-sm">
+                          <Heart className="w-4 h-4" /> Donate Again
+                        </button>
                       </div>
                     ) : (
                       <div className="space-y-4">

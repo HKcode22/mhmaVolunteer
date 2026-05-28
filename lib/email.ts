@@ -1,15 +1,62 @@
+import nodemailer from "nodemailer";
+
+function getFrom(): string {
+  return process.env.EMAIL_FROM || "noreply@mhma-backend.firebaseapp.com";
+}
+
 export async function sendEmail(to: string, subject: string, html: string) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return;
-  try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ from: "MHMA <onboarding@resend.dev>", to, subject, html }),
-    });
-  } catch (err) {
-    console.error("Email send error:", err);
+  // Try Resend first
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendKey}` },
+        body: JSON.stringify({ from: getFrom(), to, subject, html }),
+      });
+      if (res.ok) return;
+      console.error("Resend failed, falling back to SMTP:", await res.text());
+    } catch (err) {
+      console.error("Resend error, falling back to SMTP:", err);
+    }
   }
+
+  // Fallback: SMTP (configure via env vars)
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (host && user && pass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host,
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: { user, pass },
+      });
+      await transporter.sendMail({ from: getFrom(), to, subject, html });
+      return;
+    } catch (err) {
+      console.error("SMTP error:", err);
+    }
+  }
+
+  // Fallback: Gmail App Password (via env vars)
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (gmailUser && gmailPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: { user: gmailUser, pass: gmailPass },
+      });
+      await transporter.sendMail({ from: gmailUser, to, subject, html });
+      return;
+    } catch (err) {
+      console.error("Gmail SMTP error:", err);
+    }
+  }
+
+  console.warn("No email provider configured. Set RESEND_API_KEY, SMTP_* env vars, or GMAIL_USER/GMAIL_APP_PASSWORD.");
 }
 
 export function confirmationEmail(name: string, message: string) {
