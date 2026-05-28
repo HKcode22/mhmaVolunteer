@@ -17,13 +17,6 @@
       ]
     },
     {
-      "collectionGroup": "donations",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "pledges",
       "queryScope": "COLLECTION",
       "fields": [
