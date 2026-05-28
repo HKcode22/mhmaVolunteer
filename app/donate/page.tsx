@@ -44,9 +44,14 @@ export default function DonatePage() {
   const [recurring, setRecurring] = useState(false);
   const [amount, setAmount] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [copied, setCopied] = useState("");
 
   useEffect(() => {
+    if (window.location.search.includes("success=true")) {
+      setSuccess(true);
+      window.history.replaceState({}, "", "/donate");
+    }
     fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
   }, []);
 
@@ -175,36 +180,45 @@ export default function DonatePage() {
                       </p>
                     )}
 
-                    {/* Amount Input + Checkout Button */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Amount ($)</label>
-                        <input
-                          type="number"
-                          min="1"
-                          step="0.01"
-                          value={amount}
-                          onChange={e => setAmount(e.target.value)}
-                          placeholder="Enter amount"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none text-lg font-bold text-gray-900"
-                        />
+                    {success ? (
+                      <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Check className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-green-800 mb-2">Thank You for Your Donation!</h3>
+                        <p className="text-green-600">Your donation has been received. JazakAllah Khair!</p>
+                        <p className="text-xs text-green-500 mt-4">It may take a moment to appear in donation history.</p>
                       </div>
-                      <button
-                        onClick={handleDonate}
-                        disabled={!amount || parseFloat(amount) < 1 || processing}
-                        className="w-full py-3.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light font-bold text-lg disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                      >
-                        {processing ? (
-                          <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Processing...</>
-                        ) : (
-                          <><Heart className="w-5 h-5" /> Donate ${parseFloat(amount || "0").toFixed(2)}</>
-                        )}
-                      </button>
-                    </div>
-
-                    <p className="mt-8 text-xs text-gray-400 text-center uppercase tracking-widest font-medium">
-                      All donations are 100% Tax Deductible
-                    </p>
+                    ) : (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Amount ($)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            step="0.01"
+                            value={amount}
+                            onChange={e => setAmount(e.target.value)}
+                            placeholder="Enter amount"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none text-lg font-bold text-gray-900"
+                          />
+                        </div>
+                        <button
+                          onClick={handleDonate}
+                          disabled={!amount || parseFloat(amount) < 1 || processing}
+                          className="w-full py-3.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light font-bold text-lg disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                          {processing ? (
+                            <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Processing...</>
+                          ) : (
+                            <><Heart className="w-5 h-5" /> Donate ${parseFloat(amount || "0").toFixed(2)}</>
+                          )}
+                        </button>
+                        <p className="text-xs text-gray-400 text-center uppercase tracking-widest font-medium">
+                          All donations are 100% Tax Deductible
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                 {/* Donor Wall */}
