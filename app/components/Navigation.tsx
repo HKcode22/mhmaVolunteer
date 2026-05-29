@@ -92,12 +92,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   <User className="w-3.5 h-3.5" /> PROFILE
                 </Link>
                 <div className="relative group">
-                  <Link href="/dashboard" className={`text-white hover:text-mhma-gold font-medium transition-colors flex items-center gap-1 ${currentPage === "dashboard" ? "text-mhma-gold" : ""}`}>
+                  <Link href="/dashboard" className="text-white hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
                     DASHBOARD<span className="text-[10px]">▼</span>
                   </Link>
-                  {currentPage === "dashboard" && <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-mhma-gold rounded-full" />}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[70]">
-                    <div className="bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5 min-w-[400px]">
+                    <div className="bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5 w-72">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
                       <div className="flex">
                         <div className="flex-1 py-2">
@@ -176,28 +175,28 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/about" className={`${navLinkClass("about")} ${currentPage === "about" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   ABOUT<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
-                    <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/board" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">BOARD</Link>
-                    <Link href="/committees" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">COMMITTEES</Link>
-                    <Link href="/bylaws" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">BYLAWS</Link>
-                    <Link href="/community-transparency" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">COMMUNITY TRANSPARENCY</Link>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                      <div className="h-0.5 bg-mhma-gold w-full"></div>
+                      <Link href="/board" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Board</Link>
+                      <Link href="/committees" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Committees</Link>
+                      <Link href="/bylaws" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Bylaws</Link>
+                      <Link href="/community-transparency" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Community Transparency</Link>
+                    </div>
                   </div>
-                </div>
               </div>
 
               <div className="relative group">
                 <Link href="/events" className={`${navLinkClass("events")} ${currentPage === "events" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   EVENTS<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
-                    <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/rsvp" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">RSVP</Link>
-                    <Link href="/event-scheduling-request" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SCHEDULING REQUEST</Link>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                      <div className="h-0.5 bg-mhma-gold w-full"></div>
+                      <Link href="/rsvp" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">RSVP</Link>
+                      <Link href="/event-scheduling-request" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Scheduling Request</Link>
+                    </div>
                   </div>
-                </div>
               </div>
 
               {/* JOURNAL (commented out per board request)
@@ -210,39 +209,39 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/programs" className={`${navLinkClass("programs")} ${currentPage === "programs" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   PROGRAMS<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
-                    <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/enroll" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ENROLL NOW</Link>
-                    <Link href="/zakat" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ZAKAT</Link>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                      <div className="h-0.5 bg-mhma-gold w-full"></div>
+                      <Link href="/enroll" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Enroll Now</Link>
+                      <Link href="/zakat" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Zakat</Link>
+                    </div>
                   </div>
-                </div>
               </div>
 
               <div className="relative group">
                 <Link href="/donate" className={`${navLinkClass("donate")} ${currentPage === "donate" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   DONATE<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
-                    <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/masjid-construction" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MASJID CONSTRUCTION</Link>
-                    <Link href="/pledge" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">PLEDGE</Link>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                      <div className="h-0.5 bg-mhma-gold w-full"></div>
+                      <Link href="/masjid-construction" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Masjid Construction</Link>
+                      <Link href="/pledge" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Pledge</Link>
+                    </div>
                   </div>
-                </div>
               </div>
 
               <div className="relative group">
                 <Link href="/contact" className={`${navLinkClass("contact")} ${currentPage === "contact" || currentPage === "subscribe" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   CONTACT<span className="text-[10px]">▼</span>
                 </Link>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
-                    <div className="h-0.5 bg-mhma-gold w-full"></div>
-                    <Link href="/subscribe" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NEWSLETTER</Link>
-                    <Link href="/volunteer" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">VOLUNTEER</Link>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                      <div className="h-0.5 bg-mhma-gold w-full"></div>
+                      <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Newsletter</Link>
+                      <Link href="/volunteer" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Volunteer</Link>
+                    </div>
                   </div>
-                </div>
               </div>
             </div>
 
