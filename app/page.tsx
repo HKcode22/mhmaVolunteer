@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
-import { fetchEvents, fetchPrograms, fetchMasjidUpdates, fetchDonations } from "@/lib/firebase";
+import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
@@ -384,28 +384,26 @@ export default function HomePage() {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, masjidData, allDonations] = await Promise.allSettled([
+      const [eventsData, programs, masjidData, donationTotals] = await Promise.allSettled([
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(1),
-        fetchDonations(1000),
+        fetch("/api/donation-totals").then(r => r.json()),
       ]);
 
       const events = eventsData.status === "fulfilled" ? eventsData.value : [];
       const prog = programs.status === "fulfilled" ? programs.value : [];
       const masjid = masjidData.status === "fulfilled" ? masjidData.value : [];
-      const donations = allDonations.status === "fulfilled" ? allDonations.value : [];
+      const totals = donationTotals.status === "fulfilled" ? donationTotals.value : null;
 
       setEvents(events);
       setPrograms(prog);
 
-      // Compute raised from actual donation data
-      const constructionTotal = donations
-        .filter(d => d.designation === "construction" && d.status === "completed")
-        .reduce((s, d) => s + (d.amount || 0), 0);
+      // Compute raised from actual donation data via API
+      const constructionTotal = totals?.constructionTotal || 0;
       const latest = masjid[0] || {};
       if (constructionTotal > 0) {
-        latest.raised = Math.max(latest.raised || 0, constructionTotal / 100);
+        latest.raised = Math.max(latest.raised || 0, constructionTotal);
       }
       setMasjidUpdates([latest]);
 

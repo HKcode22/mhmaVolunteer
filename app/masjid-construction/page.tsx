@@ -7,7 +7,7 @@ import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin, Mail, Phone, H
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import GalleryLightbox from "@/app/components/GalleryLightbox";
-import { fetchMasjidUpdates, fetchDonations, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
 
 export default function MasjidConstructionPage() {
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
@@ -24,10 +24,8 @@ export default function MasjidConstructionPage() {
 
   useEffect(() => {
     fetchMasjidUpdates(20).then(data => { setUpdates(data); setLoading(false); }).catch(() => setLoading(false));
-    fetchDonations(200).then(d => {
-      const construction = d.filter(d => d.designation === "construction");
-      const total = construction.reduce((s, d) => s + (d.amount || 0), 0);
-      setRaisedFromDonations(total / 100);
+    fetch("/api/donation-totals").then(r => r.json()).then(d => {
+      setRaisedFromDonations(d.constructionTotal || 0);
     }).catch(() => {});
   }, []);
 

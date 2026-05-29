@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import DonorWall from "@/app/components/DonorWall";
-import { fetchMasjidUpdates, fetchDonations, fetchDonationsByUser, FirebaseMasjidUpdate, Donation } from "@/lib/firebase";
+import { fetchMasjidUpdates, fetchDonationsByUser, FirebaseMasjidUpdate, Donation } from "@/lib/firebase";
 
 type Designation = "general" | "construction" | "zakat" | "programs" | "other";
 
@@ -56,9 +56,8 @@ export default function DonatePage() {
       window.history.replaceState({}, "", "/donate");
     }
     fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
-    fetchDonations(200).then(d => {
-      const constructionTotal = d.filter(d => d.designation === "construction").reduce((s, d) => s + (d.amount || 0), 0);
-      setRaisedFromDonations(constructionTotal / 100);
+    fetch("/api/donation-totals").then(r => r.json()).then(d => {
+      setRaisedFromDonations(d.constructionTotal || 0);
     }).catch(() => {});
   }, []);
 

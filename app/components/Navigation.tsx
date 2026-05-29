@@ -54,10 +54,15 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ANALYTICS</Link>
                       <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ACTIVITY LOG</Link>
                       <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MEMBERS</Link>
+                      <Link href="/dashboard/enrollments" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ENROLL LIST</Link>
+                      <Link href="/dashboard/rsvps" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">RSVP LIST</Link>
+                      <Link href="/dashboard/contact-submissions" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">CONTACT SUBMISSIONS</Link>
+                      <Link href="/dashboard/scheduling-requests" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SCHEDULING REQUESTS</Link>
                       <Link href="/dashboard/pledges" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">PLEDGES</Link>
                       <Link href="/dashboard/donations" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">DONATIONS</Link>
                       <Link href="/dashboard/subscribers" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SUBSCRIBERS</Link>
                       <Link href="/dashboard/masjid-construction" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">CONSTRUCTION</Link>
+                      <Link href="/dashboard/testimonials" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">TESTIMONIALS</Link>
                       <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
                     </div>
                   </div>
@@ -146,10 +151,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 </div>
               </div>
 
-              <Link href="/volunteer" className={`${navLinkClass("volunteer")} ${currentPage === "volunteer" ? "text-mhma-gold" : "text-gray-700"}`}>
-                VOLUNTEER
-              </Link>
-
               <div className="relative group">
                 <Link href="/donate" className={`${navLinkClass("donate")} ${currentPage === "donate" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   DONATE<span className="text-[10px]">▼</span>
@@ -171,6 +172,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   <div className="w-48 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                     <div className="h-0.5 bg-mhma-gold w-full"></div>
                     <Link href="/subscribe" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NEWSLETTER</Link>
+                    <Link href="/volunteer" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">VOLUNTEER</Link>
                   </div>
                 </div>
               </div>
@@ -201,6 +203,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/masjid-construction" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ CONSTRUCTION</Link>
             <Link href="/contact" className="block py-2 text-gray-700 border-b border-gray-100">CONTACT</Link>
             <Link href="/subscribe" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ NEWSLETTER</Link>
+            <Link href="/volunteer" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ VOLUNTEER</Link>
             {isBoardMember ? (
               <>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
@@ -208,10 +211,15 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/dashboard/analytics" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Analytics</Link>
                 <Link href="/dashboard/activity" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Activity Log</Link>
                 <Link href="/dashboard/users" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Members</Link>
+                <Link href="/dashboard/enrollments" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Enroll List</Link>
+                <Link href="/dashboard/rsvps" className="block py-2 text-mhma-gold font-semibold pl-6">↳ RSVP List</Link>
+                <Link href="/dashboard/contact-submissions" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Contact Submissions</Link>
+                <Link href="/dashboard/scheduling-requests" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Scheduling Requests</Link>
                 <Link href="/dashboard/pledges" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Pledges</Link>
                 <Link href="/dashboard/donations" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Donations</Link>
                 <Link href="/dashboard/subscribers" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Subscribers</Link>
                 <Link href="/dashboard/masjid-construction" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Construction</Link>
+                <Link href="/dashboard/testimonials" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Testimonials</Link>
                 <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
               </>
             ) : isLoggedIn ? (

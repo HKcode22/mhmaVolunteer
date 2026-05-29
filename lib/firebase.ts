@@ -525,6 +525,39 @@ export async function fetchUsers(limitCount = 500): Promise<FirebaseUser[]> {
   return collectionData<FirebaseUser>(snap);
 }
 
+// ─── Testimonials ───
+
+export interface Testimonial {
+  id?: string;
+  name: string;
+  role?: string;
+  content: string;
+  displayOn: string[]; // e.g., ["homepage", "about", "programs"]
+  active: boolean;
+  createdAt?: any;
+}
+
+const TESTIMONIALS = "testimonials";
+
+export async function fetchTestimonials(limitCount = 50): Promise<Testimonial[]> {
+  const q = query(collection(db, TESTIMONIALS), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<Testimonial>(snap);
+}
+
+export async function addTestimonial(data: Omit<Testimonial, "id" | "createdAt">): Promise<string> {
+  const ref = await addDoc(collection(db, TESTIMONIALS), { ...data, createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function updateTestimonial(id: string, data: Partial<Testimonial>): Promise<void> {
+  await updateDoc(doc(db, TESTIMONIALS, id), data);
+}
+
+export async function deleteTestimonial(id: string): Promise<void> {
+  await deleteDoc(doc(db, TESTIMONIALS, id));
+}
+
 // ─── Activity Log ───
 
 export interface ActivityLogEntry {
