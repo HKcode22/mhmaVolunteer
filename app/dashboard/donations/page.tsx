@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Heart, Search, Mail, DollarSign, Clock, Trash2, Plus, X } from "lucide-react";
+import { ArrowLeft, Heart, Search, Mail, DollarSign, Clock, Trash2, Plus, X, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { fetchDonations, addManualDonation, deleteDonation, Donation } from "@/lib/firebase";
+import { fetchDonations, addManualDonation, deleteDonation, fetchUsers, Donation, FirebaseUser } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
 const designations = ["general", "construction", "zakat", "programs", "other"];
@@ -15,6 +15,7 @@ export default function DashboardDonationsPage() {
   const router = useRouter();
   const { user, isBoardMember, loading: authLoading } = useAuth();
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [users, setUsers] = useState<FirebaseUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [designationFilter, setDesignationFilter] = useState<string>(() => {
@@ -28,7 +29,14 @@ export default function DashboardDonationsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchDonations(200).then(d => { setDonations(d); setLoading(false); }).catch(() => setLoading(false));
+    Promise.all([
+      fetchDonations(200),
+      fetchUsers(500),
+    ]).then(([d, u]) => {
+      setDonations(d);
+      setUsers(u);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = donations.filter(d => {
@@ -259,6 +267,7 @@ export default function DashboardDonationsPage() {
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Donor</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Member</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Amount</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Designation</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Method</th>
@@ -276,6 +285,20 @@ export default function DashboardDonationsPage() {
                             <Mail className="w-3 h-3" /> {d.donorEmail}
                           </a>}
                           {d.donorId && <p className="text-xs text-gray-400 mt-0.5">ID: {d.donorId.slice(0, 12)}...</p>}
+                        </td>
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const member = d.donorId ? users.find(u => u.id === d.donorId) : null;
+                            return member ? (
+                              <div>
+                                <p className="font-medium text-gray-900 text-sm">{member.displayName || `${member.firstName || ""} ${member.lastName || ""}`.trim() || "—"}</p>
+                                <p className="text-xs text-gray-500">{member.email}</p>
+                                <span className="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-mhma-cream text-mhma-forest mt-0.5">{member.role}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-3 font-bold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</td>
                         <td className="px-4 py-3">

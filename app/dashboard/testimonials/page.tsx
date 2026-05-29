@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Search, Clock, Star, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Search, Clock, Star, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { fetchTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, Testimonial } from "@/lib/firebase";
+import { fetchTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, fetchPrograms, fetchEvents, Testimonial, FirebaseProgram, FirebaseEvent } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardTestimonialsPage() {
@@ -17,11 +17,24 @@ export default function DashboardTestimonialsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", role: "", content: "", displayOn: [] as string[], active: true });
   const [saving, setSaving] = useState(false);
+  const [programs, setPrograms] = useState<FirebaseProgram[]>([]);
+  const [events, setEvents] = useState<FirebaseEvent[]>([]);
+  const [showProgList, setShowProgList] = useState(false);
+  const [showEventList, setShowEventList] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchTestimonials(100).then(d => { setItems(d); setLoading(false); }).catch(() => setLoading(false));
+    Promise.all([
+      fetchTestimonials(100),
+      fetchPrograms(100),
+      fetchEvents(100),
+    ]).then(([t, p, e]) => {
+      setItems(t);
+      setPrograms(p);
+      setEvents(e);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = items.filter(i => {
@@ -49,7 +62,23 @@ export default function DashboardTestimonialsPage() {
 
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
 
-  const pageOptions = ["homepage", "about", "programs", "donate", "contact"];
+  const pageOptions = ["homepage", "about", "donate", "contact"];
+
+  const isDisplayed = (val: string) => form.displayOn.includes(val);
+  const toggleDisplay = (val: string) => {
+    setForm(prev => ({
+      ...prev,
+      displayOn: prev.displayOn.includes(val)
+        ? prev.displayOn.filter(p => p !== val)
+        : [...prev.displayOn, val]
+    }));
+  };
+
+  const formatLabel = (val: string) => {
+    if (val.startsWith("program:")) return val.replace("program:", "");
+    if (val.startsWith("event:")) return val.replace("event:", "");
+    return val.charAt(0).toUpperCase() + val.slice(1);
+  };
 
   return (
     <div className="min-h-screen bg-mhma-cream">
@@ -75,7 +104,7 @@ export default function DashboardTestimonialsPage() {
               <h2 className="font-bold text-gray-900 mb-4">New Testimonial</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Name *</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Author Name *</label>
                   <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" placeholder="Jane Doe" />
                 </div>
@@ -86,20 +115,64 @@ export default function DashboardTestimonialsPage() {
                 </div>
               </div>
               <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Testimonial Content *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Testimonial Text *</label>
                 <textarea value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} rows={3}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" placeholder="What they said..." />
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" placeholder="The testimonial content..." />
               </div>
               <div className="mb-4">
                 <label className="block text-xs font-medium text-gray-500 mb-2">Show on pages:</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-2">
                   {pageOptions.map(p => (
-                    <button key={p} onClick={() => togglePage(p)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${form.displayOn.includes(p) ? "bg-mhma-forest text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                    <button key={p} onClick={() => toggleDisplay(p)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isDisplayed(p) ? "bg-mhma-forest text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                       {p.charAt(0).toUpperCase() + p.slice(1)}
                     </button>
                   ))}
                 </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <button type="button" onClick={() => setShowProgList(!showProgList)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                    {showProgList ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    Programs ({programs.length})
+                  </button>
+                  <button type="button" onClick={() => setShowEventList(!showEventList)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                    {showEventList ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    Events ({events.length})
+                  </button>
+                </div>
+                {showProgList && (
+                  <div className="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200 max-h-40 overflow-y-auto">
+                    {programs.length === 0 && <span className="text-xs text-gray-400">No programs available.</span>}
+                    {programs.map(prog => (
+                      <button key={prog.slug} onClick={() => toggleDisplay(`program:${prog.title}`)}
+                        className={`px-2 py-1 rounded text-xs font-medium transition-colors ${isDisplayed(`program:${prog.title}`) ? "bg-mhma-forest text-white" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"}`}>
+                        {prog.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showEventList && (
+                  <div className="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200 max-h-40 overflow-y-auto">
+                    {events.length === 0 && <span className="text-xs text-gray-400">No events available.</span>}
+                    {events.map(evt => (
+                      <button key={evt.id} onClick={() => toggleDisplay(`event:${evt.title}`)}
+                        className={`px-2 py-1 rounded text-xs font-medium transition-colors ${isDisplayed(`event:${evt.title}`) ? "bg-mhma-forest text-white" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"}`}>
+                        {evt.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {form.displayOn.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {form.displayOn.map(v => (
+                      <span key={v} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-mhma-forest/10 text-mhma-forest font-medium">
+                        {formatLabel(v)}
+                        <button onClick={() => toggleDisplay(v)} className="hover:text-red-500">&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 mb-4">
                 <label className="flex items-center gap-2 cursor-pointer">

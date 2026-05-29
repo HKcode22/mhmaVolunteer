@@ -49,21 +49,27 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     DASHBOARD<span className="text-[10px]">▼</span>
                   </Link>
                   <div className="absolute top-full right-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[70]">
-                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="w-72 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
-                      <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ANALYTICS</Link>
-                      <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ACTIVITY LOG</Link>
-                      <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">MEMBERS</Link>
-                      <Link href="/dashboard/enrollments" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">ENROLL LIST</Link>
-                      <Link href="/dashboard/rsvps" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">RSVP LIST</Link>
-                      <Link href="/dashboard/contact-submissions" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">CONTACT SUBMISSIONS</Link>
-                      <Link href="/dashboard/scheduling-requests" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SCHEDULING REQUESTS</Link>
-                      <Link href="/dashboard/pledges" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">PLEDGES</Link>
-                      <Link href="/dashboard/donations" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">DONATIONS</Link>
-                      <Link href="/dashboard/subscribers" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">SUBSCRIBERS</Link>
-                      <Link href="/dashboard/masjid-construction" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">CONSTRUCTION</Link>
-                      <Link href="/dashboard/testimonials" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">TESTIMONIALS</Link>
-                      <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center">NOTIFICATIONS</Link>
+                      <div className="grid grid-cols-2 gap-0">
+                        <Link href="/dashboard" className="col-span-2 block px-3 py-2 text-sm font-bold hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">DASHBOARD HOME</Link>
+                        <Link href="/dashboard/programs/new" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">ADD PROGRAM</Link>
+                        <Link href="/dashboard/events/new" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">ADD EVENT</Link>
+                        <Link href="/dashboard/analytics" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">ANALYTICS</Link>
+                        <Link href="/dashboard/activity" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">ACTIVITY LOG</Link>
+                        <Link href="/dashboard/users" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">MEMBERS</Link>
+                        <Link href="/dashboard/enrollments" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">ENROLL LIST</Link>
+                        <Link href="/dashboard/rsvps" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">RSVP LIST</Link>
+                        <Link href="/dashboard/contact-submissions" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">CONTACT</Link>
+                        <Link href="/dashboard/scheduling-requests" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">SCHEDULING</Link>
+                        <Link href="/dashboard/pledges" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">PLEDGES</Link>
+                        <Link href="/dashboard/donations" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">DONATIONS</Link>
+                        <Link href="/dashboard/subscribers" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">SUBSCRIBERS</Link>
+                        <Link href="/dashboard/masjid-construction" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-b border-gray-100">CONSTRUCTION</Link>
+                        <Link href="/dashboard/testimonials" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-b border-gray-100">TESTIMONIALS</Link>
+                        <Link href="/dashboard/notifications" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center border-r border-gray-100">NOTIFICATIONS</Link>
+                        <Link href="/dashboard/donations" className="block px-3 py-2 text-sm hover:bg-mhma-cream hover:text-mhma-forest text-center"></Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -208,19 +214,23 @@ export default function Navigation({ currentPage }: NavigationProps) {
               <>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
                 <Link href="/dashboard" className="block py-2 text-mhma-gold font-semibold">DASHBOARD</Link>
-                <Link href="/dashboard/analytics" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Analytics</Link>
-                <Link href="/dashboard/activity" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Activity Log</Link>
-                <Link href="/dashboard/users" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Members</Link>
-                <Link href="/dashboard/enrollments" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Enroll List</Link>
-                <Link href="/dashboard/rsvps" className="block py-2 text-mhma-gold font-semibold pl-6">↳ RSVP List</Link>
-                <Link href="/dashboard/contact-submissions" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Contact Submissions</Link>
-                <Link href="/dashboard/scheduling-requests" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Scheduling Requests</Link>
-                <Link href="/dashboard/pledges" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Pledges</Link>
-                <Link href="/dashboard/donations" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Donations</Link>
-                <Link href="/dashboard/subscribers" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Subscribers</Link>
-                <Link href="/dashboard/masjid-construction" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Construction</Link>
-                <Link href="/dashboard/testimonials" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Testimonials</Link>
-                <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold pl-6">↳ Notifications</Link>
+                <div className="grid grid-cols-2 gap-1 pl-6">
+                  <Link href="/dashboard/programs/new" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Add Program</Link>
+                  <Link href="/dashboard/events/new" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Add Event</Link>
+                  <Link href="/dashboard/analytics" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Analytics</Link>
+                  <Link href="/dashboard/activity" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Activity Log</Link>
+                  <Link href="/dashboard/users" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Members</Link>
+                  <Link href="/dashboard/enrollments" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Enroll List</Link>
+                  <Link href="/dashboard/rsvps" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ RSVP List</Link>
+                  <Link href="/dashboard/contact-submissions" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Contact</Link>
+                  <Link href="/dashboard/scheduling-requests" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Scheduling</Link>
+                  <Link href="/dashboard/pledges" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Pledges</Link>
+                  <Link href="/dashboard/donations" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Donations</Link>
+                  <Link href="/dashboard/subscribers" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Subscribers</Link>
+                  <Link href="/dashboard/masjid-construction" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Construction</Link>
+                  <Link href="/dashboard/testimonials" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Testimonials</Link>
+                  <Link href="/dashboard/notifications" className="block py-1.5 text-mhma-gold font-semibold text-sm">↳ Notifications</Link>
+                </div>
               </>
             ) : isLoggedIn ? (
               <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>

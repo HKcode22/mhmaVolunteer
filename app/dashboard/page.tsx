@@ -54,41 +54,88 @@ export default function DashboardPage() {
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
+  const [customizeTab, setCustomizeTab] = useState<"actions" | "sections">("actions");
   const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
+  const defaultQuickOrder = [
+    "add-program", "add-event", "analytics", "activity", "notifications",
+    "pledges", "subscribers", "donations", "construction", "members",
+    "enroll-list", "rsvp-list", "contact", "scheduling", "testimonials"
+  ];
+  const [quickOrder, setQuickOrder] = useState<string[]>(defaultQuickOrder);
+
+  const quickActionMeta: Record<string, { label: string; icon: string; href: string }> = {
+    "add-program": { label: "Add Program", icon: "Plus", href: "/dashboard/programs/new" },
+    "add-event": { label: "Add Event", icon: "Plus", href: "/dashboard/events/new" },
+    "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
+    "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
+    "notifications": { label: "Notifications", icon: "Bell", href: "/dashboard/notifications" },
+    "pledges": { label: "Pledges", icon: "Heart", href: "/dashboard/pledges" },
+    "subscribers": { label: "Subscribers", icon: "Mail", href: "/dashboard/subscribers" },
+    "donations": { label: "Donations", icon: "Heart", href: "/dashboard/donations" },
+    "construction": { label: "Construction", icon: "Building2", href: "/dashboard/masjid-construction" },
+    "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
+    "enroll-list": { label: "Enroll List", icon: "Users", href: "/dashboard/enrollments" },
+    "rsvp-list": { label: "RSVP List", icon: "Calendar", href: "/dashboard/rsvps" },
+    "contact": { label: "Contact", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
+    "scheduling": { label: "Scheduling", icon: "Clock", href: "/dashboard/scheduling-requests" },
+    "testimonials": { label: "Testimonials", icon: "Star", href: "/dashboard/testimonials" },
+  };
 
   useEffect(() => {
     if (user?.uid) {
       getDoc(doc(db, "users", user.uid)).then(snap => {
-        if (snap.exists() && snap.data().dashboardOrder) {
-          const saved = snap.data().dashboardOrder as string[];
-          const merged = [...saved];
-          for (const item of defaultOrder) {
-            if (!merged.includes(item)) merged.push(item);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.dashboardOrder) {
+            const saved = data.dashboardOrder as string[];
+            const merged = [...saved];
+            for (const item of defaultOrder) {
+              if (!merged.includes(item)) merged.push(item);
+            }
+            setLayoutOrder(merged);
           }
-          setLayoutOrder(merged);
+          if (data.quickOrder) {
+            const saved = data.quickOrder as string[];
+            const merged = [...saved];
+            for (const item of defaultQuickOrder) {
+              if (!merged.includes(item)) merged.push(item);
+            }
+            setQuickOrder(merged);
+          }
         }
       });
     }
   }, [user?.uid]);
 
-  const saveLayoutOrder = async (newOrder: string[]) => {
-    setLayoutOrder(newOrder);
+  const saveAllOrders = async (layout: string[], quick: string[]) => {
+    setLayoutOrder(layout);
+    setQuickOrder(quick);
     if (user?.uid) {
       try {
-        await setDoc(doc(db, "users", user.uid), { dashboardOrder: newOrder }, { merge: true });
+        await setDoc(doc(db, "users", user.uid), { dashboardOrder: layout, quickOrder: quick }, { merge: true });
       } catch (err) {
         console.error("Failed to save layout:", err);
       }
     }
   };
 
-  const moveSection = (index: number, direction: "up" | "down") => {
-    const newOrder = [...layoutOrder];
+  const moveSection = (arr: string[], index: number, direction: "up" | "down"): string[] => {
+    const newArr = [...arr];
     const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
-    [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
-    saveLayoutOrder(newOrder);
+    if (targetIndex < 0 || targetIndex >= newArr.length) return arr;
+    [newArr[index], newArr[targetIndex]] = [newArr[targetIndex], newArr[index]];
+    return newArr;
+  };
+
+  const sectionLabel = (s: string) => {
+    const labels: Record<string, string> = {
+      programs: "Programs", events: "Events", requests: "Scheduling Requests",
+      enrollments: "Enrollments", rsvps: "Event RSVPs", submissions: "Contact Submissions",
+      codes: "Invite Codes", users: "Members", subscribers: "Subscribers",
+      pledges: "Pledges", donations: "Donations",
+    };
+    return labels[s] || s.charAt(0).toUpperCase() + s.slice(1);
   };
 
   useEffect(() => {
@@ -302,51 +349,21 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
-            <Link href="/dashboard/programs/new" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Program</span>
-            </Link>
-            <Link href="/dashboard/events/new" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Plus className="w-6 h-6" /><span className="font-semibold text-sm">Add Event</span>
-            </Link>
-            <Link href="/dashboard/analytics" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <BarChart3 className="w-6 h-6" /><span className="font-semibold text-sm">Analytics</span>
-            </Link>
-            <Link href="/dashboard/activity" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Activity className="w-6 h-6" /><span className="font-semibold text-sm">Activity Log</span>
-            </Link>
-            <Link href="/dashboard/notifications" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Bell className="w-6 h-6" /><span className="font-semibold text-sm">Notifications</span>
-            </Link>
-            <Link href="/dashboard/pledges" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Heart className="w-6 h-6" /><span className="font-semibold text-sm">Pledges</span>
-            </Link>
-            <Link href="/dashboard/subscribers" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Mail className="w-6 h-6" /><span className="font-semibold text-sm">Subscribers</span>
-            </Link>
-            <Link href="/dashboard/donations" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Heart className="w-6 h-6" /><span className="font-semibold text-sm">Donations</span>
-            </Link>
-            <Link href="/dashboard/masjid-construction" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Building2 className="w-6 h-6" /><span className="font-semibold text-sm">Construction</span>
-            </Link>
-            <Link href="/dashboard/users" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Users className="w-6 h-6" /><span className="font-semibold text-sm">Members</span>
-            </Link>
-            <Link href="/dashboard/enrollments" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Users className="w-6 h-6" /><span className="font-semibold text-sm">Enroll List</span>
-            </Link>
-            <Link href="/dashboard/rsvps" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Calendar className="w-6 h-6" /><span className="font-semibold text-sm">RSVP List</span>
-            </Link>
-            <Link href="/dashboard/contact-submissions" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <MessageSquare className="w-6 h-6" /><span className="font-semibold text-sm">Contact</span>
-            </Link>
-            <Link href="/dashboard/scheduling-requests" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Clock className="w-6 h-6" /><span className="font-semibold text-sm">Scheduling</span>
-            </Link>
-            <Link href="/dashboard/testimonials" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-              <Star className="w-6 h-6" /><span className="font-semibold text-sm">Testimonials</span>
-            </Link>
+            {quickOrder.map(id => {
+              const action = quickActionMeta[id];
+              if (!action) return null;
+              const IconComponent = (() => {
+                const icons: Record<string, any> = {
+                  Plus, BarChart3, Activity, Bell, Heart, Mail, Building2, Users, Calendar, MessageSquare, Clock, Star
+                };
+                return icons[action.icon] || Heart;
+              })();
+              return (
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+                  <IconComponent className="w-6 h-6" /><span className="font-semibold text-sm">{action.label}</span>
+                </Link>
+              );
+            })}
           </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -649,39 +666,114 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* Customize Layout Modal */}
+      {/* Customize Dashboard Modal */}
       {showCustomize && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowCustomize(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Customize Dashboard Layout</h2>
-              <button onClick={() => setShowCustomize(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Customize Dashboard</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Reorder sections and quick actions to your liking</p>
+              </div>
+              <button onClick={() => setShowCustomize(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
-            <p className="text-gray-500 text-sm mb-4">Use the arrows to reorder sections. Changes are saved automatically.</p>
-            <div className="space-y-2">
-              {layoutOrder.map((section, idx) => (
-                <div key={section} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <span className="font-medium text-gray-900 capitalize">
-                    {section === "requests" ? "Scheduling Requests" : section === "codes" ? "Invite Codes" : section === "submissions" ? "Contact Submissions" : section === "rsvps" ? "Event RSVPs" : section === "users" ? "Members" : section === "subscribers" ? "Subscribers" : section === "pledges" ? "Pledges" : section === "donations" ? "Donations" : section}
-                  </span>
-                  <div className="flex gap-1">
-                    <button onClick={() => moveSection(idx, "up")} disabled={idx === 0}
-                      className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                      <ArrowUp className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => moveSection(idx, "down")} disabled={idx === layoutOrder.length - 1}
-                      className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                      <ArrowDown className="w-4 h-4" />
-                    </button>
+
+            {/* Tabs */}
+            <div className="flex border-b border-gray-100 px-6">
+              <button onClick={() => setCustomizeTab("actions")}
+                className={`pb-3 px-4 text-sm font-semibold transition-colors relative ${customizeTab === "actions" ? "text-mhma-forest" : "text-gray-500 hover:text-gray-700"}`}>
+                Quick Actions
+                {customizeTab === "actions" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-mhma-gold rounded-full" />}
+              </button>
+              <button onClick={() => setCustomizeTab("sections")}
+                className={`pb-3 px-4 text-sm font-semibold transition-colors relative ${customizeTab === "sections" ? "text-mhma-forest" : "text-gray-500 hover:text-gray-700"}`}>
+                Data Sections
+                {customizeTab === "sections" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-mhma-gold rounded-full" />}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {customizeTab === "actions" ? (
+                <div>
+                  <p className="text-xs text-gray-400 mb-3 uppercase tracking-wider font-medium">Drag buttons to reorder using arrows</p>
+                  <div className="space-y-2">
+                    {quickOrder.map((id, idx) => {
+                      const action = quickActionMeta[id];
+                      if (!action) return null;
+                      return (
+                        <div key={id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-mhma-gold/30 hover:shadow-sm transition-all">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-400 font-mono w-5">{idx + 1}</span>
+                            <span className="font-medium text-gray-900 text-sm">{action.label}</span>
+                          </div>
+                          <div className="flex gap-1">
+                            <button onClick={() => {
+                              const newOrder = moveSection(quickOrder, idx, "up");
+                              saveAllOrders(layoutOrder, newOrder);
+                            }} disabled={idx === 0}
+                              className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                              <ArrowUp className="w-4 h-4 text-gray-500" />
+                            </button>
+                            <button onClick={() => {
+                              const newOrder = moveSection(quickOrder, idx, "down");
+                              saveAllOrders(layoutOrder, newOrder);
+                            }} disabled={idx === quickOrder.length - 1}
+                              className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                              <ArrowDown className="w-4 h-4 text-gray-500" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
+                  <button onClick={() => saveAllOrders(layoutOrder, [...defaultQuickOrder])}
+                    className="mt-4 w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    Reset Quick Actions to Default
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <div>
+                  <p className="text-xs text-gray-400 mb-3 uppercase tracking-wider font-medium">Reorder data section cards</p>
+                  <div className="space-y-2">
+                    {layoutOrder.map((section, idx) => (
+                      <div key={section} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-mhma-gold/30 hover:shadow-sm transition-all">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-400 font-mono w-5">{idx + 1}</span>
+                          <span className="font-medium text-gray-900 text-sm">{sectionLabel(section)}</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => {
+                            const newOrder = moveSection(layoutOrder, idx, "up");
+                            saveAllOrders(newOrder, quickOrder);
+                          }} disabled={idx === 0}
+                            className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                            <ArrowUp className="w-4 h-4 text-gray-500" />
+                          </button>
+                          <button onClick={() => {
+                            const newOrder = moveSection(layoutOrder, idx, "down");
+                            saveAllOrders(newOrder, quickOrder);
+                          }} disabled={idx === layoutOrder.length - 1}
+                            className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                            <ArrowDown className="w-4 h-4 text-gray-500" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => saveAllOrders([...defaultOrder], quickOrder)}
+                    className="mt-4 w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    Reset Sections to Default
+                  </button>
+                </div>
+              )}
             </div>
-            <button onClick={() => {
-              saveLayoutOrder(["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"]);
-            }} className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              Reset to Default
-            </button>
+
+            <div className="border-t border-gray-100 p-4 flex justify-end">
+              <button onClick={() => setShowCustomize(false)}
+                className="px-5 py-2 bg-mhma-forest text-white rounded-lg hover:bg-mhma-forest-light text-sm font-medium transition-colors">
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

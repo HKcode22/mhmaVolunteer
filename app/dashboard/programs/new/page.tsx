@@ -177,12 +177,12 @@ export default function NewProgramPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quote Text</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Testimonial Text</label>
                 <input type="text" value={formData.quote} onChange={e => setFormData({ ...formData, quote: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" placeholder="Optional custom quote" />
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" placeholder="Optional testimonial text" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quote Author</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Testimonial Author</label>
                 <input type="text" value={formData.quoteAuthor} onChange={e => setFormData({ ...formData, quoteAuthor: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none" placeholder="e.g., Prophet Muhammad (ﷺ)" />
               </div>
