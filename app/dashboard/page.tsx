@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2 } from "lucide-react";
+import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2, Star } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -331,6 +331,21 @@ export default function DashboardPage() {
             </Link>
             <Link href="/dashboard/users" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
               <Users className="w-6 h-6" /><span className="font-semibold text-sm">Members</span>
+            </Link>
+            <Link href="/dashboard/enrollments" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Users className="w-6 h-6" /><span className="font-semibold text-sm">Enroll List</span>
+            </Link>
+            <Link href="/dashboard/rsvps" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Calendar className="w-6 h-6" /><span className="font-semibold text-sm">RSVP List</span>
+            </Link>
+            <Link href="/dashboard/contact-submissions" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <MessageSquare className="w-6 h-6" /><span className="font-semibold text-sm">Contact</span>
+            </Link>
+            <Link href="/dashboard/scheduling-requests" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Clock className="w-6 h-6" /><span className="font-semibold text-sm">Scheduling</span>
+            </Link>
+            <Link href="/dashboard/testimonials" className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
+              <Star className="w-6 h-6" /><span className="font-semibold text-sm">Testimonials</span>
             </Link>
           </div>
 

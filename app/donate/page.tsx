@@ -43,6 +43,7 @@ export default function DonatePage() {
   const { user } = useAuth();
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [raisedFromDonations, setRaisedFromDonations] = useState(0);
+  const [statsLoaded, setStatsLoaded] = useState(false);
   const [designation, setDesignation] = useState<Designation>("general");
   const [recurring, setRecurring] = useState(false);
   const [amount, setAmount] = useState("");
@@ -58,7 +59,8 @@ export default function DonatePage() {
     fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
     fetch("/api/donation-totals").then(r => r.json()).then(d => {
       setRaisedFromDonations(d.constructionTotal || 0);
-    }).catch(() => {});
+      setStatsLoaded(true);
+    }).catch(() => setStatsLoaded(true));
   }, []);
 
   const handleDonate = async () => {
@@ -84,8 +86,8 @@ export default function DonatePage() {
   };
 
   const goal = latest?.goal || 1500000;
-  const raised = Math.max(latest?.raised || 0, raisedFromDonations);
-  const remaining = goal - raised;
+  const raised = raisedFromDonations;
+  const remaining = Math.max(0, goal - raised);
   const current = designations.find(d => d.key === designation) || designations[0];
 
   const copyToClipboard = (text: string, label: string) => {
@@ -312,6 +314,7 @@ export default function DonatePage() {
 
               {/* Right Side: Stats & Contact */}
               <div className="lg:w-5/12 flex flex-col gap-8">
+                {statsLoaded ? (
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-mhma-teal p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Campaign Goal</p>
@@ -326,6 +329,7 @@ export default function DonatePage() {
                     <p className="text-4xl md:text-5xl font-bold font-serif">${(remaining / 1000000).toFixed(1)}M</p>
                   </div>
                 </div>
+                ) : null}
 
                 <div className="flex-grow grid grid-cols-1 gap-4">
                   <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:border-mhma-gold transition-colors">

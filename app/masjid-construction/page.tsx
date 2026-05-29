@@ -31,7 +31,7 @@ export default function MasjidConstructionPage() {
 
   const latest = updates[0];
   const goal = latest?.goal || 1500000;
-  const raised = Math.max(latest?.raised || 0, raisedFromDonations);
+  const raised = raisedFromDonations;
   const pct = goal > 0 ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
   const images = useMemo(() => {
     return updates

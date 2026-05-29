@@ -401,10 +401,8 @@ useEffect(() => {
 
       // Compute raised from actual donation data via API
       const constructionTotal = totals?.constructionTotal || 0;
-      const latest = masjid[0] || {};
-      if (constructionTotal > 0) {
-        latest.raised = Math.max(latest.raised || 0, constructionTotal);
-      }
+      const defaultGoal = 1500000;
+      const latest = masjid[0] ? { ...masjid[0], goal: masjid[0].goal || defaultGoal, raised: constructionTotal > 0 ? Math.max(constructionTotal, masjid[0].raised || 0) : (masjid[0].raised || 0) } : { goal: defaultGoal, raised: constructionTotal };
       setMasjidUpdates([latest]);
 
       // Prefer masjid construction image for hero, fall back to event poster
