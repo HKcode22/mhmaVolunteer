@@ -23,6 +23,7 @@ export default function MasjidConstructionPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [useStripeData, setUseStripeData] = useState(false);
+  const [givingTiers, setGivingTiers] = useState<{ name: string; amount: string; description: string }[]>([]);
   const [formData, setFormData] = useState({
     image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "",
     narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "",
@@ -53,6 +54,7 @@ export default function MasjidConstructionPage() {
     setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "", narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "" });
     setEditingId(null);
     setUseStripeData(false);
+    setGivingTiers([]);
     setShowForm(false);
     setError("");
   };
@@ -110,6 +112,7 @@ export default function MasjidConstructionPage() {
       brochureUrl: u.brochureUrl || "",
       visionVideoUrl: u.visionVideoUrl || "",
     });
+    setGivingTiers((u.givingTiers || []).map(t => ({ name: t.name || "", amount: String(t.amount || 0), description: t.description || "" })));
     setEditingId(u.id || null);
     setShowForm(true);
     setError("");
@@ -143,6 +146,11 @@ export default function MasjidConstructionPage() {
         communityImpact: formData.communityImpact || "",
         brochureUrl: formData.brochureUrl || "",
         visionVideoUrl: formData.visionVideoUrl || "",
+        givingTiers: givingTiers.filter(t => t.name && parseFloat(t.amount) > 0).map(t => ({
+          name: t.name,
+          amount: parseFloat(t.amount) || 0,
+          description: t.description || undefined,
+        })),
       };
       if (editingId) {
         await updateMasjidUpdate(editingId, data);
@@ -296,6 +304,39 @@ export default function MasjidConstructionPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Giving Tiers */}
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <h3 className="text-md font-bold text-gray-900 mb-3">Giving Tiers</h3>
+              <p className="text-xs text-gray-500 mb-3">Tiers displayed on the campaign page (e.g., Platinum $50K+, Gold $25K+).</p>
+              {givingTiers.map((tier, i) => (
+                <div key={i} className="flex flex-wrap items-end gap-2 mb-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Tier Name</label>
+                    <input type="text" value={tier.name} onChange={e => { const t = [...givingTiers]; t[i].name = e.target.value; setGivingTiers(t); }}
+                      placeholder="Platinum" className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm" />
+                  </div>
+                  <div className="w-28">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Amount ($)</label>
+                    <input type="number" min="0" value={tier.amount} onChange={e => { const t = [...givingTiers]; t[i].amount = e.target.value; setGivingTiers(t); }}
+                      placeholder="50000" className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm" />
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                    <input type="text" value={tier.description} onChange={e => { const t = [...givingTiers]; t[i].description = e.target.value; setGivingTiers(t); }}
+                      placeholder="Optional description" className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm" />
+                  </div>
+                  <button type="button" onClick={() => setGivingTiers(givingTiers.filter((_, j) => j !== i))}
+                    className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => setGivingTiers([...givingTiers, { name: "", amount: "", description: "" }])}
+                className="text-sm text-mhma-gold font-semibold hover:text-amber-600 transition-colors">
+                + Add Tier
+              </button>
             </div>
 
             <div className="flex gap-2 pt-4">

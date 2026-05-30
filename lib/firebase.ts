@@ -797,6 +797,15 @@ export interface FirebaseMasjidUpdate {
   communityImpact?: string;
   brochureUrl?: string;
   visionVideoUrl?: string;
+  // Giving Tiers
+  givingTiers?: GivingTier[];
+}
+
+export interface GivingTier {
+  name: string;
+  amount: number;
+  description?: string;
+  color?: string;
 }
 
 export async function fetchMasjidUpdates(limitCount = 10): Promise<FirebaseMasjidUpdate[]> {

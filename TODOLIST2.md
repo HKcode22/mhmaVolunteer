@@ -51,41 +51,28 @@ collection for the API route (admin SDK handles this).
 
 #### Project Overview Section
 
-- [ ] Brief narrative: Why we need a masjid, community growth in Mountain House
-- [ ] Key stats: estimated sq footage, projected capacity, community impact numbers
-- [ ] Embed or link to project brochure PDF
-- [ ] Embed a vision/campaign video if available (YouTube embed)
+- [✓] Brief narrative: Why we need a masjid, community growth in Mountain House
+- [✓] Key stats: estimated sq footage, projected capacity, community impact numbers
+- [✓] Embed or link to project brochure PDF
+- [✓] Embed a vision/campaign video if available (YouTube embed)
 
 <!--
-[ANSWERED] These need to be BUILT:
-  1. Make the narrative, stats, brochure URL, and video URL editable via the dashboard
-     (add fields to the masjidConstruction doc in Firestore)
-  2. Add these fields to the dashboard/construction form so board members can manage them
-  3. Add a checkbox for auto-calculated stats (sq ft, capacity, impact) — to be determined
-     what auto-calculation formula to use
-  4. The form currently has: image, video, caption, phase, raised, goal, progressDate
-     Need to ADD: narrative, sqFootage, capacity, communityImpact, brochureUrl, visionVideoUrl
-
-UPDATE: The dashboard/construction form at /dashboard/masjid-construction is where
-board members manage updates. The "Add Update" button creates entries in the
-masjidConstruction collection. The MOST RECENT update (by createdAt desc) is what
-shows on the public page at /masjid-construction.
-
-NOTE: The user said "the most recent update they make is what should show up" — this
-IS already how it works. The public page uses `updates[0]` which is the most recent
-by createdAt desc (from the Firestore query). The goal is taken from this latest update.
+[BUILT] Fields added to FirebaseMasjidUpdate interface:
+  narrative, sqFootage, capacity, communityImpact, brochureUrl, visionVideoUrl
+Dashboard form at /dashboard/masjid-construction has these fields under "Project Overview".
+Public page renders them between stats cards and gallery.
 -->
 
 #### Giving Tiers / Campaign Milestones
 
-- [ ] Display giving tiers with named levels (e.g., Platinum: $50K+, Gold: $25K+)
-- [ ] Show construction milestones: Phase 1 Foundation = $X, Phase 2 Structure = $Y
+- [✓] Display giving tiers with named levels (e.g., Platinum: $50K+, Gold: $25K+)
+- [✓] Show construction milestones: Phase 1 Foundation = $X, Phase 2 Structure = $Y
 - [ ] VRIC uses an 'Ansar Club' monthly sustainer model — consider MHMA equivalent
 
 <!--
-[MISSING] Still needs to be built. Options:
-  - Store tiers/milestones as array in masjidConstruction doc
-  - Or create new Firestore collection
+[BUILT] givingTiers array stored in masjidConstruction doc via FirebaseMasjidUpdate interface.
+Dashboard form has dynamic tier management (add/remove/edit tiers with name, amount, description).
+Public page renders tiers sorted by amount descending with "Most Popular" badge on highest tier.
 -->
 
 #### Multiple Giving Options
@@ -93,57 +80,66 @@ by createdAt desc (from the Firestore query). The goal is taken from this latest
 - [x] Online card via Stripe
 - [✓] Zelle (board@mhma.info) — displayed on donate page
 - [✓] Check payable to MHMA — displayed on donate page
-- [ ] Employer matching / Benevity information
-- [ ] Crypto donation option (optional Phase 2)
-- [ ] Waqf / endowment giving note if applicable
+- [✓] Employer matching / Benevity information
+- [✓] Crypto donation option (optional Phase 2)
+- [✓] Waqf / endowment giving note if applicable
+
+<!--
+[BUILT] "Other Ways to Give" section rendered on construction page with three cards:
+  Employer Matching (with Benevity note), Cryptocurrency, and Waqf/Endowment.
+  Each card has descriptions and contact info for board@mhma.info.
+-->
 
 #### Pledge System
 
 - [✓] [Pledge to Give] button links to /pledge page
-- [ ] Pledge form fields: Name, Email, Amount, Timeframe (30/60/90 days)
+- [✓] Pledge form fields: Name, Email, Amount, Timeframe (30/60/90 days)
 - [✓] Pledges tracked in dashboard with pending/fulfilled/cancelled status
-- [ ] Message: "Not ready to donate? Pledge now and we'll remind you."
+- [✓] Message: "Not ready to donate? Pledge now and we'll remind you."
 
 <!--
-[ANSWERED] Keep the existing /pledge form but add a Timeframe dropdown.
+[BUILT] Timeframe dropdown (30/60/90 days) added to /pledge page form.
+"Not ready to donate?" banner added above form.
+timeframe field stored in Firestore pledges doc via /api/pledge.
 -->
 
 #### FAQ Section
 
-- [ ] Accordion/expandable format (NuecesMosque.com style)
-- [ ] Questions: project vision, building features, tax-deductibility, Zakat eligibility,
+- [✓] Accordion/expandable format (NuecesMosque.com style)
+- [✓] Questions: project vision, building features, tax-deductibility, Zakat eligibility,
       construction timeline, fund management
 - [ ] MHMA 501(c)(3) EIN number
 
 <!--
-[MISSING] Needs full build from scratch: Firestore collection + dashboard management + component.
+[BUILT] Firestore "faq" collection with question, answer, category, order, active fields.
+Dashboard CRUD at /dashboard/faq with order reordering, edit, delete.
+Public FAQAccordion component rendered on /masjid-construction page.
+Firestore rules allow public read, board write.
 -->
 
 #### Testimonials / Community Voices
 
 - [✓] Dashboard CRUD exists (add/delete) at /dashboard/testimonials
 - [✓] displayOn[] field can target specific pages
-- [ ] Testimonials NOT YET rendered on any public page
-- [ ] "masjid-construction" needs to be added to displayOn options
+- [✓] Testimonials rendered on masjid-construction page
+- [✓] "masjid-construction" added to displayOn options in dashboard form
 - [ ] Photo upload needed
 
 <!--
-[ANSWERED] Only board members can add testimonials (dashboard is board-only). The
-dashboard CRUD already works. Need to:
-  1. Add "masjid-construction" to the displayOn options in the form
-  2. Create a public display component that renders testimonials on the target pages
-  3. Add photo upload capability
+[BUILT] "masjid-construction" added to pageOptions array in dashboard/testimonials form.
+TestimonialsDisplay component created at app/components/TestimonialsDisplay.tsx.
+Rendered on /masjid-construction page filtering by displayOn "masjid-construction".
 -->
 
 #### Email / Update Signup
 
-- [✓] NewsletterSignup component exists (imported but not rendered on construction page)
+- [✓] NewsletterSignup component exists and RENDERED on construction page footer
 - [✓] Subscribe API at /api/subscribe
 - [✓] Dashboard subscriber management (merged with news page)
 
 <!--
-[ANSWERED] Simply render <NewsletterSignup /> on the /masjid-construction page. Should be
-a quick fix. Keep using Firestore-based subscriber system.
+[BUILT] <NewsletterSignup variant="hero" source="masjid-construction" /> rendered
+in the footer of /masjid-construction page.
 -->
 
 ---
@@ -182,10 +178,15 @@ a quick fix. Keep using Firestore-based subscriber system.
 - [FIXED] Changed grid view from object-cover to object-contain so full image is visible
   (matching the timeline view behavior)
 
-### Next Build Priorities
-1. Render NewsletterSignup on construction page (5-min fix)
-2. Render testimonials on public pages (need display component)
-3. Build FAQ system (collection + dashboard + component)
-4. Build Project Overview editable fields on dashboard
-5. Add giving tiers / milestones section
-6. Add timeframe to pledge form
+### Build Status
+- ✅ NewsletterSignup rendered on construction page
+- ✅ FAQ system built (collection + dashboard + component)
+- ✅ Project Overview fields built (dashboard form + public render)
+- ✅ Pledge timeframe dropdown built
+- ✅ Giving Tiers / Milestones built (dashboard form + public render)
+- ✅ Testimonials: "masjid-construction" option added + TestimonialsDisplay component
+- ✅ Multiple Giving Options: employer matching, crypto, waqf cards on construction page
+- ⬜ Debug email delivery (contact, enrollment, newsletter confirmations)
+- ⬜ Add MHMA 501(c)(3) EIN number to FAQ content
+- ⬜ Photo upload for testimonials
+- ⬜ Data leak investigation (event images on construction page)

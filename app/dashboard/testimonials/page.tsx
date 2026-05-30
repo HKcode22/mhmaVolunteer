@@ -62,7 +62,7 @@ export default function DashboardTestimonialsPage() {
 
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
 
-  const pageOptions = ["homepage", "about", "donate", "contact"];
+  const pageOptions = ["homepage", "about", "donate", "contact", "masjid-construction"];
 
   const isDisplayed = (val: string) => form.displayOn.includes(val);
   const toggleDisplay = (val: string) => {

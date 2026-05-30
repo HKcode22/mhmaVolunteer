@@ -9,6 +9,7 @@ import NewsletterSignup from "@/app/components/NewsletterSignup";
 import GalleryLightbox from "@/app/components/GalleryLightbox";
 import { fetchMasjidUpdates, fetchFAQs, FirebaseMasjidUpdate, FAQItem } from "@/lib/firebase";
 import FAQAccordion from "@/app/components/FAQAccordion";
+import TestimonialsDisplay from "@/app/components/TestimonialsDisplay";
 
 export default function MasjidConstructionPage() {
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
@@ -188,6 +189,25 @@ export default function MasjidConstructionPage() {
           </section>
         )}
 
+        {/* Giving Tiers */}
+        {latest?.givingTiers && latest.givingTiers.length > 0 && (
+          <section className="py-16 bg-mhma-cream">
+            <div className="max-w-4xl mx-auto px-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Giving Tiers</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[...latest.givingTiers].sort((a, b) => b.amount - a.amount).map((tier, i) => (
+                  <div key={i} className={`bg-white rounded-2xl p-8 text-center border-2 shadow-lg ${i === 0 ? "border-mhma-gold" : "border-gray-100"}`}>
+                    {i === 0 && <span className="inline-block text-xs font-bold bg-mhma-gold text-mhma-forest px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Most Popular</span>}
+                    <p className="text-3xl font-bold text-mhma-forest mb-1">${tier.amount.toLocaleString()}+</p>
+                    <p className="text-lg font-semibold text-gray-900 mb-2">{tier.name}</p>
+                    {tier.description && <p className="text-sm text-gray-500">{tier.description}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Construction Updates Gallery */}
         {images.length > 0 && (
           <section className="bg-white py-12 border-y border-gray-200">
@@ -300,6 +320,33 @@ export default function MasjidConstructionPage() {
             </div>
           </section>
         )}
+
+        {/* Testimonials */}
+        <TestimonialsDisplay page="masjid-construction" />
+
+        {/* Multiple Giving Options */}
+        <section className="py-16 bg-white">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Other Ways to Give</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-mhma-cream rounded-xl p-6 border border-gray-200">
+                <p className="text-lg font-bold text-mhma-forest mb-2">Employer Matching</p>
+                <p className="text-sm text-gray-600">Check if your employer offers a charitable matching gift program. Many companies will match your donation dollar-for-dollar.</p>
+                <p className="text-xs text-gray-400 mt-3">For Benevity or other matching platforms, use board@mhma.info</p>
+              </div>
+              <div className="bg-mhma-cream rounded-xl p-6 border border-gray-200">
+                <p className="text-lg font-bold text-mhma-forest mb-2">Cryptocurrency</p>
+                <p className="text-sm text-gray-600">Donate crypto assets and potentially reduce your tax liability. Contact our board to arrange a crypto transfer.</p>
+                <p className="text-xs text-gray-400 mt-3">Email board@mhma.info to initiate</p>
+              </div>
+              <div className="bg-mhma-cream rounded-xl p-6 border border-gray-200">
+                <p className="text-lg font-bold text-mhma-forest mb-2">Waqf / Endowment</p>
+                <p className="text-sm text-gray-600">Consider a lasting legacy through our Waqf (endowment) program. Your contributed principal is preserved while returns fund the masjid.</p>
+                <p className="text-xs text-gray-400 mt-3">Contact board@mhma.info for details</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Donate Section */}
         <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16">
