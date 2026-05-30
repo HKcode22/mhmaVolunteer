@@ -374,9 +374,6 @@ export default function MasjidConstructionPage() {
 
 
 
-        {/* Testimonials */}
-        <TestimonialsDisplay page="masjid-construction" />
-
         {/* Multiple Giving Options */}
         <section className="py-16 bg-mhma-cream border-y border-gray-200/60">
           <div className="max-w-4xl mx-auto px-4 text-center">
@@ -403,6 +400,9 @@ export default function MasjidConstructionPage() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials */}
+        <TestimonialsDisplay page="masjid-construction" />
 
         {/* Donate Section */}
         <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16">

@@ -25,7 +25,7 @@ export default function TestimonialsDisplay({ page, limit: max = 6, className = 
   if (items.length === 0) return null;
 
   return (
-    <section className={`py-16 bg-white ${className}`}>
+    <section className={`py-16 bg-mhma-cream ${className}`}>
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Community Voices</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
