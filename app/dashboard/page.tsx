@@ -80,7 +80,7 @@ export default function DashboardPage() {
     "pledges": { label: "Pledges", icon: "HandHeart", href: "/dashboard/pledges" },
     "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
     "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
-    "contact": { label: "Contact & FAQ", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
+    "contact": { label: "Contact", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
     "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
   };
 

@@ -56,7 +56,18 @@ export async function sendEmail(to: string, subject: string, html: string) {
     }
   }
 
-  console.warn("No email provider configured. Set RESEND_API_KEY, SMTP_* env vars, or GMAIL_USER/GMAIL_APP_PASSWORD.");
+  // Make debugging easier: if no provider is configured or all providers fail,
+  // surface this as a hard error so the API route returns 500 and logs show why.
+  const hasProvider =
+    !!process.env.RESEND_API_KEY ||
+    (!!process.env.SMTP_HOST && !!process.env.SMTP_USER && !!process.env.SMTP_PASS) ||
+    (!!process.env.GMAIL_USER && !!process.env.GMAIL_APP_PASSWORD);
+
+  const details = hasProvider
+    ? "A provider is configured, but sending failed for all configured providers."
+    : "No email provider configured. Set RESEND_API_KEY, SMTP_* env vars, or GMAIL_USER/GMAIL_APP_PASSWORD.";
+
+  throw new Error(details);
 }
 
 export function confirmationEmail(name: string, message: string) {

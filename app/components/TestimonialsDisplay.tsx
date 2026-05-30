@@ -30,7 +30,7 @@ export default function TestimonialsDisplay({ page, limit: max = 6, className = 
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Community Voices</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {items.map(t => (
-            <div key={t.id} className="bg-mhma-cream rounded-2xl p-6 border border-gray-200">
+            <div key={t.id} className="bg-white rounded-2xl p-6 border border-gray-200">
               <div className="flex items-center gap-1 mb-3">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-mhma-gold text-mhma-gold" />)}
               </div>
