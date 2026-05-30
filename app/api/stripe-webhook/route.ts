@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       stripePaymentId: session.payment_intent || "",
       stripeSessionId: session.id,
       status: "completed",
-      showOnWall: true,
+      showOnWall: false,
       anonymous: false,
       createdAt: FieldValue.serverTimestamp(),
     });

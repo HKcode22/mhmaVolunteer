@@ -532,6 +532,7 @@ export interface Testimonial {
   name: string;
   role?: string;
   content: string;
+  photo?: string;
   displayOn: string[]; // e.g., ["homepage", "about", "programs"]
   active: boolean;
   createdAt?: any;

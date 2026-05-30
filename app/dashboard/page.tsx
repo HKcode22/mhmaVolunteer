@@ -17,6 +17,7 @@ import {
   fetchRSVPs, deleteRSVP, updateRSVP,
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
   fetchUsers, fetchSubscribers, fetchPledges, fetchDonations, fetchAllNews,
+  fetchFAQs, addFAQ, updateFAQ, deleteFAQ, FAQItem,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
   FirebaseUser, Subscriber, Pledge, Donation,
 } from "@/lib/firebase";
@@ -36,6 +37,8 @@ export default function DashboardPage() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [pledges, setPledges] = useState<Pledge[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
+  const [faqLoading, setFaqLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showAllPrograms, setShowAllPrograms] = useState(false);
@@ -57,7 +60,7 @@ export default function DashboardPage() {
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
   const [customizeTab, setCustomizeTab] = useState<"actions" | "sections">("actions");
-  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "requests", "pledges", "donations", "codes", "users", "subscribers"];
+  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "faq", "requests", "pledges", "donations", "codes", "users", "subscribers"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
     "events", "programs", "news", "testimonials", "scheduling",
@@ -77,7 +80,7 @@ export default function DashboardPage() {
     "pledges": { label: "Pledges", icon: "HandHeart", href: "/dashboard/pledges" },
     "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
     "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
-    "contact": { label: "Contact", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
+    "contact": { label: "Contact & FAQ", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
     "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
   };
 
@@ -144,11 +147,12 @@ export default function DashboardPage() {
     }
     if (authLoading) return;
 
-    const timeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
-      Promise.race([
+    function timeout<T>(p: Promise<T>, ms: number): Promise<T> {
+      return Promise.race([
         p,
         new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms)),
       ]);
+    }
 
     const loadAll = async () => {
       const results = await Promise.allSettled([
@@ -164,8 +168,9 @@ export default function DashboardPage() {
         timeout(fetchPledges(100), 15000).catch(() => [] as Pledge[]),
         timeout(fetchDonations(100), 15000).catch(() => [] as Donation[]),
         timeout(fetchAllNews(100), 15000).catch(() => [] as any[]),
+        timeout(fetchFAQs(100), 15000).catch(() => [] as FAQItem[]),
       ]);
-      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -178,6 +183,8 @@ export default function DashboardPage() {
       setPledges(pl || []);
       setDonations(d || []);
       setNews(n || []);
+      setFaqItems(f || []);
+      setFaqLoading(false);
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
     };
@@ -541,35 +548,57 @@ export default function DashboardPage() {
                   {rsvps.length === 0 && <p className="text-gray-400 text-sm p-3">No RSVPs yet.</p>}
                 </Section>
               );
-            case "submissions":
-              return (
-                <Section key="submissions" title="Contact Submissions" count={contactSubmissions.length} href="#" allShown={showAllSubmissions} onToggle={() => setShowAllSubmissions(!showAllSubmissions)} scrollable>
-                  {visibleSubmissions.map(s => (
-                    <div key={s.id} className={`bg-white rounded-lg border transition-all ${expandedDashboardId === `sub-${s.id}` ? "border-teal-300 shadow-md" : "border-gray-100"}`}>
-                      <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedDashboardId(expandedDashboardId === `sub-${s.id}` ? null : `sub-${s.id}`)}>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 truncate">{s.subject || "(no subject)"}</p>
-                          <p className="text-xs text-gray-500">{s.name} · {s.email}{!s.read ? <span className="text-amber-600 font-medium ml-2">NEW</span> : null}</p>
-                        </div>
-                        <div className="flex gap-1 items-center shrink-0">
-                          {!s.read && (
-                            <button onClick={(ev) => { ev.stopPropagation(); s.id && handleMarkRead(s.id); }}
-                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Mark as Read"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.66l5-3.33a2 2 0 012.22 0l5 3.33a2 2 0 01.89 1.66V19a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 11l9 6 9-6" /></svg></button>
-                          )}
-                          <button onClick={(ev) => { ev.stopPropagation(); s.id && handleDelete(s.id, s.subject || "submission", "submission"); }} disabled={deletingId === s.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
-                          {expandedDashboardId === `sub-${s.id}` ? <ChevronUp className="w-4 h-4 text-gray-400 ml-1" /> : <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />}
-                        </div>
-                      </div>
-                      {expandedDashboardId === `sub-${s.id}` && (
-                        <div className="px-3 pb-3 pt-0 border-t border-gray-100 mt-0">
-                          {renderDetails("submission", s)}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {contactSubmissions.length === 0 && <p className="text-gray-400 text-sm p-3">No contact submissions.</p>}
-                </Section>
-              );
+             case "submissions":
+               return (
+                 <Section key="submissions" title="Contact Submissions" count={contactSubmissions.length} href="#" allShown={showAllSubmissions} onToggle={() => setShowAllSubmissions(!showAllSubmissions)} scrollable>
+                   {visibleSubmissions.map(s => (
+                     <div key={s.id} className={`bg-white rounded-lg border transition-all ${expandedDashboardId === `sub-${s.id}` ? "border-teal-300 shadow-md" : "border-gray-100"}`}>
+                       <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedDashboardId(expandedDashboardId === `sub-${s.id}` ? null : `sub-${s.id}`)}>
+                         <div className="flex-1 min-w-0">
+                           <p className="font-semibold text-gray-900 truncate">{s.subject || "(no subject)"}</p>
+                           <p className="text-xs text-gray-500">{s.name} · {s.email}{!s.read ? <span className="text-amber-600 font-medium ml-2">NEW</span> : null}</p>
+                         </div>
+                         <div className="flex gap-1 items-center shrink-0">
+                           {!s.read && (
+                             <button onClick={(ev) => { ev.stopPropagation(); s.id && handleMarkRead(s.id); }}
+                               className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Mark as Read"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.66l5-3.33a2 2 0 012.22 0l5 3.33a2 2 0 01.89 1.66V19a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 11l9 6 9-6" /></svg></button>
+                           )}
+                           <button onClick={(ev) => { ev.stopPropagation(); s.id && handleDelete(s.id, s.subject || "submission", "submission"); }} disabled={deletingId === s.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                           {expandedDashboardId === `sub-${s.id}` ? <ChevronUp className="w-4 h-4 text-gray-400 ml-1" /> : <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />}
+                         </div>
+                       </div>
+                       {expandedDashboardId === `sub-${s.id}` && (
+                         <div className="px-3 pb-3 pt-0 border-t border-gray-100 mt-0">
+                           {renderDetails("submission", s)}
+                         </div>
+                       )}
+                     </div>
+                   ))}
+                   {contactSubmissions.length === 0 && <p className="text-gray-400 text-sm p-3">No contact submissions.</p>}
+                 </Section>
+               );
+             case "faq":
+               return (
+                 <Section key="faq" title="FAQ" count={faqItems.length} href="/dashboard/contact-submissions" allShown={false} onToggle={() => {}} scrollable>
+                   {faqLoading ? (
+                     <p className="text-gray-400 text-sm p-3">Loading FAQs...</p>
+                   ) : faqItems.length === 0 ? (
+                     <p className="text-gray-400 text-sm p-3">No FAQs yet. Manage them under Contact &amp; FAQ.</p>
+                   ) : (
+                     <div className="space-y-2 p-1">
+                       {faqItems.filter(f => f.active !== false).slice(0, 5).map(faq => (
+                         <div key={faq.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                           <p className="font-semibold text-gray-900 text-sm">{faq.question}</p>
+                           <p className="text-xs text-gray-500 truncate mt-0.5">{faq.answer}</p>
+                         </div>
+                       ))}
+                       {faqItems.length > 5 && (
+                         <p className="text-xs text-gray-400 text-center pt-1">+{faqItems.length - 5} more — open Contact &amp; FAQ to edit</p>
+                       )}
+                     </div>
+                   )}
+                 </Section>
+               );
             case "codes":
               return (
                 <Section key="codes" title="Board Invite Codes" count={inviteCodes.length} href="#" allShown={showAllCodes} onToggle={() => setShowAllCodes(!showAllCodes)} scrollable>

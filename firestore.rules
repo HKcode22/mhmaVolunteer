@@ -153,12 +153,12 @@ service cloud.firestore {
     }
 
     // ─── Donations ───
-    // Any authenticated user can read completed donations (for public tracking on homepage/donate/construction).
-    // Donors can read their own (by donorId or email). Board members can read/write all.
+    // Public totals/donor counts use /api/donation-totals (admin SDK). Client reads are restricted.
+    // Donors can read their own records. Board members can read/write all.
     match /donations/{donation} {
       allow read: if isBoardMember()
-        || (isAuthenticated() && resource.data.status == "completed")
-        || (isAuthenticated() && resource.data.donorId == request.auth.uid);
+        || (isAuthenticated() && resource.data.donorId == request.auth.uid)
+        || (isAuthenticated() && resource.data.donorEmail == request.auth.token.email);
       allow create: if isBoardMember();
       allow update: if isBoardMember();
       allow delete: if isBoardMember();

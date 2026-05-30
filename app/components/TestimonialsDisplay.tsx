@@ -34,6 +34,9 @@ export default function TestimonialsDisplay({ page, limit: max = 6, className = 
               <div className="flex items-center gap-1 mb-3">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-mhma-gold text-mhma-gold" />)}
               </div>
+              {t.photo && (
+                <img src={t.photo} alt={t.name} className="w-14 h-14 object-cover rounded-full mx-auto mb-3 border-2 border-mhma-gold/30" />
+              )}
               <p className="text-gray-700 text-sm leading-relaxed mb-4 italic">"{t.content}"</p>
               <div>
                 <p className="font-semibold text-gray-900 text-sm">{t.name}</p>

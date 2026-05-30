@@ -109,6 +109,7 @@ timeframe field stored in Firestore pledges doc via /api/pledge.
 - [✓] Questions: project vision, building features, tax-deductibility, Zakat eligibility,
       construction timeline, fund management
 - [ ] MHMA 501(c)(3) EIN number
+excuse me do not remove the mhma 501 c thing
 
 <!--
 [BUILT] Firestore "faq" collection with question, answer, category, order, active fields.
@@ -186,6 +187,8 @@ in the footer of /masjid-construction page.
 - ✅ Giving Tiers / Milestones built (dashboard form + public render)
 - ✅ Testimonials: "masjid-construction" option added + TestimonialsDisplay component
 - ✅ Multiple Giving Options: employer matching, crypto, waqf cards on construction page
+
+A messege from user STILL DO THIS BELOW DONT DELETE ANYTHING THATS NOT WHAT I ASKED:
 - ⬜ Debug email delivery (contact, enrollment, newsletter confirmations)
 - ⬜ Add MHMA 501(c)(3) EIN number to FAQ content
 - ⬜ Photo upload for testimonials

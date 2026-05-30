@@ -7,38 +7,51 @@ import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin, Mail, Phone, H
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import GalleryLightbox from "@/app/components/GalleryLightbox";
-import { fetchMasjidUpdates, fetchFAQs, FirebaseMasjidUpdate, FAQItem } from "@/lib/firebase";
-import FAQAccordion from "@/app/components/FAQAccordion";
+import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-stats";
 import TestimonialsDisplay from "@/app/components/TestimonialsDisplay";
 
 export default function MasjidConstructionPage() {
-  const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
-  const [raisedFromDonations, setRaisedFromDonations] = useState(0);
-  const [donorCount, setDonorCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+    const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
+    const [raisedFromDonations, setRaisedFromDonations] = useState(0);
+    const [donorCount, setDonorCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [masjidLoaded, setMasjidLoaded] = useState(false);
+    const [statsLoaded, setStatsLoaded] = useState(false);
   const [galleryView, setGalleryView] = useState<"grid" | "timeline">("grid");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
+    useEffect(() => {
+      const saved = localStorage.getItem("constructionGalleryView");
+      if (saved === "grid" || saved === "timeline") setGalleryView(saved);
+    }, []);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("constructionGalleryView");
-    if (saved === "grid" || saved === "timeline") setGalleryView(saved);
-  }, []);
+    useEffect(() => {
+      fetchMasjidUpdates(20).then(data => { 
+        setUpdates(data); 
+        setMasjidLoaded(true); 
+        setLoading(false); 
+      }).catch(() => {
+        setMasjidLoaded(true);
+        setLoading(false);
+      });
+      fetch("/api/donation-totals").then(r => r.json()).then(d => {
+        setRaisedFromDonations(d.constructionTotal || 0);
+        setDonorCount(d.donorCount || 0);
+        setStatsLoaded(true);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Failed to fetch donation totals:", err);
+        setStatsLoaded(true);
+        setLoading(false);
+      });
+    }, []);
 
-  useEffect(() => {
-    fetchMasjidUpdates(20).then(data => { setUpdates(data); setLoading(false); }).catch(() => setLoading(false));
-    fetch("/api/donation-totals").then(r => r.json()).then(d => {
-      setRaisedFromDonations(d.constructionTotal || 0);
-      setDonorCount(d.donorCount || 0);
-    }).catch(() => {});
-    fetchFAQs(50).then(data => setFaqItems(data.filter(f => f.active))).catch(() => {});
-  }, []);
-
-  const latest = updates[0];
-  const goal = latest?.goal || 1500000;
-  const raised = raisedFromDonations;
-  const pct = goal > 0 ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
+    const latest = updates[0];
+    const goal = normalizeCampaignDollars(latest?.goal, 8_500_000);
+    const raised = raisedFromDonations;
+    const remaining = Math.max(0, goal - raised);
+    const pct = goal > 0 ? Math.min(Math.round((raised / goal) * 100), 100) : 0;
   const images = useMemo(() => {
     return updates
       .filter(u => u.image)
@@ -73,30 +86,62 @@ export default function MasjidConstructionPage() {
         </section>
 
         {/* Progress Bar */}
-        <section className="bg-white border-b border-gray-200 py-8">
-          <div className="max-w-4xl mx-auto px-4">
-            {loading ? (
+        {masjidLoaded && statsLoaded ? (
+          <section className="bg-white border-b border-gray-200 py-8">
+            <div className="max-w-4xl mx-auto px-4">
+              {loading ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-5 bg-gray-200 rounded-full" />
+                  <div className="h-4 bg-gray-100 rounded w-2/3 mx-auto" />
+                </div>
+              ) : goal > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end">
+                    <p className="text-sm font-bold text-mhma-forest uppercase tracking-wider">Masjid Fund</p>
+                    <p className="text-sm text-gray-500">Goal: {formatCampaignDollars(goal)}</p>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-6 overflow-hidden shadow-inner border border-gray-200">
+                    <div className="bg-mhma-gold h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="font-semibold text-mhma-forest">{formatCampaignDollars(raised)} raised</span>
+                    <span className="font-bold text-mhma-gold">{pct}%</span>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">
+                    {statsLoaded ? (
+                      <>{donorCount} donor{donorCount !== 1 ? "s" : ""} contributed</>
+                    ) : (
+                      "Loading donor count..."
+                    )}
+                  </p>
+                  <div className="flex justify-center gap-4 pt-2">
+                    <Link href="/pledge" className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-md">
+                      <Heart className="w-5 h-5" /> Pledge Today
+                    </Link>
+                    <Link href="/donate" className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-forest text-white font-bold rounded-lg hover:bg-mhma-forest-light transition-all shadow-md">
+                      Donate Now <ChevronRight className="w-5 h-5" />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-500">Campaign data coming soon.</p>
+                  <Link href="/pledge" className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all mt-4 shadow-md">
+                    <Heart className="w-5 h-5" /> Pledge Today
+                  </Link>
+                </div>
+              )}
+            </div>
+          </section>
+        ) : (
+          <section className="bg-white border-b border-gray-200 py-8">
+            <div className="max-w-4xl mx-auto px-4">
               <div className="animate-pulse space-y-3">
                 <div className="h-5 bg-gray-200 rounded-full" />
                 <div className="h-4 bg-gray-100 rounded w-2/3 mx-auto" />
-              </div>
-            ) : goal > 0 ? (
-              <div className="space-y-3">
-                <div className="flex justify-between items-end">
-                  <p className="text-sm font-bold text-mhma-forest uppercase tracking-wider">Masjid Fund</p>
-                  <p className="text-sm text-gray-500">Goal: ${goal.toLocaleString()}</p>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-6 overflow-hidden shadow-inner border border-gray-200">
-                  <div className="bg-mhma-gold h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%` }} />
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="font-semibold text-mhma-forest">${raised.toLocaleString()} raised</span>
-                  <span className="font-bold text-mhma-gold">{pct}%</span>
-                </div>
-                {donorCount > 0 && (
-                  <p className="text-xs text-gray-400 text-center">{donorCount} donor{donorCount !== 1 ? "s" : ""} contributed</p>
-                )}
-                <div className="flex justify-center gap-4 pt-2">
+                <div className="h-4 bg-gray-100 rounded w-2/3 mx-auto" />
+                <div className="h-4 bg-gray-100 rounded w-2/3 mx-auto" />
+                <div className="flex justify-center pt-2">
                   <Link href="/pledge" className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-md">
                     <Heart className="w-5 h-5" /> Pledge Today
                   </Link>
@@ -105,34 +150,50 @@ export default function MasjidConstructionPage() {
                   </Link>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500">Campaign data coming soon.</p>
-                <Link href="/pledge" className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all mt-4 shadow-md">
-                  <Heart className="w-5 h-5" /> Pledge Today
-                </Link>
-              </div>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
         {/* Stats Cards */}
-        <section className="max-w-6xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
-              <p className="text-4xl font-bold text-mhma-forest">{goal > 0 ? `$${(goal / 1000000).toFixed(1)}M` : "—"}</p>
-              <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Campaign Goal</p>
+        {masjidLoaded && statsLoaded ? (
+          <section className="max-w-6xl mx-auto px-4 py-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-3xl md:text-4xl font-bold text-mhma-forest">{formatCampaignDollars(goal)}</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Campaign Goal</p>
+              </div>
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-3xl md:text-4xl font-bold text-mhma-gold">{formatCampaignDollars(raised)}</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Raised So Far</p>
+              </div>
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-3xl md:text-4xl font-bold text-gray-900">{formatCampaignDollars(remaining)}</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Remaining</p>
+              </div>
+              <div className="bg-white/90 rounded-2xl p-8 text-center shadow-lg border border-gray-200">
+                <p className="text-3xl md:text-4xl font-bold text-mhma-forest">{donorCount}</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Donors Contributed</p>
+              </div>
             </div>
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
-              <p className="text-4xl font-bold text-mhma-gold">{goal > 0 ? `$${(raised / 1000000).toFixed(1)}M` : "—"}</p>
-              <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Raised So Far</p>
+          </section>
+        ) : (
+          <section className="max-w-6xl mx-auto px-4 py-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-4xl font-bold text-mhma-forest">—</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Campaign Goal</p>
+              </div>
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-4xl font-bold text-mhma-gold">—</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Raised So Far</p>
+              </div>
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-4xl font-bold text-gray-900">—</p>
+                <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Remaining</p>
+              </div>
             </div>
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
-              <p className="text-4xl font-bold text-gray-900">{goal > 0 ? `$${((goal - raised) / 1000000).toFixed(1)}M` : "—"}</p>
-              <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Remaining</p>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Project Overview */}
         {latest && (latest.narrative || latest.sqFootage || latest.capacity || latest.brochureUrl || latest.visionVideoUrl) && (
@@ -311,35 +372,30 @@ export default function MasjidConstructionPage() {
           </section>
         )}
 
-        {/* FAQ Section */}
-        {faqItems.length > 0 && (
-          <section className="py-16 bg-mhma-cream">
-            <div className="max-w-3xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
-              <FAQAccordion items={faqItems} />
-            </div>
-          </section>
-        )}
+
 
         {/* Testimonials */}
         <TestimonialsDisplay page="masjid-construction" />
 
         {/* Multiple Giving Options */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-mhma-cream border-y border-gray-200/60">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Other Ways to Give</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Other Ways to Give</h2>
+            <p className="text-sm text-gray-600 mb-8 max-w-xl mx-auto">
+              For monthly recurring support, use the <Link href="/donate" className="text-mhma-forest font-semibold hover:text-mhma-gold underline">Donate</Link> page and choose the Monthly option (similar to other masjid sustainer programs).
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-mhma-cream rounded-xl p-6 border border-gray-200">
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                 <p className="text-lg font-bold text-mhma-forest mb-2">Employer Matching</p>
                 <p className="text-sm text-gray-600">Check if your employer offers a charitable matching gift program. Many companies will match your donation dollar-for-dollar.</p>
                 <p className="text-xs text-gray-400 mt-3">For Benevity or other matching platforms, use board@mhma.info</p>
               </div>
-              <div className="bg-mhma-cream rounded-xl p-6 border border-gray-200">
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                 <p className="text-lg font-bold text-mhma-forest mb-2">Cryptocurrency</p>
                 <p className="text-sm text-gray-600">Donate crypto assets and potentially reduce your tax liability. Contact our board to arrange a crypto transfer.</p>
                 <p className="text-xs text-gray-400 mt-3">Email board@mhma.info to initiate</p>
               </div>
-              <div className="bg-mhma-cream rounded-xl p-6 border border-gray-200">
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                 <p className="text-lg font-bold text-mhma-forest mb-2">Waqf / Endowment</p>
                 <p className="text-sm text-gray-600">Consider a lasting legacy through our Waqf (endowment) program. Your contributed principal is preserved while returns fund the masjid.</p>
                 <p className="text-xs text-gray-400 mt-3">Contact board@mhma.info for details</p>

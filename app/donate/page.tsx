@@ -26,8 +26,9 @@ import {
   Copy,
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
-import DonorWall from "@/app/components/DonorWall";
+
 import { fetchMasjidUpdates, fetchDonationsByUser, FirebaseMasjidUpdate, Donation } from "@/lib/firebase";
+import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-stats";
 
 type Designation = "general" | "construction" | "zakat" | "programs" | "other";
 
@@ -88,7 +89,7 @@ export default function DonatePage() {
     }
   };
 
-  const goal = latest?.goal || 1500000;
+  const goal = normalizeCampaignDollars(latest?.goal, 8_500_000);
   const raised = raisedFromDonations;
   const remaining = Math.max(0, goal - raised);
   const current = designations.find(d => d.key === designation) || designations[0];
@@ -236,9 +237,6 @@ export default function DonatePage() {
                     )}
                   </div>
 
-                {/* Donor Wall */}
-                <DonorWall />
-
                 {/* Other Ways to Give */}
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">Other Ways to Give</h3>
@@ -321,22 +319,20 @@ export default function DonatePage() {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-mhma-teal p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Campaign Goal</p>
-                    <p className="text-4xl md:text-5xl font-bold font-serif">${goal.toLocaleString()}</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">{formatCampaignDollars(goal)}</p>
                   </div>
                   <div className="bg-mhma-gold p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Raised to Date</p>
-                    <p className="text-4xl md:text-5xl font-bold font-serif">${raised.toLocaleString()}</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">{formatCampaignDollars(raised)}</p>
                   </div>
                   <div className="bg-mhma-dark p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Remaining</p>
-                    <p className="text-4xl md:text-5xl font-bold font-serif">${remaining.toLocaleString()}</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">{formatCampaignDollars(remaining)}</p>
                   </div>
-                  {donorCount > 0 && (
-                    <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-gray-200 text-center">
-                      <p className="text-2xl font-bold text-mhma-forest">{donorCount}</p>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider">Donors Contributed</p>
-                    </div>
-                  )}
+                  <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-gray-200 text-center">
+                    <p className="text-2xl font-bold text-mhma-forest">{statsLoaded ? donorCount : "—"}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">Donors Contributed</p>
+                  </div>
                 </div>
                 ) : null}
 

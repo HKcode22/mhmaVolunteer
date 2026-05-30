@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Search, Clock, Star, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowLeft, Plus, Search, Clock, Star, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, fetchPrograms, fetchEvents, Testimonial, FirebaseProgram, FirebaseEvent } from "@/lib/firebase";
+import { uploadImage } from "@/lib/upload";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardTestimonialsPage() {
@@ -15,8 +16,9 @@ export default function DashboardTestimonialsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", role: "", content: "", displayOn: [] as string[], active: true });
+  const [form, setForm] = useState({ name: "", role: "", content: "", photo: "", displayOn: [] as string[], active: true });
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [programs, setPrograms] = useState<FirebaseProgram[]>([]);
   const [events, setEvents] = useState<FirebaseEvent[]>([]);
   const [showProgList, setShowProgList] = useState(false);
@@ -42,12 +44,27 @@ export default function DashboardTestimonialsPage() {
     return !q || i.name.toLowerCase().includes(q) || i.content.toLowerCase().includes(q);
   });
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const dataUrl = await uploadImage(file);
+      setForm(prev => ({ ...prev, photo: dataUrl }));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = "";
+    }
+  };
+
   const handleAdd = async () => {
     if (!form.name.trim() || !form.content.trim()) return;
     setSaving(true);
     try {
-      await addTestimonial({ name: form.name.trim(), role: form.role.trim() || undefined, content: form.content.trim(), displayOn: form.displayOn, active: form.active });
-      setForm({ name: "", role: "", content: "", displayOn: [], active: true });
+      await addTestimonial({ name: form.name.trim(), role: form.role.trim() || undefined, content: form.content.trim(), photo: form.photo || undefined, displayOn: form.displayOn, active: form.active });
+      setForm({ name: "", role: "", content: "", photo: "", displayOn: [], active: true });
       setShowForm(false);
       const updated = await fetchTestimonials(100);
       setItems(updated);
@@ -118,6 +135,14 @@ export default function DashboardTestimonialsPage() {
                 <label className="block text-xs font-medium text-gray-500 mb-1">Testimonial Text *</label>
                 <textarea value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} rows={3}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" placeholder="The testimonial content..." />
+              </div>
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Photo (optional)</label>
+                <div className="flex items-center gap-3">
+                  <input type="file" accept="image/*" onChange={handlePhotoUpload} className="text-sm" />
+                  {uploadingPhoto && <Loader2 className="w-4 h-4 animate-spin text-mhma-gold" />}
+                </div>
+                {form.photo && <img src={form.photo} alt="Preview" className="mt-2 w-16 h-16 object-cover rounded-full" />}
               </div>
               <div className="mb-4">
                 <label className="block text-xs font-medium text-gray-500 mb-2">Show on pages:</label>

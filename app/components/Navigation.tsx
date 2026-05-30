@@ -104,9 +104,8 @@ export default function Navigation({ currentPage }: NavigationProps) {
                           <Link href="/dashboard/news" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">News</Link>
                           <Link href="/dashboard/programs" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Programs</Link>
                           <Link href="/dashboard/events" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Events</Link>
-                          <Link href="/dashboard/testimonials" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Testimonials</Link>
-                          <Link href="/dashboard/faq" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">FAQ</Link>
-                          <Link href="/dashboard/scheduling-requests" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Scheduling</Link>
+                      <Link href="/dashboard/testimonials" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Testimonials</Link>
+                      <Link href="/dashboard/scheduling-requests" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Scheduling</Link>
                           <p className="px-4 py-1 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Financial</p>
                           <Link href="/dashboard/masjid-construction" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Construction</Link>
                           <Link href="/dashboard/donations" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Donations</Link>
@@ -117,7 +116,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                           <p className="px-4 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Administration</p>
                           <Link href="/dashboard/activity" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Activity Log</Link>
                           <Link href="/dashboard/analytics" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Analytics</Link>
-                          <Link href="/dashboard/contact-submissions" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Contact</Link>
+                          <Link href="/dashboard/contact-submissions" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Contact &amp; FAQ</Link>
                           <Link href="/dashboard/users" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Members</Link>
                         </div>
                       </div>
@@ -231,12 +230,13 @@ export default function Navigation({ currentPage }: NavigationProps) {
               </div>
 
               <div className="relative group">
-                <Link href="/contact" className={`${navLinkClass("contact")} ${currentPage === "contact" || currentPage === "subscribe" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
+                <Link href="/contact" className={`${navLinkClass("contact")} ${currentPage === "contact" || currentPage === "subscribe" || currentPage === "faq" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   CONTACT<span className="text-[10px]">▼</span>
                 </Link>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
+                      <Link href="/contact/faq" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">FAQ</Link>
                       <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Newsletter</Link>
                       <Link href="/volunteer" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Volunteer</Link>
                     </div>
@@ -269,6 +269,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/pledge" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ PLEDGE</Link>
             <Link href="/masjid-construction" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ CONSTRUCTION</Link>
             <Link href="/contact" className="block py-2 text-gray-700 border-b border-gray-100">CONTACT</Link>
+            <Link href="/contact/faq" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ FAQ</Link>
             <Link href="/subscribe" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ NEWSLETTER</Link>
             <Link href="/volunteer" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ VOLUNTEER</Link>
             {isBoardMember ? (
@@ -285,7 +286,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     <Link href="/dashboard/programs" className="block py-1 text-mhma-gold text-sm">↳ Programs</Link>
                     <Link href="/dashboard/events" className="block py-1 text-mhma-gold text-sm">↳ Events</Link>
                     <Link href="/dashboard/testimonials" className="block py-1 text-mhma-gold text-sm">↳ Testimonials</Link>
-                    <Link href="/dashboard/faq" className="block py-1 text-mhma-gold text-sm">↳ FAQ</Link>
                     <Link href="/dashboard/scheduling-requests" className="block py-1 text-mhma-gold text-sm">↳ Scheduling</Link>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-2 mb-1">Financial</p>
                     <Link href="/dashboard/masjid-construction" className="block py-1 text-mhma-gold text-sm">↳ Construction</Link>
@@ -296,7 +296,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Admin</p>
                     <Link href="/dashboard/activity" className="block py-1 text-mhma-gold text-sm">↳ Activity Log</Link>
                     <Link href="/dashboard/analytics" className="block py-1 text-mhma-gold text-sm">↳ Analytics</Link>
-                    <Link href="/dashboard/contact-submissions" className="block py-1 text-mhma-gold text-sm">↳ Contact</Link>
+                    <Link href="/dashboard/contact-submissions" className="block py-1 text-mhma-gold text-sm">↳ Contact &amp; FAQ</Link>
                     <Link href="/dashboard/users" className="block py-1 text-mhma-gold text-sm">↳ Members</Link>
                   </div>
                 </div>

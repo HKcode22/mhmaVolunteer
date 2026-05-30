@@ -40,7 +40,12 @@ export default function FAQAccordion({ items, className = "" }: Props) {
                   </button>
                   {isOpen && (
                     <div className="px-5 pb-4">
-                      <p className="text-gray-600 text-sm leading-relaxed">{faq.answer}</p>
+                      <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{faq.answer}</p>
+                      {faq.question.toLowerCase().includes("tax") && process.env.NEXT_PUBLIC_MHMA_EIN && (
+                        <p className="text-sm font-medium text-gray-700 mt-3">
+                          MHMA 501(c)(3) EIN: {process.env.NEXT_PUBLIC_MHMA_EIN}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
