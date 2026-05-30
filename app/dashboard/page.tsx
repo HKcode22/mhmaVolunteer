@@ -58,26 +58,23 @@ export default function DashboardPage() {
   const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
-    "add-news", "add-program", "add-event", "analytics", "activity", "notifications",
-    "pledges", "subscribers", "donations", "construction", "members",
-    "enroll-list", "rsvp-list", "contact", "scheduling", "testimonials"
+    "programs", "events", "news", "analytics", "activity", "notifications",
+    "pledges", "donations", "construction", "members",
+    "contact", "scheduling", "testimonials"
   ];
   const [quickOrder, setQuickOrder] = useState<string[]>(defaultQuickOrder);
 
   const quickActionMeta: Record<string, { label: string; icon: string; href: string }> = {
-    "add-news": { label: "Add News", icon: "FileText", href: "/dashboard/news" },
-    "add-program": { label: "Add Program", icon: "Plus", href: "/dashboard/programs/new" },
-    "add-event": { label: "Add Event", icon: "Plus", href: "/dashboard/events/new" },
+    "programs": { label: "Programs", icon: "BookOpen", href: "/dashboard/programs" },
+    "events": { label: "Events", icon: "Calendar", href: "/dashboard/events" },
+    "news": { label: "News", icon: "FileText", href: "/dashboard/news" },
     "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
     "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
     "notifications": { label: "Notifications", icon: "Bell", href: "/dashboard/notifications" },
     "pledges": { label: "Pledges", icon: "Heart", href: "/dashboard/pledges" },
-    "subscribers": { label: "Subscribers", icon: "Mail", href: "/dashboard/subscribers" },
     "donations": { label: "Donations", icon: "Heart", href: "/dashboard/donations" },
     "construction": { label: "Construction", icon: "Building2", href: "/dashboard/masjid-construction" },
     "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
-    "enroll-list": { label: "Enroll List", icon: "Users", href: "/dashboard/enrollments" },
-    "rsvp-list": { label: "RSVP List", icon: "Calendar", href: "/dashboard/rsvps" },
     "contact": { label: "Contact", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
     "scheduling": { label: "Scheduling", icon: "Clock", href: "/dashboard/scheduling-requests" },
     "testimonials": { label: "Testimonials", icon: "Star", href: "/dashboard/testimonials" },
@@ -355,12 +352,12 @@ export default function DashboardPage() {
               if (!action) return null;
               const IconComponent = (() => {
                 const icons: Record<string, any> = {
-                  Plus, BarChart3, Activity, Bell, Heart, Mail, Building2, Users, Calendar, MessageSquare, Clock, Star, FileText
+                  BookOpen, Calendar, FileText, BarChart3, Activity, Bell, Heart, Building2, Users, MessageSquare, Clock, Star
                 };
                 return icons[action.icon] || Heart;
               })();
               return (
-                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-1 w-[100px] h-[70px] text-xs font-semibold">
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-2 w-[110px] h-[80px] text-xs font-semibold">
                   <IconComponent className="w-5 h-5" /><span className="leading-tight text-center">{action.label}</span>
                 </Link>
               );
