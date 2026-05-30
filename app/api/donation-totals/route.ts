@@ -23,9 +23,8 @@ export async function GET() {
         const key =
           (d.donorEmail as string | undefined)?.trim().toLowerCase() ||
           (d.email as string | undefined)?.trim().toLowerCase() ||
-          (d.donorId as string | undefined)?.trim() ||
           doc.id;
-        if (key) constructionDonors.add(key);
+        constructionDonors.add(key);
       }
       byDesignation[d.designation || "other"] = (byDesignation[d.designation || "other"] || 0) + amt;
       byMethod[d.method || "unknown"] = (byMethod[d.method || "unknown"] || 0) + amt;

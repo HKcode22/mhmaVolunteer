@@ -1037,9 +1037,24 @@ export interface NewsItem {
 const NEWS_COLLECTION = "news";
 
 export async function fetchNews(limitCount = 10): Promise<NewsItem[]> {
-  const q = query(collection(db, NEWS_COLLECTION), where("published", "==", true), orderBy("createdAt", "desc"), limit(limitCount));
+  // Some legacy docs may store `published` as the string "true" (instead of boolean true).
+  // Query by recency, then filter client-side to avoid missing those items.
+  const fetchLimit = Math.min(Math.max(limitCount * 5, limitCount), 200);
+  const q = query(
+    collection(db, NEWS_COLLECTION),
+    orderBy("createdAt", "desc"),
+    limit(fetchLimit),
+  );
   const snap = await getDocs(q);
-  return collectionData<NewsItem>(snap);
+  const all = collectionData<NewsItem>(snap);
+
+  return all
+    .filter(item => {
+      const p: any = (item as any).published;
+      const normalized = typeof p === "string" ? p.trim().toLowerCase() : p;
+      return normalized === true || normalized === "true";
+    })
+    .slice(0, limitCount);
 }
 
 export async function fetchAllNews(limitCount = 50): Promise<NewsItem[]> {

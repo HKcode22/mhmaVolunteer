@@ -22,6 +22,10 @@ export async function POST(req: Request) {
 
   try {
     const amount = session.amount_total || session.amount_subtotal || 0;
+    const donorEmail =
+      ((session.customer_details?.email || (session as any).customer_email || "") + "").trim();
+    const donorName = session.customer_details?.name || "Anonymous";
+    const donorNameForEmail = session.customer_details?.name || "Valued Donor";
 
     const existing = await firestore
       .collection("donations")
@@ -36,8 +40,8 @@ export async function POST(req: Request) {
 
     await firestore.collection("donations").add({
       donorId: metadata.firebaseUid || "",
-      donorName: session.customer_details?.name || "Anonymous",
-      donorEmail: session.customer_details?.email || "",
+      donorName,
+      donorEmail,
       amount,
       designation,
       method: "stripe",
@@ -51,10 +55,8 @@ export async function POST(req: Request) {
     console.log(`Donation recorded: $${(amount / 100).toFixed(2)} for ${designation}`);
 
     // Send confirmation email
-    const donorEmail = session.customer_details?.email;
-    const donorName = session.customer_details?.name || "Valued Donor";
     if (donorEmail) {
-      await sendEmail(donorEmail, "Donation Received - MHMA", confirmationEmail(donorName,
+      await sendEmail(donorEmail, "Donation Received - MHMA", confirmationEmail(donorNameForEmail,
         `Your donation of <strong>$${(amount / 100).toFixed(2)}</strong> for <strong>${designation}</strong> has been received. Thank you for supporting the Mountain House Muslim Association!`
       ));
     }
