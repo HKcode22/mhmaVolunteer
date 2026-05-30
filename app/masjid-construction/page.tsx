@@ -7,7 +7,8 @@ import { Facebook, Instagram, Twitter, Linkedin, Youtube, MapPin, Mail, Phone, H
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import GalleryLightbox from "@/app/components/GalleryLightbox";
-import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { fetchMasjidUpdates, fetchFAQs, FirebaseMasjidUpdate, FAQItem } from "@/lib/firebase";
+import FAQAccordion from "@/app/components/FAQAccordion";
 
 export default function MasjidConstructionPage() {
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
@@ -17,6 +18,7 @@ export default function MasjidConstructionPage() {
   const [galleryView, setGalleryView] = useState<"grid" | "timeline">("grid");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("constructionGalleryView");
@@ -29,6 +31,7 @@ export default function MasjidConstructionPage() {
       setRaisedFromDonations(d.constructionTotal || 0);
       setDonorCount(d.donorCount || 0);
     }).catch(() => {});
+    fetchFAQs(50).then(data => setFaqItems(data.filter(f => f.active))).catch(() => {});
   }, []);
 
   const latest = updates[0];
@@ -129,6 +132,61 @@ export default function MasjidConstructionPage() {
             </div>
           </div>
         </section>
+
+        {/* Project Overview */}
+        {latest && (latest.narrative || latest.sqFootage || latest.capacity || latest.brochureUrl || latest.visionVideoUrl) && (
+          <section className="py-16 bg-white">
+            <div className="max-w-4xl mx-auto px-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Project Overview</h2>
+              {latest.narrative && (
+                <div className="prose prose-gray max-w-none mb-8">
+                  <p className="text-gray-700 leading-relaxed">{latest.narrative}</p>
+                </div>
+              )}
+              {(latest.sqFootage || latest.capacity || latest.communityImpact) && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  {latest.sqFootage ? (
+                    <div className="bg-mhma-cream rounded-xl p-6 text-center border border-gray-200">
+                      <p className="text-3xl font-bold text-mhma-forest">{latest.sqFootage.toLocaleString()}</p>
+                      <p className="text-gray-500 text-sm mt-1">Sq Ft</p>
+                    </div>
+                  ) : null}
+                  {latest.capacity ? (
+                    <div className="bg-mhma-cream rounded-xl p-6 text-center border border-gray-200">
+                      <p className="text-3xl font-bold text-mhma-gold">{latest.capacity.toLocaleString()}</p>
+                      <p className="text-gray-500 text-sm mt-1">Worshipers Capacity</p>
+                    </div>
+                  ) : null}
+                  {latest.communityImpact ? (
+                    <div className="bg-mhma-cream rounded-xl p-6 text-center border border-gray-200">
+                      <p className="text-3xl font-bold text-gray-900">{latest.communityImpact}</p>
+                      <p className="text-gray-500 text-sm mt-1">Community Impact</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+              <div className="flex flex-wrap justify-center gap-4">
+                {latest.brochureUrl && (
+                  <a href={latest.brochureUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-forest text-white font-bold rounded-lg hover:bg-mhma-forest-light transition-all shadow-md">
+                    Download Brochure
+                  </a>
+                )}
+                {latest.visionVideoUrl && (
+                  <a href={latest.visionVideoUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-md">
+                    Watch Campaign Video
+                  </a>
+                )}
+              </div>
+              {latest.visionVideoUrl && (
+                <div className="mt-8 aspect-video rounded-xl overflow-hidden shadow-lg">
+                  <iframe src={latest.visionVideoUrl} className="w-full h-full" allowFullScreen></iframe>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Construction Updates Gallery */}
         {images.length > 0 && (
@@ -233,6 +291,16 @@ export default function MasjidConstructionPage() {
           </section>
         )}
 
+        {/* FAQ Section */}
+        {faqItems.length > 0 && (
+          <section className="py-16 bg-mhma-cream">
+            <div className="max-w-3xl mx-auto px-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+              <FAQAccordion items={faqItems} />
+            </div>
+          </section>
+        )}
+
         {/* Donate Section */}
         <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16">
           <div className="max-w-4xl mx-auto px-4 text-center">
@@ -282,6 +350,10 @@ export default function MasjidConstructionPage() {
           <div className="flex flex-col items-center">
             <div className="mb-6">
               <Image src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp" alt="MHMA Logo" width={200} height={45} className="h-12 w-auto" />
+            </div>
+            <div className="w-full max-w-sm mx-auto mb-6">
+              <h3 className="text-sm font-semibold text-mhma-gold mb-2 text-center">Get Construction Updates</h3>
+              <NewsletterSignup variant="hero" source="masjid-construction" />
             </div>
             <div className="flex space-x-4 mb-8">
               {[

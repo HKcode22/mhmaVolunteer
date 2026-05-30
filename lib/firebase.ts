@@ -781,7 +781,7 @@ const MASJID_CONSTRUCTION = "masjidConstruction";
 
 export interface FirebaseMasjidUpdate {
   id?: string;
-  image: string;
+  image?: string;
   video?: string;
   caption: string;
   phase: string;
@@ -790,6 +790,13 @@ export interface FirebaseMasjidUpdate {
   progressDate: string;
   createdBy?: string;
   createdAt?: any;
+  // Project Overview fields
+  narrative?: string;
+  sqFootage?: number;
+  capacity?: number;
+  communityImpact?: string;
+  brochureUrl?: string;
+  visionVideoUrl?: string;
 }
 
 export async function fetchMasjidUpdates(limitCount = 10): Promise<FirebaseMasjidUpdate[]> {
@@ -1050,6 +1057,39 @@ export async function updateNews(id: string, data: Partial<NewsItem>): Promise<v
 
 export async function deleteNews(id: string): Promise<void> {
   await deleteDoc(doc(db, NEWS_COLLECTION, id));
+}
+
+// ─── FAQ ───
+
+export interface FAQItem {
+  id?: string;
+  question: string;
+  answer: string;
+  category: string;
+  order: number;
+  active: boolean;
+  createdAt?: any;
+}
+
+const FAQ_COLLECTION = "faq";
+
+export async function fetchFAQs(limitCount = 50): Promise<FAQItem[]> {
+  const q = query(collection(db, FAQ_COLLECTION), orderBy("order", "asc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<FAQItem>(snap);
+}
+
+export async function addFAQ(data: Omit<FAQItem, "id" | "createdAt">): Promise<string> {
+  const ref = await addDoc(collection(db, FAQ_COLLECTION), { ...data, createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function updateFAQ(id: string, data: Partial<FAQItem>): Promise<void> {
+  await updateDoc(doc(db, FAQ_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
+}
+
+export async function deleteFAQ(id: string): Promise<void> {
+  await deleteDoc(doc(db, FAQ_COLLECTION, id));
 }
 
 export { FALLBACK_QUOTES };

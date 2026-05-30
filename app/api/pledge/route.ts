@@ -4,14 +4,14 @@ import { sendEmail, confirmationEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, phone, amount, message } = await req.json();
+    const { name, email, phone, amount, message, timeframe } = await req.json();
     if (!name || !email) {
       return NextResponse.json({ error: "Name and email required" }, { status: 400 });
     }
 
     await firestore.collection("pledges").add({
       name, email, phone: phone || "", amount: amount || "", message: message || "",
-      status: "pending", createdAt: Timestamp.now(),
+      timeframe: timeframe || "60", status: "pending", createdAt: Timestamp.now(),
     });
 
     await sendEmail(email, "Pledge Received - MHMA", confirmationEmail(name,

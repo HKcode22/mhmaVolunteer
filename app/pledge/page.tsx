@@ -10,7 +10,7 @@ import PageBanner from "@/app/components/PageBanner";
 
 export default function PledgePage() {
   const { user } = useAuth();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", amount: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", amount: "", message: "", timeframe: "60" });
 
   useEffect(() => {
     if (user) {
@@ -46,6 +46,7 @@ export default function PledgePage() {
           email: form.email.trim(),
           phone: form.phone.trim() || undefined,
           amount: amountNum,
+          timeframe: form.timeframe,
           message: form.message.trim() || undefined,
           userUid: user?.uid,
         }),
@@ -92,6 +93,11 @@ export default function PledgePage() {
             Your pledge is a non-binding commitment. A board member will contact you to arrange payment. 
             You may also donate immediately via the <Link href="/donate" className="text-mhma-gold hover:underline font-semibold">donate page</Link>.
           </p>
+          <div className="mb-6 p-4 bg-mhma-cream border border-mhma-gold/20 rounded-xl">
+            <p className="text-sm text-gray-700 text-center">
+              Not ready to donate right now? Pledge today and we&apos;ll remind you when it&apos;s time.
+            </p>
+          </div>
 
           {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl"><p className="text-sm text-red-700">{error}</p></div>}
 
@@ -120,11 +126,20 @@ export default function PledgePage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="500" required />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
-              <textarea value={form.message} onChange={e => update("message", e.target.value)} rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="Any notes for the board..." />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">When do you plan to fulfill this pledge?</label>
+                <select value={form.timeframe} onChange={e => update("timeframe", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none text-gray-700 bg-white">
+                  <option value="30">Within 30 days</option>
+                  <option value="60">Within 60 days</option>
+                  <option value="90">Within 90 days</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+                <textarea value={form.message} onChange={e => update("message", e.target.value)} rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="Any notes for the board..." />
+              </div>
             <button type="submit" disabled={submitting}
               className="w-full flex items-center justify-center gap-2 bg-mhma-gold hover:bg-amber-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-amber-200/50">
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Heart className="w-4 h-4" /> Submit Pledge</>}

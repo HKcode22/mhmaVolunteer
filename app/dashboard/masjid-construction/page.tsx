@@ -25,6 +25,7 @@ export default function MasjidConstructionPage() {
   const [useStripeData, setUseStripeData] = useState(false);
   const [formData, setFormData] = useState({
     image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "",
+    narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "",
   });
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function MasjidConstructionPage() {
   }, []);
 
   const resetForm = () => {
-    setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "" });
+    setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "", narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "" });
     setEditingId(null);
     setUseStripeData(false);
     setShowForm(false);
@@ -102,6 +103,12 @@ export default function MasjidConstructionPage() {
       raised: String(u.raised || 0),
       goal: String(u.goal || 0),
       progressDate: u.progressDate || "",
+      narrative: u.narrative || "",
+      sqFootage: u.sqFootage ? String(u.sqFootage) : "",
+      capacity: u.capacity ? String(u.capacity) : "",
+      communityImpact: u.communityImpact || "",
+      brochureUrl: u.brochureUrl || "",
+      visionVideoUrl: u.visionVideoUrl || "",
     });
     setEditingId(u.id || null);
     setShowForm(true);
@@ -130,6 +137,12 @@ export default function MasjidConstructionPage() {
         goal: parseAmount(formData.goal),
         progressDate: formData.progressDate || new Date().toISOString().split("T")[0],
         createdBy: user?.uid,
+        narrative: formData.narrative || "",
+        sqFootage: formData.sqFootage ? parseFloat(formData.sqFootage) : 0,
+        capacity: formData.capacity ? parseFloat(formData.capacity) : 0,
+        communityImpact: formData.communityImpact || "",
+        brochureUrl: formData.brochureUrl || "",
+        visionVideoUrl: formData.visionVideoUrl || "",
       };
       if (editingId) {
         await updateMasjidUpdate(editingId, data);
@@ -242,7 +255,50 @@ export default function MasjidConstructionPage() {
                 <input type="text" value={formData.goal} onChange={e => setFormData(p => ({ ...p, goal: e.target.value }))} placeholder="e.g., 20,000,000 or 20M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
-            <div className="flex gap-2">
+
+            {/* Project Overview */}
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <h3 className="text-md font-bold text-gray-900 mb-3">Project Overview</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Narrative</label>
+                  <textarea value={formData.narrative} onChange={e => setFormData(p => ({ ...p, narrative: e.target.value }))} rows={3}
+                    placeholder="Brief narrative about why the masjid is needed, community growth, etc."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Sq Footage</label>
+                    <input type="number" min="0" value={formData.sqFootage} onChange={e => setFormData(p => ({ ...p, sqFootage: e.target.value }))}
+                      placeholder="e.g., 25000" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Capacity</label>
+                    <input type="number" min="0" value={formData.capacity} onChange={e => setFormData(p => ({ ...p, capacity: e.target.value }))}
+                      placeholder="e.g., 800" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Community Impact</label>
+                    <input type="text" value={formData.communityImpact} onChange={e => setFormData(p => ({ ...p, communityImpact: e.target.value }))}
+                      placeholder="e.g., Serving 500+ families" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Brochure URL</label>
+                    <input type="url" value={formData.brochureUrl} onChange={e => setFormData(p => ({ ...p, brochureUrl: e.target.value }))}
+                      placeholder="https://example.com/brochure.pdf" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Vision Video URL</label>
+                    <input type="url" value={formData.visionVideoUrl} onChange={e => setFormData(p => ({ ...p, visionVideoUrl: e.target.value }))}
+                      placeholder="https://www.youtube.com/embed/XXX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
               <button type="submit" disabled={saving || uploading} className="px-6 py-2.5 bg-mhma-gold text-white font-bold rounded-lg hover:bg-mhma-gold-light disabled:opacity-50 transition-all">
                 {saving ? "Saving..." : (editingId ? "Update Construction" : "Save Update")}
               </button>

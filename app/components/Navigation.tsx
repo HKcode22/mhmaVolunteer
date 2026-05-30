@@ -105,6 +105,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                           <Link href="/dashboard/programs" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Programs</Link>
                           <Link href="/dashboard/events" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Events</Link>
                           <Link href="/dashboard/testimonials" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Testimonials</Link>
+                          <Link href="/dashboard/faq" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">FAQ</Link>
                           <Link href="/dashboard/scheduling-requests" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Scheduling</Link>
                           <p className="px-4 py-1 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Financial</p>
                           <Link href="/dashboard/masjid-construction" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Construction</Link>
@@ -284,6 +285,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     <Link href="/dashboard/programs" className="block py-1 text-mhma-gold text-sm">↳ Programs</Link>
                     <Link href="/dashboard/events" className="block py-1 text-mhma-gold text-sm">↳ Events</Link>
                     <Link href="/dashboard/testimonials" className="block py-1 text-mhma-gold text-sm">↳ Testimonials</Link>
+                    <Link href="/dashboard/faq" className="block py-1 text-mhma-gold text-sm">↳ FAQ</Link>
                     <Link href="/dashboard/scheduling-requests" className="block py-1 text-mhma-gold text-sm">↳ Scheduling</Link>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-2 mb-1">Financial</p>
                     <Link href="/dashboard/masjid-construction" className="block py-1 text-mhma-gold text-sm">↳ Construction</Link>

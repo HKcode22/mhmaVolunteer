@@ -699,13 +699,13 @@ useEffect(() => {
                   title.toLowerCase().includes("3d") || title.toLowerCase().includes("print") ? "🖨️" : "🏫";
 
                 return (
-                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
+                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-mhma-forest p-6 rounded-xl border border-mhma-forest hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
                     <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{icon}</div>
-                    <h3 className="font-bold text-gray-900 mb-2 group-hover:text-mhma-gold">{title}</h3>
-                    <p className="text-gray-500 text-sm line-clamp-2">{desc}</p>
+                    <h3 className="font-bold text-white mb-2 group-hover:text-mhma-gold">{title}</h3>
+                    <p className="text-mhma-sage text-sm line-clamp-2">{desc}</p>
                     {isBoardMember && (
-                      <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 p-1.5 bg-gray-100 rounded hover:bg-mhma-gold transition-colors" title="Edit program">
-                        <Edit3 className="w-3.5 h-3.5 text-gray-500 hover:text-white" />
+                      <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 p-1.5 bg-white/20 rounded hover:bg-mhma-gold transition-colors" title="Edit program">
+                        <Edit3 className="w-3.5 h-3.5 text-white/70 hover:text-white" />
                       </Link>
                     )}
                   </Link>
