@@ -62,7 +62,7 @@ export default function DashboardPage() {
   const defaultQuickOrder = [
     "events", "programs", "news", "testimonials", "scheduling",
     "construction", "donations", "pledges",
-    "analytics", "activity", "contact", "members"
+    "activity", "analytics", "contact", "members"
   ];
   const [quickOrder, setQuickOrder] = useState<string[]>(defaultQuickOrder);
 
