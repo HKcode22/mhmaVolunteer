@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import { fetchNewsBySlug, NewsItem } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -25,10 +26,16 @@ export default function NewsDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="news" />
-      <div className="pt-32 pb-16 px-4 max-w-3xl mx-auto">
-        <Link href="/news" className="inline-flex items-center text-mhma-gold hover:text-amber-600 mb-6 font-semibold">
+      <PageBanner
+        title={item ? item.title : "News"}
+        highlightedText="News"
+        subtitle={item ? `By ${item.authorName || "MHMA"} · ${fmtDate(item.createdAt)}` : ""}
+        badgeText="Article"
+      />
+      <main className="py-16 px-4 max-w-3xl mx-auto">
+        <Link href="/news" className="inline-flex items-center text-mhma-gold hover:text-amber-600 mb-8 font-semibold">
           <ArrowLeft className="h-4 w-4 mr-2" /> All News
         </Link>
 
@@ -40,7 +47,7 @@ export default function NewsDetailPage() {
             <Link href="/news" className="text-mhma-gold hover:underline mt-4 inline-block">Browse all news</Link>
           </div>
         ) : (
-          <article>
+          <article className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
             {item.image && (
               <img src={item.image} alt={item.title} className="w-full h-64 md:h-80 object-cover rounded-xl mb-8" />
             )}
@@ -54,7 +61,7 @@ export default function NewsDetailPage() {
             </div>
           </article>
         )}
-      </div>
+      </main>
     </div>
   );
 }

@@ -14,6 +14,8 @@ export default function MasjidConstructionPage() {
   const { user, isBoardMember, loading: authLoading } = useAuth();
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [raisedFromDonations, setRaisedFromDonations] = useState(0);
+  const [constructionGoal, setConstructionGoal] = useState(0);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -34,9 +36,16 @@ export default function MasjidConstructionPage() {
     try {
       const data = await fetchMasjidUpdates();
       setUpdates(data);
+      if (data.length > 0) setConstructionGoal(data[0].goal || 0);
     } catch { /* ignore */ }
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetch("/api/donation-totals").then(r => r.json()).then(d => {
+      setRaisedFromDonations(d.constructionTotal || 0);
+    }).catch(() => {});
+  }, []);
 
   const resetForm = () => {
     setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "" });
@@ -158,6 +167,22 @@ export default function MasjidConstructionPage() {
         </div>
 
         {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
+
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-bold text-gray-900">Total Raised for Construction</h2>
+            <span className="text-xs text-gray-400">from completed donations</span>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <span className="text-4xl font-bold text-mhma-gold">${raisedFromDonations.toLocaleString()}</span>
+            {constructionGoal > 0 && <span className="text-gray-500 text-lg">/ ${constructionGoal.toLocaleString()}</span>}
+          </div>
+          {constructionGoal > 0 && (
+            <div className="w-full bg-gray-100 rounded-full h-3 mt-3 overflow-hidden">
+              <div className="bg-mhma-gold h-full rounded-full" style={{ width: `${Math.min((raisedFromDonations / constructionGoal) * 100, 100)}%` }}></div>
+            </div>
+          )}
+        </div>
 
         {showForm && (
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mb-8 space-y-4">

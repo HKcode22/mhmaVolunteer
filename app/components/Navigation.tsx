@@ -115,7 +115,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                         <div className="flex-1 py-2">
                           <p className="px-4 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Administration</p>
                           <Link href="/dashboard/activity" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Activity Log</Link>
-                          <Link href="/dashboard/notifications" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Notifications</Link>
                           <Link href="/dashboard/analytics" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Analytics</Link>
                           <Link href="/dashboard/contact-submissions" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Contact</Link>
                           <Link href="/dashboard/users" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Members</Link>
@@ -294,7 +293,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Admin</p>
                     <Link href="/dashboard/activity" className="block py-1 text-mhma-gold text-sm">↳ Activity Log</Link>
-                    <Link href="/dashboard/notifications" className="block py-1 text-mhma-gold text-sm">↳ Notifications</Link>
                     <Link href="/dashboard/analytics" className="block py-1 text-mhma-gold text-sm">↳ Analytics</Link>
                     <Link href="/dashboard/contact-submissions" className="block py-1 text-mhma-gold text-sm">↳ Contact</Link>
                     <Link href="/dashboard/users" className="block py-1 text-mhma-gold text-sm">↳ Members</Link>

@@ -57,12 +57,12 @@ export default function DashboardPage() {
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
   const [customizeTab, setCustomizeTab] = useState<"actions" | "sections">("actions");
-  const defaultOrder = ["news", "programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
+  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "requests", "pledges", "donations", "codes", "users", "subscribers"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
     "events", "programs", "news", "testimonials", "scheduling",
     "construction", "donations", "pledges",
-    "activity", "notifications", "analytics", "contact", "members"
+    "analytics", "activity", "contact", "members"
   ];
   const [quickOrder, setQuickOrder] = useState<string[]>(defaultQuickOrder);
 
@@ -75,9 +75,8 @@ export default function DashboardPage() {
     "construction": { label: "Construction", icon: "Building2", href: "/dashboard/masjid-construction" },
     "donations": { label: "Donations", icon: "HandCoins", href: "/dashboard/donations" },
     "pledges": { label: "Pledges", icon: "HandHeart", href: "/dashboard/pledges" },
-    "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
-    "notifications": { label: "Notifications", icon: "Bell", href: "/dashboard/notifications" },
     "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
+    "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
     "contact": { label: "Contact", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
     "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
   };
@@ -357,13 +356,13 @@ export default function DashboardPage() {
               if (!action) return null;
               const IconComponent = (() => {
                 const icons: Record<string, any> = {
-                  Calendar, BookOpen, FileText, Star, Clock, Building2, HandCoins, HandHeart, Activity, Bell, BarChart3, MessageSquare, Users
+                  Calendar, BookOpen, FileText, Star, Clock, Building2, HandCoins, HandHeart, BarChart3, Activity, MessageSquare, Users
                 };
                 return icons[action.icon] || Heart;
               })();
               return (
-                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-2 w-[120px] h-[90px] text-xs font-semibold">
-                  <IconComponent className="w-5 h-5" /><span className="leading-tight text-center">{action.label}</span>
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-2 w-[140px] h-[100px] text-sm font-semibold">
+                  <IconComponent className="w-6 h-6" /><span className="leading-tight text-center">{action.label}</span>
                 </Link>
               );
             })}

@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Calendar, ChevronRight, Edit3 } from "lucide-react";
+import { Calendar, ChevronRight, Edit3 } from "lucide-react";
 import { fetchNews, NewsItem } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
+import PageBanner from "@/app/components/PageBanner";
 
 export default function NewsListPage() {
   const [items, setItems] = useState<NewsItem[]>([]);
@@ -22,15 +23,15 @@ export default function NewsListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-mhma-cream">
       <Navigation currentPage="news" />
-      <div className="pt-32 pb-16 px-4 max-w-4xl mx-auto">
-        <Link href="/" className="inline-flex items-center text-mhma-gold hover:text-amber-600 mb-6 font-semibold">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
-        </Link>
-        <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">News</h1>
-        <p className="text-gray-500 mb-8">Latest updates and announcements from MHMA.</p>
-
+      <PageBanner
+        title="News & Announcements"
+        highlightedText="News"
+        subtitle="Stay informed with the latest updates and announcements from MHMA."
+        badgeText="Updates"
+      />
+      <main className="py-16 px-4 max-w-4xl mx-auto">
         {loading ? (
           <p className="text-gray-400 text-center py-12">Loading...</p>
         ) : items.length === 0 ? (
@@ -58,7 +59,7 @@ export default function NewsListPage() {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
