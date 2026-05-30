@@ -20,6 +20,7 @@ export default function DashboardEventsPage() {
   const [form, setForm] = useState({ title: "", slug: "", date: "", time: "", location: "", description: "", poster: "" });
   const [saving, setSaving] = useState(false);
   const [rsvpSearch, setRsvpSearch] = useState("");
+  const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -28,6 +29,17 @@ export default function DashboardEventsPage() {
       setEvents(e); setRsvps(r); setLoading(false);
     }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("eventsSectionOrder");
+    if (saved === "swapped" || saved === "normal") setSectionOrder(saved);
+  }, []);
+
+  const handleSwap = () => {
+    const next = sectionOrder === "normal" ? "swapped" : "normal";
+    setSectionOrder(next);
+    localStorage.setItem("eventsSectionOrder", next);
+  };
 
   const filtered = events.filter(i => {
     const q = search.toLowerCase();
@@ -164,107 +176,217 @@ export default function DashboardEventsPage() {
             </div>
           )}
 
-          {/* Events List */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
-            {filtered.length === 0 ? (
-              <div className="p-12 text-center"><Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching events." : "No events yet."}</p></div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Time</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Location</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map(e => (
-                      <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-gray-900">{e.title}</p>
-                          {e.description && <p className="text-xs text-gray-500 truncate max-w-[250px]">{e.description}</p>}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600 text-sm">{e.date || "—"}</td>
-                        <td className="px-4 py-3 text-gray-600">{formatTime(e.time) || "—"}</td>
-                        <td className="px-4 py-3 text-gray-600">{e.location || "—"}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-1">
-                            <button onClick={() => handleEdit(e)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                            <button onClick={() => e.id && handleDelete(e.id, e.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {sectionOrder === "normal" ? (
+            <>
+              {/* Events List */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
-            )}
-          </div>
-          <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} event{filtered.length !== 1 ? "s" : ""}</p>
 
-          {/* RSVPs Section */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">RSVPs</h2>
-          </div>
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search RSVPs..." value={rsvpSearch} onChange={e => setRsvpSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-            {filteredRsvps.length === 0 ? (
-              <div className="p-12 text-center"><Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{rsvpSearch ? "No matching RSVPs." : "No RSVPs yet."}</p></div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Event</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Guests</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRsvps.map(i => (
-                      <tr key={i.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col gap-0.5">
-                            <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
-                            {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-700">{i.eventTitle || "—"}</td>
-                        <td className="px-4 py-3"><span className="flex items-center gap-1"><Users className="w-3 h-3 text-gray-500" /> {i.attendees}</span></td>
-                        <td className="px-4 py-3">{rsvpStatusBadge(i.status)}</td>
-                        <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
-                            className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+                {filtered.length === 0 ? (
+                  <div className="p-12 text-center"><Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching events." : "No events yet."}</p></div>
+                ) : (
+                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Time</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Location</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map(e => (
+                          <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3">
+                              <p className="font-semibold text-gray-900">{e.title}</p>
+                              {e.description && <p className="text-xs text-gray-500 truncate max-w-[250px]">{e.description}</p>}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{e.date || "—"}</td>
+                            <td className="px-4 py-3 text-gray-600">{formatTime(e.time) || "—"}</td>
+                            <td className="px-4 py-3 text-gray-600">{e.location || "—"}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-1">
+                                <button onClick={() => handleEdit(e)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                                <button onClick={() => e.id && handleDelete(e.id, e.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <p className="text-xs text-gray-400 mt-4">{filteredRsvps.length} RSVP{filteredRsvps.length !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} event{filtered.length !== 1 ? "s" : ""}</p>
+
+              {/* RSVPs Section */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">RSVPs</h2>
+                <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
+              </div>
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Search RSVPs..." value={rsvpSearch} onChange={e => setRsvpSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                {filteredRsvps.length === 0 ? (
+                  <div className="p-12 text-center"><Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{rsvpSearch ? "No matching RSVPs." : "No RSVPs yet."}</p></div>
+                ) : (
+                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Event</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Guests</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRsvps.map(i => (
+                          <tr key={i.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-col gap-0.5">
+                                <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
+                                {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">{i.eventTitle || "—"}</td>
+                            <td className="px-4 py-3"><span className="flex items-center gap-1"><Users className="w-3 h-3 text-gray-500" /> {i.attendees}</span></td>
+                            <td className="px-4 py-3">{rsvpStatusBadge(i.status)}</td>
+                            <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
+                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-4">{filteredRsvps.length} RSVP{filteredRsvps.length !== 1 ? "s" : ""}</p>
+            </>
+          ) : (
+            <>
+              {/* RSVPs Section first */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">RSVPs</h2>
+                <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
+              </div>
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Search RSVPs..." value={rsvpSearch} onChange={e => setRsvpSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                {filteredRsvps.length === 0 ? (
+                  <div className="p-12 text-center"><Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{rsvpSearch ? "No matching RSVPs." : "No RSVPs yet."}</p></div>
+                ) : (
+                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Event</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Guests</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRsvps.map(i => (
+                          <tr key={i.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-col gap-0.5">
+                                <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
+                                {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">{i.eventTitle || "—"}</td>
+                            <td className="px-4 py-3"><span className="flex items-center gap-1"><Users className="w-3 h-3 text-gray-500" /> {i.attendees}</span></td>
+                            <td className="px-4 py-3">{rsvpStatusBadge(i.status)}</td>
+                            <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
+                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mb-6">{filteredRsvps.length} RSVP{filteredRsvps.length !== 1 ? "s" : ""}</p>
+
+              {/* Events List */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+                {filtered.length === 0 ? (
+                  <div className="p-12 text-center"><Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching events." : "No events yet."}</p></div>
+                ) : (
+                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Time</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Location</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map(e => (
+                          <tr key={e.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3">
+                              <p className="font-semibold text-gray-900">{e.title}</p>
+                              {e.description && <p className="text-xs text-gray-500 truncate max-w-[250px]">{e.description}</p>}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{e.date || "—"}</td>
+                            <td className="px-4 py-3 text-gray-600">{formatTime(e.time) || "—"}</td>
+                            <td className="px-4 py-3 text-gray-600">{e.location || "—"}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-1">
+                                <button onClick={() => handleEdit(e)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                                <button onClick={() => e.id && handleDelete(e.id, e.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} event{filtered.length !== 1 ? "s" : ""}</p>
+            </>
+          )}
         </div>
       </main>
     </div>

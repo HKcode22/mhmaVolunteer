@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2, Star, FileText } from "lucide-react";
+import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2, Star, FileText, HandHeart, HandCoins } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -16,7 +16,7 @@ import {
   fetchContactSubmissions, deleteContactSubmission, markContactSubmissionRead,
   fetchRSVPs, deleteRSVP, updateRSVP,
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
-  fetchUsers, fetchSubscribers, fetchPledges, fetchDonations,
+  fetchUsers, fetchSubscribers, fetchPledges, fetchDonations, fetchAllNews,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
   FirebaseUser, Subscriber, Pledge, Donation,
 } from "@/lib/firebase";
@@ -49,35 +49,37 @@ export default function DashboardPage() {
   const [showAllSubscribers, setShowAllSubscribers] = useState(false);
   const [showAllPledges, setShowAllPledges] = useState(false);
   const [showAllDonations, setShowAllDonations] = useState(false);
+  const [showAllNews, setShowAllNews] = useState(false);
+  const [news, setNews] = useState<any[]>([]);
   const [expandedDashboardId, setExpandedDashboardId] = useState<string | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
   const [customizeTab, setCustomizeTab] = useState<"actions" | "sections">("actions");
-  const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
+  const defaultOrder = ["news", "programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
-    "programs", "events", "news", "analytics", "activity", "notifications",
-    "pledges", "donations", "construction", "members",
-    "contact", "scheduling", "testimonials"
+    "events", "programs", "news", "testimonials", "scheduling",
+    "construction", "donations", "pledges",
+    "activity", "notifications", "analytics", "contact", "members"
   ];
   const [quickOrder, setQuickOrder] = useState<string[]>(defaultQuickOrder);
 
   const quickActionMeta: Record<string, { label: string; icon: string; href: string }> = {
-    "programs": { label: "Programs", icon: "BookOpen", href: "/dashboard/programs" },
     "events": { label: "Events", icon: "Calendar", href: "/dashboard/events" },
+    "programs": { label: "Programs", icon: "BookOpen", href: "/dashboard/programs" },
     "news": { label: "News", icon: "FileText", href: "/dashboard/news" },
-    "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
+    "testimonials": { label: "Testimonials", icon: "Star", href: "/dashboard/testimonials" },
+    "scheduling": { label: "Scheduling", icon: "Clock", href: "/dashboard/scheduling-requests" },
+    "construction": { label: "Construction", icon: "Building2", href: "/dashboard/masjid-construction" },
+    "donations": { label: "Donations", icon: "HandCoins", href: "/dashboard/donations" },
+    "pledges": { label: "Pledges", icon: "HandHeart", href: "/dashboard/pledges" },
     "activity": { label: "Activity Log", icon: "Activity", href: "/dashboard/activity" },
     "notifications": { label: "Notifications", icon: "Bell", href: "/dashboard/notifications" },
-    "pledges": { label: "Pledges", icon: "Heart", href: "/dashboard/pledges" },
-    "donations": { label: "Donations", icon: "Heart", href: "/dashboard/donations" },
-    "construction": { label: "Construction", icon: "Building2", href: "/dashboard/masjid-construction" },
-    "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
+    "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
     "contact": { label: "Contact", icon: "MessageSquare", href: "/dashboard/contact-submissions" },
-    "scheduling": { label: "Scheduling", icon: "Clock", href: "/dashboard/scheduling-requests" },
-    "testimonials": { label: "Testimonials", icon: "Star", href: "/dashboard/testimonials" },
+    "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
   };
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function DashboardPage() {
 
   const sectionLabel = (s: string) => {
     const labels: Record<string, string> = {
-      programs: "Programs", events: "Events", requests: "Scheduling Requests",
+      news: "News", programs: "Programs", events: "Events", requests: "Scheduling Requests",
       enrollments: "Enrollments", rsvps: "Event RSVPs", submissions: "Contact Submissions",
       codes: "Invite Codes", users: "Members", subscribers: "Subscribers",
       pledges: "Pledges", donations: "Donations",
@@ -162,8 +164,9 @@ export default function DashboardPage() {
         timeout(fetchSubscribers(100), 15000).catch(() => [] as Subscriber[]),
         timeout(fetchPledges(100), 15000).catch(() => [] as Pledge[]),
         timeout(fetchDonations(100), 15000).catch(() => [] as Donation[]),
+        timeout(fetchAllNews(100), 15000).catch(() => [] as any[]),
       ]);
-      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -175,6 +178,7 @@ export default function DashboardPage() {
       setSubscribers(subs || []);
       setPledges(pl || []);
       setDonations(d || []);
+      setNews(n || []);
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
     };
@@ -320,6 +324,7 @@ export default function DashboardPage() {
 
   const visiblePrograms = showAllPrograms ? programs : programs.slice(0, 5);
   const visibleEvents = showAllEvents ? events : events.slice(0, 5);
+  const visibleNews = showAllNews ? news : news.slice(0, 5);
   const visibleRequests = showAllRequests ? eventRequests : eventRequests.slice(0, 5);
   const visibleEnrollments = showAllEnrollments ? enrollments : enrollments.slice(0, 5);
   const visibleRSVPs = showAllRSVPs ? rsvps : rsvps.slice(0, 5);
@@ -352,12 +357,12 @@ export default function DashboardPage() {
               if (!action) return null;
               const IconComponent = (() => {
                 const icons: Record<string, any> = {
-                  BookOpen, Calendar, FileText, BarChart3, Activity, Bell, Heart, Building2, Users, MessageSquare, Clock, Star
+                  Calendar, BookOpen, FileText, Star, Clock, Building2, HandCoins, HandHeart, Activity, Bell, BarChart3, MessageSquare, Users
                 };
                 return icons[action.icon] || Heart;
               })();
               return (
-                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-2 w-[110px] h-[80px] text-xs font-semibold">
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-2 w-[120px] h-[90px] text-xs font-semibold">
                   <IconComponent className="w-5 h-5" /><span className="leading-tight text-center">{action.label}</span>
                 </Link>
               );
@@ -403,6 +408,24 @@ export default function DashboardPage() {
                     </div>
                   ))}
                   {events.length === 0 && <p className="text-gray-400 text-sm p-3">No events yet.</p>}
+                </Section>
+              );
+            case "news":
+              return (
+                <Section key="news" title="News" count={news.length} href="/dashboard/news" allShown={showAllNews} onToggle={() => setShowAllNews(!showAllNews)} scrollable>
+                  {visibleNews.map((n: any) => (
+                    <div key={n.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{n.title}</p>
+                        <p className="text-xs text-gray-500">{n.published ? "Published" : "Draft"}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link href={`/news/${n.slug}`} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded" title="View"><FileText className="w-4 h-4" /></Link>
+                        <Link href={`/dashboard/news?edit=${n.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                      </div>
+                    </div>
+                  ))}
+                  {news.length === 0 && <p className="text-gray-400 text-sm p-3">No news yet.</p>}
                 </Section>
               );
             case "requests":
