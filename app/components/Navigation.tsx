@@ -101,6 +101,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <div className="flex">
                         <div className="flex-1 py-2">
                           <p className="px-4 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Content</p>
+                          <Link href="/dashboard/news" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Add News</Link>
                           <Link href="/dashboard/programs/new" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Add Program</Link>
                           <Link href="/dashboard/events/new" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Add Event</Link>
                           <Link href="/dashboard/enrollments" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Enroll List</Link>
@@ -130,7 +131,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
               </>
             ) : isLoggedIn ? (
               <>
-                <Link href="/dashboard/notifications" className="relative text-white hover:text-mhma-gold transition-colors">
+                <Link href="/member/notifications" className="relative text-white hover:text-mhma-gold transition-colors">
                   <Bell className="w-4 h-4" />
                   {notifCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
@@ -218,6 +219,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   </div>
               </div>
 
+              <Link href="/news" className={`${navLinkClass("news")} ${currentPage === "news" ? "text-mhma-gold" : "text-gray-700"}`}>
+                NEWS
+              </Link>
+
               <div className="relative group">
                 <Link href="/donate" className={`${navLinkClass("donate")} ${currentPage === "donate" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   DONATE<span className="text-[10px]">▼</span>
@@ -264,6 +269,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/rsvp" className="block py-2 text-gray-700 border-b border-gray-100">RSVP</Link>
             {/* <Link href="/journal" className="block py-2 text-gray-700 border-b border-gray-100">JOURNAL</Link> */}
             <Link href="/programs" className="block py-2 text-gray-700 border-b border-gray-100">PROGRAMS</Link>
+            <Link href="/news" className="block py-2 text-gray-700 border-b border-gray-100">NEWS</Link>
             <Link href="/volunteer" className="block py-2 text-gray-700 border-b border-gray-100">VOLUNTEER</Link>
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/pledge" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ PLEDGE</Link>

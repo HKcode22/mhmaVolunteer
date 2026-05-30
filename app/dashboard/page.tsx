@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2, Star } from "lucide-react";
+import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2, Star, FileText } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -58,13 +58,14 @@ export default function DashboardPage() {
   const defaultOrder = ["programs", "events", "requests", "enrollments", "rsvps", "submissions", "codes", "users", "subscribers", "pledges", "donations"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
-    "add-program", "add-event", "analytics", "activity", "notifications",
+    "add-news", "add-program", "add-event", "analytics", "activity", "notifications",
     "pledges", "subscribers", "donations", "construction", "members",
     "enroll-list", "rsvp-list", "contact", "scheduling", "testimonials"
   ];
   const [quickOrder, setQuickOrder] = useState<string[]>(defaultQuickOrder);
 
   const quickActionMeta: Record<string, { label: string; icon: string; href: string }> = {
+    "add-news": { label: "Add News", icon: "FileText", href: "/dashboard/news" },
     "add-program": { label: "Add Program", icon: "Plus", href: "/dashboard/programs/new" },
     "add-event": { label: "Add Event", icon: "Plus", href: "/dashboard/events/new" },
     "analytics": { label: "Analytics", icon: "BarChart3", href: "/dashboard/analytics" },
@@ -348,19 +349,19 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-8">
+          <div className="flex flex-wrap gap-2 mb-8">
             {quickOrder.map(id => {
               const action = quickActionMeta[id];
               if (!action) return null;
               const IconComponent = (() => {
                 const icons: Record<string, any> = {
-                  Plus, BarChart3, Activity, Bell, Heart, Mail, Building2, Users, Calendar, MessageSquare, Clock, Star
+                  Plus, BarChart3, Activity, Bell, Heart, Mail, Building2, Users, Calendar, MessageSquare, Clock, Star, FileText
                 };
                 return icons[action.icon] || Heart;
               })();
               return (
-                <Link key={id} href={action.href} className="bg-mhma-forest text-white p-4 rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-2">
-                  <IconComponent className="w-6 h-6" /><span className="font-semibold text-sm">{action.label}</span>
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white px-4 py-2.5 rounded-sm hover:bg-mhma-forest-light transition-all flex items-center gap-2 text-sm font-semibold shrink-0">
+                  <IconComponent className="w-4 h-4" />{action.label}
                 </Link>
               );
             })}

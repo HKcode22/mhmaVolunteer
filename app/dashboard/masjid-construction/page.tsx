@@ -92,7 +92,7 @@ export default function MasjidConstructionPage() {
   };
 
   const parseAmount = (val: string): number => {
-    const s = val.trim().toUpperCase();
+    const s = val.trim().replace(/,/g, "").toUpperCase();
     if (s.endsWith("M")) return parseFloat(s) * 1000000;
     if (s.endsWith("K")) return parseFloat(s) * 1000;
     return parseFloat(s) || 0;
@@ -193,11 +193,11 @@ export default function MasjidConstructionPage() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Raised ($)</label>
-                <input type="text" value={formData.raised} onChange={e => setFormData(p => ({ ...p, raised: e.target.value }))} placeholder="e.g., 500000 or 500K or 0.5M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <input type="text" value={formData.raised} onChange={e => setFormData(p => ({ ...p, raised: e.target.value }))} placeholder="e.g., 500,000 or 500K or 0.5M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Goal ($)</label>
-                <input type="text" value={formData.goal} onChange={e => setFormData(p => ({ ...p, goal: e.target.value }))} placeholder="e.g., 1000000 or 1M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <input type="text" value={formData.goal} onChange={e => setFormData(p => ({ ...p, goal: e.target.value }))} placeholder="e.g., 20,000,000 or 20M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
             <div className="flex gap-2">

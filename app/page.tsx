@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
-import { fetchEvents, fetchPrograms, fetchMasjidUpdates } from "@/lib/firebase";
+import { fetchEvents, fetchPrograms, fetchMasjidUpdates, fetchNews } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
@@ -316,6 +316,7 @@ export default function HomePage() {
   const [heroImage, setHeroImage] = useState<string | null>(null);
   const [heroLoading, setHeroLoading] = useState(true);
   const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
+  const [news, setNews] = useState<any[]>([]);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -384,20 +385,23 @@ export default function HomePage() {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, masjidData, donationTotals] = await Promise.allSettled([
+      const [eventsData, programs, masjidData, donationTotals, newsData] = await Promise.allSettled([
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(1),
         fetch("/api/donation-totals").then(r => r.json()),
+        fetchNews(3),
       ]);
 
       const events = eventsData.status === "fulfilled" ? eventsData.value : [];
       const prog = programs.status === "fulfilled" ? programs.value : [];
       const masjid = masjidData.status === "fulfilled" ? masjidData.value : [];
       const totals = donationTotals.status === "fulfilled" ? donationTotals.value : null;
+      const newsArr = newsData.status === "fulfilled" ? newsData.value : [];
 
       setEvents(events);
       setPrograms(prog);
+      setNews(newsArr);
 
       // Compute raised from actual donation data via API
       const constructionTotal = totals?.constructionTotal || 0;
@@ -618,36 +622,8 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* Quick Links Section */}
-      <section className="bg-mhma-cream border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Link href="/prayer-times" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">🕌</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Prayer Times</h3>
-              <p className="text-xs text-gray-500 mt-1">DailySalah times</p>
-            </Link>
-            <Link href="/programs" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">📚</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Programs</h3>
-              <p className="text-xs text-gray-500 mt-1">Quran, Arabic, Hifz</p>
-            </Link>
-            <Link href="/donate" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">💛</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Donate</h3>
-              <p className="text-xs text-gray-500 mt-1">Support the masjid</p>
-            </Link>
-            <Link href="/contact" className="block text-center p-4 bg-white rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-lg transition-all group">
-              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">📞</div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-mhma-gold">Contact</h3>
-              <p className="text-xs text-gray-500 mt-1">Get in touch</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* About Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="lg:w-1/2">
@@ -733,9 +709,44 @@ useEffect(() => {
           </div>
           <div className="text-center">
             <Link href="/programs" className="inline-flex items-center px-6 py-2.5 bg-mhma-forest text-white font-semibold rounded-lg hover:bg-mhma-forest-mid hover:scale-105 transition-all shadow-lg">
-              View All Programs <ChevronRight className="ml-2 w-5 h-5" />
+              Explore Programs <ChevronRight className="ml-2 w-5 h-5" />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Latest News Section */}
+      <section className="py-16 bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
+            Latest <span className="text-mhma-gold">News</span>
+          </h2>
+          {news.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {news.map((n: any) => {
+                  const cd = n.createdAt;
+                  const dateStr = cd ? (cd.toDate ? cd.toDate().toLocaleDateString() : typeof cd === "string" ? new Date(cd).toLocaleDateString() : "") : "";
+                  return (
+                    <Link key={n.id} href={`/news/${n.slug}`}
+                      className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
+                      {n.image && <img src={n.image} alt={n.title} className="w-full h-40 object-cover rounded-lg mb-3" />}
+                      <p className="text-xs text-gray-400 mb-1">{dateStr}{n.authorName ? ` · By ${n.authorName}` : ""}</p>
+                      <h3 className="font-bold text-gray-900 mb-2 group-hover:text-mhma-gold transition-colors">{n.title}</h3>
+                      <p className="text-gray-500 text-sm line-clamp-2">{n.excerpt}</p>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="text-center">
+                <Link href="/news" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
+                  View All News <ChevronRight className="ml-1 w-5 h-5" />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-gray-400 py-8">No news articles yet.</p>
+          )}
         </div>
       </section>
 

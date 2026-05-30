@@ -1001,3 +1001,55 @@ const FALLBACK_QUOTES = [
   { text: "Indeed, with hardship comes ease.", author: "Quran 94:6" },
   { text: "Whoever travels a path in search of knowledge, Allah will make easy for them a path to Paradise.", author: "Prophet Muhammad (ﷺ)" },
 ];
+
+// ─── News/Blog ───
+
+export interface NewsItem {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  authorName?: string;
+  published: boolean;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+const NEWS_COLLECTION = "news";
+
+export async function fetchNews(limitCount = 10): Promise<NewsItem[]> {
+  const q = query(collection(db, NEWS_COLLECTION), where("published", "==", true), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<NewsItem>(snap);
+}
+
+export async function fetchAllNews(limitCount = 50): Promise<NewsItem[]> {
+  const q = query(collection(db, NEWS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<NewsItem>(snap);
+}
+
+export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
+  const q = query(collection(db, NEWS_COLLECTION), where("slug", "==", slug), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const doc = snap.docs[0];
+  return { id: doc.id, ...doc.data() } as NewsItem;
+}
+
+export async function addNews(data: Omit<NewsItem, "id" | "createdAt">): Promise<string> {
+  const ref = await addDoc(collection(db, NEWS_COLLECTION), { ...data, createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function updateNews(id: string, data: Partial<NewsItem>): Promise<void> {
+  await updateDoc(doc(db, NEWS_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
+}
+
+export async function deleteNews(id: string): Promise<void> {
+  await deleteDoc(doc(db, NEWS_COLLECTION, id));
+}
+
+export { FALLBACK_QUOTES };

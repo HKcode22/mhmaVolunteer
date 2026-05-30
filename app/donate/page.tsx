@@ -318,15 +318,15 @@ export default function DonatePage() {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-mhma-teal p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Campaign Goal</p>
-                    <p className="text-4xl md:text-5xl font-bold font-serif">${(goal / 1000000).toFixed(1)}M</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">${goal.toLocaleString()}</p>
                   </div>
                   <div className="bg-mhma-gold p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Raised to Date</p>
-                    <p className="text-4xl md:text-5xl font-bold font-serif">${(raised / 1000000).toFixed(1)}M</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">${raised.toLocaleString()}</p>
                   </div>
                   <div className="bg-mhma-dark p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Remaining</p>
-                    <p className="text-4xl md:text-5xl font-bold font-serif">${(remaining / 1000000).toFixed(1)}M</p>
+                    <p className="text-4xl md:text-5xl font-bold font-serif">${remaining.toLocaleString()}</p>
                   </div>
                 </div>
                 ) : null}
