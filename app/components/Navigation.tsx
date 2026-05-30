@@ -182,6 +182,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <Link href="/board" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Board</Link>
                       <Link href="/committees" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Committees</Link>
                       <Link href="/bylaws" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Bylaws</Link>
+                      <Link href="/news" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">News</Link>
                       <Link href="/community-transparency" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Community Transparency</Link>
                     </div>
                   </div>

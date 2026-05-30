@@ -471,8 +471,14 @@ useEffect(() => {
                 <Link href="/events" className="mhma-btn-gold">
                   Explore Events
                 </Link>
+                <Link href="/programs" className="mhma-btn-gold">
+                  Explore Programs
+                </Link>
                 <Link href="/masjid-construction" className="mhma-btn-gold">
                   MASJID CONSTRUCTION
+                </Link>
+                <Link href="/news" className="mhma-btn-gold">
+                  Newsletter
                 </Link>
               </div>
             </div>
@@ -565,7 +571,7 @@ useEffect(() => {
                 </div>
               </div>
               <div className="shrink-0">
-                <Link href="/pledge" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
+                <Link href="/pledge" className="mhma-btn-gold inline-flex items-center">
                   Pledge Today
                 </Link>
               </div>
@@ -576,7 +582,7 @@ useEffect(() => {
                 <p className="text-sm font-bold text-mhma-forest uppercase tracking-wider">Masjid Fund</p>
                 <p className="text-xs text-gray-500 mt-1">Campaign data coming soon</p>
               </div>
-              <Link href="/pledge" className="inline-flex items-center px-5 py-2.5 bg-mhma-gold text-mhma-forest font-bold text-sm rounded-lg hover:bg-amber-500 transition-all shadow-md">
+              <Link href="/pledge" className="mhma-btn-gold inline-flex items-center">
                 Pledge Today
               </Link>
             </div>
@@ -585,7 +591,7 @@ useEffect(() => {
       </section>
 
       {/* Golden Prayer Times Bar */}
-      <section className="bg-gradient-to-r from-mhma-gold via-amber-400 to-mhma-gold py-6 md:py-8 border-y-2 border-mhma-gold">
+      <section className="bg-mhma-gold py-6 md:py-8 border-y-2 border-mhma-forest/10">
         <div className="max-w-6xl mx-auto px-4">
           {prayerTimesLoading ? (
             <div className="flex justify-center items-center h-20">
@@ -660,7 +666,7 @@ useEffect(() => {
       </section>
 
       {/* Programs Section */}
-      <section className="py-16 bg-mhma-cream border-t border-gray-200">
+      <section className="py-16 bg-white border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 text-center uppercase tracking-wide">
             Our <span className="text-mhma-gold">Programs</span> & Classes
@@ -716,7 +722,7 @@ useEffect(() => {
       </section>
 
       {/* Latest News Section */}
-      <section className="py-16 bg-white border-t border-gray-200">
+      <section className="py-16 bg-mhma-cream border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
             Latest <span className="text-mhma-gold">News</span>
