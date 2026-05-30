@@ -12,6 +12,7 @@ import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
 export default function MasjidConstructionPage() {
   const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
   const [raisedFromDonations, setRaisedFromDonations] = useState(0);
+  const [donorCount, setDonorCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [galleryView, setGalleryView] = useState<"grid" | "timeline">("grid");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -26,6 +27,7 @@ export default function MasjidConstructionPage() {
     fetchMasjidUpdates(20).then(data => { setUpdates(data); setLoading(false); }).catch(() => setLoading(false));
     fetch("/api/donation-totals").then(r => r.json()).then(d => {
       setRaisedFromDonations(d.constructionTotal || 0);
+      setDonorCount(d.donorCount || 0);
     }).catch(() => {});
   }, []);
 
@@ -57,8 +59,11 @@ export default function MasjidConstructionPage() {
         <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16 md:py-20">
           <div className="max-w-6xl mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Islamic Center Campaign</h1>
-            <p className="text-lg md:text-xl text-mhma-sage/90 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-mhma-sage/90 max-w-3xl mx-auto">
               Building a permanent place of worship, education, and community for Mountain House.
+            </p>
+            <p className="text-sm text-mhma-gold/80 mt-4 italic max-w-2xl mx-auto">
+              "Whoever builds a masjid for the sake of Allah, Allah will build for him a house in Paradise." — Bukhari &amp; Muslim
             </p>
           </div>
         </section>
@@ -84,6 +89,9 @@ export default function MasjidConstructionPage() {
                   <span className="font-semibold text-mhma-forest">${raised.toLocaleString()} raised</span>
                   <span className="font-bold text-mhma-gold">{pct}%</span>
                 </div>
+                {donorCount > 0 && (
+                  <p className="text-xs text-gray-400 text-center">{donorCount} donor{donorCount !== 1 ? "s" : ""} contributed</p>
+                )}
                 <div className="flex justify-center gap-4 pt-2">
                   <Link href="/pledge" className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-md">
                     <Heart className="w-5 h-5" /> Pledge Today
@@ -144,8 +152,8 @@ export default function MasjidConstructionPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {images.map((u, i) => (
                     <div key={u.id || i} onClick={() => openLightbox(i)} className="bg-mhma-cream rounded-2xl overflow-hidden shadow-md border border-gray-200 cursor-pointer group">
-                      <div className="aspect-[4/3] overflow-hidden">
-                        <img src={u.image} alt={u.caption || "Construction"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="aspect-[4/3] overflow-hidden bg-gray-50">
+                        <img src={u.image} alt={u.caption || "Construction"} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                       </div>
                       <div className="p-4">
                         {u.phase && (

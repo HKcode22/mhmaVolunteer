@@ -43,7 +43,9 @@ export default function DonatePage() {
   const { user } = useAuth();
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [raisedFromDonations, setRaisedFromDonations] = useState(0);
+  const [donorCount, setDonorCount] = useState(0);
   const [statsLoaded, setStatsLoaded] = useState(false);
+  const [masjidLoaded, setMasjidLoaded] = useState(false);
   const [designation, setDesignation] = useState<Designation>("general");
   const [recurring, setRecurring] = useState(false);
   const [amount, setAmount] = useState("");
@@ -56,9 +58,10 @@ export default function DonatePage() {
       setSuccess(true);
       window.history.replaceState({}, "", "/donate");
     }
-    fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); }).catch(() => {});
+    fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); setMasjidLoaded(true); }).catch(() => setMasjidLoaded(true));
     fetch("/api/donation-totals").then(r => r.json()).then(d => {
       setRaisedFromDonations(d.constructionTotal || 0);
+      setDonorCount(d.donorCount || 0);
       setStatsLoaded(true);
     }).catch(() => setStatsLoaded(true));
   }, []);
@@ -314,7 +317,7 @@ export default function DonatePage() {
 
               {/* Right Side: Stats & Contact */}
               <div className="lg:w-5/12 flex flex-col gap-8">
-                {statsLoaded ? (
+                {statsLoaded && masjidLoaded ? (
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-mhma-teal p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Campaign Goal</p>
@@ -328,6 +331,12 @@ export default function DonatePage() {
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Remaining</p>
                     <p className="text-4xl md:text-5xl font-bold font-serif">${remaining.toLocaleString()}</p>
                   </div>
+                  {donorCount > 0 && (
+                    <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-gray-200 text-center">
+                      <p className="text-2xl font-bold text-mhma-forest">{donorCount}</p>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider">Donors Contributed</p>
+                    </div>
+                  )}
                 </div>
                 ) : null}
 

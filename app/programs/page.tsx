@@ -123,15 +123,16 @@ export default function ProgramsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {displayPrograms.map((program) => {
+                  {displayPrograms.map((program, idx) => {
                 const displayTitle = program.title;
                 const displayDesc = program.description;
+                const isRecent = idx < 3 && !loading;
 
                 return (
                   <Link 
                     key={program.href} 
                     href={program.href}
-                    className="flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 group hover:border-mhma-gold hover:shadow-xl transition-all duration-500 overflow-hidden relative"
+                    className={`flex flex-col rounded-3xl shadow-sm border group hover:border-mhma-gold hover:shadow-xl transition-all duration-500 overflow-hidden relative ${isRecent ? "bg-mhma-forest border-mhma-forest-light" : "bg-white border-gray-100"}`}
                   >
                     {isBoardMember && program.isFirestore && (
                       <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit program">
@@ -152,20 +153,25 @@ export default function ProgramsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-6 flex flex-col flex-grow">
-                      <h3 className="text-lg font-bold text-gray-900 mb-3 font-serif group-hover:text-mhma-gold transition-colors">{displayTitle}</h3>
-                      <p className="text-gray-500 text-sm leading-relaxed mb-4 font-light line-clamp-2">{displayDesc}</p>
+                    <div className={`p-6 flex flex-col flex-grow ${isRecent ? "text-white" : ""}`}>
+                      <h3 className={`text-lg font-bold mb-3 font-serif group-hover:text-mhma-gold transition-colors ${isRecent ? "text-white" : "text-gray-900"}`}>{displayTitle}</h3>
+                      <p className={`text-sm leading-relaxed mb-4 font-light line-clamp-2 ${isRecent ? "text-gray-200" : "text-gray-500"}`}>{displayDesc}</p>
                       <div className="mt-auto space-y-3">
-                        <Link
-                          href="/enroll"
-                          className="block w-full text-center px-4 py-2.5 bg-mhma-gold text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all shadow-md"
-                        >
-                          Enroll Now
-                        </Link>
+                        {isRecent ? (
+                          <span className="block w-full text-center px-4 py-2.5 bg-mhma-gold text-mhma-forest text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all shadow-md cursor-pointer">
+                            Enroll Now
+                          </span>
+                        ) : (
+                          <Link
+                            href="/enroll"
+                            className="block w-full text-center px-4 py-2.5 bg-mhma-gold text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all shadow-md"
+                          >
+                            Enroll Now
+                          </Link>
+                        )}
                         <Link 
                           href={program.href}
-                          className="block w-full text-center text-mhma-gold text-xs font-bold uppercase tracking-widest hover:underline"
-                        >
+                          className={`block w-full text-center text-xs font-bold uppercase tracking-widest hover:underline ${isRecent ? "text-mhma-gold" : "text-mhma-gold"}`}>
                           Learn More <ChevronRight className="ml-1 w-4 h-4 inline group-hover:translate-x-1 transition-transform" />
                         </Link>
                       </div>

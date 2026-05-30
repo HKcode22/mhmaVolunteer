@@ -88,16 +88,16 @@ export default function DashboardPage() {
           const data = snap.data();
           if (data.dashboardOrder) {
             const saved = data.dashboardOrder as string[];
-            const merged = [...saved];
-            for (const item of defaultOrder) {
+            const merged = [...defaultOrder];
+            for (const item of saved) {
               if (!merged.includes(item)) merged.push(item);
             }
             setLayoutOrder(merged);
           }
           if (data.quickOrder) {
             const saved = data.quickOrder as string[];
-            const merged = [...saved];
-            for (const item of defaultQuickOrder) {
+            const merged = [...defaultQuickOrder];
+            for (const item of saved) {
               if (!merged.includes(item)) merged.push(item);
             }
             setQuickOrder(merged);

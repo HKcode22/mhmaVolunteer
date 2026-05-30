@@ -12,12 +12,16 @@ export async function GET() {
     let constructionTotal = 0;
     const byDesignation: Record<string, number> = {};
     const byMethod: Record<string, number> = {};
+    const constructionDonors = new Set<string>();
 
     snap.forEach(doc => {
       const d = doc.data();
       const amt = d.amount || 0;
       total += amt;
-      if (d.designation === "construction") constructionTotal += amt;
+      if (d.designation === "construction") {
+        constructionTotal += amt;
+        if (d.email) constructionDonors.add(d.email);
+      }
       byDesignation[d.designation || "other"] = (byDesignation[d.designation || "other"] || 0) + amt;
       byMethod[d.method || "unknown"] = (byMethod[d.method || "unknown"] || 0) + amt;
     });
@@ -25,6 +29,7 @@ export async function GET() {
     return NextResponse.json({
       total: Math.round(total / 100),        // dollars
       constructionTotal: Math.round(constructionTotal / 100), // dollars
+      donorCount: constructionDonors.size,
       byDesignation: Object.fromEntries(
         Object.entries(byDesignation).map(([k, v]) => [k, Math.round(v / 100)])
       ),
