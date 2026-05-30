@@ -192,7 +192,7 @@ export default function DashboardEventsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Time</th>
@@ -242,7 +242,7 @@ export default function DashboardEventsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Event</th>
@@ -300,7 +300,7 @@ export default function DashboardEventsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Event</th>
@@ -353,7 +353,7 @@ export default function DashboardEventsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Time</th>

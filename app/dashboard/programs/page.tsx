@@ -165,7 +165,7 @@ export default function DashboardProgramsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
@@ -211,7 +211,7 @@ export default function DashboardProgramsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Program</th>
@@ -267,7 +267,7 @@ export default function DashboardProgramsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Program</th>
@@ -318,7 +318,7 @@ export default function DashboardProgramsPage() {
                   <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
                           <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>

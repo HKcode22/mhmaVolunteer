@@ -22,6 +22,7 @@ export default function MasjidConstructionPage() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [useStripeData, setUseStripeData] = useState(false);
   const [formData, setFormData] = useState({
     image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "",
   });
@@ -50,9 +51,16 @@ export default function MasjidConstructionPage() {
   const resetForm = () => {
     setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "" });
     setEditingId(null);
+    setUseStripeData(false);
     setShowForm(false);
     setError("");
   };
+
+  useEffect(() => {
+    if (useStripeData && raisedFromDonations > 0) {
+      setFormData(prev => ({ ...prev, raised: String(raisedFromDonations) }));
+    }
+  }, [useStripeData, raisedFromDonations]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -218,7 +226,16 @@ export default function MasjidConstructionPage() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Raised ($)</label>
-                <input type="text" value={formData.raised} onChange={e => setFormData(p => ({ ...p, raised: e.target.value }))} placeholder="e.g., 500,000 or 500K or 0.5M" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <div className="flex items-center gap-3">
+                  <input type="text" value={formData.raised} onChange={e => setFormData(p => ({ ...p, raised: e.target.value }))} disabled={useStripeData}
+                    placeholder={useStripeData ? "Auto-filled from Stripe" : "e.g., 500,000 or 500K or 0.5M"}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500" />
+                  <label className="flex items-center gap-1.5 text-xs text-gray-500 whitespace-nowrap cursor-pointer">
+                    <input type="checkbox" checked={useStripeData} onChange={e => setUseStripeData(e.target.checked)}
+                      className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
+                    Use Stripe
+                  </label>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Goal ($)</label>
