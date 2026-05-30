@@ -360,8 +360,8 @@ export default function DashboardPage() {
                 return icons[action.icon] || Heart;
               })();
               return (
-                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-0.5 py-2 px-2 w-[82px] text-[11px] font-semibold">
-                  <IconComponent className="w-4 h-4" /><span className="leading-tight text-center">{action.label}</span>
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-1 py-3 px-1 w-[100px] h-[70px] text-xs font-semibold">
+                  <IconComponent className="w-5 h-5" /><span className="leading-tight text-center">{action.label}</span>
                 </Link>
               );
             })}
