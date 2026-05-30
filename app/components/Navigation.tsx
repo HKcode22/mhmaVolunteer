@@ -152,7 +152,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
 
       <div className="bg-white shadow-md">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex items-center h-16">
             <Link href="/" className="flex-shrink-0">
               <Image
                 src="https://mhma.us/wp-content/uploads/2023/12/MHMA-Site-Logo-345x70-1.webp"
@@ -163,7 +163,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
               />
             </Link>
 
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-1 ml-auto">
               <Link href="/" className={`${navLinkClass("home")} ${currentPage === "home" ? "text-mhma-gold" : "text-gray-700"}`}>
                 HOME
               </Link>
