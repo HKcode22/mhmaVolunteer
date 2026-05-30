@@ -349,7 +349,7 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="flex flex-col gap-2 mb-8 max-w-[130px]">
+          <div className="flex flex-wrap gap-2 mb-8">
             {quickOrder.map(id => {
               const action = quickActionMeta[id];
               if (!action) return null;
@@ -360,7 +360,7 @@ export default function DashboardPage() {
                 return icons[action.icon] || Heart;
               })();
               return (
-                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-0.5 py-2 px-3 text-[11px] font-semibold">
+                <Link key={id} href={action.href} className="bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-all flex flex-col items-center justify-center gap-0.5 py-2 px-2 w-[82px] text-[11px] font-semibold">
                   <IconComponent className="w-4 h-4" /><span className="leading-tight text-center">{action.label}</span>
                 </Link>
               );

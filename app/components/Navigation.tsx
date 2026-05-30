@@ -220,10 +220,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   </div>
               </div>
 
-              <Link href="/news" className={`${navLinkClass("news")} ${currentPage === "news" ? "text-mhma-gold" : "text-gray-700"}`}>
-                NEWS
-              </Link>
-
               <div className="relative group">
                 <Link href="/donate" className={`${navLinkClass("donate")} ${currentPage === "donate" ? "text-mhma-gold" : "text-gray-700"} flex items-center gap-1`}>
                   DONATE<span className="text-[10px]">▼</span>
