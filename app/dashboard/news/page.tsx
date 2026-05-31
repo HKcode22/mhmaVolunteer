@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Mail, Download } from "lucide-react";
+import { ArrowLeft, Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Mail, Download, Send } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchAllNews, addNews, updateNews, deleteNews, fetchSubscribers, unsubscribeSubscriber, deleteSubscriber, NewsItem, Subscriber } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
@@ -21,6 +21,7 @@ export default function DashboardNewsPage() {
   const [saving, setSaving] = useState(false);
   const [subSearch, setSubSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
+  const [notifyStatus, setNotifyStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -66,6 +67,7 @@ export default function DashboardNewsPage() {
   const handleSave = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
+    setNotifyStatus(null);
     try {
       const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       const data = { title: form.title.trim(), slug, excerpt: form.excerpt.trim(), content: form.content, image: form.image, authorName: form.authorName, published: form.published };
@@ -73,6 +75,15 @@ export default function DashboardNewsPage() {
         await updateNews(editing.id, data);
       } else {
         await addNews(data);
+      }
+      if (form.published) {
+        fetch("/api/notify-news", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: form.title.trim(), excerpt: form.excerpt.trim(), slug }),
+        }).then(r => r.json()).then(d => {
+          setNotifyStatus(`Notified ${d.sent || 0} subscriber${d.sent !== 1 ? "s" : ""}`);
+        }).catch(() => {});
       }
       resetForm();
       const updated = await fetchAllNews(100);
@@ -181,6 +192,9 @@ export default function DashboardNewsPage() {
                   {saving ? "Saving..." : editing ? "Update" : "Publish"}
                 </button>
               </div>
+              {notifyStatus && (
+                <p className="mt-2 text-xs text-green-600 flex items-center gap-1"><Send className="w-3 h-3" /> {notifyStatus}</p>
+              )}
             </div>
           )}
 

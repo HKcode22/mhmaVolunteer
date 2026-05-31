@@ -33,6 +33,7 @@
 
 - [BUILT] Automated donation receipt email — stripe-webhook sends confirmation via Gmail SMTP (fixed: now uses gmailUser as from address to avoid Gmail rejection)
 - [BUILT] Thank-you page after donation — success state on donate page with social share buttons (Facebook, Twitter, copy link)
+- [BUILT] Email notification sent to newsletter subscribers when board member publishes a news article — `/api/notify-news` route sends email via Gmail SMTP to all active subscribers
 - [MISSING] Quarterly donor newsletter with construction progress updates
 - [MISSING] Annual donor report / impact summary page
 
@@ -73,6 +74,6 @@
 
 - [BUILT] Prayer times — integrated with AlAdhan API for auto-update; MasjidAI/Masjidi widget also embedded
 - [BUILT] Events — Firestore-based events with RSVP, calendar view
-- [PARTIAL] Email/Newsletter — newsletter signup component exists (stores to Firestore `subscribers` collection); not connected to Mailchimp or external email service
+- [BUILT] Email/Newsletter — newsletter signup component exists (stores to Firestore `subscribers` collection); subscription confirmation email sent via Gmail SMTP; board members trigger news notification emails to all active subscribers on publish
 - [MISSING] Google Analytics 4 — not configured; no donation tracking as conversion event
 - [PARTIAL] Donations — Stripe integrated and working; Zelle info displayed; check mailing address displayed; PayPal option added

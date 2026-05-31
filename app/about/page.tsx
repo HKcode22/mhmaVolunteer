@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navigation from "@/app/components/Navigation";
@@ -9,6 +9,18 @@ import { ChevronRight } from "lucide-react";
 import PageBanner from "@/app/components/PageBanner";
 
 export default function AboutPage() {
+  const [donationTotals, setDonationTotals] = useState<any>(null);
+  const [enrollmentCount, setEnrollmentCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    Promise.allSettled([
+      fetch("/api/donation-totals").then(r => r.json()),
+      fetch("/api/enrollment-count").then(r => r.json()),
+    ]).then(([totals, enrollment]) => {
+      if (totals.status === "fulfilled") setDonationTotals(totals.value);
+      if (enrollment.status === "fulfilled") setEnrollmentCount(enrollment.value?.count ?? null);
+    });
+  }, []);
   return (
     <div className="min-h-screen bg-mhma-cream font-sans">
       <Navigation currentPage="about" />
@@ -38,20 +50,32 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="lg:w-1/2">
-              <div className="bg-teal-50 rounded-xl p-8 border border-teal-100">
-                <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
-                    { val: '500+', label: 'Families', color: 'bg-teal-700' },
-                    { val: '10+', label: 'Programs', color: 'bg-mhma-forest' }
-                  ].map((stat, i) => (
-                    <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
-                      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
-                      <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
+                <div className="bg-teal-50 rounded-xl p-8 border border-teal-100">
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
+                      { val: '500+', label: 'Families', color: 'bg-teal-700' },
+                      { val: '10+', label: 'Programs', color: 'bg-mhma-forest' }
+                    ].map((stat, i) => (
+                      <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
+                        <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
+                        <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
+                      </div>
+                    ))}
+                    <div className="bg-mhma-forest rounded-xl p-5 text-center text-white shadow-lg">
+                      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
+                        {enrollmentCount !== null ? `${enrollmentCount}+` : "—"}
+                      </p>
+                      <p className="text-gray-300 text-xs uppercase tracking-wider">Youth in Programs</p>
                     </div>
-                  ))}
+                    <div className="bg-teal-700 rounded-xl p-5 text-center text-white shadow-lg">
+                      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
+                        {donationTotals?.constructionTotal ? `$${Math.round(donationTotals.constructionTotal / 1000)}K+` : "—"}
+                      </p>
+                      <p className="text-gray-300 text-xs uppercase tracking-wider">Raised for Masjid</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -91,7 +115,7 @@ export default function AboutPage() {
               { title: 'Service', desc: 'Giving back to our neighbors and community' }
             ].map((value, i) => (
               <div key={i} className="bg-gray-50 rounded-xl p-6 text-center hover:shadow-lg transition-shadow">
-                <h3 className="text-lg font-bold text-teal-800 mb-2">{value.title}</h3>
+                <h3 className="text-lg font-bold text-mhma-forest mb-2">{value.title}</h3>
                 <p className="text-gray-600 text-sm">{value.desc}</p>
               </div>
             ))}
@@ -100,7 +124,7 @@ export default function AboutPage() {
       </section>
 
       {/* Get Involved */}
-      <section className="py-16 bg-teal-900 text-white">
+      <section className="py-16 bg-mhma-forest text-white">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-serif font-bold mb-4">Get Involved</h2>
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
