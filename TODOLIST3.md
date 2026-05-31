@@ -192,8 +192,10 @@ The current navigation is minimal: Home | MHMA | Programs | Donate | Login. It d
 ## 9. Bugs & Issues Found
 
 ### Critical
-- [ ] **Set RESEND_API_KEY** — no emails are sent (subscribe, pledge, contact, enroll, rsvp, donation receipt)
-- [ ] **Stripe webhook sets `showOnWall: false` always** — donors can never appear on donor wall from Stripe
+- [FIXED] **Emails non-blocking** — All API routes (subscribe, pledge, contact, enroll, rsvp, stripe-webhook) now fire emails asynchronously; the submission succeeds even if email fails
+- [ ] **Set RESEND_API_KEY** — still needed for actual email delivery, but no longer blocks submissions
+- [FIXED] **Stripe webhook `showOnWall` defaults to `true`** — new online donations automatically appear on donor wall
+- [FIXED] **`normalizeCampaignDollars` threshold bug** — changed from 100K to 1000 so $51K isn't treated as 51 billion
 - [ ] **501(c)(3) EIN missing** from FAQ and donate pages
 
 ### Important
@@ -201,7 +203,7 @@ The current navigation is minimal: Home | MHMA | Programs | Donate | Login. It d
 - [ ] **Duplicate prayer times** may still exist on homepage
 - [ ] **Navigation not redesigned** — missing Build Our Masjid, Prayer Times, About dropdown
 - [ ] **Footer needs redesign** — missing address, phone, 501(c)(3), organized columns
-- [ ] **Donor count semantics unclear** — should count `showOnWall` donors or all donors?
+- [ ] **Donor count semantics** — API counts unique emails (currently 5), not total transactions (7)
 - [ ] **Pending email changes stale** — 2 expired pending changes from `k1test@gmail.com`
 
 ### Nice-to-Have

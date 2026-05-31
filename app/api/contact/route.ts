@@ -14,10 +14,11 @@ export async function POST(req: NextRequest) {
       status: "new", createdAt: Timestamp.now(),
     });
 
-    await sendEmail(email, "Contact Form Received - MHMA", confirmationEmail(name,
+    // Non-blocking email — don't fail if email provider not configured
+    sendEmail(email, "Contact Form Received - MHMA", confirmationEmail(name,
       `Your message has been received. We will get back to you as soon as possible.<br><br>
       <strong>Your message:</strong><br>${message.replace(/\n/g, "<br>")}`
-    ));
+    )).catch(e => console.error("Email send failed (non-blocking):", e));
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

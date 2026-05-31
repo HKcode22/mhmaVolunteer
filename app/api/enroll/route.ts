@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
       status: "pending", createdAt: Timestamp.now(),
     });
 
-    await sendEmail(email, "Enrollment Received - MHMA", confirmationEmail(fullName,
+    // Non-blocking email — don't fail if email provider not configured
+    sendEmail(email, "Enrollment Received - MHMA", confirmationEmail(fullName,
       `Your enrollment for <strong>${program || "our program"}</strong> has been received. We will contact you soon.`
-    ));
+    )).catch(e => console.error("Email send failed (non-blocking):", e));
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

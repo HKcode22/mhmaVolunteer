@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
       createdAt: Timestamp.now(),
     });
 
-    // Send welcome email via shared sendEmail() (Resend/SMTP/Gmail)
-    await sendEmail(
+    // Non-blocking email — don't fail if email provider not configured
+    sendEmail(
       email.trim().toLowerCase(),
       "Welcome to the MHMA Newsletter!",
       confirmationEmail(
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
           `• Volunteer opportunities<br/><br/>` +
           `If you did not subscribe, you can ignore this email.`
       )
-    );
+    ).catch(e => console.error("Email send failed (non-blocking):", e));
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

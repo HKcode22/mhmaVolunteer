@@ -25,9 +25,8 @@ export async function POST(req: NextRequest) {
 
     const rsvpId = rsvpRef.id;
 
-    // Send confirmation email via shared sendEmail() (Resend/SMTP/Gmail)
-    // Keeping email content similar to the old one.
-    await sendEmail(
+    // Non-blocking email — don't fail if email provider not configured
+    sendEmail(
       email,
       `RSVP Confirmed - ${eventTitle}`,
       confirmationEmail(
@@ -36,7 +35,7 @@ export async function POST(req: NextRequest) {
           `Attendees: <strong>${attendees || 1}</strong>${notes ? `<br/>Notes: <strong>${notes}</strong>` : ""}<br/><br/>` +
           `We will confirm your RSVP shortly. If you have any questions, please contact us.`
       )
-    );
+    ).catch(e => console.error("Email send failed (non-blocking):", e));
 
     return NextResponse.json({ success: true, id: rsvpId });
   } catch (err: any) {

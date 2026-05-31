@@ -14,10 +14,11 @@ export async function POST(req: NextRequest) {
       timeframe: timeframe || "60", status: "pending", createdAt: Timestamp.now(),
     });
 
-    await sendEmail(email, "Pledge Received - MHMA", confirmationEmail(name,
+    // Non-blocking email — don't fail if email provider not configured
+    sendEmail(email, "Pledge Received - MHMA", confirmationEmail(name,
       `Thank you for your pledge of ${amount ? `$${amount}` : "a contribution"}!<br><br>
       Your pledge helps us plan and build for the future of our community.`
-    ));
+    )).catch(e => console.error("Email send failed (non-blocking):", e));
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
