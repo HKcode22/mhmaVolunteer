@@ -193,3 +193,4 @@ A messege from user STILL DO THIS BELOW DONT DELETE ANYTHING THATS NOT WHAT I AS
 - ⬜ Add MHMA 501(c)(3) EIN number to FAQ content
 - ⬜ Photo upload for testimonials
 - ⬜ Data leak investigation (event images on construction page)
+noreply@mhma-backend.firebaseapp.com
