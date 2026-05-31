@@ -150,7 +150,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
         </div>
       </div>
 
-      <div className="bg-white shadow-md">
+      <div className="bg-mhma-cream shadow-md">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center h-16">
             <Link href="/" className="flex-shrink-0">

@@ -196,7 +196,7 @@ export default function ContactPage() {
               <p className="text-green-600">We'll get back to you as soon as possible.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-mhma-forest rounded-xl p-8 shadow-lg">
+            <form onSubmit={handleSubmit} className="bg-mhma-cream rounded-xl p-8 shadow-lg border border-gray-200">
               {submitError && (
                 <div className="mb-6 p-4 bg-red-50/90 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-800">{submitError}</p>
@@ -204,7 +204,7 @@ export default function ContactPage() {
               )}
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-mhma-sage mb-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-600 mb-2">
                     Your Name
                   </label>
                   <input
@@ -218,7 +218,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-mhma-sage mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-2">
                     Email Address
                   </label>
                   <input
@@ -234,7 +234,7 @@ export default function ContactPage() {
               </div>
 
               <div className="mb-6">
-                <label htmlFor="phone" className="block text-sm font-medium text-mhma-sage mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-600 mb-2">
                   Phone Number
                 </label>
                 <input
@@ -248,7 +248,7 @@ export default function ContactPage() {
               </div>
 
               <div className="mb-6">
-                <label htmlFor="subject" className="block text-sm font-medium text-mhma-sage mb-2">
+                <label htmlFor="subject" className="block text-sm font-medium text-gray-600 mb-2">
                   Subject
                 </label>
                 <input
@@ -263,7 +263,7 @@ export default function ContactPage() {
               </div>
 
               <div className="mb-6">
-                <label htmlFor="message" className="block text-sm font-medium text-mhma-sage mb-2">
+                <label htmlFor="message" className="block text-sm font-medium text-gray-600 mb-2">
                   Message
                 </label>
                 <textarea

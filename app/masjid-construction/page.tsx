@@ -421,28 +421,19 @@ export default function MasjidConstructionPage() {
 
         {/* Contact Info */}
         <section className="grid grid-cols-1 md:grid-cols-3">
-          <div className="py-20 px-8 text-center text-white relative bg-cover bg-center" style={{ backgroundImage: 'url(https://mhma.us/wp-content/uploads/2016/08/donate3.jpg)' }}>
-            <div className="absolute inset-0 bg-mhma-gold/90" />
-            <div className="relative z-10">
-              <MapPin className="w-14 h-14 mx-auto mb-6" />
-              <div className="space-y-1 text-lg">
-                <p>250 East Main Street,</p><p>Mountain House,</p><p>CA 95391</p>
-              </div>
+          <div className="py-20 px-8 text-center text-white bg-mhma-forest">
+            <MapPin className="w-14 h-14 mx-auto mb-6" />
+            <div className="space-y-1 text-lg">
+              <p>250 East Main Street,</p><p>Mountain House,</p><p>CA 95391</p>
             </div>
           </div>
-          <div className="py-20 px-8 text-center text-white relative bg-cover bg-center" style={{ backgroundImage: 'url(https://mhma.us/wp-content/uploads/2016/08/donate2.jpg)' }}>
-            <div className="absolute inset-0 bg-black/80" />
-            <div className="relative z-10">
-              <Mail className="w-14 h-14 mx-auto mb-6" />
-              <p className="text-lg"><a href="mailto:board@mhma.info" className="hover:text-mhma-gold transition-colors">board@mhma.info</a></p>
-            </div>
+          <div className="py-20 px-8 text-center bg-white">
+            <Mail className="w-14 h-14 mx-auto mb-6 text-gray-800" />
+            <p className="text-lg text-gray-800"><a href="mailto:board@mhma.info" className="hover:text-mhma-gold transition-colors">board@mhma.info</a></p>
           </div>
-          <div className="py-20 px-8 text-center text-white relative bg-cover bg-center" style={{ backgroundImage: 'url(https://mhma.us/wp-content/uploads/2016/08/donate1.jpg)' }}>
-            <div className="absolute inset-0 bg-amber-800/90" />
-            <div className="relative z-10">
-              <Phone className="w-14 h-14 mx-auto mb-6" />
-              <p className="text-lg"><a href="tel:4087221043" className="hover:text-white/80 transition-colors">408.722.1043</a></p>
-            </div>
+          <div className="py-20 px-8 text-center bg-mhma-cream">
+            <Phone className="w-14 h-14 mx-auto mb-6 text-gray-700" />
+            <p className="text-lg text-gray-700"><a href="tel:4087221043" className="hover:text-mhma-gold transition-colors">408.722.1043</a></p>
           </div>
         </section>
       </main>
