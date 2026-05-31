@@ -319,8 +319,7 @@ export default function HomePage() {
   const [heroLoading, setHeroLoading] = useState(true);
   const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
-  const [donationTotals, setDonationTotals] = useState<any>(null);
-  const [enrollmentCount, setEnrollmentCount] = useState<number | null>(null);
+  const [aboutStats, setAboutStats] = useState<any>(null);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -389,30 +388,27 @@ export default function HomePage() {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, masjidData, donationTotals, newsData, enrollmentCountData] = await Promise.allSettled([
+      const [eventsData, programs, masjidData, statsData, newsData] = await Promise.allSettled([
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(1),
-        fetch("/api/donation-totals").then(r => r.json()),
+        fetch("/api/about-stats").then(r => r.json()),
         fetchNews(3),
-        fetch("/api/enrollment-count").then(r => r.json()),
       ]);
 
       const events = eventsData.status === "fulfilled" ? eventsData.value : [];
       const prog = programs.status === "fulfilled" ? programs.value : [];
       const masjid = masjidData.status === "fulfilled" ? masjidData.value : [];
-      const totals = donationTotals.status === "fulfilled" ? donationTotals.value : null;
+      const stats = statsData.status === "fulfilled" ? statsData.value : null;
       const newsArr = newsData.status === "fulfilled" ? newsData.value : [];
-      const enrollmentData = enrollmentCountData.status === "fulfilled" ? enrollmentCountData.value : null;
 
       setEvents(events);
       setPrograms(prog);
       setNews(newsArr);
-      setDonationTotals(totals);
-      setEnrollmentCount(enrollmentData?.count ?? null);
+      setAboutStats(stats);
 
       // Compute raised from actual donation data via API
-      const constructionTotal = totals?.constructionTotal || 0;
+      const constructionTotal = stats?.raisedForMasjid || 0;
       const defaultGoal = 1500000;
       const latest = masjid[0] ? { ...masjid[0], goal: masjid[0].goal || defaultGoal, raised: constructionTotal > 0 ? Math.max(constructionTotal, masjid[0].raised || 0) : (masjid[0].raised || 0) } : { goal: defaultGoal, raised: constructionTotal };
       setMasjidUpdates([latest]);
@@ -648,7 +644,7 @@ useEffect(() => {
                 Serving Our Community with Transparency
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
-                The Mountain House Muslim Association (MHMA) has been a cornerstone of faith and community for over 15 years. We serve the spiritual, educational, and social needs of Muslims in Mountain House and the surrounding Bay Area.
+                The Mountain House Muslim Association (MHMA) has been a cornerstone of faith and community for years. We serve the spiritual, educational, and social needs of Muslims in Mountain House and the surrounding Bay Area.
               </p>
               <p className="text-gray-600 leading-relaxed mb-6">
                 Our masjid is a home for every Muslim — a center of worship, learning, and brotherhood. We welcome all and work to strengthen the bonds between our community and our neighbors.
@@ -658,15 +654,15 @@ useEffect(() => {
               </Link>
             </div>
             <div className="lg:w-1/2 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <StatCard value="15+" label="Years" color="bg-mhma-forest" />
-              <StatCard value="500+" label="Families" color="bg-mhma-forest-mid" />
-              <StatCard value="10+" label="Programs" color="bg-mhma-forest" />
-              <StatCard value={enrollmentCount !== null ? `${formatCount(enrollmentCount)}` : "—"} label="Youth in Programs" color="bg-mhma-forest" />
-              <StatCard value={donationTotals?.constructionTotal ? formatCompactAmount(donationTotals.constructionTotal) : "—"} label="Raised for Masjid" color="bg-mhma-forest-mid" />
-              <StatCard value={donationTotals?.donorCount ? formatCount(donationTotals.donorCount) : "—"} label="Donors" color="bg-mhma-forest" />
-              <StatCard value={donationTotals?.eventsCount ? formatCount(donationTotals.eventsCount) : "—"} label="Events Held" color="bg-mhma-forest-mid" />
-              <StatCard value={donationTotals?.usersCount ? formatCount(donationTotals.usersCount) : "—"} label="Members" color="bg-mhma-forest" />
-              <StatCard value={donationTotals?.byDesignation?.programs ? formatCompactAmount(donationTotals.byDesignation.programs) : "—"} label="Raised for Programs" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.yearsServing ? `${aboutStats.yearsServing}+` : "—"} label="Years" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.numberOfFamilies ? `${aboutStats.numberOfFamilies}+` : "—"} label="Families" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.programsCount ? `${formatCount(aboutStats.programsCount)}` : "—"} label="Programs" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.youthInPrograms ? `${formatCount(aboutStats.youthInPrograms)}` : "—"} label="Youth in Programs" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.raisedForMasjid ? formatCompactAmount(aboutStats.raisedForMasjid) : "—"} label="Raised for Masjid" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.donorCount ? formatCount(aboutStats.donorCount) : "—"} label="Donors" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.eventsCount ? formatCount(aboutStats.eventsCount) : "—"} label="Events Held" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.usersCount ? formatCount(aboutStats.usersCount) : "—"} label="Members" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.raisedForPrograms ? formatCompactAmount(aboutStats.raisedForPrograms) : "—"} label="Raised for Programs" color="bg-mhma-forest-mid" />
             </div>
           </div>
         </div>

@@ -11,19 +11,12 @@ import StatCard from "@/app/components/StatCard";
 import { formatCompactAmount, formatCount } from "@/lib/stats-utils";
 
 export default function AboutPage() {
-  const [donationTotals, setDonationTotals] = useState<any>(null);
-  const [enrollmentCount, setEnrollmentCount] = useState<number | null>(null);
+  const [aboutStats, setAboutStats] = useState<any>(null);
 
   useEffect(() => { document.title = "About MHMA | MHMA | Mountain House"; }, []);
 
   useEffect(() => {
-    Promise.allSettled([
-      fetch("/api/donation-totals").then(r => r.json()),
-      fetch("/api/enrollment-count").then(r => r.json()),
-    ]).then(([totals, enrollment]) => {
-      if (totals.status === "fulfilled") setDonationTotals(totals.value);
-      if (enrollment.status === "fulfilled") setEnrollmentCount(enrollment.value?.count ?? null);
-    });
+    fetch("/api/about-stats").then(r => r.json()).then(data => setAboutStats(data)).catch(() => {});
   }, []);
   return (
     <div className="min-h-screen bg-mhma-cream font-sans">
@@ -44,27 +37,27 @@ export default function AboutPage() {
                 Our <span className="text-mhma-gold">Story</span>
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                The Mountain House Muslim Association (MHMA) was established in 2010 with a Vision to serve the Muslim community of Mountain House and the surrounding Bay Area. What started as a small congregation has grown into a thriving community center that serves hundreds of families.
+                The Mountain House Muslim Association (MHMA) was established to serve the Muslim community of Mountain House and the surrounding Bay Area. What started as a small congregation has grown into a thriving community center that serves hundreds of families.
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
                 Our mission is to provide a welcoming environment for Muslims to worship, learn, and connect with one another. We offer daily prayers, Jumu'ah services, religious education programs, youth activities, and community events throughout the year.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                Alhmadulillah, we have grown to serve over 500 families through our various programs including Quran maktab, Hifz memorization, Arabic language classes, youth programs, and sisters' activities.
+                Alhmadulillah, we continue to grow through our various programs including Quran maktab, Hifz memorization, Arabic language classes, youth programs, and sisters' activities.
               </p>
             </div>
             <div className="lg:w-1/2">
                 <div className="bg-teal-50 rounded-xl p-8 border border-teal-100">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <StatCard value="15+" label="Years" color="bg-mhma-forest" />
-                    <StatCard value="500+" label="Families" color="bg-teal-700" />
-                    <StatCard value="10+" label="Programs" color="bg-mhma-forest" />
-                    <StatCard value={enrollmentCount !== null ? `${formatCount(enrollmentCount)}` : "—"} label="Youth in Programs" color="bg-mhma-forest" />
-                    <StatCard value={donationTotals?.constructionTotal ? formatCompactAmount(donationTotals.constructionTotal) : "—"} label="Raised for Masjid" color="bg-teal-700" />
-                    <StatCard value={donationTotals?.donorCount ? formatCount(donationTotals.donorCount) : "—"} label="Donors" color="bg-mhma-forest" />
-                    <StatCard value={donationTotals?.eventsCount ? formatCount(donationTotals.eventsCount) : "—"} label="Events Held" color="bg-teal-700" />
-                    <StatCard value={donationTotals?.usersCount ? formatCount(donationTotals.usersCount) : "—"} label="Members" color="bg-mhma-forest" />
-                    <StatCard value={donationTotals?.byDesignation?.programs ? formatCompactAmount(donationTotals.byDesignation.programs) : "—"} label="Raised for Programs" color="bg-teal-700" />
+                    <StatCard value={aboutStats?.yearsServing ? `${aboutStats.yearsServing}+` : "—"} label="Years" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.numberOfFamilies ? `${aboutStats.numberOfFamilies}+` : "—"} label="Families" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.programsCount ? `${formatCount(aboutStats.programsCount)}` : "—"} label="Programs" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.youthInPrograms ? `${formatCount(aboutStats.youthInPrograms)}` : "—"} label="Youth in Programs" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.raisedForMasjid ? formatCompactAmount(aboutStats.raisedForMasjid) : "—"} label="Raised for Masjid" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.donorCount ? formatCount(aboutStats.donorCount) : "—"} label="Donors" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.eventsCount ? formatCount(aboutStats.eventsCount) : "—"} label="Events Held" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.usersCount ? formatCount(aboutStats.usersCount) : "—"} label="Members" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.raisedForPrograms ? formatCompactAmount(aboutStats.raisedForPrograms) : "—"} label="Raised for Programs" color="bg-mhma-forest" />
                   </div>
                 </div>
             </div>

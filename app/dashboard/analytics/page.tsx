@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, Users, Calendar, BookOpen, Mail, Clock, CheckCircle, UserPlus, Eye, Activity } from "lucide-react";
+import { ArrowLeft, TrendingUp, Users, Calendar, BookOpen, Mail, Clock, CheckCircle, UserPlus, Eye, Activity, Save, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   Donation, Pledge,
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
+import { auth } from "@/lib/firebase-client";
 
 interface AnalyticsData {
   enrollments: FirebaseEnrollment[];
@@ -215,6 +216,9 @@ export default function AnalyticsPage() {
           <StatCard icon={<Calendar className="w-5 h-5" />} label="Stripe Payments" value={stripeDonations} color="bg-blue-50 text-blue-700" iconBg="bg-blue-100" />
           <StatCard icon={<Calendar className="w-5 h-5" />} label="Pledges Pending" value={pendingPledges} color="bg-purple-50 text-purple-700" iconBg="bg-purple-100" />
         </div>
+
+        {/* About Stats Editor */}
+        <AboutStatsEditor />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Monthly Activity Overview */}
@@ -498,6 +502,99 @@ function HorizontalBarChart({ data, color }: { data: Record<string, number>; col
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function AboutStatsEditor() {
+  const [yearsServing, setYearsServing] = useState<number>(0);
+  const [numberOfFamilies, setNumberOfFamilies] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/about-stats");
+      const data = await res.json();
+      setYearsServing(data.yearsServing ?? 0);
+      setNumberOfFamilies(data.numberOfFamilies ?? 0);
+    } catch {
+      setMessage("Failed to load stats");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchStats(); }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setMessage("");
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const res = await fetch("/api/about-stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ yearsServing, numberOfFamilies }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error);
+      setMessage("Saved successfully");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err: any) {
+      setMessage(err.message || "Failed to save");
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-serif font-bold text-gray-900">About Stats</h2>
+          <p className="text-sm text-gray-500">Set years serving and number of families displayed on the website</p>
+        </div>
+        <button onClick={fetchStats} disabled={loading} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Years Serving</label>
+          <input
+            type="number"
+            min={0}
+            value={yearsServing}
+            onChange={(e) => setYearsServing(parseInt(e.target.value) || 0)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Number of Families</label>
+          <input
+            type="number"
+            min={0}
+            value={numberOfFamilies}
+            onChange={(e) => setNumberOfFamilies(parseInt(e.target.value) || 0)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest"
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 px-4 py-2 bg-mhma-forest text-white rounded-lg text-sm font-medium hover:bg-mhma-forest-light transition-colors disabled:opacity-50"
+        >
+          <Save className="w-4 h-4" />
+          {saving ? "Saving..." : "Save"}
+        </button>
+        {message && (
+          <span className={`text-sm ${message === "Saved successfully" ? "text-green-600" : "text-red-600"}`}>
+            {message}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
