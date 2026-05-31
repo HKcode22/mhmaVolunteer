@@ -5,7 +5,10 @@ import { sendEmail, confirmationEmail } from "@/lib/email";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { firstName, lastName, email } = body;
+    const { organizer } = body;
+    const firstName = organizer?.firstName || body.firstName || "";
+    const lastName = organizer?.lastName || body.lastName || "";
+    const email = organizer?.email || body.email || "";
     if (!firstName || !lastName || !email) {
       return NextResponse.json({ error: "Name and email required" }, { status: 400 });
     }

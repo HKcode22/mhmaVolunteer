@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail, Lock, User, ShieldCheck, Key, UserPlus, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, User, ShieldCheck, Key, UserPlus, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase-client";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
@@ -114,8 +114,15 @@ export default function RegisterPage() {
         });
       }
 
-      // Send email verification
+      // Send Firebase email verification
       await sendEmailVerification(cred.user);
+
+      // Send welcome confirmation via Gmail SMTP (non-blocking)
+      fetch("/api/send-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, name: `${formData.firstName} ${formData.lastName}` }),
+      }).catch(() => {});
 
       setSuccess(`Account created! A verification email has been sent to ${formData.email}. Please verify before logging in.`);
       setTimeout(() => router.push("/login"), 1500);
