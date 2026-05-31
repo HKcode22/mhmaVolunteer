@@ -58,7 +58,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl p-8 shadow-lg border-t-4 border-amber-500">

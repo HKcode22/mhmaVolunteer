@@ -56,24 +56,23 @@
 ---
 
 ## 5. Site Architecture & Navigation
-The current navigation is minimal: Home | MHMA | Programs | Donate | Login. It does not reflect the breadth of MHMA's activities. The redesigned navigation should be organized around user intent.
 
-### 5.1 Recommended Navigation Structure
+### 5.1 Current Navigation Status
 
 **Primary Nav:**
-- [PARTIAL] Home — exists
-- [MISSING] Build Our Masjid ← New, prominent link
+- [BUILT] Home — exists
+- [BUILT] Build Our Masjid — `/masjid-construction` page exists
 - [PARTIAL] Programs (dropdown: All Programs, Maktab, MHMA Hoops, Iqraa Arabic, Little Explorers, Women's Committee) — programs page exists, dropdown menu may need enhancement
-- [MISSING] Prayer Times — as nav item
+- [BUILT] Prayer Times — `/prayer-times` page exists
 - [PARTIAL] Events — exists
-- [MISSING] About (dropdown: Mission, Board, Committees, Bylaws)
+- [BUILT] About (dropdown: Mission, Board, Committees, Bylaws) — /about, /bylaws pages exist
 - [PARTIAL] Donate (primary CTA button style, gold) — exists as nav item
 
-### 5.2 New Pages Required
+### 5.2 Page Inventory
 
 - [BUILT] mhma.us/build or mhma.us/islamic-center — `/masjid-construction` exists
 - [BUILT] mhma.us/events — exists at /events with calendar view
-- [MISSING] mhma.us/prayer — Dedicated prayer times page with monthly PDF download
+- [BUILT] mhma.us/prayer — `/prayer-times` exists
 - [BUILT] mhma.us/volunteer — exists at /volunteer
 - [MISSING] mhma.us/newsletter — Newsletter signup + archive of past issues
 - [BUILT] mhma.us/programs — organized programs directory

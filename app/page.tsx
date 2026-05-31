@@ -317,6 +317,8 @@ export default function HomePage() {
   const [heroLoading, setHeroLoading] = useState(true);
   const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
+  const [donationTotals, setDonationTotals] = useState<any>(null);
+  const [enrollmentCount, setEnrollmentCount] = useState<number | null>(null);
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -385,12 +387,13 @@ export default function HomePage() {
 useEffect(() => {
   const loadData = async () => {
     try {
-      const [eventsData, programs, masjidData, donationTotals, newsData] = await Promise.allSettled([
+      const [eventsData, programs, masjidData, donationTotals, newsData, enrollmentCountData] = await Promise.allSettled([
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(1),
         fetch("/api/donation-totals").then(r => r.json()),
         fetchNews(3),
+        fetch("/api/enrollment-count").then(r => r.json()),
       ]);
 
       const events = eventsData.status === "fulfilled" ? eventsData.value : [];
@@ -398,10 +401,13 @@ useEffect(() => {
       const masjid = masjidData.status === "fulfilled" ? masjidData.value : [];
       const totals = donationTotals.status === "fulfilled" ? donationTotals.value : null;
       const newsArr = newsData.status === "fulfilled" ? newsData.value : [];
+      const enrollmentData = enrollmentCountData.status === "fulfilled" ? enrollmentCountData.value : null;
 
       setEvents(events);
       setPrograms(prog);
       setNews(newsArr);
+      setDonationTotals(totals);
+      setEnrollmentCount(enrollmentData?.count ?? null);
 
       // Compute raised from actual donation data via API
       const constructionTotal = totals?.constructionTotal || 0;
@@ -590,30 +596,6 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* Community Stats Bar */}
-      <section className="bg-white py-10 md:py-12 border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">15+</p>
-              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Years Serving</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">500+</p>
-              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Families</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">200+</p>
-              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Youth in Programs</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">{masjidUpdates.length > 0 && masjidUpdates[0].raised > 0 ? `$${Math.round(masjidUpdates[0].raised / 1000)}K+` : "—"}</p>
-              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Raised for Masjid</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Golden Prayer Times Bar */}
       <section className="bg-mhma-gold py-6 md:py-8 border-y-2 border-mhma-forest/10">
         <div className="max-w-6xl mx-auto px-4">
@@ -677,13 +659,25 @@ useEffect(() => {
               {[
                 { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
                 { val: '500+', label: 'Families', color: 'bg-mhma-forest-mid' },
-                { val: '10+', label: 'Programs', color: 'bg-mhma-forest' }
+                { val: '10+', label: 'Programs', color: 'bg-mhma-forest' },
               ].map((stat, i) => (
                 <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
                   <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
                   <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
                 </div>
               ))}
+              <div className="bg-mhma-forest rounded-xl p-5 text-center text-white shadow-lg">
+                <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
+                  {enrollmentCount !== null ? `${enrollmentCount}+` : "—"}
+                </p>
+                <p className="text-gray-300 text-xs uppercase tracking-wider">Youth in Programs</p>
+              </div>
+              <div className="bg-mhma-forest-mid rounded-xl p-5 text-center text-white shadow-lg">
+                <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
+                  {donationTotals?.constructionTotal ? `$${Math.round(donationTotals.constructionTotal / 1000)}K+` : "—"}
+                </p>
+                <p className="text-gray-300 text-xs uppercase tracking-wider">Raised for Masjid</p>
+              </div>
             </div>
           </div>
         </div>
@@ -945,6 +939,7 @@ useEffect(() => {
                 className="mx-auto md:mx-0 mb-4 opacity-70"
               />
               <p className="text-gray-400 text-xs uppercase tracking-wider">© 2026 Mountain House Muslim Association</p>
+              <p className="text-gray-400 text-[10px] mt-1">MHMA is a 501(c)(3) tax-exempt organization. EIN: 99-XXXXXXX</p>
             </div>
             <div>
               <h4 className="font-bold text-gray-700 mb-2">Stay Updated</h4>
