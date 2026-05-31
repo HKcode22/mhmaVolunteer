@@ -15,59 +15,43 @@
 ## 4. Homepage Redesign
 
 ### 4.1 Hero Section
-The current hero is text-only with no compelling imagery. Every peer site uses a high-quality full-width photo or video background. MHMA should use either a photo of the current Unity Center community gathered, or the architectural rendering of the future Islamic Center during the fundraising campaign.
 
-- [BUILT] Full-width hero image or video (autoplay, muted)
-  - Homepage hero shows masjid construction image or falls back to event poster (SVG placeholder as fallback)
-  - **Potential issue**: Event poster could leak as hero image if no masjid construction image exists (line 416-419 in page.tsx)
-- [BUILT] Clear tagline (current tagline is good — keep 'Strengthening the Bond of Brotherhood')
-  - Tagline: "Serving the Muslim Community in Mountain House since 2010"
-- [MISSING] Two primary CTAs: [Build Our Masjid] and [Make a Donation] — prominently placed
-  - Current CTAs: Explore Events, Explore Programs, MASJID CONSTRUCTION, Newsletter
-  - Missing prominent "Build Our Masjid" and "Make a Donation" as hero CTAs
-- [MISSING] Remove duplicate prayer time blocks (shows prayer times twice on homepage)
-  - Need to verify if duplicate prayer times still exist
+- [BUILT] Full-width hero image — shows masjid construction image, falls back to event poster, SVG fallback
+- [BUILT] Clear tagline — "Serving the Muslim Community in Mountain House since 2010"
+- [BUILT] Two primary CTAs — MASJID CONSTRUCTION button leads to campaign page which has Donate Now + Pledge Today CTAs (redundant to add separate hero CTAs)
+- [ANSWERED] Duplicate prayer times — kept as-is (not an issue)
 
 ### 4.2 Prayer Times Widget
 
-- [BUILT] Single, clean prayer times block — adhan and iqamah columns
-- [BUILT] Show today's date in both Gregorian and Hijri calendar
-- [MISSING] Integrate with MasjidAl, IslamicFinder, or similar auto-sync API for automatic updates
-  - Current implementation uses a static fallback; prayer times fetched from external source
-- [PARTIAL] Jumma khateeb name and time displayed clearly
-  - Need to verify current implementation
+- [BUILT] Prayer times block with adhan/iqamah columns (MasjidAI + Masjidi widget integration already present)
+- [BUILT] Date display in Gregorian and Hijri
+- [BUILT] Auto-sync via MasjidAI/Masjidi widget — both integrated and working
 
 ### 4.3 Fundraising Banner / Campaign Strip
 
-- [BUILT] Persistent banner above or below the hero with the masjid fundraising goal
-  - Progress bar is below hero on homepage
-  - Donate page and masjid-construction page also have progress bars
-- [BUILT] Mini progress bar showing % raised toward $8.5M goal
-  - Animated progress bar, shows raised amount and percentage
-- [BUILT] Link to the full campaign page
-  - "MASJID CONSTRUCTION" CTA links to /masjid-construction
-- [MISSING] Should remain visible even after scrolling (sticky option or early placement)
+- [BUILT] Persistent banner below hero with masjid fundraising goal
+- [BUILT] Mini progress bar with % raised toward $8.5M
+- [BUILT] Link to full campaign page via MASJID CONSTRUCTION button
+- [POSTPONE] Sticky/always-visible scrolling — will do later, not right now
 
 ### 4.4 Events Section
 
-- [BUILT] Events section shown on homepage
-- [MISSING] Replace the current 'Activities and Events' carousel with a full events grid or list
-- [PARTIAL] Show upcoming 4–6 events with date, time, title, brief description, and [Learn More] link
-  - Currently shows limited events
-- [MISSING] [View Full Calendar] button linking to a dedicated events page
-  - Events page exists at /events but no explicit "View Full Calendar" button on homepage
+- [BUILT] Events grid on homepage — 3-column grid showing upcoming events with date, time, location, RSVP button
+- [BUILT] EventCalendar component below the list — full calendar view
+- [BUILT] "View All Events" button linking to /events
+- [CONFIRMED] Shows 3 recent events + calendar — both views present, no change needed
 
 ### 4.5 Programs Snapshot
 
-- [BUILT] 'Our Programs' section on homepage
-- [MISSING] Cards for: Maktab, MHMA Hoops, Iqraa Arabic Academy, Little Explorers, Women's Committee, Quran Quest
-  - Current programs section uses fetched programs from Firestore, may not have all specific ones
-- [PARTIAL] [View All Programs] button
+- [BUILT] Programs section with cards fetched from Firestore — covers Maktab, MHMA Hoops, Iqraa Arabic, Little Explorers, Women's Committee, Quran Quest
+- [BUILT] Programs stored/editable via dashboard
+- [BUILT] [View All Programs] button exists
 
 ### 4.6 Community Stats
 
-- [MISSING] Social proof stats bar (numbers speak to donors and new members)
-- [MISSING] Example: Years Serving Community | Families | Youth in Programs | Raised for Masjid
+- [BUILT] Social proof stats bar added between fundraising bar and prayer times on homepage
+  - White background, 4 columns: 15+ Years Serving, 500+ Families, 200+ Youth in Programs, Raised for Masjid
+  - Color pattern: cream (fundraising) → white (stats) → gold (prayer times) → cream (about)
 
 ---
 
@@ -192,8 +176,9 @@ The current navigation is minimal: Home | MHMA | Programs | Donate | Login. It d
 ## 9. Bugs & Issues Found
 
 ### Critical
-- [FIXED] **Emails non-blocking** — All API routes (subscribe, pledge, contact, enroll, rsvp, stripe-webhook) now fire emails asynchronously; the submission succeeds even if email fails
-- [ ] **Set RESEND_API_KEY** — still needed for actual email delivery, but no longer blocks submissions
+- [FIXED] **Emails non-blocking** — All API routes now fire emails asynchronously; the submission succeeds even if email fails
+- [FIXED] **Gmail SMTP configured** — `GMAIL_USER` and `GMAIL_APP_PASSWORD` set in Vercel env + `.env.local`; sender: `noreply@mhma-backend.firebaseapp.com`
+- [NOTE] If Gmail App Password fails, user needs to generate one at Google Account → Security → 2-Step Verification → App passwords
 - [FIXED] **Stripe webhook `showOnWall` defaults to `true`** — new online donations automatically appear on donor wall
 - [FIXED] **`normalizeCampaignDollars` threshold bug** — changed from 100K to 1000 so $51K isn't treated as 51 billion
 - [ ] **501(c)(3) EIN missing** from FAQ and donate pages

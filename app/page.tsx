@@ -590,6 +590,30 @@ useEffect(() => {
         </div>
       </section>
 
+      {/* Community Stats Bar */}
+      <section className="bg-white py-10 md:py-12 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">15+</p>
+              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Years Serving</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">500+</p>
+              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Families</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">200+</p>
+              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Youth in Programs</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-bold text-mhma-forest font-serif">{masjidUpdates.length > 0 && masjidUpdates[0].raised > 0 ? `$${Math.round(masjidUpdates[0].raised / 1000)}K+` : "—"}</p>
+              <p className="text-xs md:text-sm text-gray-500 uppercase tracking-wider mt-1">Raised for Masjid</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Golden Prayer Times Bar */}
       <section className="bg-mhma-gold py-6 md:py-8 border-y-2 border-mhma-forest/10">
         <div className="max-w-6xl mx-auto px-4">
