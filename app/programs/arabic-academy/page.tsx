@@ -55,7 +55,7 @@ export default function ArabicAcademyPage() {
             <div className="lg:w-7/12">
                {programData?.imageUrl && (
                   <div className="mb-12">
-                    <img src={programData.imageUrl} alt="Program" className="rounded-3xl shadow-2xl w-full border border-gray-100" />
+                    <img src={programData.imageUrl} alt={programData.title || "Arabic Academy program"} className="rounded-3xl shadow-2xl w-full border border-gray-100" />
                   </div>
                 )}
               <div className="prose prose-lg max-w-none text-gray-700 font-light leading-relaxed">

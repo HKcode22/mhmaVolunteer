@@ -137,7 +137,7 @@ function EditEventForm() {
                     placeholder="https://example.com/image.jpg" />
                 </div>
               </div>
-              {formData.poster && <img src={formData.poster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+              {formData.poster && <img src={formData.poster} alt="Event poster preview" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
             </div>
             <button type="submit" disabled={saving}
               className="w-full bg-mhma-gold hover:bg-mhma-gold-light text-white font-semibold py-3 px-6 rounded transition-colors disabled:opacity-50">

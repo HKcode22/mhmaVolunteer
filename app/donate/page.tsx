@@ -44,6 +44,7 @@ const designations: { key: Designation; label: string; icon: any; description: s
 
 export default function DonatePage() {
   const { user } = useAuth();
+  useEffect(() => { document.title = "Donate | MHMA | Mountain House"; }, []);
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [raisedFromDonations, setRaisedFromDonations] = useState(0);
   const [donorCount, setDonorCount] = useState(0);

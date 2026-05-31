@@ -345,7 +345,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4 mb-6 p-4 bg-mhma-cream rounded-lg">
             <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
               {profile.photoUrl ? (
-                <img src={profile.photoUrl} alt="" className="w-full h-full object-cover" />
+                <img src={profile.photoUrl} alt="Profile photo" className="w-full h-full object-cover" />
               ) : (
                 <User className="w-8 h-8 text-gray-400" />
               )}

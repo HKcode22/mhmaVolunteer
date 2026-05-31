@@ -12,6 +12,8 @@ export default function AboutPage() {
   const [donationTotals, setDonationTotals] = useState<any>(null);
   const [enrollmentCount, setEnrollmentCount] = useState<number | null>(null);
 
+  useEffect(() => { document.title = "About MHMA | MHMA | Mountain House"; }, []);
+
   useEffect(() => {
     Promise.allSettled([
       fetch("/api/donation-totals").then(r => r.json()),

@@ -128,7 +128,7 @@ function EditProgramForm() {
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none text-sm"
                     placeholder="Or paste URL" />
                 </div>
-                {formData.image && <img src={formData.image} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                {formData.image && <img src={formData.image} alt="Program image preview" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</label>
@@ -145,7 +145,7 @@ function EditProgramForm() {
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none text-sm"
                     placeholder="Or paste URL" />
                 </div>
-                {formData.imagePoster && <img src={formData.imagePoster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                {formData.imagePoster && <img src={formData.imagePoster} alt="Program poster preview" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
             </div>
             <p className="text-sm font-medium text-gray-700">Statistics (optional)</p>

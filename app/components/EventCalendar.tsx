@@ -253,7 +253,7 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
               {dayEvents.map(e => (
                 <Link key={e.id} href={`/events/${e.id}`} className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:bg-amber-50 hover:border-amber-200 transition-colors group">
                   {e.poster && (
-                    <img src={e.poster} alt="" className="w-16 h-16 object-cover rounded-lg shrink-0" />
+                    <img src={e.poster} alt={e.title || "Event poster"} className="w-16 h-16 object-cover rounded-lg shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 group-hover:text-mhma-gold transition-colors">{e.title}</p>

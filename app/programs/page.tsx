@@ -38,6 +38,7 @@ import PageBanner from "@/app/components/PageBanner";
 
 export default function ProgramsPage() {
   const { isBoardMember } = useAuth();
+  useEffect(() => { document.title = "Our Programs | MHMA | Mountain House"; }, []);
   const [wpPrograms, setWpPrograms] = useState<Program[]>([]);
   const [firestorePrograms, setFirestorePrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

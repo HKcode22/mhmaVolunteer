@@ -138,7 +138,7 @@ export default function NewProgramPage() {
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none text-sm"
                     placeholder="Or paste URL" />
                 </div>
-                {formData.programImage && <img src={formData.programImage} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                {formData.programImage && <img src={formData.programImage} alt="Program image preview" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</label>
@@ -155,7 +155,7 @@ export default function NewProgramPage() {
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold outline-none text-sm"
                     placeholder="Or paste URL" />
                 </div>
-                {formData.programImagePoster && <img src={formData.programImagePoster} alt="" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                {formData.programImagePoster && <img src={formData.programImagePoster} alt="Program poster preview" className="mt-2 h-20 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
               </div>
             </div>
 
