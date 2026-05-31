@@ -421,9 +421,9 @@ export default function MasjidConstructionPage() {
 
         {/* Contact Info */}
         <section className="grid grid-cols-1 md:grid-cols-3">
-          <div className="py-20 px-8 text-center text-white bg-mhma-forest">
-            <MapPin className="w-14 h-14 mx-auto mb-6" />
-            <div className="space-y-1 text-lg">
+          <div className="py-20 px-8 text-center bg-mhma-cream">
+            <MapPin className="w-14 h-14 mx-auto mb-6 text-gray-700" />
+            <div className="space-y-1 text-lg text-gray-700">
               <p>250 East Main Street,</p><p>Mountain House,</p><p>CA 95391</p>
             </div>
           </div>
