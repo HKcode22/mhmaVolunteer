@@ -24,6 +24,8 @@ import {
   Smartphone,
   Check,
   Copy,
+  Briefcase,
+  Star,
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 
@@ -50,6 +52,8 @@ export default function DonatePage() {
   const [designation, setDesignation] = useState<Designation>("general");
   const [recurring, setRecurring] = useState(false);
   const [amount, setAmount] = useState("");
+  const [dedicate, setDedicate] = useState(false);
+  const [dedicationName, setDedicationName] = useState("");
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [copied, setCopied] = useState("");
@@ -74,7 +78,7 @@ export default function DonatePage() {
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(amount), designation, recurring, firebaseUid: user?.uid || "" }),
+        body: JSON.stringify({ amount: parseFloat(amount), designation, recurring, firebaseUid: user?.uid || "", dedicate, dedicationName }),
       });
       const data = await res.json();
       if (data.url) {
@@ -200,15 +204,64 @@ export default function DonatePage() {
                         <h3 className="text-xl font-bold text-green-800 mb-2">Thank You for Your Donation!</h3>
                         <p className="text-green-600">Your donation has been received. JazakAllah Khair!</p>
                         <p className="text-xs text-green-500 mt-2">It may take a moment to appear in donation history.</p>
+                        <p className="text-xs text-gray-500 mt-4 mb-3">Share your support:</p>
+                        <div className="flex justify-center gap-3 mb-4">
+                          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent("https://mhma-update.vercel.app/donate")}`} target="_blank" rel="noopener noreferrer"
+                            className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors">
+                            <Facebook className="w-5 h-5" />
+                          </a>
+                          <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just donated to support the Mountain House Muslim Association! 🕌")}&url=${encodeURIComponent("https://mhma-update.vercel.app/donate")}`} target="_blank" rel="noopener noreferrer"
+                            className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
+                            <Twitter className="w-5 h-5" />
+                          </a>
+                          <button onClick={() => { navigator.clipboard.writeText("https://mhma-update.vercel.app/donate"); alert("Link copied!"); }}
+                            className="w-10 h-10 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 transition-colors">
+                            <Copy className="w-5 h-5" />
+                          </button>
+                        </div>
                         <button onClick={() => { setSuccess(false); setAmount(""); }}
-                          className="mt-6 inline-flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-semibold text-sm">
+                          className="inline-flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-semibold text-sm">
                           <Heart className="w-4 h-4" /> Donate Again
                         </button>
                       </div>
                     ) : (
                       <div className="space-y-4">
+                        {/* MHMA Builders Club promo */}
+                        {recurring && (
+                          <div className="bg-gradient-to-r from-mhma-forest to-mhma-forest-mid rounded-xl p-4 mb-2">
+                            <p className="text-white font-bold text-sm">You are joining the MHMA Builders Club! 🌟</p>
+                            <p className="text-mhma-sage text-xs mt-1">Monthly sustainers power our community year-round. Cancel anytime.</p>
+                          </div>
+                        )}
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Amount ($)</label>
+                          <label className="block text-xs font-medium text-gray-500 mb-2">Amount ($)</label>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {[25, 50, 100, 250, 500].map(val => (
+                              <button
+                                key={val}
+                                type="button"
+                                onClick={() => setAmount(String(val))}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
+                                  amount === String(val)
+                                    ? "bg-mhma-forest text-white border-mhma-forest"
+                                    : "bg-white text-gray-700 border-gray-200 hover:border-mhma-gold"
+                                }`}
+                              >
+                                ${val}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => setAmount("")}
+                              className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
+                                amount && ![25, 50, 100, 250, 500].includes(Number(amount))
+                                  ? "bg-mhma-forest text-white border-mhma-forest"
+                                  : "bg-white text-gray-700 border-gray-200 hover:border-mhma-gold"
+                              }`}
+                            >
+                              Custom
+                            </button>
+                          </div>
                           <input
                             type="number"
                             min="1"
@@ -219,6 +272,28 @@ export default function DonatePage() {
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none text-lg font-bold text-gray-900"
                           />
                         </div>
+
+                        <div className="border-t border-gray-100 pt-4">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={dedicate}
+                              onChange={e => setDedicate(e.target.checked)}
+                              className="w-4 h-4 rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold"
+                            />
+                            <span className="text-sm text-gray-700">Dedicate this donation</span>
+                          </label>
+                          {dedicate && (
+                            <input
+                              type="text"
+                              value={dedicationName}
+                              onChange={e => setDedicationName(e.target.value)}
+                              placeholder="In honor/memory of..."
+                              className="mt-2 w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none text-sm text-gray-900"
+                            />
+                          )}
+                        </div>
+
                         <button
                           onClick={handleDonate}
                           disabled={!amount || parseFloat(amount) < 1 || processing}
@@ -306,6 +381,30 @@ export default function DonatePage() {
                         </button>
                       </div>
                       <p className="text-xs text-gray-400 mt-2">Or use: <a href="https://paypal.me/mhma" target="_blank" rel="noopener noreferrer" className="text-mhma-gold hover:underline">paypal.me/mhma</a></p>
+                    </div>
+
+                    {/* Employer Matching */}
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                          <Briefcase className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <h4 className="font-bold text-gray-900">Employer Matching</h4>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-2">Double your impact! Many employers match charitable donations dollar-for-dollar.</p>
+                      <p className="text-sm text-gray-700">For Benevity or other matching platforms, use <strong>board@mhma.info</strong> as the organization email.</p>
+                    </div>
+
+                    {/* MHMA Builders Club */}
+                    <div className="bg-gradient-to-br from-mhma-forest to-mhma-forest-mid p-6 rounded-2xl shadow-md">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-mhma-gold/20 flex items-center justify-center">
+                          <Star className="w-5 h-5 text-mhma-gold" />
+                        </div>
+                        <h4 className="font-bold text-white">MHMA Builders Club</h4>
+                      </div>
+                      <p className="text-sm text-mhma-sage mb-2">Join our monthly giving program. Set it and forget it — your recurring gift provides stable funding for programs year-round.</p>
+                      <p className="text-xs text-mhma-gold font-semibold">Toggle "Monthly" above to start your sustainer membership.</p>
                     </div>
 
                   </div>

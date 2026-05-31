@@ -49,7 +49,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
         service: "gmail",
         auth: { user: gmailUser, pass: gmailPass },
       });
-      await transporter.sendMail({ from: getFrom(), to, subject, html });
+      await transporter.sendMail({ from: gmailUser, to, subject, html });
       return;
     } catch (err) {
       console.error("Gmail SMTP error:", err);

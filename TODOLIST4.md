@@ -14,25 +14,25 @@
 
 ### 6.1 Donation Page Redesign (mhma.us/donate)
 
-- [MISSING] Giving designation options: General Fund, Masjid Construction, Zakat, Sadaqa, Maktab Support — Stripe payment link has no designation step; `designation` field exists in Firestore donations collection but only set via webhook defaults
-- [MISSING] Recurring donation option (monthly giving) — Stripe Checkout not configured for recurring; no "MHMA Builders Club" or similar
-- [PARTIAL] Multiple payment methods — Stripe/Card is live; Zelle, Check, Cash mentioned in "Other Ways to Give" section on masjid-construction page but not on donate page
-- [MISSING] Suggested giving amounts: $25 / $50 / $100 / $250 / $500 / Custom — Stripe Checkout uses a single price; no amount suggestions
-- [BUILT] 501(c)(3) tax-deductible statement with EIN — added to homepage footer; also needed on donate page prominently
-- [BUILT] Employer matching information — present in "Other Ways to Give" section on masjid-construction page
-- [MISSING] "Dedicate this donation" option (in memory/honor of someone) — not implemented
+- [BUILT] Giving designation options: General Fund, Masjid Construction, Zakat, Sadaqa, Maktab Support — 5 designations with picker UI on donate page; `designation` field stored in Firestore donations collection
+- [BUILT] Recurring donation option (monthly giving) — One-Time/Monthly toggle on donate page; uses Stripe subscription mode; "MHMA Builders Club" promo shown when monthly is toggled
+- [BUILT] Multiple payment methods — Stripe/Card (online), Zelle, Check, Cash, PayPal all displayed on donate page with copy-to-clipboard
+- [BUILT] Suggested giving amounts: $25 / $50 / $100 / $250 / $500 / Custom — amount buttons added to donate page
+- [BUILT] 501(c)(3) tax-deductible statement with EIN — displayed on donate page and homepage footer
+- [BUILT] Employer matching information — card added to donate page "Other Ways to Give" section
+- [BUILT] "Dedicate this donation" option (in memory/honor of someone) — checkbox + text input on donate page; stored in Stripe metadata
 
 ### 6.2 Recurring / Monthly Giving Program
 
-- [MISSING] Named monthly giving program (e.g., 'MHMA Builders Club')
-- [MISSING] Monthly sustainer amounts: $10 / $25 / $50 / $100 / $250 / month
-- [MISSING] Dedicated landing page and homepage banner for monthly giving
-- [MISSING] Monthly impact email to sustainers
+- [BUILT] Named monthly giving program ('MHMA Builders Club') — promo card on donate page with branded messaging
+- [BUILT] Monthly sustainer amounts: user can choose any amount via input or suggestion buttons ($25/$50/$100/$250/$500)
+- [MISSING] Dedicated landing page for monthly giving program — currently just a section on donate page
+- [MISSING] Monthly impact email to sustainers — not yet implemented (requires email automation)
 
 ### 6.3 Donor Stewardship Features
 
-- [PARTIAL] Automated donation receipt email — stripe-webhook calls `sendEmail()` non-blockingly; recipient gets email only if Gmail SMTP works
-- [PARTIAL] Thank-you page after donation — Stripe redirects to `/donate?success=true` but no dedicated thank-you page with social share buttons
+- [BUILT] Automated donation receipt email — stripe-webhook sends confirmation via Gmail SMTP (fixed: now uses gmailUser as from address to avoid Gmail rejection)
+- [BUILT] Thank-you page after donation — success state on donate page with social share buttons (Facebook, Twitter, copy link)
 - [MISSING] Quarterly donor newsletter with construction progress updates
 - [MISSING] Annual donor report / impact summary page
 
@@ -75,4 +75,4 @@
 - [BUILT] Events — Firestore-based events with RSVP, calendar view
 - [PARTIAL] Email/Newsletter — newsletter signup component exists (stores to Firestore `subscribers` collection); not connected to Mailchimp or external email service
 - [MISSING] Google Analytics 4 — not configured; no donation tracking as conversion event
-- [PARTIAL] Donations — Stripe integrated and working; Zelle info mentioned on construction page; check mailing address not displayed
+- [PARTIAL] Donations — Stripe integrated and working; Zelle info displayed; check mailing address displayed; PayPal option added
