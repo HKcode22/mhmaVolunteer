@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { firestore } from "@/lib/firebase-admin";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const snap = await firestore
@@ -41,6 +43,10 @@ export async function GET() {
         Object.entries(byMethod).map(([k, v]) => [k, Math.round(v / 100)])
       ),
       count: snap.size,
+    }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
     });
   } catch (err: any) {
     console.error("Failed to fetch donation totals:", err);
