@@ -134,8 +134,8 @@ export default function ProgramsPage() {
                     href={program.href}
                     className={`flex flex-col rounded-3xl shadow-sm border group hover:border-mhma-gold hover:shadow-xl transition-all duration-500 overflow-hidden relative bg-mhma-forest border-mhma-forest-light`}
                   >
-                    {isBoardMember && program.isFirestore && (
-                      <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit program">
+                    {isBoardMember && (
+                      <Link href={program.id ? `/dashboard/programs/edit?id=${program.id}` : "/dashboard/programs"} onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2.5 py-1.5 bg-mhma-forest/80 backdrop-blur-sm text-mhma-gold text-[10px] font-bold rounded-lg hover:bg-mhma-gold hover:text-white transition-colors" title="Edit program">
                         <Edit3 className="w-3 h-3" /> EDIT
                       </Link>
                     )}

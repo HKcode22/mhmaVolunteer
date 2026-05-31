@@ -5,10 +5,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const snap = await firestore
-      .collection("donations")
-      .where("status", "==", "completed")
-      .get();
+    const [donationSnap, eventsSnap, usersSnap] = await Promise.all([
+      firestore.collection("donations").where("status", "==", "completed").get(),
+      firestore.collection("events").get(),
+      firestore.collection("users").get(),
+    ]);
+    const snap = donationSnap;
 
     let total = 0;
     let constructionTotal = 0;
@@ -43,6 +45,8 @@ export async function GET() {
         Object.entries(byMethod).map(([k, v]) => [k, Math.round(v / 100)])
       ),
       count: snap.size,
+      eventsCount: eventsSnap.size,
+      usersCount: usersSnap.size,
     }, {
       headers: {
         "Cache-Control": "no-store, max-age=0, must-revalidate",

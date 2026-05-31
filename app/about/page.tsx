@@ -7,6 +7,8 @@ import Navigation from "@/app/components/Navigation";
 import { ChevronRight } from "lucide-react";
 
 import PageBanner from "@/app/components/PageBanner";
+import StatCard from "@/app/components/StatCard";
+import { formatCompactAmount, formatCount } from "@/lib/stats-utils";
 
 export default function AboutPage() {
   const [donationTotals, setDonationTotals] = useState<any>(null);
@@ -53,29 +55,16 @@ export default function AboutPage() {
             </div>
             <div className="lg:w-1/2">
                 <div className="bg-teal-50 rounded-xl p-8 border border-teal-100">
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
-                      { val: '500+', label: 'Families', color: 'bg-teal-700' },
-                      { val: '10+', label: 'Programs', color: 'bg-mhma-forest' }
-                    ].map((stat, i) => (
-                      <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
-                        <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
-                        <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
-                      </div>
-                    ))}
-                    <div className="bg-mhma-forest rounded-xl p-5 text-center text-white shadow-lg">
-                      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
-                        {enrollmentCount !== null ? `${enrollmentCount}+` : "—"}
-                      </p>
-                      <p className="text-gray-300 text-xs uppercase tracking-wider">Youth in Programs</p>
-                    </div>
-                    <div className="bg-teal-700 rounded-xl p-5 text-center text-white shadow-lg">
-                      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
-                        {donationTotals?.constructionTotal ? `$${Math.round(donationTotals.constructionTotal / 1000)}K+` : "—"}
-                      </p>
-                      <p className="text-gray-300 text-xs uppercase tracking-wider">Raised for Masjid</p>
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <StatCard value="15+" label="Years" color="bg-mhma-forest" />
+                    <StatCard value="500+" label="Families" color="bg-teal-700" />
+                    <StatCard value="10+" label="Programs" color="bg-mhma-forest" />
+                    <StatCard value={enrollmentCount !== null ? `${formatCount(enrollmentCount)}` : "—"} label="Youth in Programs" color="bg-mhma-forest" />
+                    <StatCard value={donationTotals?.constructionTotal ? formatCompactAmount(donationTotals.constructionTotal) : "—"} label="Raised for Masjid" color="bg-teal-700" />
+                    <StatCard value={donationTotals?.donorCount ? formatCount(donationTotals.donorCount) : "—"} label="Donors" color="bg-mhma-forest" />
+                    <StatCard value={donationTotals?.eventsCount ? formatCount(donationTotals.eventsCount) : "—"} label="Events Held" color="bg-teal-700" />
+                    <StatCard value={donationTotals?.usersCount ? formatCount(donationTotals.usersCount) : "—"} label="Members" color="bg-mhma-forest" />
+                    <StatCard value={donationTotals?.byDesignation?.programs ? formatCompactAmount(donationTotals.byDesignation.programs) : "—"} label="Raised for Programs" color="bg-teal-700" />
                   </div>
                 </div>
             </div>

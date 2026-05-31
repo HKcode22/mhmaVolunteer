@@ -151,7 +151,6 @@ export default function DashboardProgramsPage() {
 
           {sectionOrder === "normal" ? (
             <>
-              {/* Programs List */}
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input type="text" placeholder="Search programs..." value={search} onChange={e => setSearch(e.target.value)}
@@ -181,7 +180,7 @@ export default function DashboardProgramsPage() {
                             <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
-                                <button onClick={() => handleEdit(p)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                                <Link href={p.id ? `/dashboard/programs/edit?id=${p.id}` : "#"} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors inline-flex"><Edit3 className="w-4 h-4" /></Link>
                                 <button onClick={() => p.id && handleDelete(p.id, p.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </td>
@@ -194,7 +193,6 @@ export default function DashboardProgramsPage() {
               </div>
               <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} program{filtered.length !== 1 ? "s" : ""}</p>
 
-              {/* Enrollments Section */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">Enrollments</h2>
                 <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
@@ -250,7 +248,6 @@ export default function DashboardProgramsPage() {
             </>
           ) : (
             <>
-              {/* Enrollments Section first */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">Enrollments</h2>
                 <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
@@ -304,7 +301,6 @@ export default function DashboardProgramsPage() {
               </div>
               <p className="text-xs text-gray-400 mb-6">{filteredEnroll.length} enrollment{filteredEnroll.length !== 1 ? "s" : ""}</p>
 
-              {/* Programs List */}
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input type="text" placeholder="Search programs..." value={search} onChange={e => setSearch(e.target.value)}
@@ -334,7 +330,7 @@ export default function DashboardProgramsPage() {
                             <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
-                                <button onClick={() => handleEdit(p)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                                <Link href={p.id ? `/dashboard/programs/edit?id=${p.id}` : "#"} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors inline-flex"><Edit3 className="w-4 h-4" /></Link>
                                 <button onClick={() => p.id && handleDelete(p.id, p.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </td>

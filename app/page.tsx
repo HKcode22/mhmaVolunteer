@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import EventCalendar from "@/app/components/EventCalendar";
+import { formatCompactAmount, formatCount } from "@/lib/stats-utils";
+import StatCard from "@/app/components/StatCard";
 
 /* ── Quran Verse (commented out per board request) ──
 interface QuranVerse {
@@ -655,29 +657,16 @@ useEffect(() => {
                 Learn More About Us <ChevronRight className="ml-1 w-5 h-5" />
               </Link>
             </div>
-            <div className="lg:w-1/2 grid grid-cols-3 gap-4">
-              {[
-                { val: '15+', label: 'Years', color: 'bg-mhma-forest' },
-                { val: '500+', label: 'Families', color: 'bg-mhma-forest-mid' },
-                { val: '10+', label: 'Programs', color: 'bg-mhma-forest' },
-              ].map((stat, i) => (
-                <div key={i} className={`${stat.color} rounded-xl p-5 text-center text-white shadow-lg`}>
-                  <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">{stat.val}</p>
-                  <p className="text-gray-300 text-xs uppercase tracking-wider">{stat.label}</p>
-                </div>
-              ))}
-              <div className="bg-mhma-forest rounded-xl p-5 text-center text-white shadow-lg">
-                <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
-                  {enrollmentCount !== null ? `${enrollmentCount}+` : "—"}
-                </p>
-                <p className="text-gray-300 text-xs uppercase tracking-wider">Youth in Programs</p>
-              </div>
-              <div className="bg-mhma-forest-mid rounded-xl p-5 text-center text-white shadow-lg">
-                <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
-                  {donationTotals?.constructionTotal ? `$${Math.round(donationTotals.constructionTotal / 1000)}K+` : "—"}
-                </p>
-                <p className="text-gray-300 text-xs uppercase tracking-wider">Raised for Masjid</p>
-              </div>
+            <div className="lg:w-1/2 grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <StatCard value="15+" label="Years" color="bg-mhma-forest" />
+              <StatCard value="500+" label="Families" color="bg-mhma-forest-mid" />
+              <StatCard value="10+" label="Programs" color="bg-mhma-forest" />
+              <StatCard value={enrollmentCount !== null ? `${formatCount(enrollmentCount)}` : "—"} label="Youth in Programs" color="bg-mhma-forest" />
+              <StatCard value={donationTotals?.constructionTotal ? formatCompactAmount(donationTotals.constructionTotal) : "—"} label="Raised for Masjid" color="bg-mhma-forest-mid" />
+              <StatCard value={donationTotals?.donorCount ? formatCount(donationTotals.donorCount) : "—"} label="Donors" color="bg-mhma-forest" />
+              <StatCard value={donationTotals?.eventsCount ? formatCount(donationTotals.eventsCount) : "—"} label="Events Held" color="bg-mhma-forest-mid" />
+              <StatCard value={donationTotals?.usersCount ? formatCount(donationTotals.usersCount) : "—"} label="Members" color="bg-mhma-forest" />
+              <StatCard value={donationTotals?.byDesignation?.programs ? formatCompactAmount(donationTotals.byDesignation.programs) : "—"} label="Raised for Programs" color="bg-mhma-forest-mid" />
             </div>
           </div>
         </div>
@@ -967,3 +956,6 @@ useEffect(() => {
     </div>
   );
 }
+
+
+
