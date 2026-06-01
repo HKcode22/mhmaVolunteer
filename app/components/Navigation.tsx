@@ -225,6 +225,8 @@ export default function Navigation({ currentPage }: NavigationProps) {
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
                       <Link href="/masjid-construction" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Masjid Construction</Link>
                       <Link href="/pledge" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Pledge</Link>
+                      <Link href="/builders-club" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Builders Club</Link>
+                      <Link href="/impact-report" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Impact Report</Link>
                     </div>
                   </div>
               </div>
@@ -268,6 +270,8 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/donate" className="block py-2 text-gray-700 border-b border-gray-100">DONATE</Link>
             <Link href="/pledge" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ PLEDGE</Link>
             <Link href="/masjid-construction" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ CONSTRUCTION</Link>
+            <Link href="/builders-club" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ BUILDERS CLUB</Link>
+            <Link href="/impact-report" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ IMPACT REPORT</Link>
             <Link href="/contact" className="block py-2 text-gray-700 border-b border-gray-100">CONTACT</Link>
             <Link href="/contact/faq" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ FAQ</Link>
             <Link href="/subscribe" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ NEWSLETTER</Link>
