@@ -84,3 +84,56 @@
 - [BUILT] `/builders-club` — dedicated monthly giving landing page with program benefits, amount selector, FAQ accordion
 - [BUILT] `/impact-report` — annual donor impact summary page with live stats from donation-totals and enrollment-count APIs
 - [BUILT] `/sitemap.xml` — auto-generated XML sitemap for search engines
+
+---
+
+## 8. Live Stats Architecture — Design Decisions
+
+### 8.1 How Stats Are Computed
+
+All live stats are computed **on-the-fly** by the single `/api/about-stats` server route. When this endpoint is called, it queries all relevant Firestore collections in parallel and returns the computed results:
+
+| Stat | Source Collection | Method |
+|------|------------------|--------|
+| Years Serving | `aboutStats/stats` doc | Manual entry by board member |
+| Number of Families | `aboutStats/stats` doc | Manual entry by board member |
+| Programs Count | `programs` | Document count (live) |
+| Events Count | `events` | Document count (live) |
+| Members Count | `users` | Document count (live) |
+| Youth in Programs | `enrollments` | Document count (live) |
+| RSVPs Count | `rsvps` | Document count (live) |
+| Active Subscribers | `subscribers` | Filtered count (status=active) |
+| Contact Submissions | `contactSubmissions` | Document count (live) |
+| Pledges Count | `pledges` | Document count (live) |
+| Volunteers Count | `volunteers` | Document count (live) |
+| Total Donations | `donations` | Filtered count (status=completed) |
+| Unique Donors | `donations` | Count of unique emails for construction designation |
+| Raised for Masjid | `donations` | Sum of amounts where designation=construction |
+| Raised for Programs | `donations` | Sum of amounts where designation=programs |
+| Raised for Zakat | `donations` | Sum of amounts where designation=zakat/zakat-ul-mal |
+| Zakat Donation Count | `donations` | Count where designation=zakat/zakat-ul-mal |
+| Raised for General Fund | `donations` | Sum of amounts where designation=general/general fund |
+| General Fund Count | `donations` | Count where designation=general/general fund |
+
+### 8.2 Why This Approach Is Correct
+
+**No duplicate storage = no data drift.**
+Stats are never cached in a separate "stats document" (except the two manual fields). Every stat is computed directly from its source collection at request time. This means:
+- When someone RSVPs, the RSVP count updates immediately
+- When a donation is made, all donation-related stats (masjid, zakat, general, programs totals) update instantly
+- When a volunteer submits a form, the volunteer count updates
+- There is zero risk of the "stored stat" getting out of sync with the "actual data"
+
+**Single source of truth.** All donation amounts are derived from the same `donations` collection, filtered by `designation`. This guarantees that the sum of all designation totals (Masjid + Programs + Zakat + General + Other) always equals the total raised. If we stored per-designation totals separately, they could drift apart.
+
+**Computed at request time, not write time.** Every time `/api/about-stats` is called, it re-computes everything from scratch. This is the simplest and most accurate pattern. It costs one Firestore read per collection per request — for a small community site this is negligible. If the site grows to thousands of concurrent users, we can add a caching layer (e.g., cache the API response for 60 seconds, or use a Firebase Scheduled Function to write snapshots hourly).
+
+**Manual stats stored separately.** Two values — `yearsServing` and `numberOfFamilies` — cannot be derived from any existing data (MHMA's founding date isn't recorded programmatically, and family count isn't tracked per-user). These are stored in `aboutStats/stats` and editable by board members via the dashboard Analytics page and the Stats data section on the dashboard home page.
+
+### 8.3 What Was Newly Built
+
+- **Volunteer submission system**: `volunteers` Firestore collection + `POST /api/submit-volunteer` + `POST /api/send-volunteer-confirmation` email + functional `/volunteer` form page with firstName, lastName, email, phone, availability, interest selection (10 options), and optional message
+- **Volunteer dashboard section**: Both the main Dashboard page and the Contact & FAQ page show volunteer submissions with expandable details, delete capability, and search filtering
+- **Stats dashboard section**: A new "Stats" card on the Dashboard home page showing Years Serving and Number of Families with a link to the Analytics page for editing
+- **Expanded about-stats API**: Now includes rsvpCount, subscriberCount, contactCount, pledgeCount, volunteerCount, totalDonationCount, raisedForZakat, zakatDonationCount, raisedForGeneral, generalDonationCount
+- **Donation stats broken down by designation**: Zakat and General Fund now have their own totals and counts, computed from the same `donations` collection alongside the existing Masjid Construction and Programs stats

@@ -929,6 +929,37 @@ export async function deleteSubscriber(id: string): Promise<void> {
   await deleteDoc(doc(db, SUBSCRIBERS, id));
 }
 
+// ─── Volunteers ───
+
+export interface VolunteerSubmission {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  availability: string;
+  interests: string[];
+  message?: string;
+  createdAt?: any;
+}
+
+const VOLUNTEERS_COLLECTION = "volunteers";
+
+export async function addVolunteer(data: Omit<VolunteerSubmission, "id" | "createdAt">): Promise<string> {
+  const ref = await addDoc(collection(db, VOLUNTEERS_COLLECTION), { ...data, createdAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function fetchVolunteers(limitCount = 200): Promise<VolunteerSubmission[]> {
+  const q = query(collection(db, VOLUNTEERS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<VolunteerSubmission>(snap);
+}
+
+export async function deleteVolunteer(id: string): Promise<void> {
+  await deleteDoc(doc(db, VOLUNTEERS_COLLECTION, id));
+}
+
 // ─── Donations ───
 
 export interface Donation {

@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import {
   fetchContactSubmissions, markContactSubmissionRead, deleteContactSubmission,
   FirebaseContactSubmission, fetchFAQs, addFAQ, updateFAQ, deleteFAQ, FAQItem,
+  fetchVolunteers, deleteVolunteer, VolunteerSubmission,
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
@@ -29,6 +30,8 @@ export default function DashboardContactSubmissionsPage() {
   const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
   const [faqForm, setFaqForm] = useState({ question: "", answer: "", category: "", order: 0, active: true });
   const [faqSaving, setFaqSaving] = useState(false);
+  const [volunteers, setVolunteers] = useState<VolunteerSubmission[]>([]);
+  const [volunteerSearch, setVolunteerSearch] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -38,9 +41,10 @@ export default function DashboardContactSubmissionsPage() {
 
   const loadAll = async () => {
     try {
-      const [c, f] = await Promise.all([fetchContactSubmissions(100), fetchFAQs(100)]);
+      const [c, f, v] = await Promise.all([fetchContactSubmissions(100), fetchFAQs(100), fetchVolunteers(100)]);
       setItems(c);
       setFaqItems(f);
+      setVolunteers(v);
     } catch { /* ignore */ }
     setLoading(false);
     setFaqLoading(false);
@@ -200,6 +204,85 @@ export default function DashboardContactSubmissionsPage() {
             )}
           </div>
           <p className="text-xs text-gray-400 mt-4 mb-12">{filtered.length} submission{filtered.length !== 1 ? "s" : ""}</p>
+
+          {/* Volunteer Submissions */}
+          <div className="border-t border-gray-200 pt-10 mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Volunteer Submissions</h2>
+                <p className="text-gray-500 text-sm">People who submitted volunteer forms.</p>
+              </div>
+            </div>
+            <div className="relative mb-6">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Search by name, email..." value={volunteerSearch} onChange={e => setVolunteerSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+              {volunteers.length === 0 ? (
+                <div className="p-12 text-center"><p className="text-gray-500">No volunteer submissions yet.</p></div>
+              ) : (
+                <div className="max-h-[500px] overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                        <th className="w-8 px-2 py-3"></th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Email</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Phone</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Availability</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Interests</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {volunteers.filter(v => {
+                        const q = volunteerSearch.toLowerCase();
+                        return !q || v.firstName.toLowerCase().includes(q) || v.lastName.toLowerCase().includes(q) || v.email.toLowerCase().includes(q);
+                      }).map(v => (
+                        <tr key={v.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-2 py-3">
+                            <button onClick={() => setExpandedId(expandedId === `vol-${v.id}` ? null : `vol-${v.id}`)} className="p-1 text-gray-400 hover:text-gray-700">
+                              {expandedId === `vol-${v.id}` ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-gray-900">{v.firstName} {v.lastName}</td>
+                          <td className="px-4 py-3"><a href={`mailto:${v.email}`} className="text-blue-600 hover:underline">{v.email}</a></td>
+                          <td className="px-4 py-3"><a href={`tel:${v.phone}`} className="text-blue-600 hover:underline">{v.phone}</a></td>
+                          <td className="px-4 py-3 text-gray-700 capitalize">{v.availability?.replace(/-/g, " ")}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {v.interests?.slice(0, 2).map(i => <span key={i} className="text-[11px] bg-gray-100 px-1.5 py-0.5 rounded">{i}</span>)}
+                              {(v.interests?.length || 0) > 2 && <span className="text-[11px] text-gray-400">+{v.interests!.length - 2}</span>}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button onClick={() => v.id && deleteVolunteer(v.id).then(() => setVolunteers(prev => prev.filter(x => x.id !== v.id)))}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          </td>
+                        </tr>
+                      ))}
+                      {expandedId?.startsWith("vol-") && (() => {
+                        const v = volunteers.find(x => `vol-${x.id}` === expandedId);
+                        if (!v) return null;
+                        return (
+                          <tr key={`exp-${v.id}`}>
+                            <td colSpan={7} className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                              <div className="text-sm text-gray-600">
+                                {v.message && <p className="mb-1"><strong>Message:</strong> {v.message}</p>}
+                                <p className="text-xs text-gray-400">Submitted {v.createdAt?.toDate?.()?.toLocaleDateString() || "recently"}</p>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-400 mt-4">{volunteers.length} volunteer submission{volunteers.length !== 1 ? "s" : ""}</p>
+          </div>
 
           {/* FAQ management */}
           <div className="border-t border-gray-200 pt-10">

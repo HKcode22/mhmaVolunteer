@@ -18,6 +18,7 @@ import {
   generateInviteCode, fetchInviteCodes, deleteInviteCode, logActivity,
   fetchUsers, fetchSubscribers, fetchPledges, fetchDonations, fetchAllNews,
   fetchFAQs, addFAQ, updateFAQ, deleteFAQ, FAQItem,
+  fetchVolunteers, VolunteerSubmission,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
   FirebaseUser, Subscriber, Pledge, Donation,
 } from "@/lib/firebase";
@@ -53,14 +54,17 @@ export default function DashboardPage() {
   const [showAllPledges, setShowAllPledges] = useState(false);
   const [showAllDonations, setShowAllDonations] = useState(false);
   const [showAllNews, setShowAllNews] = useState(false);
+  const [showAllVolunteers, setShowAllVolunteers] = useState(false);
   const [news, setNews] = useState<any[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerSubmission[]>([]);
+  const [aboutStats, setAboutStats] = useState<any>(null);
   const [expandedDashboardId, setExpandedDashboardId] = useState<string | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
   const [customizeTab, setCustomizeTab] = useState<"actions" | "sections">("actions");
-  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "faq", "requests", "pledges", "donations", "codes", "users", "subscribers"];
+  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "volunteers", "faq", "requests", "pledges", "donations", "codes", "users", "subscribers", "stats"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
     "events", "programs", "news", "testimonials", "scheduling",
@@ -135,7 +139,7 @@ export default function DashboardPage() {
       news: "News", programs: "Programs", events: "Events", requests: "Scheduling Requests",
       enrollments: "Enrollments", rsvps: "Event RSVPs", submissions: "Contact Submissions",
       codes: "Invite Codes", users: "Members", subscribers: "Subscribers",
-      pledges: "Pledges", donations: "Donations",
+      pledges: "Pledges", donations: "Donations", volunteers: "Volunteers", stats: "Stats",
     };
     return labels[s] || s.charAt(0).toUpperCase() + s.slice(1);
   };
@@ -169,8 +173,10 @@ export default function DashboardPage() {
         timeout(fetchDonations(100), 15000).catch(() => [] as Donation[]),
         timeout(fetchAllNews(100), 15000).catch(() => [] as any[]),
         timeout(fetchFAQs(100), 15000).catch(() => [] as FAQItem[]),
+        timeout(fetchVolunteers(100), 15000).catch(() => [] as VolunteerSubmission[]),
+        fetch("/api/about-stats").then(r => r.json()).catch(() => null),
       ]);
-      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, stats] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -185,6 +191,8 @@ export default function DashboardPage() {
       setNews(n || []);
       setFaqItems(f || []);
       setFaqLoading(false);
+      setVolunteers(v || []);
+      setAboutStats(stats);
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
     };
@@ -340,6 +348,7 @@ export default function DashboardPage() {
   const visibleSubscribers = showAllSubscribers ? subscribers : subscribers.slice(0, 5);
   const visiblePledges = showAllPledges ? pledges : pledges.slice(0, 5);
   const visibleDonations = showAllDonations ? donations : donations.slice(0, 5);
+  const visibleVolunteers = showAllVolunteers ? volunteers : volunteers.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-mhma-cream">
@@ -705,6 +714,55 @@ export default function DashboardPage() {
                     </div>
                   ))}
                   {donations.length === 0 && <p className="text-gray-400 text-sm p-3">No donations yet.</p>}
+                </Section>
+              );
+            case "volunteers":
+              return (
+                <Section key="volunteers" title="Volunteers" count={volunteers.length} href="/dashboard/contact-submissions" allShown={showAllVolunteers} onToggle={() => setShowAllVolunteers(!showAllVolunteers)} scrollable>
+                  {visibleVolunteers.map(v => (
+                    <div key={v.id} className="bg-white rounded-lg border border-gray-100">
+                      <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => setExpandedDashboardId(expandedDashboardId === `vol-${v.id}` ? null : `vol-${v.id}`)}>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 truncate">{v.firstName} {v.lastName}</p>
+                          <p className="text-xs text-gray-500">{v.email} · {v.availability}</p>
+                        </div>
+                        <div className="flex gap-1 items-center shrink-0">
+                          <button onClick={(ev) => { ev.stopPropagation(); v.id && handleDelete(v.id, `${v.firstName} ${v.lastName}`, "submission"); }} disabled={deletingId === v.id} className="p-1.5 text-gray-600 hover:bg-gray-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                          {expandedDashboardId === `vol-${v.id}` ? <ChevronUp className="w-4 h-4 text-gray-400 ml-1" /> : <ChevronDown className="w-4 h-4 text-gray-400 ml-1" />}
+                        </div>
+                      </div>
+                      {expandedDashboardId === `vol-${v.id}` && (
+                        <div className="px-3 pb-3 pt-0 border-t border-gray-100">
+                          <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                            <div><span className="text-gray-500">Phone:</span> <span className="text-gray-900">{v.phone}</span></div>
+                            <div><span className="text-gray-500">Availability:</span> <span className="text-gray-900">{v.availability}</span></div>
+                            <div className="col-span-2"><span className="text-gray-500">Interests:</span> <span className="text-gray-900">{v.interests?.join(", ")}</span></div>
+                            {v.message && <div className="col-span-2"><span className="text-gray-500">Message:</span> <span className="text-gray-900">{v.message}</span></div>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {volunteers.length === 0 && <p className="text-gray-400 text-sm p-3">No volunteer submissions yet.</p>}
+                </Section>
+              );
+            case "stats":
+              return (
+                <Section key="stats" title="Stats" count={0} href="/dashboard/analytics" allShown={false} onToggle={() => {}} scrollable={false}>
+                  <div className="space-y-3 p-1">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Years Serving</span>
+                      <span className="font-bold text-gray-900">{aboutStats?.yearsServing ?? "—"}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Number of Families</span>
+                      <span className="font-bold text-gray-900">{aboutStats?.numberOfFamilies ?? "—"}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Manage in Analytics</span>
+                      <Link href="/dashboard/analytics" className="text-mhma-gold text-sm font-semibold hover:underline">Edit →</Link>
+                    </div>
+                  </div>
                 </Section>
               );
             default:

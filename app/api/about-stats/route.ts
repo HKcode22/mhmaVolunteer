@@ -15,6 +15,11 @@ export async function GET() {
       usersSnap,
       donationSnap,
       enrollmentSnap,
+      rsvpSnap,
+      subscriberSnap,
+      contactSnap,
+      pledgeSnap,
+      volunteerSnap,
     ] = await Promise.all([
       firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get(),
       firestore.collection("programs").get(),
@@ -22,27 +27,46 @@ export async function GET() {
       firestore.collection("users").get(),
       firestore.collection("donations").where("status", "==", "completed").get(),
       firestore.collection("enrollments").get(),
+      firestore.collection("rsvps").get(),
+      firestore.collection("subscribers").where("status", "==", "active").get(),
+      firestore.collection("contactSubmissions").get(),
+      firestore.collection("pledges").get(),
+      firestore.collection("volunteers").get(),
     ]);
 
     const statsData: Record<string, any> = statsSnap.exists ? statsSnap.data()! : {};
 
     let constructionTotal = 0;
+    let zakatTotal = 0;
+    let generalTotal = 0;
+    let programsTotal = 0;
+    let otherTotal = 0;
+    let zakatCount = 0;
+    let generalCount = 0;
     const constructionDonors = new Set<string>();
-    const byDesignation: Record<string, number> = {};
 
     donationSnap.forEach((doc: any) => {
       const d = doc.data();
       const amt = d.amount || 0;
-      if (d.designation === "construction") {
+      const des = (d.designation || "other").toLowerCase();
+      if (des === "construction") {
         constructionTotal += amt;
         const key =
           (d.donorEmail as string | undefined)?.trim().toLowerCase() ||
           (d.email as string | undefined)?.trim().toLowerCase() ||
           doc.id;
         constructionDonors.add(key);
+      } else if (des === "zakat" || des === "zakat-ul-mal" || des === "zakatulmal") {
+        zakatTotal += amt;
+        zakatCount++;
+      } else if (des === "general" || des === "general fund") {
+        generalTotal += amt;
+        generalCount++;
+      } else if (des === "programs") {
+        programsTotal += amt;
+      } else {
+        otherTotal += amt;
       }
-      byDesignation[d.designation || "other"] =
-        (byDesignation[d.designation || "other"] || 0) + amt;
     });
 
     return NextResponse.json({
@@ -52,9 +76,19 @@ export async function GET() {
       eventsCount: eventsSnap.size,
       usersCount: usersSnap.size,
       youthInPrograms: enrollmentSnap.size,
+      rsvpCount: rsvpSnap.size,
+      subscriberCount: subscriberSnap.size,
+      contactCount: contactSnap.size,
+      pledgeCount: pledgeSnap.size,
+      volunteerCount: volunteerSnap.size,
+      totalDonationCount: donationSnap.size,
       donorCount: constructionDonors.size,
       raisedForMasjid: Math.round(constructionTotal / 100),
-      raisedForPrograms: Math.round((byDesignation["programs"] || 0) / 100),
+      raisedForPrograms: Math.round(programsTotal / 100),
+      raisedForZakat: Math.round(zakatTotal / 100),
+      zakatDonationCount: zakatCount,
+      raisedForGeneral: Math.round(generalTotal / 100),
+      generalDonationCount: generalCount,
       totalRaised: Math.round(
         (donationSnap.docs.reduce((s, d) => s + (d.data().amount || 0), 0)) / 100
       ),
