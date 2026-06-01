@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/app/components/Navigation";
+import { useAuth } from "@/lib/auth-context";
 
 const INTEREST_OPTIONS = [
   "Event Setup & Coordination",
@@ -17,6 +18,7 @@ const INTEREST_OPTIONS = [
 ];
 
 export default function VolunteerPage() {
+  const { user, loading: authLoading } = useAuth();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -29,6 +31,18 @@ export default function VolunteerPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      setForm(prev => ({
+        ...prev,
+        firstName: user.firstName || prev.firstName,
+        lastName: user.lastName || prev.lastName,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+      }));
+    }
+  }, [user, authLoading]);
 
   const toggleInterest = (val: string) => {
     setForm(prev => ({
@@ -87,7 +101,7 @@ export default function VolunteerPage() {
     <div className="min-h-screen bg-mhma-cream font-sans">
       <Navigation currentPage="volunteer" />
 
-      <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-light to-mhma-forest text-white py-20">
+      <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-light to-mhma-forest text-white pt-32 pb-20">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">Volunteer With Us</h1>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto">

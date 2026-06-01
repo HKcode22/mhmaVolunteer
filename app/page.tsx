@@ -663,6 +663,14 @@ useEffect(() => {
               <StatCard value={aboutStats?.eventsCount ? formatCount(aboutStats.eventsCount) : "—"} label="Events Held" color="bg-mhma-forest-mid" />
               <StatCard value={aboutStats?.usersCount ? formatCount(aboutStats.usersCount) : "—"} label="Members" color="bg-mhma-forest" />
               <StatCard value={aboutStats?.raisedForPrograms ? formatCompactAmount(aboutStats.raisedForPrograms) : "—"} label="Raised for Programs" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.rsvpCount ? formatCount(aboutStats.rsvpCount) : "—"} label="Event RSVPs" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.subscriberCount ? formatCount(aboutStats.subscriberCount) : "—"} label="Subscribers" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.contactCount ? formatCount(aboutStats.contactCount) : "—"} label="Contact Submissions" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.pledgeCount ? formatCount(aboutStats.pledgeCount) : "—"} label="Pledges" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.volunteerCount ? formatCount(aboutStats.volunteerCount) : "—"} label="Volunteers" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.totalDonationCount ? formatCount(aboutStats.totalDonationCount) : "—"} label="Total Donations" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.raisedForZakat ? formatCompactAmount(aboutStats.raisedForZakat) : "—"} label="Raised for Zakat" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.raisedForGeneral ? formatCompactAmount(aboutStats.raisedForGeneral) : "—"} label="Raised for General" color="bg-mhma-forest-mid" />
             </div>
           </div>
         </div>
