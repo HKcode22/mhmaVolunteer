@@ -137,3 +137,6 @@ Stats are never cached in a separate "stats document" (except the two manual fie
 - **Stats dashboard section**: A new "Stats" card on the Dashboard home page showing Years Serving and Number of Families with a link to the Analytics page for editing
 - **Expanded about-stats API**: Now includes rsvpCount, subscriberCount, contactCount, pledgeCount, volunteerCount, totalDonationCount, raisedForZakat, zakatDonationCount, raisedForGeneral, generalDonationCount
 - **Donation stats broken down by designation**: Zakat and General Fund now have their own totals and counts, computed from the same `donations` collection alongside the existing Masjid Construction and Programs stats
+
+
+- im pretty sure that if someone submits the contact submission that whoever the board members are there emails should get notified 

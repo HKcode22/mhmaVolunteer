@@ -118,6 +118,19 @@ export default function MasjidConstructionPage() {
     setError("");
   };
 
+  const toEmbedUrl = (url: string): string => {
+    if (!url) return "";
+    try {
+      const u = new URL(url);
+      if (u.hostname === "youtu.be") return `https://www.youtube.com/embed${u.pathname}`;
+      if (u.hostname.includes("youtube.com")) {
+        if (u.pathname === "/watch" && u.searchParams.get("v")) return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
+        if (u.pathname.startsWith("/embed/")) return url;
+      }
+    } catch {}
+    return url;
+  };
+
   const parseAmount = (val: string): number => {
     const s = val.trim().replace(/,/g, "").toUpperCase();
     if (s.endsWith("M")) return parseFloat(s) * 1000000;
@@ -133,7 +146,7 @@ export default function MasjidConstructionPage() {
     try {
       const data = {
         image: formData.image,
-        video: formData.video,
+        video: toEmbedUrl(formData.video),
         caption: formData.caption,
         phase: formData.phase,
         raised: parseAmount(formData.raised),
@@ -145,7 +158,7 @@ export default function MasjidConstructionPage() {
         capacity: formData.capacity ? parseFloat(formData.capacity) : 0,
         communityImpact: formData.communityImpact || "",
         brochureUrl: formData.brochureUrl || "",
-        visionVideoUrl: formData.visionVideoUrl || "",
+        visionVideoUrl: toEmbedUrl(formData.visionVideoUrl) || "",
         givingTiers: givingTiers.filter(t => t.name && parseFloat(t.amount) > 0).map(t => ({
           name: t.name,
           amount: parseFloat(t.amount) || 0,
@@ -227,7 +240,7 @@ export default function MasjidConstructionPage() {
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">Video</label>
               <div className="flex flex-col gap-2">
-                <input type="url" value={formData.video} onChange={e => setFormData(p => ({ ...p, video: e.target.value }))} placeholder="https://www.youtube.com/embed/XXX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                <input type="url" value={formData.video} onChange={e => setFormData(p => ({ ...p, video: e.target.value }))} placeholder="Paste any YouTube URL (youtu.be/..., watch?v=...)" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-400">Or upload from computer:</span>
                   <input type="file" accept="video/*" onChange={handleVideoFileUpload} className="text-sm" />
@@ -300,7 +313,7 @@ export default function MasjidConstructionPage() {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">Vision Video URL</label>
                     <input type="url" value={formData.visionVideoUrl} onChange={e => setFormData(p => ({ ...p, visionVideoUrl: e.target.value }))}
-                      placeholder="https://www.youtube.com/embed/XXX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                      placeholder="Paste any YouTube URL (youtu.be/..., watch?v=...)" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                   </div>
                 </div>
               </div>

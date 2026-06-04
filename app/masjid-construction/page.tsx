@@ -12,6 +12,18 @@ import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-
 import TestimonialsDisplay from "@/app/components/TestimonialsDisplay";
 
 export default function MasjidConstructionPage() {
+  const toEmbedUrl = (url: string): string => {
+    if (!url) return "";
+    try {
+      const u = new URL(url);
+      if (u.hostname === "youtu.be") return `https://www.youtube.com/embed${u.pathname}`;
+      if (u.hostname.includes("youtube.com")) {
+        if (u.pathname === "/watch" && u.searchParams.get("v")) return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
+        if (u.pathname.startsWith("/embed/")) return url;
+      }
+    } catch {}
+    return url;
+  };
     const [updates, setUpdates] = useState<FirebaseMasjidUpdate[]>([]);
     const [raisedFromDonations, setRaisedFromDonations] = useState(0);
     const [donorCount, setDonorCount] = useState(0);
@@ -235,7 +247,7 @@ export default function MasjidConstructionPage() {
                   </a>
                 )}
                 {latest.visionVideoUrl && (
-                  <a href={latest.visionVideoUrl} target="_blank" rel="noopener noreferrer"
+                  <a href={toEmbedUrl(latest.visionVideoUrl)} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-md">
                     Watch Campaign Video
                   </a>
@@ -243,7 +255,7 @@ export default function MasjidConstructionPage() {
               </div>
               {latest.visionVideoUrl && (
                 <div className="mt-8 aspect-video rounded-xl overflow-hidden shadow-lg">
-                  <iframe src={latest.visionVideoUrl} className="w-full h-full" allowFullScreen></iframe>
+                  <iframe src={toEmbedUrl(latest.visionVideoUrl)} className="w-full h-full" allowFullScreen></iframe>
                 </div>
               )}
             </div>
