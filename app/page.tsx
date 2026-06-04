@@ -316,7 +316,21 @@ export default function HomePage() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
   const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [heroVideo, setHeroVideo] = useState<string | null>(null);
   const [heroLoading, setHeroLoading] = useState(true);
+
+  const toEmbedUrl = (url: string): string => {
+    if (!url) return "";
+    try {
+      const u = new URL(url);
+      if (u.hostname === "youtu.be") return `https://www.youtube.com/embed${u.pathname}`;
+      if (u.hostname.includes("youtube.com")) {
+        if (u.pathname === "/watch" && u.searchParams.get("v")) return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
+        if (u.pathname.startsWith("/embed/")) return url;
+      }
+    } catch {}
+    return url;
+  };
   const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [aboutStats, setAboutStats] = useState<any>(null);
@@ -413,15 +427,29 @@ useEffect(() => {
       const latest = masjid[0] ? { ...masjid[0], goal: masjid[0].goal || defaultGoal, raised: constructionTotal > 0 ? Math.max(constructionTotal, masjid[0].raised || 0) : (masjid[0].raised || 0) } : { goal: defaultGoal, raised: constructionTotal };
       setMasjidUpdates([latest]);
 
-      // Prefer masjid construction image for hero, fall back to event poster
-      if (masjid.length > 0 && masjid[0].image) {
-        setHeroImage(masjid[0].image || null);
-      } else {
-        const eventWithPoster = events.find((e: any) => e.poster && e.poster.startsWith('data:'));
-        if (eventWithPoster && eventWithPoster.poster) {
-          setHeroImage(eventWithPoster.poster);
+      // Use masjid construction heroType to decide what to show
+      let selectedImage: string | null = null;
+      let selectedVideo: string | null = null;
+      if (masjid.length > 0) {
+        const m = masjid[0];
+        if (m.heroType === "video" && m.video) {
+          selectedVideo = toEmbedUrl(m.video);
+        } else if (m.heroType === "image" && m.image) {
+          selectedImage = m.image;
+        } else if (m.heroType === "none") {
+          // show neither
+        } else if (m.image) {
+          selectedImage = m.image;
         }
       }
+      if (!selectedImage && !selectedVideo) {
+        const eventWithPoster = events.find((e: any) => e.poster && e.poster.startsWith('data:'));
+        if (eventWithPoster && eventWithPoster.poster) {
+          selectedImage = eventWithPoster.poster;
+        }
+      }
+      setHeroImage(selectedImage);
+      setHeroVideo(selectedVideo);
     } catch (error) {
       console.error("Failed to load homepage data:", error);
     } finally {
@@ -491,6 +519,10 @@ useEffect(() => {
             <div className="lg:w-2/5 flex justify-center lg:justify-end lg:pr-4 xl:pr-8">
               {heroLoading ? (
                 <div className="w-full max-w-3xl aspect-[4/3] rounded-2xl bg-white/5 animate-pulse"></div>
+              ) : heroVideo ? (
+                <div className="w-full max-w-3xl aspect-video rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
+                  <iframe src={heroVideo} className="w-full h-full" allowFullScreen title="MHMA Campaign Video"></iframe>
+                </div>
               ) : heroImage ? (
                 <div className="w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl border-2 border-mhma-gold/20">
                   <img src={heroImage} alt="Masjid Construction" className="w-full h-full object-cover" />

@@ -800,6 +800,8 @@ export interface FirebaseMasjidUpdate {
   visionVideoUrl?: string;
   // Giving Tiers
   givingTiers?: GivingTier[];
+  // Homepage hero preference
+  heroType?: "image" | "video" | "none";
 }
 
 export interface GivingTier {

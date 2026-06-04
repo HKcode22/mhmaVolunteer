@@ -27,6 +27,7 @@ export default function MasjidConstructionPage() {
   const [formData, setFormData] = useState({
     image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "",
     narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "",
+    heroType: "image" as "image" | "video" | "none",
   });
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function MasjidConstructionPage() {
   }, []);
 
   const resetForm = () => {
-    setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "", narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "" });
+    setFormData({ image: "", video: "", caption: "", phase: "", raised: "", goal: "", progressDate: "", narrative: "", sqFootage: "", capacity: "", communityImpact: "", brochureUrl: "", visionVideoUrl: "", heroType: "image" });
     setEditingId(null);
     setUseStripeData(false);
     setGivingTiers([]);
@@ -111,6 +112,7 @@ export default function MasjidConstructionPage() {
       communityImpact: u.communityImpact || "",
       brochureUrl: u.brochureUrl || "",
       visionVideoUrl: u.visionVideoUrl || "",
+      heroType: u.heroType || "image",
     });
     setGivingTiers((u.givingTiers || []).map(t => ({ name: t.name || "", amount: String(t.amount || 0), description: t.description || "" })));
     setEditingId(u.id || null);
@@ -164,6 +166,7 @@ export default function MasjidConstructionPage() {
           amount: parseFloat(t.amount) || 0,
           description: t.description || undefined,
         })),
+        heroType: formData.heroType,
       };
       if (editingId) {
         await updateMasjidUpdate(editingId, data);
@@ -248,6 +251,27 @@ export default function MasjidConstructionPage() {
                 </div>
                 <p className="text-xs text-gray-400">Uploaded video is stored as Base64 in Firestore (larger files may be rejected if they exceed the 1MB document size limit).</p>
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Show on Homepage Hero</label>
+              <div className="flex flex-wrap gap-3">
+                {(["image", "video", "none"] as const).map(type => (
+                  <label key={type} className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${
+                    formData.heroType === type
+                      ? "border-mhma-forest bg-mhma-forest text-white"
+                      : "border-gray-200 text-gray-700 hover:border-mhma-forest/30"
+                  }`}>
+                    <input type="radio" name="heroType" value={type} checked={formData.heroType === type}
+                      onChange={() => setFormData(p => ({ ...p, heroType: type }))} className="sr-only" />
+                    {type === "image" ? "Show Image" : type === "video" ? "Show Video" : "Show Neither"}
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {formData.heroType === "image" ? "The image above will be shown on the homepage hero." :
+                 formData.heroType === "video" ? "The video URL above will be shown on the homepage hero." :
+                 "Neither image nor video will appear on the homepage. The SVG illustration will be used."}
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
