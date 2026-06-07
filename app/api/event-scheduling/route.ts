@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore, Timestamp } from "@/lib/firebase-admin";
-import { sendEmail, confirmationEmail } from "@/lib/email";
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +22,14 @@ export async function POST(req: NextRequest) {
     const name = `${firstName} ${lastName}`;
     await sendEmail(email, "Event Request Received - MHMA", confirmationEmail(name,
       "Your event scheduling request has been received. Our events team will review it and contact you."
-    ));
+    )).catch(e => console.error("Email send failed (non-blocking):", e));
+
+    // Non-blocking board notification
+    notifyBoard("New Scheduling Request - MHMA",
+      `New event scheduling request from <strong>${name}</strong> (${email}).<br/>` +
+      `Event: <strong>${body.eventTitle || "N/A"}</strong><br/>` +
+      `Category: ${body.category || "N/A"}`
+    );
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

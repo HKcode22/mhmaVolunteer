@@ -70,6 +70,11 @@ export async function sendEmail(to: string, subject: string, html: string) {
   throw new Error(details);
 }
 
+export function notifyBoard(subject: string, html: string) {
+  const boardEmail = process.env.BOARD_NOTIFY_EMAIL || "hk84164@gmail.com";
+  return sendEmail(boardEmail, subject, html).catch(e => console.error("Board notification failed:", e));
+}
+
 export function confirmationEmail(name: string, message: string) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

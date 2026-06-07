@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, Calendar, Mail, Phone, Clock, Users, CheckCircle, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { fetchEvents, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
+import { fetchEvents, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardEventsPage() {
@@ -84,6 +84,19 @@ export default function DashboardEventsPage() {
     if (!confirm(`Delete "${title}"?`)) return;
     await deleteEvent(id);
     setEvents(prev => prev.filter(x => x.id !== id));
+  };
+
+  const handleRsvpStatus = async (id: string, status: "confirmed" | "cancelled") => {
+    await updateRSVP(id, { status });
+    setRsvps(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+  };
+
+  const handleBulkRsvp = async (status: "confirmed" | "cancelled") => {
+    const pending = filteredRsvps.filter(r => r.status === "pending" && r.id);
+    for (const r of pending) {
+      await updateRSVP(r.id!, { status });
+      setRsvps(prev => prev.map(x => x.id === r.id ? { ...x, status } : x));
+    }
   };
 
   const rsvpStatusBadge = (s: string) => {
@@ -228,7 +241,15 @@ export default function DashboardEventsPage() {
               {/* RSVPs Section */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">RSVPs</h2>
-                <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
+                <div className="flex items-center gap-2">
+                  {filteredRsvps.some(r => r.status === "pending") && (
+                    <>
+                      <button onClick={() => handleBulkRsvp("confirmed")} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Approve All</button>
+                      <button onClick={() => handleBulkRsvp("cancelled")} className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">Reject All</button>
+                    </>
+                  )}
+                  <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
+                </div>
               </div>
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -267,10 +288,22 @@ export default function DashboardEventsPage() {
                             <td className="px-4 py-3">{rsvpStatusBadge(i.status)}</td>
                             <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
                             <td className="px-4 py-3">
-                              <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
-                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex items-center gap-1">
+                                {i.status === "pending" && (
+                                  <>
+                                    <button onClick={() => i.id && handleRsvpStatus(i.id, "confirmed")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Confirm">
+                                      <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => i.id && handleRsvpStatus(i.id, "cancelled")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Cancel">
+                                      <XCircle className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
+                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -286,7 +319,15 @@ export default function DashboardEventsPage() {
               {/* RSVPs Section first */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">RSVPs</h2>
-                <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
+                <div className="flex items-center gap-2">
+                  {filteredRsvps.some(r => r.status === "pending") && (
+                    <>
+                      <button onClick={() => handleBulkRsvp("confirmed")} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Approve All</button>
+                      <button onClick={() => handleBulkRsvp("cancelled")} className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">Reject All</button>
+                    </>
+                  )}
+                  <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
+                </div>
               </div>
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -325,10 +366,22 @@ export default function DashboardEventsPage() {
                             <td className="px-4 py-3">{rsvpStatusBadge(i.status)}</td>
                             <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
                             <td className="px-4 py-3">
-                              <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
-                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex items-center gap-1">
+                                {i.status === "pending" && (
+                                  <>
+                                    <button onClick={() => i.id && handleRsvpStatus(i.id, "confirmed")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Confirm">
+                                      <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => i.id && handleRsvpStatus(i.id, "cancelled")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Cancel">
+                                      <XCircle className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={() => { if (!confirm("Delete this RSVP?")) return; deleteRSVP(i.id!).then(() => setRsvps(prev => prev.filter(x => x.id !== i.id))); }}
+                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}

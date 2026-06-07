@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/lib/firebase-admin";
-import { sendEmail, confirmationEmail } from "@/lib/email";
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,6 +36,13 @@ export async function POST(req: NextRequest) {
           `We will confirm your RSVP shortly. If you have any questions, please contact us.`
       )
     ).catch(e => console.error("Email send failed (non-blocking):", e));
+
+    // Non-blocking board notification
+    notifyBoard(`New RSVP - ${eventTitle}`,
+      `New RSVP from <strong>${fullName}</strong> (${email}) for <strong>${eventTitle}</strong>.<br/>` +
+      `Attendees: <strong>${attendees || 1}</strong>` +
+      (notes ? `<br/><strong>Notes:</strong> ${notes}` : "")
+    );
 
     return NextResponse.json({ success: true, id: rsvpId });
   } catch (err: any) {

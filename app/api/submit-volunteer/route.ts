@@ -30,6 +30,14 @@ export async function POST(req: Request) {
       body: JSON.stringify({ email, name: `${firstName} ${lastName}` }),
     }).catch(() => {});
 
+    // Non-blocking board notification
+    import("@/lib/email").then(m => m.notifyBoard("New Volunteer - MHMA",
+      `New volunteer: <strong>${firstName} ${lastName}</strong> (${email}).<br/>` +
+      `Availability: ${availability}<br/>` +
+      `Interests: ${interests.join(", ")}` +
+      (message ? `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
+    ));
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("Volunteer submission error:", err);

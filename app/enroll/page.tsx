@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, fullName } from "@/lib/auth-context";
+import { fetchPrograms, FirebaseProgram } from "@/lib/firebase";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -11,6 +12,7 @@ function EnrollForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isBoardMember, loading: authLoading } = useAuth();
+  const [programs, setPrograms] = useState<{value: string; label: string}[]>([]);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,6 +20,15 @@ function EnrollForm() {
     program: "",
     message: "",
   });
+
+  useEffect(() => {
+    fetchPrograms(100).then(list => {
+      const opts = list
+        .filter(p => p.title)
+        .map(p => ({ value: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/(^_|_$)/g, ""), label: p.title }));
+      setPrograms(opts);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -33,12 +44,16 @@ function EnrollForm() {
   useEffect(() => {
     const programParam = searchParams.get("program");
     if (programParam) {
-      const match = programs.find(p => p.value === programParam || p.label.toLowerCase().replace(/\s+/g, "_") === programParam);
+      const normalised = programParam.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/(^_|_$)/g, "");
+      const match = programs.find(p => p.value === normalised || p.value === programParam);
       if (match) {
         setFormData(prev => ({ ...prev, program: match.value }));
+      } else if (programs.length > 0) {
+        const fallback = programs.find(p => p.label.toLowerCase().replace(/\s+/g, "_") === normalised);
+        if (fallback) setFormData(prev => ({ ...prev, program: fallback.value }));
       }
     }
-  }, [searchParams]);
+  }, [searchParams, programs]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -62,20 +77,6 @@ function EnrollForm() {
       router.push("/dashboard");
     }
   }, [user, isBoardMember, authLoading, router]);
-
-  const programs = [
-    { value: "youth_sports_league", label: "Youth Sports League" },
-    { value: "ladies_meetup", label: "Ladies Meetup" },
-    { value: "learn_3d_printing", label: "Learn 3D Printing" },
-    { value: "urdu_academy", label: "Urdu Academy" },
-    { value: "maktab_program", label: "Maktab Program" },
-    { value: "family_night", label: "Family Night" },
-    { value: "jummah_and_salah", label: "Jummah and Salah" },
-    { value: "wish", label: "WISH (Weekend Islamic School)" },
-    { value: "quran_hifz_program", label: "Quran Hifz Program" },
-    { value: "boy_scouts", label: "Boy Scouts" },
-    { value: "arabic_academy", label: "Arabic Academy" },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,7 +214,7 @@ function EnrollForm() {
                         onChange={(e) => setFormData({ ...formData, program: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all bg-white"
                       >
-                        <option value="">Choose a program...</option>
+                        <option value="">{programs.length === 0 ? "Loading programs..." : "Choose a program..."}</option>
                         {programs.map((prog) => (
                           <option key={prog.value} value={prog.value}>
                             {prog.label}

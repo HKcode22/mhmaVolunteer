@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Search, Mail, Phone, Clock, Calendar, ChevronDown, ChevronRight, MapPin, Utensils, CheckCircle, XCircle, HelpCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { fetchSchedulingRequests, deleteSchedulingRequest, FirebaseSchedulingRequest } from "@/lib/firebase";
+import { fetchSchedulingRequests, deleteSchedulingRequest, updateSchedulingRequest, FirebaseSchedulingRequest } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardSchedulingRequestsPage() {
@@ -27,6 +27,19 @@ export default function DashboardSchedulingRequestsPage() {
     return !q || (i.organizer?.firstName || "").toLowerCase().includes(q) || (i.organizer?.lastName || "").toLowerCase().includes(q) || i.organizer?.email?.toLowerCase().includes(q) || i.eventTitle.toLowerCase().includes(q);
   });
 
+  const handleStatus = async (id: string, status: "approved" | "rejected") => {
+    await updateSchedulingRequest(id, { status });
+    setItems(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+  };
+
+  const handleBulk = async (status: "approved" | "rejected") => {
+    const pending = filtered.filter(r => r.status === "pending" && r.id);
+    for (const r of pending) {
+      await updateSchedulingRequest(r.id!, { status });
+      setItems(prev => prev.map(x => x.id === r.id ? { ...x, status } : x));
+    }
+  };
+
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
 
   const statusBadge = (s: string) => {
@@ -44,8 +57,18 @@ export default function DashboardSchedulingRequestsPage() {
           <Link href="/dashboard" className="inline-flex items-center text-mhma-gold hover:text-amber-600 mb-4 font-semibold">
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Scheduling Requests</h1>
-          <p className="text-gray-500 mb-6 text-sm">Event scheduling requests from the community. Click a row to expand details.</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Scheduling Requests</h1>
+              <p className="text-gray-500 text-sm">Event scheduling requests from the community. Click a row to expand details.</p>
+            </div>
+            {filtered.some(r => r.status === "pending") && (
+              <div className="flex items-center gap-2">
+                <button onClick={() => handleBulk("approved")} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Approve All</button>
+                <button onClick={() => handleBulk("rejected")} className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">Reject All</button>
+              </div>
+            )}
+          </div>
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input type="text" placeholder="Search by organizer name, email, or event title..." value={search} onChange={e => setSearch(e.target.value)}
@@ -92,10 +115,22 @@ export default function DashboardSchedulingRequestsPage() {
                           <td className="px-4 py-3"><span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">{i.category}</span></td>
                           <td className="px-4 py-3">{statusBadge(i.status)}</td>
                           <td className="px-4 py-3">
-                            <button onClick={(e) => { e.stopPropagation(); if (!confirm("Delete this request?")) return; deleteSchedulingRequest(i.id!).then(() => setItems(prev => prev.filter(x => x.id !== i.id))); }}
-                              className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
+                            <div className="flex items-center gap-1">
+                              {i.status === "pending" && (
+                                <>
+                                  <button onClick={(e) => { e.stopPropagation(); i.id && handleStatus(i.id, "approved"); }} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
+                                    <CheckCircle className="w-4 h-4" />
+                                  </button>
+                                  <button onClick={(e) => { e.stopPropagation(); i.id && handleStatus(i.id, "rejected"); }} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
+                                    <XCircle className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                              <button onClick={(e) => { e.stopPropagation(); if (!confirm("Delete this request?")) return; deleteSchedulingRequest(i.id!).then(() => setItems(prev => prev.filter(x => x.id !== i.id))); }}
+                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                         {isExpanded && (

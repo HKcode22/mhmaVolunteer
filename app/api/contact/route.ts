@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore, Timestamp } from "@/lib/firebase-admin";
-import { sendEmail, confirmationEmail } from "@/lib/email";
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
       `Your message has been received. We will get back to you as soon as possible.<br><br>
       <strong>Your message:</strong><br>${message.replace(/\n/g, "<br>")}`
     )).catch(e => console.error("Email send failed (non-blocking):", e));
+
+    // Non-blocking board notification
+    notifyBoard("New Contact Submission - MHMA",
+      `New contact submission from <strong>${name}</strong> (${email}).` +
+      (subject ? `<br/><strong>Subject:</strong> ${subject}` : "") +
+      `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}`
+    );
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

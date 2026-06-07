@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { firestore, FieldValue } from "@/lib/firebase-admin";
-import { sendEmail, confirmationEmail } from "@/lib/email";
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -60,6 +60,15 @@ export async function POST(req: Request) {
         `Your donation of <strong>$${(amount / 100).toFixed(2)}</strong> for <strong>${designation}</strong> has been received. Thank you for supporting the Mountain House Muslim Association!`
       )).catch(e => console.error("Email send failed (non-blocking):", e));
     }
+
+    // Non-blocking board notification
+    const boardSubject = `New $${(amount / 100).toFixed(2)} Donation - ${designation}`;
+    notifyBoard(boardSubject,
+      `New donation received.<br/>` +
+      `Donor: <strong>${donorName}</strong> (${donorEmail || "no email"})<br/>` +
+      `Amount: <strong>$${(amount / 100).toFixed(2)}</strong><br/>` +
+      `Designation: <strong>${designation}</strong>`
+    );
   } catch (err) {
     console.error("Failed to save donation:", err);
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore, Timestamp } from "@/lib/firebase-admin";
-import { sendEmail, confirmationEmail } from "@/lib/email";
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
       `Thank you for your pledge of ${amount ? `$${amount}` : "a contribution"}!<br><br>
       Your pledge helps us plan and build for the future of our community.`
     )).catch(e => console.error("Email send failed (non-blocking):", e));
+
+    // Non-blocking board notification
+    notifyBoard("New Pledge - MHMA",
+      `New pledge from <strong>${name}</strong> (${email}).` +
+      (amount ? `<br/><strong>Amount:</strong> $${amount}` : "") +
+      (message ? `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
+    );
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

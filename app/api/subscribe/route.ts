@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore, Timestamp } from "@/lib/firebase-admin";
-import { sendEmail, confirmationEmail } from "@/lib/email";
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,6 +44,11 @@ export async function POST(req: NextRequest) {
           `If you did not subscribe, you can ignore this email.`
       )
     ).catch(e => console.error("Email send failed (non-blocking):", e));
+
+    // Non-blocking board notification
+    notifyBoard("New Newsletter Subscriber - MHMA",
+      `New subscriber: <strong>${name || email}</strong> (${email}).<br/>Source: ${source || "website"}`
+    );
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
