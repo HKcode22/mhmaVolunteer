@@ -291,7 +291,7 @@ export default function ContactPage() {
       </section>
 
       {/* Directions Section */}
-      <section id="directions" className="py-16 bg-mhma-cream">
+      <section id="directions" className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">

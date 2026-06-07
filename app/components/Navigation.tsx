@@ -83,13 +83,16 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" className="relative text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
-                  <Bell className="w-4 h-4" /> NOTIFICATIONS
-                  {notifCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
-                      {notifCount > 99 ? "99+" : notifCount}
-                    </span>
-                  )}
+                <Link href="/dashboard/notifications" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                  <span className="relative">
+                    <Bell className="w-4 h-4" />
+                    {notifCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                        {notifCount > 99 ? "99+" : notifCount}
+                      </span>
+                    )}
+                  </span>
+                  NOTIFICATIONS
                 </Link>
                 <Link href="/profile" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <User className="w-3.5 h-3.5" /> PROFILE
@@ -133,13 +136,16 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/member/notifications" className="relative text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
-                  <Bell className="w-4 h-4" /> NOTIFICATIONS
-                  {notifCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
-                      {notifCount}
-                    </span>
-                  )}
+                <Link href="/member/notifications" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                  <span className="relative">
+                    <Bell className="w-4 h-4" />
+                    {notifCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                        {notifCount}
+                      </span>
+                    )}
+                  </span>
+                  NOTIFICATIONS
                 </Link>
                 <Link href="/profile" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <User className="w-3.5 h-3.5" /> PROFILE

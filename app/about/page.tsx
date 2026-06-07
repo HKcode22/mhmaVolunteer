@@ -54,7 +54,7 @@ export default function AboutPage() {
                     <StatCard value={aboutStats?.programsCount ? `${formatCount(aboutStats.programsCount)}` : "—"} label="Programs" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.youthInPrograms ? `${formatCount(aboutStats.youthInPrograms)}` : "—"} label="Youth in Programs" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.raisedForMasjid ? formatCompactAmount(aboutStats.raisedForMasjid) : "—"} label="Raised for Masjid" color="bg-mhma-forest" />
-                    <StatCard value={aboutStats?.donorCount ? formatCount(aboutStats.donorCount) : "—"} label="Donors" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.donorCount ? formatCount(aboutStats.donorCount) : "—"} label="Masjid Construction Donors" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.eventsCount ? formatCount(aboutStats.eventsCount) : "—"} label="Events Held" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.usersCount ? formatCount(aboutStats.usersCount) : "—"} label="Members" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.raisedForPrograms ? formatCompactAmount(aboutStats.raisedForPrograms) : "—"} label="Raised for Programs" color="bg-mhma-forest" />
@@ -63,7 +63,7 @@ export default function AboutPage() {
                     <StatCard value={aboutStats?.contactCount ? formatCount(aboutStats.contactCount) : "—"} label="Contact Submissions" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.pledgeCount ? formatCount(aboutStats.pledgeCount) : "—"} label="Pledges" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.volunteerCount ? formatCount(aboutStats.volunteerCount) : "—"} label="Volunteers" color="bg-mhma-forest-mid" />
-                    <StatCard value={aboutStats?.totalDonationCount ? formatCount(aboutStats.totalDonationCount) : "—"} label="Total Donations" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.totalDonationCount ? formatCount(aboutStats.totalDonationCount) : "—"} label="Total Donors" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.raisedForZakat ? formatCompactAmount(aboutStats.raisedForZakat) : "—"} label="Raised for Zakat" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.raisedForGeneral ? formatCompactAmount(aboutStats.raisedForGeneral) : "—"} label="Raised for General" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.newsCount ? formatCount(aboutStats.newsCount) : "—"} label="News Articles" color="bg-mhma-forest-mid" />

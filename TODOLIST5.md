@@ -3,7 +3,11 @@
 - **#4**: ✅ Complete (dashboard approve/reject + bulk actions for RSVPs, Enrollments, Scheduling)
 - **#5**: ✅ Mostly complete (enrollment message in email, RSVP reliability improved, board notifications added with await Promise.allSettled — hk84164 now gets notified on all form submissions)
 - **#6**: ✅ Complete (enroll dropdown now loads programs dynamically from Firestore instead of hardcoded list)
-- **#7–22**: Not started
+9,10 done
+
+11-13 progress, 
+
+
 
 ---
 
