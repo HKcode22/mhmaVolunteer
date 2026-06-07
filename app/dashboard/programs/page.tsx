@@ -78,6 +78,10 @@ export default function DashboardProgramsPage() {
         await updateProgram(editing.id, data);
       } else {
         await addProgram({ ...data, useHardcodedVersion: false, createdBy: "board" });
+        fetch("/api/notify-program", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: form.title.trim(), slug }),
+        }).catch(() => {});
       }
       resetForm();
       const updated = await fetchPrograms(100);

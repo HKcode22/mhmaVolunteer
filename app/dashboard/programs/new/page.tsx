@@ -75,6 +75,10 @@ export default function NewProgramPage() {
       });
       setSuccess("Program created!");
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "program_create", details: `Created program: ${formData.title || formData.programTitle}`, targetType: "program", targetId: programId });
+      fetch("/api/notify-program", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formData.title || formData.programTitle, slug }),
+      }).catch(() => {});
       setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to create program");

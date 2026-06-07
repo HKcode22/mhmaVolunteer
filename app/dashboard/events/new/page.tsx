@@ -52,6 +52,10 @@ export default function NewEventPage() {
       });
       setSuccess("Event created!");
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "event_create", details: `Created event: ${formData.title}`, targetType: "event", targetId: eventId });
+      fetch("/api/notify-event", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formData.title, date: formData.date, time: formData.time, location: formData.location, slug }),
+      }).catch(() => {});
       setTimeout(() => router.push("/dashboard"), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to create event");

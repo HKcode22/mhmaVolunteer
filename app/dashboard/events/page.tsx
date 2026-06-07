@@ -73,6 +73,10 @@ export default function DashboardEventsPage() {
         await updateEvent(editing.id, { title: form.title.trim(), slug, date: form.date, time: form.time, location: form.location, description: form.description, poster: form.poster });
       } else {
         await addEvent({ title: form.title.trim(), slug, date: form.date, time: form.time, location: form.location, description: form.description, poster: form.poster });
+        fetch("/api/notify-event", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: form.title.trim(), date: form.date, time: form.time, location: form.location, slug }),
+        }).catch(() => {});
       }
       resetForm();
       const updated = await fetchEvents(100);
