@@ -14,17 +14,19 @@ export async function POST(req: NextRequest) {
       status: "pending", createdAt: Timestamp.now(),
     });
 
-    // Non-blocking email — don't fail if email provider not configured
-    sendEmail(email, "Enrollment Received - MHMA", confirmationEmail(fullName,
-      `Your enrollment for <strong>${program || "our program"}</strong> has been received. We will contact you soon.` +
-      (message ? `<br><br><strong>Your message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
-    )).catch(e => console.error("Email send failed (non-blocking):", e));
-
-    // Non-blocking board notification
-    notifyBoard("New Enrollment - MHMA",
-      `New enrollment from <strong>${fullName}</strong> (${email}) for <strong>${program || "N/A"}</strong>.` +
-      (message ? `<br><br><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
-    );
+    // Emails — await but never fail the request
+    try {
+      await Promise.allSettled([
+        sendEmail(email, "Enrollment Received - MHMA", confirmationEmail(fullName,
+          `Your enrollment for <strong>${program || "our program"}</strong> has been received. We will contact you soon.` +
+          (message ? `<br><br><strong>Your message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
+        )),
+        notifyBoard("New Enrollment - MHMA",
+          `New enrollment from <strong>${fullName}</strong> (${email}) for <strong>${program || "N/A"}</strong>.` +
+          (message ? `<br><br><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
+        ),
+      ]);
+    } catch (_) { /* ignore email errors */ }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

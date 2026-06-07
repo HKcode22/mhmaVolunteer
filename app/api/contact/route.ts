@@ -14,18 +14,20 @@ export async function POST(req: NextRequest) {
       status: "new", createdAt: Timestamp.now(),
     });
 
-    // Non-blocking email — don't fail if email provider not configured
-    sendEmail(email, "Contact Form Received - MHMA", confirmationEmail(name,
-      `Your message has been received. We will get back to you as soon as possible.<br><br>
-      <strong>Your message:</strong><br>${message.replace(/\n/g, "<br>")}`
-    )).catch(e => console.error("Email send failed (non-blocking):", e));
-
-    // Non-blocking board notification
-    notifyBoard("New Contact Submission - MHMA",
-      `New contact submission from <strong>${name}</strong> (${email}).` +
-      (subject ? `<br/><strong>Subject:</strong> ${subject}` : "") +
-      `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}`
-    );
+    // Emails — await but never fail the request
+    try {
+      await Promise.allSettled([
+        sendEmail(email, "Contact Form Received - MHMA", confirmationEmail(name,
+          `Your message has been received. We will get back to you as soon as possible.<br><br>
+          <strong>Your message:</strong><br>${message.replace(/\n/g, "<br>")}`
+        )),
+        notifyBoard("New Contact Submission - MHMA",
+          `New contact submission from <strong>${name}</strong> (${email}).` +
+          (subject ? `<br/><strong>Subject:</strong> ${subject}` : "") +
+          `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}`
+        ),
+      ]);
+    } catch (_) { /* ignore email errors */ }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

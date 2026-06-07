@@ -72,6 +72,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
 
 export function notifyBoard(subject: string, html: string) {
   const boardEmail = process.env.BOARD_NOTIFY_EMAIL || "hk84164@gmail.com";
+  console.log(`notifyBoard: sending to ${boardEmail}, subject="${subject}"`);
   return sendEmail(boardEmail, subject, html).catch(e => console.error("Board notification failed:", e));
 }
 

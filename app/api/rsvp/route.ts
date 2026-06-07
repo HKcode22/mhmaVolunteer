@@ -25,24 +25,26 @@ export async function POST(req: NextRequest) {
 
     const rsvpId = rsvpRef.id;
 
-    // Non-blocking email — don't fail if email provider not configured
-    sendEmail(
-      email,
-      `RSVP Confirmed - ${eventTitle}`,
-      confirmationEmail(
-        fullName,
-        `Your RSVP has been received for <strong>${eventTitle}</strong>.<br/><br/>` +
-          `Attendees: <strong>${attendees || 1}</strong>${notes ? `<br/>Notes: <strong>${notes}</strong>` : ""}<br/><br/>` +
-          `We will confirm your RSVP shortly. If you have any questions, please contact us.`
-      )
-    ).catch(e => console.error("Email send failed (non-blocking):", e));
-
-    // Non-blocking board notification
-    notifyBoard(`New RSVP - ${eventTitle}`,
-      `New RSVP from <strong>${fullName}</strong> (${email}) for <strong>${eventTitle}</strong>.<br/>` +
-      `Attendees: <strong>${attendees || 1}</strong>` +
-      (notes ? `<br/><strong>Notes:</strong> ${notes}` : "")
-    );
+    // Emails — await but never fail the request
+    try {
+      await Promise.allSettled([
+        sendEmail(
+          email,
+          `RSVP Confirmed - ${eventTitle}`,
+          confirmationEmail(
+            fullName,
+            `Your RSVP has been received for <strong>${eventTitle}</strong>.<br/><br/>` +
+              `Attendees: <strong>${attendees || 1}</strong>${notes ? `<br/>Notes: <strong>${notes}</strong>` : ""}<br/><br/>` +
+              `We will confirm your RSVP shortly. If you have any questions, please contact us.`
+          )
+        ),
+        notifyBoard(`New RSVP - ${eventTitle}`,
+          `New RSVP from <strong>${fullName}</strong> (${email}) for <strong>${eventTitle}</strong>.<br/>` +
+          `Attendees: <strong>${attendees || 1}</strong>` +
+          (notes ? `<br/><strong>Notes:</strong> ${notes}` : "")
+        ),
+      ]);
+    } catch (_) { /* ignore email errors */ }
 
     return NextResponse.json({ success: true, id: rsvpId });
   } catch (err: any) {

@@ -174,9 +174,22 @@ export default function DashboardEventsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Poster Image URL</label>
-                  <input type="url" value={form.poster} onChange={e => setForm(p => ({ ...p, poster: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Poster Image</label>
+                  <div className="flex flex-col gap-2">
+                    <input type="url" value={form.poster} onChange={e => setForm(p => ({ ...p, poster: e.target.value }))} placeholder="Or paste image URL..."
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Upload:</span>
+                      <input type="file" accept="image/*" onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setForm(p => ({ ...p, poster: ev.target?.result as string }));
+                        reader.readAsDataURL(file);
+                      }} className="text-sm" />
+                    </div>
+                    {form.poster && <img src={form.poster} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">

@@ -20,16 +20,19 @@ export async function POST(req: NextRequest) {
     });
 
     const name = `${firstName} ${lastName}`;
-    await sendEmail(email, "Event Request Received - MHMA", confirmationEmail(name,
-      "Your event scheduling request has been received. Our events team will review it and contact you."
-    )).catch(e => console.error("Email send failed (non-blocking):", e));
-
-    // Non-blocking board notification
-    notifyBoard("New Scheduling Request - MHMA",
-      `New event scheduling request from <strong>${name}</strong> (${email}).<br/>` +
-      `Event: <strong>${body.eventTitle || "N/A"}</strong><br/>` +
-      `Category: ${body.category || "N/A"}`
-    );
+    // Emails — await but never fail the request
+    try {
+      await Promise.allSettled([
+        sendEmail(email, "Event Request Received - MHMA", confirmationEmail(name,
+          "Your event scheduling request has been received. Our events team will review it and contact you."
+        )),
+        notifyBoard("New Scheduling Request - MHMA",
+          `New event scheduling request from <strong>${name}</strong> (${email}).<br/>` +
+          `Event: <strong>${body.eventTitle || "N/A"}</strong><br/>` +
+          `Category: ${body.category || "N/A"}`
+        ),
+      ]);
+    } catch (_) { /* ignore email errors */ }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

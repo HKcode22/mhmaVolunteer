@@ -14,18 +14,20 @@ export async function POST(req: NextRequest) {
       timeframe: timeframe || "60", status: "pending", createdAt: Timestamp.now(),
     });
 
-    // Non-blocking email — don't fail if email provider not configured
-    sendEmail(email, "Pledge Received - MHMA", confirmationEmail(name,
-      `Thank you for your pledge of ${amount ? `$${amount}` : "a contribution"}!<br><br>
-      Your pledge helps us plan and build for the future of our community.`
-    )).catch(e => console.error("Email send failed (non-blocking):", e));
-
-    // Non-blocking board notification
-    notifyBoard("New Pledge - MHMA",
-      `New pledge from <strong>${name}</strong> (${email}).` +
-      (amount ? `<br/><strong>Amount:</strong> $${amount}` : "") +
-      (message ? `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
-    );
+    // Emails — await but never fail the request
+    try {
+      await Promise.allSettled([
+        sendEmail(email, "Pledge Received - MHMA", confirmationEmail(name,
+          `Thank you for your pledge of ${amount ? `$${amount}` : "a contribution"}!<br><br>
+          Your pledge helps us plan and build for the future of our community.`
+        )),
+        notifyBoard("New Pledge - MHMA",
+          `New pledge from <strong>${name}</strong> (${email}).` +
+          (amount ? `<br/><strong>Amount:</strong> $${amount}` : "") +
+          (message ? `<br/><br/><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}` : "")
+        ),
+      ]);
+    } catch (_) { /* ignore email errors */ }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

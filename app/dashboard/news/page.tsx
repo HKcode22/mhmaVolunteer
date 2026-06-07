@@ -19,6 +19,7 @@ export default function DashboardNewsPage() {
   const [editing, setEditing] = useState<NewsItem | null>(null);
   const [form, setForm] = useState({ title: "", slug: "", excerpt: "", content: "", image: "", authorName: "", published: true });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [subSearch, setSubSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
   const [notifyStatus, setNotifyStatus] = useState<string | null>(null);
@@ -67,6 +68,7 @@ export default function DashboardNewsPage() {
   const handleSave = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
+    setSaveError("");
     setNotifyStatus(null);
     try {
       const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -88,7 +90,7 @@ export default function DashboardNewsPage() {
       resetForm();
       const updated = await fetchAllNews(100);
       setItems(updated);
-    } catch { /* ignore */ }
+    } catch (e: any) { setSaveError(e.message || "Failed to save"); }
     setSaving(false);
   };
 
@@ -144,6 +146,11 @@ export default function DashboardNewsPage() {
           {showForm && (
             <div className="mb-6 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <h2 className="font-bold text-gray-900 mb-4">{editing ? "Edit News" : "New News Article"}</h2>
+              {saveError && (
+                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-700 text-sm">{saveError}</p>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Title *</label>
@@ -205,6 +212,9 @@ export default function DashboardNewsPage() {
                   {saving ? "Saving..." : editing ? "Update" : "Publish"}
                 </button>
               </div>
+              {saveError && (
+                <p className="mt-2 text-xs text-red-600 flex items-center gap-1"><XCircle className="w-3 h-3" /> {saveError}</p>
+              )}
               {notifyStatus && (
                 <p className="mt-2 text-xs text-green-600 flex items-center gap-1"><Send className="w-3 h-3" /> {notifyStatus}</p>
               )}
@@ -220,41 +230,35 @@ export default function DashboardNewsPage() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+              <div className="mb-8">
                 {filtered.length === 0 ? (
-                  <div className="p-12 text-center"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
+                  <div className="p-12 text-center bg-white rounded-2xl border border-gray-200"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
                 ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Published</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map(n => (
-                          <tr key={n.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-900">{n.title}</p>
-                              <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
-                            </td>
-                            <td className="px-4 py-3">{n.published ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                                <button onClick={() => n.id && handleDelete(n.id)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filtered.map(n => (
+                      <div key={n.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        {n.image && (
+                          <div className="h-40 overflow-hidden">
+                            <img src={n.image} alt={n.title} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-semibold text-gray-900 truncate">{n.title}</p>
+                            {n.published ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> : <XCircle className="w-4 h-4 text-gray-400 shrink-0" />}
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2 mb-3">{n.excerpt}</p>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                            <button onClick={() => n.id && handleDelete(n.id)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} article{filtered.length !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-gray-400 -mt-4 mb-6">{filtered.length} article{filtered.length !== 1 ? "s" : ""}</p>
 
               {/* Subscribers Section */}
               <div className="flex items-center justify-between mb-4">
@@ -391,41 +395,35 @@ export default function DashboardNewsPage() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+              <div className="mb-8">
                 {filtered.length === 0 ? (
-                  <div className="p-12 text-center"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
+                  <div className="p-12 text-center bg-white rounded-2xl border border-gray-200"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
                 ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Published</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map(n => (
-                          <tr key={n.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-900">{n.title}</p>
-                              <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
-                            </td>
-                            <td className="px-4 py-3">{n.published ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                                <button onClick={() => n.id && handleDelete(n.id)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filtered.map(n => (
+                      <div key={n.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        {n.image && (
+                          <div className="h-40 overflow-hidden">
+                            <img src={n.image} alt={n.title} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-semibold text-gray-900 truncate">{n.title}</p>
+                            {n.published ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> : <XCircle className="w-4 h-4 text-gray-400 shrink-0" />}
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2 mb-3">{n.excerpt}</p>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                            <button onClick={() => n.id && handleDelete(n.id)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} article{filtered.length !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-gray-400 -mt-4 mb-6">{filtered.length} article{filtered.length !== 1 ? "s" : ""}</p>
             </>
           )}
         </div>

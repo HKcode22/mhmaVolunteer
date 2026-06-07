@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
@@ -17,7 +17,7 @@ export default function DashboardProgramsPage() {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<FirebaseProgram | null>(null);
-  const [form, setForm] = useState({ title: "", slug: "", description: "", image: "" });
+  const [form, setForm] = useState({ title: "", slug: "", description: "", image: "", imagePoster: "", stats: [{ label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }], quote: "", quoteAuthor: "" });
   const [saving, setSaving] = useState(false);
   const [enrollSearch, setEnrollSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
@@ -52,13 +52,15 @@ export default function DashboardProgramsPage() {
   });
 
   const resetForm = () => {
-    setForm({ title: "", slug: "", description: "", image: "" });
+    setForm({ title: "", slug: "", description: "", image: "", imagePoster: "", stats: [{ label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }], quote: "", quoteAuthor: "" });
     setEditing(null);
     setShowForm(false);
   };
 
   const handleEdit = (item: FirebaseProgram) => {
-    setForm({ title: item.title, slug: item.slug, description: item.description || "", image: item.image || "" });
+    const s = item.stats || [];
+    const padded = [0, 1, 2, 3].map(i => s[i] || { label: "", value: "" });
+    setForm({ title: item.title, slug: item.slug, description: item.description || "", image: item.image || "", imagePoster: item.imagePoster || "", stats: padded, quote: item.quote || "", quoteAuthor: item.quoteAuthor || "" });
     setEditing(item);
     setShowForm(true);
   };
@@ -68,10 +70,12 @@ export default function DashboardProgramsPage() {
     setSaving(true);
     try {
       const slug = form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const stats = form.stats.filter(s => s.label || s.value);
+      const data: any = { title: form.title.trim(), slug, description: form.description.trim(), image: form.image, imagePoster: form.imagePoster, stats: stats.length ? stats : [], quote: form.quote, quoteAuthor: form.quoteAuthor };
       if (editing?.id) {
-        await updateProgram(editing.id, { title: form.title.trim(), slug, description: form.description.trim(), image: form.image });
+        await updateProgram(editing.id, data);
       } else {
-        await addProgram({ title: form.title.trim(), slug, description: form.description.trim(), image: form.image, useHardcodedVersion: false, createdBy: "board" });
+        await addProgram({ ...data, useHardcodedVersion: false, createdBy: "board" });
       }
       resetForm();
       const updated = await fetchPrograms(100);
@@ -134,8 +138,70 @@ export default function DashboardProgramsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Image URL</label>
-                  <input type="url" value={form.image} onChange={e => setForm(p => ({ ...p, image: e.target.value }))}
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Cover Image</label>
+                  <div className="flex flex-col gap-2">
+                    <input type="url" value={form.image} onChange={e => setForm(p => ({ ...p, image: e.target.value }))} placeholder="Or paste image URL..."
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Upload:</span>
+                      <input type="file" accept="image/*" onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setForm(p => ({ ...p, image: ev.target?.result as string }));
+                        reader.readAsDataURL(file);
+                      }} className="text-sm" />
+                    </div>
+                    {form.image && <img src={form.image} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Poster Image (inside page)</label>
+                  <div className="flex flex-col gap-2">
+                    <input type="url" value={form.imagePoster} onChange={e => setForm(p => ({ ...p, imagePoster: e.target.value }))} placeholder="Or paste image URL..."
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Upload:</span>
+                      <input type="file" accept="image/*" onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setForm(p => ({ ...p, imagePoster: ev.target?.result as string }));
+                        reader.readAsDataURL(file);
+                      }} className="text-sm" />
+                    </div>
+                    {form.imagePoster && <img src={form.imagePoster} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}
+                  </div>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-gray-500 mb-2">Statistics (up to 4)</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {form.stats.map((s, i) => (
+                    <div key={i} className="flex flex-col gap-1">
+                      <input type="text" value={s.label} onChange={e => {
+                        const updated = [...form.stats];
+                        updated[i] = { ...updated[i], label: e.target.value };
+                        setForm(p => ({ ...p, stats: updated }));
+                      }} placeholder="Label" className="w-full px-2 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-xs" />
+                      <input type="text" value={s.value} onChange={e => {
+                        const updated = [...form.stats];
+                        updated[i] = { ...updated[i], value: e.target.value };
+                        setForm(p => ({ ...p, stats: updated }));
+                      }} placeholder="Value" className="w-full px-2 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-xs" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Testimonial Quote</label>
+                  <textarea value={form.quote} onChange={e => setForm(p => ({ ...p, quote: e.target.value }))} rows={2}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Quote Author</label>
+                  <input type="text" value={form.quoteAuthor} onChange={e => setForm(p => ({ ...p, quoteAuthor: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
                 </div>
               </div>
@@ -180,7 +246,7 @@ export default function DashboardProgramsPage() {
                             <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
-                                <Link href={p.id ? `/dashboard/programs/edit?id=${p.id}` : "#"} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors inline-flex"><Edit3 className="w-4 h-4" /></Link>
+                                <button onClick={() => handleEdit(p)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
                                 <button onClick={() => p.id && handleDelete(p.id, p.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </td>
@@ -330,7 +396,7 @@ export default function DashboardProgramsPage() {
                             <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
-                                <Link href={p.id ? `/dashboard/programs/edit?id=${p.id}` : "#"} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors inline-flex"><Edit3 className="w-4 h-4" /></Link>
+                                <button onClick={() => handleEdit(p)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
                                 <button onClick={() => p.id && handleDelete(p.id, p.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </td>
