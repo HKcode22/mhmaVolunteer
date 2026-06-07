@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, Calendar, Mail, Phone, Clock, Users, CheckCircle, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchEvents, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
+import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardEventsPage() {
@@ -183,9 +184,7 @@ export default function DashboardEventsPage() {
                       <input type="file" accept="image/*" onChange={e => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => setForm(p => ({ ...p, poster: ev.target?.result as string }));
-                        reader.readAsDataURL(file);
+                        compressImage(file).then(data => setForm(p => ({ ...p, poster: data })));
                       }} className="text-sm" />
                     </div>
                     {form.poster && <img src={form.poster} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}

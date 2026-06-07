@@ -7,6 +7,7 @@ import { ArrowLeft, Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Mail, Dow
 import { useAuth } from "@/lib/auth-context";
 import { fetchAllNews, addNews, updateNews, deleteNews, fetchSubscribers, unsubscribeSubscriber, deleteSubscriber, NewsItem, Subscriber } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
+import { compressImage } from "@/lib/compress-image";
 
 export default function DashboardNewsPage() {
   const router = useRouter();
@@ -184,9 +185,7 @@ export default function DashboardNewsPage() {
                       <input type="file" accept="image/*" onChange={e => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => setForm(p => ({ ...p, image: ev.target?.result as string }));
-                        reader.readAsDataURL(file);
+                        compressImage(file).then(data => setForm(p => ({ ...p, image: data })));
                       }} className="text-sm" />
                     </div>
                     {form.image && <img src={form.image} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}

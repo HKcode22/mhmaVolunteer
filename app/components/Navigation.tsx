@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, User, LogOut, MapPin, Mail, Bell } from "lucide-react";
+import { Menu, X, User, LogOut, MapPin, Mail, Bell, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
@@ -80,8 +80,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
           <div className="flex items-center gap-4 ml-auto relative z-[60]">
             {isBoardMember ? (
               <>
-                <Link href="/dashboard/notifications" className="relative text-white hover:text-mhma-gold transition-colors">
-                  <Bell className="w-4 h-4" />
+                <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                  <Settings className="w-4 h-4" /> SETTINGS
+                </Link>
+                <Link href="/dashboard/notifications" className="relative text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                  <Bell className="w-4 h-4" /> NOTIFICATIONS
                   {notifCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
                       {notifCount > 99 ? "99+" : notifCount}
@@ -127,8 +130,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
               </>
             ) : isLoggedIn ? (
               <>
-                <Link href="/member/notifications" className="relative text-white hover:text-mhma-gold transition-colors">
-                  <Bell className="w-4 h-4" />
+                <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                  <Settings className="w-4 h-4" /> SETTINGS
+                </Link>
+                <Link href="/member/notifications" className="relative text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                  <Bell className="w-4 h-4" /> NOTIFICATIONS
                   {notifCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
                       {notifCount}
@@ -239,7 +245,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
                       <Link href="/contact/faq" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">FAQ</Link>
-                      <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Newsletter Subscribe / Unsubscribe</Link>
+                      <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Subscribe / Unsubscribe</Link>
                       <Link href="/volunteer" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Volunteer</Link>
                     </div>
                   </div>
@@ -278,6 +284,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <Link href="/volunteer" className="block py-2 text-gray-700 border-b border-gray-100 pl-6">↳ VOLUNTEER</Link>
             {isBoardMember ? (
               <>
+                <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                  <Settings className="w-4 h-4" /> SETTINGS
+                </Link>
                 <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
@@ -307,6 +316,9 @@ export default function Navigation({ currentPage }: NavigationProps) {
               </>
             ) : isLoggedIn ? (
               <>
+                <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                  <Settings className="w-4 h-4" /> SETTINGS
+                </Link>
                 <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>

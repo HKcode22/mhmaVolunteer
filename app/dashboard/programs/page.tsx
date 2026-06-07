@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
+import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardProgramsPage() {
@@ -153,9 +154,7 @@ export default function DashboardProgramsPage() {
                       <input type="file" accept="image/*" onChange={e => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => setForm(p => ({ ...p, image: ev.target?.result as string }));
-                        reader.readAsDataURL(file);
+                        compressImage(file).then(data => setForm(p => ({ ...p, image: data })));
                       }} className="text-sm" />
                     </div>
                     {form.image && <img src={form.image} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}
@@ -171,9 +170,7 @@ export default function DashboardProgramsPage() {
                       <input type="file" accept="image/*" onChange={e => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => setForm(p => ({ ...p, imagePoster: ev.target?.result as string }));
-                        reader.readAsDataURL(file);
+                        compressImage(file, 800).then(data => setForm(p => ({ ...p, imagePoster: data })));
                       }} className="text-sm" />
                     </div>
                     {form.imagePoster && <img src={form.imagePoster} alt="Preview" className="mt-1 w-24 h-16 object-cover rounded-lg border border-gray-200" />}
