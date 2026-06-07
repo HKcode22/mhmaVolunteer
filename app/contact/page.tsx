@@ -196,7 +196,7 @@ export default function ContactPage() {
               <p className="text-green-600">We'll get back to you as soon as possible.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-mhma-cream rounded-xl p-8 shadow-lg border border-gray-200">
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
               {submitError && (
                 <div className="mb-6 p-4 bg-red-50/90 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-800">{submitError}</p>
@@ -213,7 +213,7 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-mhma-forest-light bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Enter your name"
                   />
                 </div>
@@ -227,7 +227,7 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-mhma-forest-light bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function ContactPage() {
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-mhma-forest-light bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -257,7 +257,7 @@ export default function ContactPage() {
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-mhma-forest-light bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                   placeholder="How can we help you?"
                 />
               </div>

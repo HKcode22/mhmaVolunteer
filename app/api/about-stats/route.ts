@@ -20,6 +20,7 @@ export async function GET() {
       contactSnap,
       pledgeSnap,
       volunteerSnap,
+      newsSnap,
     ] = await Promise.all([
       firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get(),
       firestore.collection("programs").get(),
@@ -32,6 +33,7 @@ export async function GET() {
       firestore.collection("contactSubmissions").get(),
       firestore.collection("pledges").get(),
       firestore.collection("volunteers").get(),
+      firestore.collection("news").get(),
     ]);
 
     const statsData: Record<string, any> = statsSnap.exists ? statsSnap.data()! : {};
@@ -81,6 +83,7 @@ export async function GET() {
       contactCount: contactSnap.size,
       pledgeCount: pledgeSnap.size,
       volunteerCount: volunteerSnap.size,
+      newsCount: newsSnap.size,
       totalDonationCount: donationSnap.size,
       donorCount: constructionDonors.size,
       raisedForMasjid: Math.round(constructionTotal / 100),

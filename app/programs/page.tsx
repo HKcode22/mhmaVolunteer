@@ -158,7 +158,7 @@ export default function ProgramsPage() {
                       <p className="text-sm leading-relaxed mb-4 font-light line-clamp-2 text-gray-200">{displayDesc}</p>
                       <div className="mt-auto space-y-3">
                         <Link
-                          href="/enroll"
+                          href={`/enroll?program=${encodeURIComponent(program.title)}`}
                           className="block w-full text-center px-4 py-2.5 bg-mhma-gold text-mhma-forest text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-amber-600 transition-all shadow-md"
                         >
                           Enroll Now

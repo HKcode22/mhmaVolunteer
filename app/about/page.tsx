@@ -66,6 +66,7 @@ export default function AboutPage() {
                     <StatCard value={aboutStats?.totalDonationCount ? formatCount(aboutStats.totalDonationCount) : "—"} label="Total Donations" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.raisedForZakat ? formatCompactAmount(aboutStats.raisedForZakat) : "—"} label="Raised for Zakat" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.raisedForGeneral ? formatCompactAmount(aboutStats.raisedForGeneral) : "—"} label="Raised for General" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.newsCount ? formatCount(aboutStats.newsCount) : "—"} label="News Articles" color="bg-mhma-forest-mid" />
                   </div>
                 </div>
             </div>
