@@ -921,10 +921,11 @@ function Section({ title, count, href, children, allShown, onToggle, scrollable 
 
 function DetailItem({ label, value, fullWidth }: { label: string; value?: string; fullWidth?: boolean }) {
   if (!value) return null;
+  const isEmail = typeof value === "string" && value.includes("@");
   return (
     <div className={fullWidth ? "col-span-2" : ""}>
       <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
-      <p className="text-gray-800 font-medium">{value}</p>
+      <p className={`text-gray-800 font-medium ${fullWidth ? "detail-item-value-full" : "detail-item-value"}`}>{value}</p>
     </div>
   );
 }

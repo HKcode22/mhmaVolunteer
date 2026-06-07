@@ -88,6 +88,18 @@
   background-color: #1a221e !important;
 }
 
+[data-theme="dark"] .bg-mhma-forest {
+  background-color: #1A3A26 !important;
+}
+
+[data-theme="dark"] .bg-mhma-forest-mid {
+  background-color: #2D4236 !important;
+}
+
+[data-theme="dark"] .bg-mhma-forest-light {
+  background-color: #3D5A48 !important;
+}
+
 [data-theme="dark"] .text-gray-900 {
   color: #f0ede6 !important;
 }
@@ -112,6 +124,22 @@
   color: #88847c !important;
 }
 
+[data-theme="dark"] .text-mhma-forest {
+  color: #C5DCC5 !important;
+}
+
+[data-theme="dark"] .text-mhma-sage {
+  color: #A8D0B0 !important;
+}
+
+[data-theme="dark"] .text-white {
+  color: #e8e4dc !important;
+}
+
+[data-theme="dark"] .text-mhma-gold {
+  color: #D4A843 !important;
+}
+
 [data-theme="dark"] .border-gray-100 {
   border-color: #2d322d !important;
 }
@@ -130,6 +158,14 @@
 
 [data-theme="dark"] .bg-gray-50\/50 {
   background-color: rgba(30, 35, 31, 0.5) !important;
+}
+
+[data-theme="dark"] .mhma-btn-gold {
+  color: #C5DCC5 !important;
+}
+
+[data-theme="dark"] .mhma-btn-ghost {
+  border-color: rgba(232, 228, 220, 0.3) !important;
 }
 
 /* ── Night Mode Overrides ── */
@@ -160,6 +196,18 @@
   background-color: #0f1612 !important;
 }
 
+[data-theme="night"] .bg-mhma-forest {
+  background-color: #112B1A !important;
+}
+
+[data-theme="night"] .bg-mhma-forest-mid {
+  background-color: #1A3A26 !important;
+}
+
+[data-theme="night"] .bg-mhma-forest-light {
+  background-color: #2D4236 !important;
+}
+
 [data-theme="night"] .text-gray-900 {
   color: #e0ddd6 !important;
 }
@@ -184,6 +232,22 @@
   color: #78746c !important;
 }
 
+[data-theme="night"] .text-mhma-forest {
+  color: #A8D0B0 !important;
+}
+
+[data-theme="night"] .text-mhma-sage {
+  color: #90B89A !important;
+}
+
+[data-theme="night"] .text-white {
+  color: #d8d4cc !important;
+}
+
+[data-theme="night"] .text-mhma-gold {
+  color: #C49A35 !important;
+}
+
 [data-theme="night"] .border-gray-100 {
   border-color: #242826 !important;
 }
@@ -202,4 +266,48 @@
 
 [data-theme="night"] .bg-gray-50\/50 {
   background-color: rgba(17, 20, 19, 0.5) !important;
+}
+
+[data-theme="night"] .mhma-btn-gold {
+  color: #A8D0B0 !important;
+}
+
+[data-theme="night"] .mhma-btn-ghost {
+  border-color: rgba(216, 212, 204, 0.3) !important;
+}
+
+/* ── Dashboard data overflow prevention ── */
+a[href^="mailto:"] {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.detail-item-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-item-value-full {
+  word-break: break-word;
+}
+
+.data-card-text {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Catch overflowing text in data sections */
+[class*="grid"] p.text-xs.text-gray-500 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
