@@ -31,8 +31,8 @@ export default function AboutPage() {
       {/* Our Story */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-12 items-center">
-            <div className="lg:w-1/2">
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            <div className="lg:w-2/5 shrink-0">
               <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
                 Our <span className="text-mhma-gold">Story</span>
               </h2>
@@ -46,9 +46,9 @@ export default function AboutPage() {
                 Alhmadulillah, we continue to grow through our various programs including Quran maktab, Hifz memorization, Arabic language classes, youth programs, and sisters' activities.
               </p>
             </div>
-            <div className="lg:w-1/2">
-                <div className="bg-teal-50 rounded-xl p-8 border border-teal-100">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="lg:w-3/5">
+                <div className="bg-teal-50 rounded-xl p-6 border border-teal-100">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     <StatCard value={aboutStats?.yearsServing ? `${aboutStats.yearsServing}+` : "—"} label="Years" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.numberOfFamilies ? `${aboutStats.numberOfFamilies}+` : "—"} label="Families" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.programsCount ? `${formatCount(aboutStats.programsCount)}` : "—"} label="Programs" color="bg-mhma-forest" />
@@ -66,7 +66,9 @@ export default function AboutPage() {
                     <StatCard value={aboutStats?.totalDonationCount ? formatCount(aboutStats.totalDonationCount) : "—"} label="Total Donors" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.raisedForZakat ? formatCompactAmount(aboutStats.raisedForZakat) : "—"} label="Raised for Zakat" color="bg-mhma-forest-mid" />
                     <StatCard value={aboutStats?.raisedForGeneral ? formatCompactAmount(aboutStats.raisedForGeneral) : "—"} label="Raised for General" color="bg-mhma-forest" />
-                    <StatCard value={aboutStats?.newsCount ? formatCount(aboutStats.newsCount) : "—"} label="News Articles" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.raisedForOther ? formatCompactAmount(aboutStats.raisedForOther) : "—"} label="Raised for Other" color="bg-mhma-forest-mid" />
+                    <StatCard value={aboutStats?.newsCount ? formatCount(aboutStats.newsCount) : "—"} label="News Articles" color="bg-mhma-forest" />
+                    <StatCard value={aboutStats?.totalRaised ? formatCompactAmount(aboutStats.totalRaised) : "—"} label="Total Raised" color="bg-mhma-forest-mid" />
                   </div>
                 </div>
             </div>

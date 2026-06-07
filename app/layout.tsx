@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme-context";
 
 const dmsans = DM_Sans({
   subsets: ["latin"],
@@ -114,8 +115,8 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="antialiased font-sans text-[#1C2A20] bg-[#F8F4EC]">
-        <AuthProvider>{children}</AuthProvider>
+      <body className="antialiased font-sans" style={{ color: 'var(--color-text)', backgroundColor: 'var(--color-bg)' }}>
+        <AuthProvider><ThemeProvider>{children}</ThemeProvider></AuthProvider>
       </body>
     </html>
   );

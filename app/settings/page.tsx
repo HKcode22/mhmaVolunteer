@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
-import { Loader2, Bell, Mail, Globe, Shield } from "lucide-react";
+import { Loader2, Bell, Mail, Globe, Shield, Sun, Moon } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
+import { useTheme, Theme } from "@/lib/theme-context";
 
 interface UserSettings {
   notifyOnNewEvents: boolean;
@@ -30,6 +31,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     if (authLoading) return;
@@ -130,6 +132,36 @@ export default function SettingsPage() {
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 {saving ? "Saving..." : "Save Preferences"}
               </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-6">
+            <div className="px-6 py-5 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Sun className="w-5 h-5 text-mhma-gold" />
+                Theme
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">Choose your color theme. Changes apply instantly.</p>
+            </div>
+            <div className="px-6 py-4 grid grid-cols-3 gap-3">
+              {[
+                { value: "light" as Theme, label: "Light", icon: Sun },
+                { value: "dark" as Theme, label: "Dark", icon: Moon },
+                { value: "night" as Theme, label: "Night", icon: Moon },
+              ].map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setTheme(value)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                    theme === value
+                      ? "border-mhma-gold bg-mhma-gold/5"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <Icon className={`w-6 h-6 ${theme === value ? "text-mhma-gold" : "text-gray-400"}`} />
+                  <span className={`text-sm font-medium ${theme === value ? "text-mhma-forest" : "text-gray-600"}`}>{label}</span>
+                </button>
+              ))}
             </div>
           </div>
 

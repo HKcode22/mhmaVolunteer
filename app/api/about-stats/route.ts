@@ -92,6 +92,7 @@ export async function GET() {
       zakatDonationCount: zakatCount,
       raisedForGeneral: Math.round(generalTotal / 100),
       generalDonationCount: generalCount,
+      raisedForOther: Math.round(otherTotal / 100),
       totalRaised: Math.round(
         (donationSnap.docs.reduce((s, d) => s + (d.data().amount || 0), 0)) / 100
       ),

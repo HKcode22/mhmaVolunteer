@@ -1,13 +1,16 @@
 ## Status
 - **#1–3**: ✅ Complete (newsCount stat + image upload, auto-fill program on enroll, contact form styling)
 - **#4**: ✅ Complete (dashboard approve/reject + bulk actions for RSVPs, Enrollments, Scheduling)
-- **#5**: ✅ Mostly complete (enrollment message in email, RSVP reliability improved, board notifications added with await Promise.allSettled — hk84164 now gets notified on all form submissions)
-- **#6**: ✅ Complete (enroll dropdown now loads programs dynamically from Firestore instead of hardcoded list)
-9,10 done
-
-11-13 progress, 
-
-
+- **#5**: ✅ Complete (enrollment message in email, RSVP reliability, board notifications with await Promise.allSettled)
+- **#6**: ✅ Complete (enroll dropdown loads programs dynamically from Firestore)
+- **#7**: ⏸️ Deferred — deep topic (AI agentic tool to guide board members), revisit later
+- **#8**: ✅ Complete (Settings page at /settings, gear icon in nav, Notifications label on bell)
+- **#9**: ✅ Complete (prayer times bar bg white, text color matches hero buttons, location section bg-mhma-cream)
+- **#10**: ✅ Complete (directions bg white, "Donors" → "Masjid Construction Donors", "Total Donations" → "Total Donors")
+- **#11**: ✅ Complete (added "Raised for Other" and "Total Raised" stat cards via API + homepage + about page)
+- **#12**: ✅ Complete (4-column grid, text pushed left with lg:w-2/5 shrink-0, 20 stat cards fit)
+- **#13**: ⏸️ Deferred — deep topic (Genkit/AI agent automation), revisit later
+- **#14**: 🔄 In progress (dark/light/night theme toggle in settings)
 
 ---
 

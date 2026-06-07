@@ -644,16 +644,16 @@ useEffect(() => {
                   const nextIdx = getNextPrayerIndex();
                   const isNext = index === nextIdx;
                   return (
-                    <div key={prayer.name} className={`text-center px-2 md:px-3 ${isNext ? 'bg-mhma-forest/10 rounded-lg px-3 py-1' : ''}`}>
-                      <p className="text-mhma-forest/80 text-[10px] md:text-xs uppercase tracking-wider">{prayer.name}</p>
+                    <div key={prayer.name} className={`text-center px-2 md:px-3 ${isNext ? 'bg-mhma-gold rounded-lg py-1' : ''}`}>
+                      <p className={`${isNext ? 'text-mhma-forest' : 'text-mhma-forest/80'} text-[10px] md:text-xs uppercase tracking-wider`}>{prayer.name}</p>
                       <p className="text-mhma-forest font-bold text-sm md:text-lg">{prayer.time}</p>
-                      {isNext && <p className="text-mhma-forest/60 text-[9px] md:text-[10px] hidden md:block">Next</p>}
+                      {isNext && <p className="text-mhma-forest/70 text-[9px] md:text-[10px] hidden md:block font-semibold">Next</p>}
                     </div>
                   );
                 })}
               </div>
-              <Link href="/prayer-times" className="text-mhma-forest font-semibold text-sm hover:text-amber-100 transition-colors flex items-center gap-1 shrink-0">
-                Full Schedule <ChevronRight className="w-4 h-4" />
+              <Link href="/prayer-times" className="mhma-btn-gold inline-flex items-center">
+                Full Schedule <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </div>
           ) : (
@@ -667,8 +667,8 @@ useEffect(() => {
       {/* About Section */}
       <section className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-12 items-center">
-            <div className="lg:w-1/2">
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="lg:w-2/5 shrink-0">
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
                 About <span className="text-mhma-gold">MHMA</span>
               </h2>
@@ -685,7 +685,7 @@ useEffect(() => {
                 Learn More About Us <ChevronRight className="ml-1 w-5 h-5" />
               </Link>
             </div>
-            <div className="lg:w-1/2 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="lg:flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               <StatCard value={aboutStats?.yearsServing ? `${aboutStats.yearsServing}+` : "—"} label="Years" color="bg-mhma-forest" />
               <StatCard value={aboutStats?.numberOfFamilies ? `${aboutStats.numberOfFamilies}+` : "—"} label="Families" color="bg-mhma-forest-mid" />
               <StatCard value={aboutStats?.programsCount ? `${formatCount(aboutStats.programsCount)}` : "—"} label="Programs" color="bg-mhma-forest" />
@@ -703,7 +703,9 @@ useEffect(() => {
               <StatCard value={aboutStats?.totalDonationCount ? formatCount(aboutStats.totalDonationCount) : "—"} label="Total Donors" color="bg-mhma-forest-mid" />
               <StatCard value={aboutStats?.raisedForZakat ? formatCompactAmount(aboutStats.raisedForZakat) : "—"} label="Raised for Zakat" color="bg-mhma-forest" />
               <StatCard value={aboutStats?.raisedForGeneral ? formatCompactAmount(aboutStats.raisedForGeneral) : "—"} label="Raised for General" color="bg-mhma-forest-mid" />
+              <StatCard value={aboutStats?.raisedForOther ? formatCompactAmount(aboutStats.raisedForOther) : "—"} label="Raised for Other" color="bg-mhma-forest" />
               <StatCard value={aboutStats?.newsCount ? formatCount(aboutStats.newsCount) : "—"} label="News Articles" color="bg-mhma-forest" />
+              <StatCard value={aboutStats?.totalRaised ? formatCompactAmount(aboutStats.totalRaised) : "—"} label="Total Raised" color="bg-mhma-forest-mid" />
             </div>
           </div>
         </div>
@@ -744,9 +746,13 @@ useEffect(() => {
 
                 return (
                   <Link key={program.id || i} href={`/programs/${slug}`} className="bg-mhma-forest p-6 rounded-xl border border-mhma-forest hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
-                    <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{icon}</div>
+                    {program.image ? (
+                      <img src={program.image} alt={title} className="w-full h-40 object-cover rounded-lg mb-4" />
+                    ) : (
+                      <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">{icon}</div>
+                    )}
                     <h3 className="font-bold text-white mb-2 group-hover:text-mhma-gold">{title}</h3>
-                    <p className="text-mhma-sage text-sm line-clamp-2">{desc}</p>
+                    <p className="text-mhma-sage text-sm line-clamp-3 leading-relaxed">{desc}</p>
                     {isBoardMember && (
                       <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 p-1.5 bg-white/20 rounded hover:bg-mhma-gold transition-colors" title="Edit program">
                         <Edit3 className="w-3.5 h-3.5 text-white/70 hover:text-white" />
