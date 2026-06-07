@@ -1,3 +1,12 @@
+## Status
+- **#1–3**: ✅ Complete (newsCount stat + image upload, auto-fill program on enroll, contact form styling)
+- **#4**: ✅ Complete (dashboard approve/reject + bulk actions for RSVPs, Enrollments, Scheduling)
+- **#5**: ✅ Mostly complete (enrollment message in email, RSVP reliability improved, board notifications added with await Promise.allSettled — hk84164 now gets notified on all form submissions)
+- **#6**: ✅ Complete (enroll dropdown now loads programs dynamically from Firestore instead of hardcoded list)
+- **#7–22**: Not started
+
+---
+
 1. we need to show stats for the amount of news article put out so need this stat card too which would be calculated of how many new articles have been created we also need a stat card for showing total number of donations for dedication like in honor of someone like there is that button in donations page and for creating a new news article i think the board member should have a choice to add a picture image and for it to be have the same process as how image are handled in events program the base64 thing
 2. when a non board member clicks on the enrol button for the specifc prgoram the program they chose is not autofilled as it should so that the user isent putting in the same infromation over and over again
 3. make the contact submisson form normal like a similar exact color white as how it is in the enrol and rvsp area for example in enroll page that white widget box with the surodning being creamy is nice but the entire text field boxe that rectangle box background color itsel is white do the same for the constact submsion keep the creamy color section but the widget rectagnle where the the text fields are keep that white same as how it is in the enrol and rvsp

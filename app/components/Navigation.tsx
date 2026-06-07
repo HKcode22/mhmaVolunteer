@@ -239,7 +239,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
                       <Link href="/contact/faq" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">FAQ</Link>
-                      <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Newsletter</Link>
+                      <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Newsletter Subscribe / Unsubscribe</Link>
                       <Link href="/volunteer" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">Volunteer</Link>
                     </div>
                   </div>

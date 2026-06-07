@@ -19,6 +19,7 @@ export default function DashboardProgramsPage() {
   const [editing, setEditing] = useState<FirebaseProgram | null>(null);
   const [form, setForm] = useState({ title: "", slug: "", description: "", image: "", imagePoster: "", stats: [{ label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }], quote: "", quoteAuthor: "" });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [enrollSearch, setEnrollSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
 
@@ -80,7 +81,7 @@ export default function DashboardProgramsPage() {
       resetForm();
       const updated = await fetchPrograms(100);
       setPrograms(updated);
-    } catch { /* ignore */ }
+    } catch (e: any) { setSaveError(e.message || "Failed to save"); }
     setSaving(false);
   };
 
@@ -119,6 +120,11 @@ export default function DashboardProgramsPage() {
           {showForm && (
             <div className="mb-6 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <h2 className="font-bold text-gray-900 mb-4">{editing ? "Edit Program" : "New Program"}</h2>
+              {saveError && (
+                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-700 text-sm">{saveError}</p>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Title *</label>
