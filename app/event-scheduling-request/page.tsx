@@ -170,9 +170,11 @@ export default function EventSchedulingRequestPage() {
           <p className="text-gray-600 mb-8">Please fill out the form below to request an event scheduling.</p>
 
           {submitSuccess ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-              <p className="text-green-800 font-semibold text-lg">Event scheduling request submitted successfully!</p>
-              <p className="text-green-600">We will review your request and get back to you.</p>
+            <div className="min-h-[600px] flex items-center justify-center">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                <p className="text-green-800 font-semibold text-lg">Event scheduling request submitted successfully!</p>
+                <p className="text-green-600">We will review your request and get back to you.</p>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-8">
