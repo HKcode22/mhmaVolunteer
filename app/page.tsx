@@ -975,7 +975,7 @@ useEffect(() => {
       ── End commented-out journal section ── */}
 
       {/* Donate Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 uppercase tracking-wide">
             Support Your <span className="text-mhma-gold">Masjid</span>
@@ -991,7 +991,7 @@ useEffect(() => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-mhma-cream py-8 border-t border-gray-200">
+      <footer className="bg-mhma-forest text-white py-8 border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
             <div>
@@ -1000,24 +1000,24 @@ useEffect(() => {
                 alt="MHMA Logo" 
                 width={180} 
                 height={40} 
-                className="mx-auto md:mx-0 mb-4 opacity-70"
+                className="mx-auto md:mx-0 mb-4 opacity-70 brightness-0 invert"
               />
               <p className="text-gray-400 text-xs uppercase tracking-wider">© 2026 Mountain House Muslim Association</p>
               <p className="text-gray-400 text-[10px] mt-1">MHMA is a 501(c)(3) tax-exempt organization. EIN: 99-XXXXXXX</p>
             </div>
             <div>
-              <h4 className="font-bold text-gray-700 mb-2">Stay Updated</h4>
-              <p className="text-gray-600 text-xs mb-3">Get MHMA news and event updates.</p>
+              <h4 className="font-bold text-white mb-2">Stay Updated</h4>
+              <p className="text-gray-300 text-xs mb-3">Get MHMA news and event updates.</p>
               <NewsletterSignup variant="footer" source="footer" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-700 mb-2">Contact Us</h4>
-              <p className="text-gray-600 text-sm">📧 mhma@mhma.us</p>
-              <p className="text-gray-600 text-sm">📞 (209) 555-0123</p>
-              <p className="text-gray-600 text-sm">📍 245 E. Byron St, Mountain House, CA 95391</p>
+              <h4 className="font-bold text-white mb-2">Contact Us</h4>
+              <p className="text-gray-300 text-sm">📧 mhma@mhma.us</p>
+              <p className="text-gray-300 text-sm">📞 (209) 555-0123</p>
+              <p className="text-gray-300 text-sm">📍 245 E. Byron St, Mountain House, CA 95391</p>
             </div>
             <div>
-              <h4 className="font-bold text-gray-700 mb-2">Quick Links</h4>
+              <h4 className="font-bold text-white mb-2">Quick Links</h4>
               <div className="flex flex-col gap-1 text-sm">
                 <Link href="/donate" className="text-mhma-gold hover:underline">Donate</Link>
                 <Link href="/programs" className="text-mhma-gold hover:underline">Programs</Link>
