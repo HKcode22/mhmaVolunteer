@@ -711,8 +711,69 @@ useEffect(() => {
         </div>
       </section>
 
+      {/* Upcoming Events */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
+            Upcoming <span className="text-mhma-gold">Events</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayEvents.map((event: any, i: number) => {
+              const eventDate = event.date || "";
+              const day = eventDate ? eventDate.split("-").pop() || "??" : "??";
+              const month = eventDate
+                ? new Date(eventDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
+                : "MAY";
+              return (
+                <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-mhma-gold transition-all group relative">
+                  <div className="w-full bg-mhma-forest flex flex-col items-center justify-center text-white py-2">
+                    <span className="text-xl font-bold">{day}</span>
+                    <span className="text-xs uppercase">{month}</span>
+                    {isBoardMember && (
+                      <Link href={`/dashboard/events/edit?id=${event.id}`} className="absolute top-1 right-1 p-1.5 bg-black/20 rounded hover:bg-mhma-gold transition-colors" title="Edit event">
+                        <Edit3 className="w-3 h-3 text-mhma-gold" />
+                      </Link>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-bold text-gray-900 mb-1 group-hover:text-mhma-gold text-sm">{event.title || "Untitled"}</h3>
+                    <div className="flex items-center text-gray-500 text-xs space-x-2 mb-2">
+                      {event.time && (
+                        <span className="flex items-center">
+                          <Clock className="w-3 h-3 mr-1" /> {formatTime(event.time)}
+                        </span>
+                      )}
+                      <span className="flex items-center truncate">
+                        <MapPin className="w-3 h-3 mr-1" /> {event.location || "MHMA"}
+                      </span>
+                    </div>
+                    <Link
+                      href={`/rsvp?eventId=${event.id}`}
+                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-white text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
+                    >
+                      RSVP
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="text-center mt-8">
+            <Link href="/events" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
+              View All Events <ChevronRight className="ml-1 w-5 h-5" />
+            </Link>
+          </div>
+
+          {events.length > 0 && (
+            <div className="mt-12">
+              <EventCalendar events={events} />
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Programs Section */}
-      <section className="py-16 bg-white border-t border-gray-200">
+      <section className="py-16 bg-mhma-cream border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 text-center uppercase tracking-wide">
             Our <span className="text-mhma-gold">Programs</span> & Classes
@@ -772,7 +833,7 @@ useEffect(() => {
       </section>
 
       {/* Latest News Section */}
-      <section className="py-16 bg-mhma-cream border-t border-gray-200">
+      <section className="py-16 bg-white border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
             Latest <span className="text-mhma-gold">News</span>
@@ -806,8 +867,8 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* Today's Prayer Times - FIXED LINK */}
-      <section id="prayer-times" className="py-16 bg-white">
+      {/* Today's Prayer Times */}
+      <section id="prayer-times" className="py-16 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
             Prayer <span className="text-mhma-gold">Times</span>
@@ -842,68 +903,6 @@ useEffect(() => {
               View Full Monthly Schedule <ChevronRight className="ml-1 w-5 h-5" />
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Masjid Construction Progress */}
-      {/* Upcoming Events - FIXED to show REAL data */}
-      <section className="py-16 bg-mhma-cream border-t border-gray-200">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
-            Upcoming <span className="text-mhma-gold">Events</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayEvents.map((event: any, i: number) => {
-              const eventDate = event.date || "";
-              const day = eventDate ? eventDate.split("-").pop() || "??" : "??";
-              const month = eventDate
-                ? new Date(eventDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
-                : "MAY";
-              return (
-                <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-mhma-gold transition-all group relative">
-                  <div className="w-full bg-mhma-forest flex flex-col items-center justify-center text-white py-2">
-                    <span className="text-xl font-bold">{day}</span>
-                    <span className="text-xs uppercase">{month}</span>
-                    {isBoardMember && (
-                      <Link href={`/dashboard/events/edit?id=${event.id}`} className="absolute top-1 right-1 p-1.5 bg-black/20 rounded hover:bg-mhma-gold transition-colors" title="Edit event">
-                        <Edit3 className="w-3 h-3 text-mhma-gold" />
-                      </Link>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-bold text-gray-900 mb-1 group-hover:text-mhma-gold text-sm">{event.title || "Untitled"}</h3>
-                    <div className="flex items-center text-gray-500 text-xs space-x-2 mb-2">
-                      {event.time && (
-                        <span className="flex items-center">
-                          <Clock className="w-3 h-3 mr-1" /> {formatTime(event.time)}
-                        </span>
-                      )}
-                      <span className="flex items-center truncate">
-                        <MapPin className="w-3 h-3 mr-1" /> {event.location || "MHMA"}
-                      </span>
-                    </div>
-                    <Link
-                      href={`/rsvp?eventId=${event.id}`}
-                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-white text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
-                    >
-                      RSVP
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="text-center mt-8">
-            <Link href="/events" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
-              View All Events <ChevronRight className="ml-1 w-5 h-5" />
-            </Link>
-          </div>
-
-          {events.length > 0 && (
-            <div className="mt-12">
-              <EventCalendar events={events} />
-            </div>
-          )}
         </div>
       </section>
 
