@@ -119,3 +119,130 @@ Hide Authentication, like which of these ai tool do we need or want, which are t
 20. i think that there should be a instagram, youtube, icons on the green upper bar navigation are where the profile button and the other buttons are at and keep it behind the email icon info@mhma.info
 21. since this clone website or the mhma website as a whole is going through some kind of demo to show to other people why its important i think it would be greate to focus on which members and board member contribute most in which places in the sense like who should be looked up to when looking at events like whose the event coordinator and then place them on those pages of the website which is a reminder and a idea i was thinking to make a copy of the square thing where the board members are lsited at with there info and paste it to the specfic pages of where these board members focus the most at or on
 22. i was thining about how for the stats like total donations of general or other or program or total overal all and other stats like total rvsp or total enrollments or total
+
+23.
+Skip to main content
+Firebase logo
+Search for products
+Project Overview
+Settings
+Project shortcuts
+A/B Testing
+
+
+Analytics Dashboard
+
+
+AI Logic
+
+
+Machine Learning
+
+
+Genkit
+
+
+Firestore
+
+
+Phone Verification
+New
+
+
+Authentication
+
+
+Storage
+
+
+Extensions
+
+
+Audiences
+
+
+Realtime Database
+
+
+
+Show less
+Product categories
+Databases & Storage
+Security
+AI services
+Hosting & Serverless
+DevOps & Engagement
+Analytics
+Billing plan:Spark
+No-cost ($0/month)
+mhma-backend
+
+A/B Testing
+Run experiments to make key engagement flows more effective
+Learn more
+How do I get started?
+View the docs
+How does A/B Testing work?
+View the docs
+What can A/B Testing do for me?
+Learn more
+
+More products for developers
+
+Remote Config
+Slowly and safely roll out new features in your app without deploying a new version
+
+In-App Messaging
+Send messages to engage the right users at the right moment
+
+Dynamic Links
+Deep link potential users to the right place inside your app
+See more related products 
+The app nickname will be used throughout the Firebase console to represent this app. Nicknames aren't visible to users.
+Supercharge your development! Try Cloud Shell to access the built-in Firebase CLI and run Firebase emulators directly in a virtual machine.
+Click upgrade to learn how to claim a $300 free credit!
+Phone Number Verification is a fast and secure method for verifying user phone numbers
+Go to docs
+Add Firebase to your web app
+Completed
+Register app
+2
+Add Firebase SDK
+
+Use npm
+
+Use a <script> tag
+If you're already using npm and a module bundler such as webpack or Rollup, you can run the following command to install the latest SDK (Learn more):
+
+npm install firebase
+Then, initialize Firebase and begin using the SDKs for the products you'd like to use.
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCglZfMJFO-RgvuSzctVQnz1UQaMp6Qv_U",
+  authDomain: "mhma-backend.firebaseapp.com",
+  projectId: "mhma-backend",
+  storageBucket: "mhma-backend.firebasestorage.app",
+  messagingSenderId: "61405148670",
+  appId: "1:61405148670:web:d80a21a23dc397f501bcaf",
+  measurementId: "G-3WFDHFZPRD"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+Note: This option uses the modular JavaScript SDK, which provides reduced SDK size.
+
+Learn more about Firebase for web: Get Started, Web SDK API Reference, Samples
+
+
+Beta
+This feature (A/B Testing) is currently in Beta
+

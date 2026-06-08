@@ -405,7 +405,7 @@ useEffect(() => {
       const [eventsData, programs, masjidData, statsData, newsData] = await Promise.allSettled([
         fetchEvents(3),
         fetchPrograms(3),
-        fetchMasjidUpdates(1),
+        fetchMasjidUpdates(3),
         fetch("/api/about-stats").then(r => r.json()),
         fetchNews(3),
       ]);
@@ -418,6 +418,7 @@ useEffect(() => {
 
       setEvents(events);
       setPrograms(prog);
+      setMasjidUpdates(masjid);
       setNews(newsArr);
       setAboutStats(stats);
 
@@ -772,8 +773,43 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* Programs Section */}
+      {/* Latest News Section */}
       <section className="py-16 bg-mhma-cream border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
+            Latest <span className="text-mhma-gold">News</span>
+          </h2>
+          {news.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {news.map((n: any) => {
+                  const cd = n.createdAt;
+                  const dateStr = cd ? (cd.toDate ? cd.toDate().toLocaleDateString() : typeof cd === "string" ? new Date(cd).toLocaleDateString() : "") : "";
+                  return (
+                    <Link key={n.id} href={`/news/${n.slug}`}
+                      className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
+                      {n.image && <img src={n.image} alt={n.title} className="w-full h-40 object-cover rounded-lg mb-3" />}
+                      <p className="text-xs text-gray-400 mb-1">{dateStr}{n.authorName ? ` · By ${n.authorName}` : ""}</p>
+                      <h3 className="font-bold text-gray-900 mb-2 group-hover:text-mhma-gold transition-colors">{n.title}</h3>
+                      <p className="text-gray-500 text-sm line-clamp-2">{n.excerpt}</p>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="text-center">
+                <Link href="/news" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
+                  View All News <ChevronRight className="ml-1 w-5 h-5" />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-gray-400 py-8">No news articles yet.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Programs Section */}
+      <section className="py-16 bg-white border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 text-center uppercase tracking-wide">
             Our <span className="text-mhma-gold">Programs</span> & Classes
@@ -832,43 +868,40 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* Latest News Section */}
-      <section className="py-16 bg-white border-t border-gray-200">
+      {/* Masjid Construction Updates */}
+      <section className="py-16 bg-mhma-cream border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
-            Latest <span className="text-mhma-gold">News</span>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 text-center uppercase tracking-wide">
+            Masjid <span className="text-mhma-gold">Construction</span>
           </h2>
-          {news.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {news.map((n: any) => {
-                  const cd = n.createdAt;
-                  const dateStr = cd ? (cd.toDate ? cd.toDate().toLocaleDateString() : typeof cd === "string" ? new Date(cd).toLocaleDateString() : "") : "";
-                  return (
-                    <Link key={n.id} href={`/news/${n.slug}`}
-                      className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
-                      {n.image && <img src={n.image} alt={n.title} className="w-full h-40 object-cover rounded-lg mb-3" />}
-                      <p className="text-xs text-gray-400 mb-1">{dateStr}{n.authorName ? ` · By ${n.authorName}` : ""}</p>
-                      <h3 className="font-bold text-gray-900 mb-2 group-hover:text-mhma-gold transition-colors">{n.title}</h3>
-                      <p className="text-gray-500 text-sm line-clamp-2">{n.excerpt}</p>
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="text-center">
-                <Link href="/news" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
-                  View All News <ChevronRight className="ml-1 w-5 h-5" />
-                </Link>
-              </div>
-            </>
+          <div className="w-24 h-1 bg-mhma-gold mx-auto mb-4"></div>
+          <p className="text-gray-600 text-center max-w-2xl mx-auto mb-10">Track the latest progress on our masjid building project.</p>
+          {masjidUpdates.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {masjidUpdates.slice(0, 3).map((update: any) => (
+                <div key={update.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all">
+                  {update.image && <img src={update.image} alt={update.caption} className="w-full h-44 object-cover" />}
+                  <div className="p-4">
+                    <p className="text-xs text-mhma-gold font-semibold uppercase tracking-wide mb-1">{update.phase}</p>
+                    <p className="font-bold text-gray-900 mb-2">{update.caption}</p>
+                    <p className="text-xs text-gray-400">{update.progressDate || update.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <p className="text-center text-gray-400 py-8">No news articles yet.</p>
+            <p className="text-center text-gray-400 py-8">No construction updates yet.</p>
           )}
+          <div className="text-center mt-8">
+            <Link href="/masjid-construction" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
+              View All Updates <ChevronRight className="ml-1 w-5 h-5" />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Today's Prayer Times */}
-      <section id="prayer-times" className="py-16 bg-mhma-cream">
+      <section id="prayer-times" className="py-16 bg-white border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-8 text-center uppercase tracking-wide">
             Prayer <span className="text-mhma-gold">Times</span>
