@@ -129,7 +129,7 @@ export default function PrayerTimesPage() {
       <section className="py-12 bg-mhma-cream">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1C2A20] mb-2 uppercase tracking-wide">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
               Jumu'ah <span className="text-mhma-gold">Prayer</span>
             </h2>
             <div className="w-24 h-px bg-mhma-gold mx-auto mb-4"></div>
@@ -140,7 +140,7 @@ export default function PrayerTimesPage() {
             {jumuahTimes.map((session, index) => (
               <div key={index} className="bg-white rounded-sm p-6 shadow-lg border border-[#E8E2D4] hover:shadow-xl transition-shadow">
                 <div className="h-0.5 bg-mhma-gold w-full mb-4"></div>
-                <h3 className="text-xl font-bold text-[#1C2A20] mb-4">{session.session}</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{session.session}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Khutbah Begins</span>

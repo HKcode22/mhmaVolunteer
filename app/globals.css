@@ -88,6 +88,18 @@
   background-color: #1a221e !important;
 }
 
+[data-theme="dark"] .bg-teal-100 {
+  background-color: #1a2a22 !important;
+}
+
+[data-theme="dark"] .bg-teal-500 {
+  background-color: #2D6A4F !important;
+}
+
+[data-theme="dark"] .bg-teal-800 {
+  background-color: #1A3A26 !important;
+}
+
 [data-theme="dark"] .bg-mhma-forest {
   background-color: #1A3A26 !important;
 }
@@ -98,6 +110,36 @@
 
 [data-theme="dark"] .bg-mhma-forest-light {
   background-color: #3D5A48 !important;
+}
+
+/* ── Dark Mode Gradient Overrides ── */
+[data-theme="dark"] .from-mhma-forest {
+  --tw-gradient-from: #1A3A26 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+[data-theme="dark"] .via-mhma-forest-mid {
+  --tw-gradient-via: #2D4236 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+
+[data-theme="dark"] .via-mhma-forest-light {
+  --tw-gradient-via: #3D5A48 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+
+[data-theme="dark"] .to-mhma-forest-light,
+[data-theme="dark"] .to-mhma-forest {
+  --tw-gradient-to: #3D5A48 !important;
+}
+
+[data-theme="dark"] .to-mhma-forest-mid {
+  --tw-gradient-to: #2D4236 !important;
+}
+
+[data-theme="dark"] .from-mhma-forest-mid {
+  --tw-gradient-from: #2D4236 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 [data-theme="dark"] .text-gray-900 {
@@ -125,11 +167,11 @@
 }
 
 [data-theme="dark"] .text-mhma-forest {
-  color: #C5DCC5 !important;
+  color: #8AB89A !important;
 }
 
 [data-theme="dark"] .text-mhma-sage {
-  color: #A8D0B0 !important;
+  color: #7AA88A !important;
 }
 
 [data-theme="dark"] .text-white {
@@ -204,6 +246,18 @@
   background-color: #0f1612 !important;
 }
 
+[data-theme="night"] .bg-teal-100 {
+  background-color: #0f1c16 !important;
+}
+
+[data-theme="night"] .bg-teal-500 {
+  background-color: #1A3A26 !important;
+}
+
+[data-theme="night"] .bg-teal-800 {
+  background-color: #112B1A !important;
+}
+
 [data-theme="night"] .bg-mhma-forest {
   background-color: #112B1A !important;
 }
@@ -214,6 +268,36 @@
 
 [data-theme="night"] .bg-mhma-forest-light {
   background-color: #2D4236 !important;
+}
+
+/* ── Night Mode Gradient Overrides ── */
+[data-theme="night"] .from-mhma-forest {
+  --tw-gradient-from: #112B1A !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+[data-theme="night"] .via-mhma-forest-mid {
+  --tw-gradient-via: #1A3A26 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+
+[data-theme="night"] .via-mhma-forest-light {
+  --tw-gradient-via: #2D4236 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
+}
+
+[data-theme="night"] .to-mhma-forest-light,
+[data-theme="night"] .to-mhma-forest {
+  --tw-gradient-to: #2D4236 !important;
+}
+
+[data-theme="night"] .to-mhma-forest-mid {
+  --tw-gradient-to: #1A3A26 !important;
+}
+
+[data-theme="night"] .from-mhma-forest-mid {
+  --tw-gradient-from: #1A3A26 !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 [data-theme="night"] .text-gray-900 {
@@ -241,11 +325,11 @@
 }
 
 [data-theme="night"] .text-mhma-forest {
-  color: #A8D0B0 !important;
+  color: #6A987A !important;
 }
 
 [data-theme="night"] .text-mhma-sage {
-  color: #90B89A !important;
+  color: #5A887A !important;
 }
 
 [data-theme="night"] .text-white {
@@ -383,6 +467,12 @@ td a[href^="mailto:"] {
   color: #D4A843 !important;
 }
 
+[data-theme="dark"] .text-teal-600,
+[data-theme="dark"] .text-teal-700,
+[data-theme="dark"] .text-teal-800 {
+  color: #8AB89A !important;
+}
+
 [data-theme="dark"] .text-blue-600 {
   color: #80B0E0 !important;
 }
@@ -458,6 +548,12 @@ td a[href^="mailto:"] {
 [data-theme="night"] .text-amber-600,
 [data-theme="night"] .text-amber-800 {
   color: #C49A35 !important;
+}
+
+[data-theme="night"] .text-teal-600,
+[data-theme="night"] .text-teal-700,
+[data-theme="night"] .text-teal-800 {
+  color: #6A987A !important;
 }
 
 [data-theme="night"] .text-blue-600 {

@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-3xl font-serif font-bold text-[#1C2A20]">Analytics</h1>
+              <h1 className="text-3xl font-serif font-bold text-gray-900">Analytics</h1>
               <p className="text-gray-500 mt-1">Board metrics, user engagement, and trends</p>
             </div>
           </div>

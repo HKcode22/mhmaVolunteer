@@ -357,7 +357,7 @@ export default function DashboardPage() {
       <div className="pt-28 pb-8 px-4 max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-serif font-bold text-[#1C2A20]">Dashboard</h1>
+              <h1 className="text-3xl font-serif font-bold text-gray-900">Dashboard</h1>
               <p className="text-gray-500 mt-1">Welcome, {user?.displayName || "Board Member"}</p>
             </div>
             <button onClick={() => setShowCustomize(true)}
@@ -886,7 +886,7 @@ export default function DashboardPage() {
       )}
 
       <footer className="bg-[#040E08] py-8 border-t border-gray-200/10">
-        <div className="max-w-6xl mx-auto px-4 text-center text-[#2A4A35] text-sm">
+        <div className="max-w-6xl mx-auto px-4 text-center text-gray-500 text-sm">
           <p>© 2026 Mountain House Muslim Association — Board Dashboard</p>
         </div>
       </footer>
@@ -900,7 +900,7 @@ function Section({ title, count, href, children, allShown, onToggle, scrollable 
   return (
     <div className={`bg-white rounded-sm p-6 border border-[#E8E2D4] ${scrollable ? "max-h-[420px] flex flex-col" : ""}`}>
       <div className="flex items-center justify-between mb-4 shrink-0">
-        <h2 className="text-xl font-serif font-bold text-[#1C2A20]">{title} <span className="text-gray-400 text-sm font-sans">({count})</span></h2>
+        <h2 className="text-xl font-serif font-bold text-gray-900">{title} <span className="text-gray-400 text-sm font-sans">({count})</span></h2>
         <div className="flex gap-3">
           {href !== "#" && (
             <Link href={href} className="flex items-center gap-1 text-mhma-gold hover:text-mhma-gold-light font-semibold text-sm">
