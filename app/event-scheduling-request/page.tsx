@@ -188,7 +188,7 @@ export default function EventSchedulingRequestPage() {
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Organizer</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-600 mb-2">
                     First Name
                   </label>
                   <input
@@ -197,12 +197,12 @@ export default function EventSchedulingRequestPage() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-600 mb-2">
                     Last Name
                   </label>
                   <input
@@ -211,12 +211,12 @@ export default function EventSchedulingRequestPage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-2">
                     Email
                   </label>
                   <input
@@ -225,12 +225,12 @@ export default function EventSchedulingRequestPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-600 mb-2">
                     Phone
                   </label>
                   <input
@@ -239,7 +239,7 @@ export default function EventSchedulingRequestPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                   />
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function EventSchedulingRequestPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Event Details</h2>
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="eventTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="eventTitle" className="block text-sm font-medium text-gray-600 mb-2">
                     Event Title
                   </label>
                   <input
@@ -259,12 +259,12 @@ export default function EventSchedulingRequestPage() {
                     name="eventTitle"
                     value={formData.eventTitle}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="eventCategory" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="eventCategory" className="block text-sm font-medium text-gray-600 mb-2">
                     Event Category
                   </label>
                   <select
@@ -272,7 +272,7 @@ export default function EventSchedulingRequestPage() {
                     name="eventCategory"
                     value={formData.eventCategory}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     required
                   >
                     <option value="">Please Select Category</option>
@@ -286,7 +286,7 @@ export default function EventSchedulingRequestPage() {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="eventDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="eventDescription" className="block text-sm font-medium text-gray-600 mb-2">
                     Event Description
                   </label>
                   <textarea
@@ -295,14 +295,14 @@ export default function EventSchedulingRequestPage() {
                     value={formData.eventDescription}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none"
                     placeholder="Please provide as much information as possible, including event category detail if you selected other"
                     required
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="start" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="start" className="block text-sm font-medium text-gray-600 mb-2">
                       Start
                     </label>
                     <input
@@ -311,12 +311,12 @@ export default function EventSchedulingRequestPage() {
                       name="start"
                       value={formData.start}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="end" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="end" className="block text-sm font-medium text-gray-600 mb-2">
                       End
                     </label>
                     <input
@@ -325,7 +325,7 @@ export default function EventSchedulingRequestPage() {
                       name="end"
                       value={formData.end}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                       required
                     />
                   </div>
@@ -416,7 +416,7 @@ export default function EventSchedulingRequestPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Event Location</h2>
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-600 mb-2">
                     Location
                   </label>
                   <input
@@ -425,12 +425,12 @@ export default function EventSchedulingRequestPage() {
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Location"
                   />
                 </div>
                 <div>
-                  <label htmlFor="facility" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="facility" className="block text-sm font-medium text-gray-600 mb-2">
                     Facility
                   </label>
                   <select
@@ -438,7 +438,7 @@ export default function EventSchedulingRequestPage() {
                     name="facility"
                     value={formData.facility}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                   >
                     <option value="">Select Facility</option>
                     <option value="unity-center">Unity Center</option>
@@ -455,7 +455,7 @@ export default function EventSchedulingRequestPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="roundTables" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="roundTables" className="block text-sm font-medium text-gray-600 mb-2">
                     Round Tables
                   </label>
                   <input
@@ -464,13 +464,13 @@ export default function EventSchedulingRequestPage() {
                     name="roundTables"
                     value={formData.roundTables}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Please enter the number of round tables needed"
                     min="0"
                   />
                 </div>
                 <div>
-                  <label htmlFor="rectangularTables" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="rectangularTables" className="block text-sm font-medium text-gray-600 mb-2">
                     Rectangular Tables
                   </label>
                   <input
@@ -479,13 +479,13 @@ export default function EventSchedulingRequestPage() {
                     name="rectangularTables"
                     value={formData.rectangularTables}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Please enter the number of rectangular tables needed"
                     min="0"
                   />
                 </div>
                 <div>
-                  <label htmlFor="chairs" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="chairs" className="block text-sm font-medium text-gray-600 mb-2">
                     Chairs
                   </label>
                   <input
@@ -494,7 +494,7 @@ export default function EventSchedulingRequestPage() {
                     name="chairs"
                     value={formData.chairs}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Please enter the number of chairs needed"
                     min="0"
                   />
@@ -524,7 +524,7 @@ export default function EventSchedulingRequestPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Volunteers</h2>
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="volunteers" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="volunteers" className="block text-sm font-medium text-gray-600 mb-2">
                     Volunteers
                   </label>
                   <input
@@ -533,13 +533,13 @@ export default function EventSchedulingRequestPage() {
                     name="volunteers"
                     value={formData.volunteers}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Please enter the number of volunteers needed"
                     min="0"
                   />
                 </div>
                 <div>
-                  <label htmlFor="helpers" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="helpers" className="block text-sm font-medium text-gray-600 mb-2">
                     Helpers
                   </label>
                   <input
@@ -548,7 +548,7 @@ export default function EventSchedulingRequestPage() {
                     name="helpers"
                     value={formData.helpers}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                     placeholder="Please enter the number of paid helpers needed"
                     min="0"
                   />
@@ -621,7 +621,7 @@ export default function EventSchedulingRequestPage() {
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Comments</h2>
               <div>
-                <label htmlFor="comments" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="comments" className="block text-sm font-medium text-gray-600 mb-2">
                   Please share any additional information that will help with the event planning, and flyer creation
                 </label>
                 <textarea
@@ -630,7 +630,7 @@ export default function EventSchedulingRequestPage() {
                   value={formData.comments}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mhma-gold focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none"
                 />
               </div>
             </div>
@@ -639,7 +639,7 @@ export default function EventSchedulingRequestPage() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-mhma-gold text-white px-8 py-3 rounded-lg font-semibold hover:bg-mhma-gold transition-colors focus:outline-none focus:ring-2 focus:ring-mhma-gold focus:ring-offset-2"
+                className="w-full md:w-auto px-8 py-4 bg-mhma-gold text-mhma-forest font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-500 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Submit Request
               </button>

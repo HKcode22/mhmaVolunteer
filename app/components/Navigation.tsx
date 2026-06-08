@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, User, LogOut, MapPin, Mail, Bell, Settings } from "lucide-react";
+import { Menu, X, User, LogOut, MapPin, Mail, Bell, Settings, Instagram, Youtube } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
@@ -74,6 +74,13 @@ export default function Navigation({ currentPage }: NavigationProps) {
             <a href="/contact#directions" className="flex items-center gap-1.5 hover:text-mhma-gold transition-colors">
               <MapPin className="w-3.5 h-3.5" />
               <span>250 E. Main St., Mountain House 95391</span>
+            </a>
+            <span className="text-white/30">|</span>
+            <a href="https://instagram.com/mhmacenter" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors" aria-label="Instagram">
+              <Instagram className="w-3.5 h-3.5" />
+            </a>
+            <a href="https://youtube.com/@mhmacenter" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors" aria-label="YouTube">
+              <Youtube className="w-3.5 h-3.5" />
             </a>
           </div>
 

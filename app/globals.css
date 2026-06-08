@@ -53,7 +53,7 @@
 }
 
 .mhma-btn-gold {
-  @apply bg-mhma-gold text-mhma-forest font-medium text-xs uppercase tracking-[.06em] px-7 py-3.5 rounded-sm hover:bg-mhma-gold-light transition-all;
+  @apply bg-mhma-gold text-black font-medium text-xs uppercase tracking-[.06em] px-7 py-3.5 rounded-sm hover:bg-mhma-gold-light transition-all;
 }
 
 .mhma-btn-ghost {
@@ -146,6 +146,14 @@
 
 [data-theme="dark"] .border-gray-200 {
   border-color: #333833 !important;
+}
+
+[data-theme="dark"] .border-gray-300 {
+  border-color: #3d423d !important;
+}
+
+[data-theme="dark"] .text-gray-300 {
+  color: #a8a49c !important;
 }
 
 [data-theme="dark"] .border-\[\#E8E2D4\] {
@@ -256,6 +264,14 @@
   border-color: #2a2e2c !important;
 }
 
+[data-theme="night"] .border-gray-300 {
+  border-color: #333735 !important;
+}
+
+[data-theme="night"] .text-gray-300 {
+  color: #98948c !important;
+}
+
 [data-theme="night"] .border-\[\#E8E2D4\] {
   border-color: #333735 !important;
 }
@@ -277,7 +293,8 @@
 }
 
 /* ── Dashboard data overflow prevention ── */
-a[href^="mailto:"] {
+.dashboard-data a[href^="mailto:"],
+td a[href^="mailto:"] {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -310,4 +327,158 @@ a[href^="mailto:"] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── Dark Mode Form & Visibility Fixes ── */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: #1e231f !important;
+  color: #e8e4dc !important;
+  border-color: #3d423d !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #88847c !important;
+}
+
+[data-theme="dark"] label {
+  color: #d0ccc4 !important;
+}
+
+[data-theme="dark"] .text-green-800,
+[data-theme="dark"] .text-green-600,
+[data-theme="dark"] .text-green-700 {
+  color: #A8D0A0 !important;
+}
+
+[data-theme="dark"] .bg-green-50 {
+  background-color: #1a2a1e !important;
+}
+
+[data-theme="dark"] .bg-green-100 {
+  background-color: #1e3022 !important;
+}
+
+[data-theme="dark"] .border-green-200 {
+  border-color: #2a4230 !important;
+}
+
+[data-theme="dark"] .text-red-800,
+[data-theme="dark"] .text-red-600 {
+  color: #E0A0A0 !important;
+}
+
+[data-theme="dark"] .bg-red-50 {
+  background-color: #2a1e1e !important;
+}
+
+[data-theme="dark"] .border-red-200 {
+  border-color: #423030 !important;
+}
+
+[data-theme="dark"] .text-amber-600,
+[data-theme="dark"] .text-amber-800 {
+  color: #D4A843 !important;
+}
+
+[data-theme="dark"] .text-blue-600 {
+  color: #80B0E0 !important;
+}
+
+[data-theme="dark"] .bg-amber-50 {
+  background-color: #2a241a !important;
+}
+
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  color: #d0ccc4 !important;
+  border-color: #333833 !important;
+}
+
+[data-theme="dark"] select option {
+  background-color: #1e231f !important;
+  color: #e8e4dc !important;
+}
+
+[data-theme="dark"] .mhma-btn-gold {
+  color: #0a0a0a !important;
+}
+
+/* ── Night Mode Form & Visibility Fixes ── */
+[data-theme="night"] input,
+[data-theme="night"] textarea,
+[data-theme="night"] select {
+  background-color: #111413 !important;
+  color: #d8d4cc !important;
+  border-color: #333735 !important;
+}
+
+[data-theme="night"] input::placeholder,
+[data-theme="night"] textarea::placeholder {
+  color: #78746c !important;
+}
+
+[data-theme="night"] label {
+  color: #c0bcb4 !important;
+}
+
+[data-theme="night"] .text-green-800,
+[data-theme="night"] .text-green-600,
+[data-theme="night"] .text-green-700 {
+  color: #90B890 !important;
+}
+
+[data-theme="night"] .bg-green-50 {
+  background-color: #0f1e12 !important;
+}
+
+[data-theme="night"] .bg-green-100 {
+  background-color: #142218 !important;
+}
+
+[data-theme="night"] .border-green-200 {
+  border-color: #1e3022 !important;
+}
+
+[data-theme="night"] .text-red-800,
+[data-theme="night"] .text-red-600 {
+  color: #C89090 !important;
+}
+
+[data-theme="night"] .bg-red-50 {
+  background-color: #1e1212 !important;
+}
+
+[data-theme="night"] .border-red-200 {
+  border-color: #302222 !important;
+}
+
+[data-theme="night"] .text-amber-600,
+[data-theme="night"] .text-amber-800 {
+  color: #C49A35 !important;
+}
+
+[data-theme="night"] .text-blue-600 {
+  color: #70A0D0 !important;
+}
+
+[data-theme="night"] .bg-amber-50 {
+  background-color: #1e1a10 !important;
+}
+
+[data-theme="night"] th,
+[data-theme="night"] td {
+  color: #c0bcb4 !important;
+  border-color: #2a2e2c !important;
+}
+
+[data-theme="night"] select option {
+  background-color: #111413 !important;
+  color: #d8d4cc !important;
+}
+
+[data-theme="night"] .mhma-btn-gold {
+  color: #0a0a0a !important;
 }

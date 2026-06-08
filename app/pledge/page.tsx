@@ -104,44 +104,44 @@ export default function PledgePage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Full Name *</label>
                 <input type="text" value={form.name} onChange={e => update("name", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="Your name" required />
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" placeholder="Your name" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Email *</label>
                 <input type="email" value={form.email} onChange={e => update("email", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="you@example.com" required />
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" placeholder="you@example.com" required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Phone (optional)</label>
                 <input type="tel" value={form.phone} onChange={e => update("phone", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="(555) 123-4567" />
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" placeholder="(555) 123-4567" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Pledge Amount ($) *</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Pledge Amount ($) *</label>
                 <input type="number" min="1" step="any" value={form.amount} onChange={e => update("amount", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="500" required />
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" placeholder="500" required />
               </div>
             </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">When do you plan to fulfill this pledge?</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">When do you plan to fulfill this pledge?</label>
                 <select value={form.timeframe} onChange={e => update("timeframe", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none text-gray-700 bg-white">
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all">
                   <option value="30">Within 30 days</option>
                   <option value="60">Within 60 days</option>
                   <option value="90">Within 90 days</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Message (optional)</label>
                 <textarea value={form.message} onChange={e => update("message", e.target.value)} rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mhma-gold/30 outline-none" placeholder="Any notes for the board..." />
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none" placeholder="Any notes for the board..." />
               </div>
             <button type="submit" disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 bg-mhma-gold hover:bg-amber-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-amber-200/50">
+              className="w-full flex items-center justify-center gap-2 bg-mhma-gold text-mhma-forest font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-500 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Heart className="w-4 h-4" /> Submit Pledge</>}
             </button>
           </form>

@@ -122,34 +122,34 @@ export default function VolunteerPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">First Name *</label>
                   <input type="text" value={form.firstName} onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest" />
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">Last Name *</label>
                   <input type="text" value={form.lastName} onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest" />
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">Email *</label>
                   <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest" />
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">Phone *</label>
                   <input type="tel" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest" />
+                    className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Availability *</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Availability *</label>
                 <select value={form.availability} onChange={e => setForm(p => ({ ...p, availability: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest">
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all">
                   <option value="">Select availability...</option>
                   <option value="weekdays-daytime">Weekdays — Daytime</option>
                   <option value="weekdays-evening">Weekdays — Evening</option>
@@ -160,7 +160,7 @@ export default function VolunteerPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Areas of Interest *</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Areas of Interest *</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {INTEREST_OPTIONS.map(opt => (
                     <label key={opt} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${
@@ -176,14 +176,14 @@ export default function VolunteerPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Additional Message (optional)</label>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Additional Message (optional)</label>
                 <textarea rows={4} value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
                   placeholder="Tell us about your skills, experience, or any questions..."
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-mhma-forest" />
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none" />
               </div>
 
               <button type="submit" disabled={loading}
-                className="w-full py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-mhma-gold-light transition-colors disabled:opacity-50">
+                className="w-full py-3 bg-mhma-gold text-mhma-forest font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-500 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? "Submitting..." : "Submit Application"}
               </button>
             </form>

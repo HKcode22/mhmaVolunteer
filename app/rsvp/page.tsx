@@ -138,12 +138,12 @@ function RSVPForm() {
         ) : (
           <form onSubmit={handleSubmit} className="bg-white rounded-sm border border-[#E8E2D4] shadow-sm p-8 space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Select Event *</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Select Event *</label>
               <select
                 required
                 value={selectedEvent}
                 onChange={(e) => setSelectedEvent(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none bg-white"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
               >
                 <option value="">-- Choose an event --</option>
                 {events.map(event => (
@@ -162,46 +162,46 @@ function RSVPForm() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Full Name *</label>
               <input
                 type="text"
                 required
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                 placeholder="Your full name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Email *</label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                 placeholder="your@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Phone</label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                 placeholder="(555) 123-4567"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Number of Attendees</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Number of Attendees</label>
               <select
                 value={formData.attendees}
                 onChange={(e) => setFormData({ ...formData, attendees: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                   <option key={n} value={n}>{n}</option>
@@ -210,12 +210,12 @@ function RSVPForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Notes (Optional)</label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none resize-none"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Any special requirements or questions..."
               />
             </div>
@@ -223,7 +223,7 @@ function RSVPForm() {
             <button
               type="submit"
               disabled={submitting || !selectedEvent}
-              className="w-full py-3 bg-mhma-forest text-white rounded-sm hover:bg-mhma-forest-light transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-wider text-sm"
+              className="w-full py-3 bg-mhma-gold text-mhma-forest font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-500 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>

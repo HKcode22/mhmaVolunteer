@@ -163,7 +163,7 @@ function EnrollForm() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Full Name *
                       </label>
                       <input
@@ -171,13 +171,13 @@ function EnrollForm() {
                         required
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                         placeholder="Enter your full name"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Email Address *
                       </label>
                       <input
@@ -185,13 +185,13 @@ function EnrollForm() {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                         placeholder="your@email.com"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Phone Number *
                       </label>
                       <input
@@ -199,20 +199,20 @@ function EnrollForm() {
                         required
                         value={formData.phone}
                         onChange={(e) => handlePhoneChange(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                         placeholder="(555) 123-4567"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Select Program *
                       </label>
                       <select
                         required
                         value={formData.program}
                         onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all bg-white"
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all"
                       >
                         <option value="">{programs.length === 0 ? "Loading programs..." : "Choose a program..."}</option>
                         {programs.map((prog) => (
@@ -225,14 +225,14 @@ function EnrollForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
                       Additional Message (Optional)
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-mhma-gold focus:border-transparent outline-none transition-all resize-none"
                       placeholder="Any questions or special requests?"
                     />
                   </div>
@@ -240,7 +240,7 @@ function EnrollForm() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full px-8 py-4 bg-mhma-gold text-white font-bold rounded-lg hover:bg-amber-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-8 py-4 bg-mhma-gold text-mhma-forest font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-amber-500 transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Submitting..." : "Submit Enrollment"}
                   </button>
