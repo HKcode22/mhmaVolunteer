@@ -26,7 +26,90 @@
 10. the get direction section in contact page background color should be white, the about mhma page and the section of that in the home page the stats cards the 15+ Years 500+ Families 13+ Programs 12+ Youth in Programs $3.2M Raised for Masjid 3+ Donors 1+ Events Held 10+ Members 500$ Raised for Programs 24+ Event RSVPs 2+ Subscribers 12+ Contact Submissions 22+ Pledges — Volunteers 4+ Total Donations — Raised for Zakat — Raised for General the “4+ Total Donations” is very confusing and misleading this is not a total number of total donations its the numbers of ppl who have donated overal counting how many have donated for all of the donations like general plus masjid contrsuction plus zakat plus other plus programs plus Dedicate this donation in that sense, so we should rename the stat card into something like total donors, and the other stat card called donors should be called Masjid Construction donors 
 11. I would want another card of stats which should be the total donations so the calculation of the total number of donations collect in over all like from all of general zakat other programs in total like adding all of the amounts im not sure if im making sense or if im overcomplicating it, we also need a stat card for the donation for the others programs saying other so i want another stat card calcualtion the total amount of how much money was given in there similar to how it is with donations for masjid constuction, programs, zakat the total amounts that are being shown like in the donations page there is a button next to
 12. since the total number of the stats card would be 20 i think it would be great to have a layout of 4x5 so a coloum of 6 and row of 3 of the stats cards would be nice for it to fit it would be nice to push the about mhma sections text to the bit more left so the stats in that layout can fit 
-13. i think i need help with these other cool things i see in the firebase area about genkit, ai agent, i wanna add something like that in the website to be able to handle like automations tasks that can make it faster and easier for board members it could also enhance the websites functionality
+13. i think i need help with these other cool things i see in the firebase area about genkit, ai agent, i wanna add something like that in the website to be able to handle like automations tasks that can make it faster and easier for board members it could also enhance the websites functionality Skip to main content
+Firebase logo
+Search for products
+Project Overview
+Settings
+Project shortcuts
+Machine Learning
+
+
+AI Logic
+
+
+Genkit
+
+
+Firestore
+
+
+Phone Verification
+New
+
+
+Authentication
+
+
+Storage
+
+
+Extensions
+
+
+Audiences
+
+
+Analytics Dashboard
+
+
+Realtime Database
+
+
+
+Show all
+Product categories
+Databases & Storage
+Security
+AI services
+Hosting & Serverless
+DevOps & Engagement
+Analytics
+Billing plan:Spark
+No-cost ($0/month)
+mhma-backend
+
+Machine Learning
+Solve common problems in your apps with machine learning
+Learn more View the docs
+Build AI into your app with the Gemini API using Firebase
+Learn more
+How do I get started?
+View the docs
+How does Machine Learning work?
+View the docs
+What can Machine Learning do for me?
+Learn more
+
+More products for developers
+
+Authentication
+An end-to-end user identity solution in under 10 lines of code
+
+Realtime Database
+Store and sync data in realtime
+
+Storage
+Store & retrieve user generated content
+See more related products 
+The total number of requests evaluated to True in your Security Rules in the time period. These evaluations resulted in an allow.
+Supercharge your development! Try Cloud Shell to access the built-in Firebase CLI and run Firebase emulators directly in a virtual machine.
+Click upgrade to learn how to claim a $300 free credit!
+Phone Number Verification is a fast and secure method for verifying user phone numbers
+Beta
+This feature (Firebase Machine Learning) is currently in Beta
+Hide Authentication, like which of these ai tool do we need or want, which are the best and for free and important need help 
+
 14. add a feature in the settings area where users can toggle between the color theme of light, dark night, as these feature is almost in every app it would be cool here but we need to make sure it works and is consistent throughout the entire website so all pages, also need to make sure that the text colors also corresponds to the background color of light and day i think, like for example if a user clicks dark they want night dark color theme then we dont want the text that are black to not be seen if the background is black so we have to be careful
 15. the main color theme throughout the entire website for consistency purposes is dark green forest, white, the old golden, the creamy color, and thats pretty much it which is good it keeps it consistent, i think when a user any user board or non board toggle on dark i think the lighter color should or would get the reverse color like dark or a charcole greyish color i think what we have right now as the color theme is the light version we need a dark night version i think and keep that as defualt
 16. i am confused about the darker colors, maybe there is a darker color than dark forest green like even more darker green, and then even more colors of black as well like chacole or greyish like there would be reverse colors of light and dark like something reverse to the creamy color or something like the black to the white im confused would need help with that 

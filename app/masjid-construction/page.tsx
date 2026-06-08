@@ -10,6 +10,8 @@ import GalleryLightbox from "@/app/components/GalleryLightbox";
 import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
 import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-stats";
 import TestimonialsDisplay from "@/app/components/TestimonialsDisplay";
+import BoardMemberCard from "@/app/components/BoardMemberCard";
+import { boardOfDirectors } from "@/app/lib/board-data";
 
 export default function MasjidConstructionPage() {
   const toEmbedUrl = (url: string): string => {
@@ -449,6 +451,20 @@ export default function MasjidConstructionPage() {
           </div>
         </section>
       </main>
+
+      {/* Board Oversight */}
+      <section className="py-16 bg-mhma-cream">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">Board <span className="text-mhma-gold">Oversight</span></h2>
+          <div className="w-24 h-1 bg-mhma-gold mx-auto mb-4"></div>
+          <p className="text-gray-600 max-w-2xl mx-auto mb-10">The masjid construction project is overseen by our board members. Reach out with any questions.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[boardOfDirectors[0], boardOfDirectors[2], boardOfDirectors[5]].filter(Boolean).map((member, i) => (
+              member ? <BoardMemberCard key={i} member={member} variant="compact" /> : null
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-[#1a1a1a] text-white py-12">

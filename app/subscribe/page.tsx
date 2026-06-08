@@ -70,7 +70,7 @@ export default function SubscribePage() {
               </div>
             ) : (
               <>
-                <div className="flex mb-8 bg-gray-100 rounded-lg p-1">
+                <div className="flex mb-8 bg-gray-100 rounded-lg p-1 whitespace-nowrap">
                   <button onClick={() => { setMode("subscribe"); setError(""); }}
                     className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
                     Subscribe

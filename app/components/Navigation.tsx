@@ -66,6 +66,13 @@ export default function Navigation({ currentPage }: NavigationProps) {
       <div className="bg-mhma-forest text-xs py-2">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
           <div className="hidden md:flex items-center gap-4 text-white/90">
+            <a href="https://www.instagram.com/mhma.ig/" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors flex items-center" aria-label="Instagram">
+              <Instagram className="w-3.5 h-3.5" />
+            </a>
+            <a href="https://www.youtube.com/@mhmuslimassociation" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors flex items-center" aria-label="YouTube">
+              <Youtube className="w-3.5 h-3.5" />
+            </a>
+            <span className="text-white/30">|</span>
             <a href="mailto:info@mhma.info" className="flex items-center gap-1.5 hover:text-mhma-gold transition-colors">
               <Mail className="w-3.5 h-3.5" />
               <span>info@mhma.info</span>
@@ -75,13 +82,6 @@ export default function Navigation({ currentPage }: NavigationProps) {
               <MapPin className="w-3.5 h-3.5" />
               <span>250 E. Main St., Mountain House 95391</span>
             </a>
-            <span className="text-white/30">|</span>
-            <a href="https://instagram.com/mhmacenter" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors" aria-label="Instagram">
-              <Instagram className="w-3.5 h-3.5" />
-            </a>
-            <a href="https://youtube.com/@mhmacenter" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors" aria-label="YouTube">
-              <Youtube className="w-3.5 h-3.5" />
-            </a>
           </div>
 
           <div className="flex items-center gap-4 ml-auto relative z-[60]">
@@ -90,7 +90,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)} className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <span className="relative">
                     <Bell className="w-4 h-4" />
                     {notifCount > 0 && (
@@ -143,7 +143,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/member/notifications" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/member/notifications" onClick={() => setNotifCount(0)} className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <span className="relative">
                     <Bell className="w-4 h-4" />
                     {notifCount > 0 && (

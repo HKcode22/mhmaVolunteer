@@ -31,6 +31,8 @@ import Navigation from "@/app/components/Navigation";
 
 import { fetchMasjidUpdates, fetchDonationsByUser, FirebaseMasjidUpdate, Donation } from "@/lib/firebase";
 import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-stats";
+import BoardMemberCard from "@/app/components/BoardMemberCard";
+import { boardOfDirectors } from "@/app/lib/board-data";
 
 type Designation = "general" | "construction" | "zakat" | "programs" | "other";
 
@@ -463,6 +465,20 @@ export default function DonatePage() {
       {user && (
         <DonationHistorySection userId={user.uid} email={user.email || undefined} />
       )}
+
+      {/* Board Oversight */}
+      <section className="py-16 bg-mhma-cream">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">Board <span className="text-mhma-gold">Oversight</span></h2>
+          <div className="w-24 h-1 bg-mhma-gold mx-auto mb-4"></div>
+          <p className="text-gray-600 max-w-2xl mx-auto mb-10">Financial matters are overseen by our board. Reach out to discuss donations, pledges, or endowments.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[boardOfDirectors[0], boardOfDirectors[2], boardOfDirectors[6]].filter(Boolean).map((member, i) => (
+              member ? <BoardMemberCard key={i} member={member} variant="compact" /> : null
+            ))}
+          </div>
+        </div>
+      </section>
 
       <footer className="bg-mhma-dark py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 text-center">
