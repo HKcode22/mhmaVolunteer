@@ -54,6 +54,15 @@ export default function DashboardContactSubmissionsPage() {
     const q = search.toLowerCase();
     return !q || i.name.toLowerCase().includes(q) || i.email.toLowerCase().includes(q) || i.subject.toLowerCase().includes(q);
   });
+  const unreadCount = items.filter(i => !i.read).length;
+
+  const handleBulkMarkRead = async () => {
+    const unread = items.filter(i => i.id && !i.read);
+    if (unread.length === 0) return;
+    await Promise.allSettled(unread.map(i => markContactSubmissionRead(i.id!)));
+    const refreshed = await fetchContactSubmissions();
+    setItems(refreshed);
+  };
 
   const filteredFaqs = faqItems.filter(i => {
     const q = faqSearch.toLowerCase();
@@ -129,12 +138,19 @@ export default function DashboardContactSubmissionsPage() {
             <Link href="/contact/faq" className="text-mhma-forest hover:text-mhma-gold underline">/contact/faq</Link>.
           </p>
 
-          <h2 className="text-xl font-bold text-gray-900 mb-3">Contact Submissions</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Contact Submissions{unreadCount > 0 && <span className="text-sm font-normal text-amber-600 ml-2">({unreadCount} unread)</span>}</h2>
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input type="text" placeholder="Search by name, email, or subject..." value={search} onChange={e => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
           </div>
+          {unreadCount > 0 && (
+            <div className="mb-4 flex justify-end">
+              <button onClick={handleBulkMarkRead} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">
+                Mark All Read ({unreadCount})
+              </button>
+            </div>
+          )}
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
             {filtered.length === 0 ? (
               <div className="p-12 text-center"><MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching submissions." : "No contact submissions yet."}</p></div>

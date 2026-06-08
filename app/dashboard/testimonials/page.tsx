@@ -23,6 +23,7 @@ export default function DashboardTestimonialsPage() {
   const [events, setEvents] = useState<FirebaseEvent[]>([]);
   const [showProgList, setShowProgList] = useState(false);
   const [showEventList, setShowEventList] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -33,6 +34,7 @@ export default function DashboardTestimonialsPage() {
       fetchEvents(100),
     ]).then(([t, p, e]) => {
       setItems(t);
+      setPendingCount(t.filter(i => !i.active).length);
       setPrograms(p);
       setEvents(e);
       setLoading(false);
@@ -78,6 +80,21 @@ export default function DashboardTestimonialsPage() {
   };
 
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
+
+  const handleToggleActive = async (id: string, active: boolean) => {
+    await updateTestimonial(id, { active });
+    const refreshed = await fetchTestimonials(100);
+    setItems(refreshed);
+    setPendingCount(refreshed.filter(t => !t.active).length);
+  };
+
+  const handleBulkActive = async (active: boolean) => {
+    const targets = items.filter(t => t.id && t.active !== active);
+    await Promise.allSettled(targets.map(t => updateTestimonial(t.id!, { active })));
+    const refreshed = await fetchTestimonials(100);
+    setItems(refreshed);
+    setPendingCount(refreshed.filter(t => !t.active).length);
+  };
 
   const pageOptions = ["homepage", "about", "donate", "contact", "masjid-construction"];
 
@@ -222,6 +239,21 @@ export default function DashboardTestimonialsPage() {
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
           </div>
 
+          {pendingCount > 0 && (
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-600">
+                <span className="font-semibold text-mhma-gold">{pendingCount}</span> testimonial{pendingCount !== 1 ? "s" : ""} pending approval
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => handleBulkActive(true)} className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 transition-colors">
+                  Activate All
+                </button>
+                <button onClick={() => handleBulkActive(false)} className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-xs font-medium hover:bg-gray-600 transition-colors">
+                  Deactivate All
+                </button>
+              </div>
+            </div>
+          )}
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
             {filtered.length === 0 ? (
               <div className="p-12 text-center"><Star className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching testimonials." : "No testimonials yet."}</p></div>
@@ -252,7 +284,19 @@ export default function DashboardTestimonialsPage() {
                             ))}
                           </div>
                         </td>
-                        <td className="px-4 py-3">{t.active ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            {t.active ? (
+                              <button onClick={() => handleToggleActive(t.id!, false)} className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors">
+                                <CheckCircle className="w-3 h-3" /> Active
+                              </button>
+                            ) : (
+                              <button onClick={() => handleToggleActive(t.id!, true)} className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-amber-100 hover:text-amber-700 transition-colors">
+                                <Clock className="w-3 h-3" /> Pending
+                              </button>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-3">
                           <button onClick={() => {
                             if (!confirm("Delete this testimonial?")) return;

@@ -24,12 +24,13 @@ export default function DashboardNewsPage() {
   const [subSearch, setSubSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
   const [notifyStatus, setNotifyStatus] = useState<string | null>(null);
+  const [unpubCount, setUnpubCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
     Promise.all([fetchAllNews(100), fetchSubscribers(500)]).then(([n, s]) => {
-      setItems(n); setSubscribers(s); setLoading(false);
+      setItems(n); setUnpubCount(n.filter(x => !x.published).length); setSubscribers(s); setLoading(false);
     }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
@@ -112,6 +113,22 @@ export default function DashboardNewsPage() {
     setSubscribers(prev => prev.filter(s => s.id !== id));
   };
 
+  const handleTogglePublished = async (id: string, published: boolean) => {
+    await updateNews(id, { published });
+    const refreshed = await fetchAllNews();
+    setItems(refreshed);
+    setUnpubCount(refreshed.filter(n => !n.published).length);
+  };
+
+  const handleBulkPublished = async (published: boolean) => {
+    const targets = items.filter(n => n.id && n.published !== published);
+    if (targets.length === 0) return;
+    await Promise.allSettled(targets.map(n => updateNews(n.id!, { published })));
+    const refreshed = await fetchAllNews();
+    setItems(refreshed);
+    setUnpubCount(refreshed.filter(n => !n.published).length);
+  };
+
   const handleExport = () => {
     const active = subscribers.filter(s => s.status === "active");
     const csv = "Email,Name,Source,Date\n" + active.map(s =>
@@ -135,7 +152,15 @@ export default function DashboardNewsPage() {
           </Link>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">News</h1>
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-3xl font-bold text-gray-900">News {unpubCount > 0 && <span className="text-base font-normal text-amber-600">({unpubCount} unpublished)</span>}</h1>
+                {unpubCount > 0 && (
+                  <div className="flex gap-2">
+                    <button onClick={() => handleBulkPublished(true)} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Publish All</button>
+                    <button onClick={() => handleBulkPublished(false)} className="text-xs px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 font-medium">Unpublish All</button>
+                  </div>
+                )}
+              </div>
               <p className="text-gray-500 text-sm">Manage news articles and newsletter subscribers.</p>
             </div>
             <button onClick={() => showForm ? resetForm() : setShowForm(true)}
@@ -249,7 +274,11 @@ export default function DashboardNewsPage() {
                               <p className="font-semibold text-gray-900">{n.title}</p>
                               <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
                             </td>
-                            <td className="px-4 py-3">{n.published ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => n.id && handleTogglePublished(n.id, !n.published)} className={`p-1 rounded-lg transition-colors ${n.published ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`} title={n.published ? "Unpublish" : "Publish"}>
+                                {n.published ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                              </button>
+                            </td>
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
                                 <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
@@ -420,7 +449,11 @@ export default function DashboardNewsPage() {
                               <p className="font-semibold text-gray-900">{n.title}</p>
                               <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
                             </td>
-                            <td className="px-4 py-3">{n.published ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => n.id && handleTogglePublished(n.id, !n.published)} className={`p-1 rounded-lg transition-colors ${n.published ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`} title={n.published ? "Unpublish" : "Publish"}>
+                                {n.published ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                              </button>
+                            </td>
                             <td className="px-4 py-3">
                               <div className="flex gap-1">
                                 <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>

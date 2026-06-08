@@ -48,9 +48,19 @@ export default function DashboardPledgesPage() {
     return !q || d.donorName.toLowerCase().includes(q) || d.donorEmail.toLowerCase().includes(q) || d.designation.includes(q);
   });
 
+  const pendingCount = pledges.filter(p => p.status === "pending").length;
+
   const handleStatus = async (id: string, status: "fulfilled" | "cancelled") => {
     await updatePledgeStatus(id, status);
     setPledges(prev => prev.map(p => p.id === id ? { ...p, status, fulfilledAt: status === "fulfilled" ? new Date() : undefined, cancelledAt: status === "cancelled" ? new Date() : undefined } : p));
+  };
+
+  const handleBulkStatus = async (status: "fulfilled" | "cancelled") => {
+    const pending = pledges.filter(p => p.status === "pending" && p.id);
+    if (pending.length === 0) return;
+    await Promise.allSettled(pending.map(p => updatePledgeStatus(p.id!, status)));
+    const refreshed = await fetchPledges();
+    setPledges(refreshed);
   };
 
   const handleDelete = async (id: string) => {
@@ -87,9 +97,16 @@ export default function DashboardPledgesPage() {
   const renderPledgesSection = () => (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Pledges</h2>
+        <h2 className="text-xl font-bold text-gray-900">Pledges {pendingCount > 0 && <span className="text-base font-normal text-amber-600">({pendingCount} pending)</span>}</h2>
         <span className="text-xs text-gray-400">{filteredPledges.length} of {pledges.length}</span>
       </div>
+
+      {pendingCount > 0 && (
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => handleBulkStatus("fulfilled")} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Fulfill All</button>
+          <button onClick={() => handleBulkStatus("cancelled")} className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">Cancel All</button>
+        </div>
+      )}
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

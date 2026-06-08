@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
+import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, updateEnrollment, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 
@@ -23,12 +23,15 @@ export default function DashboardProgramsPage() {
   const [saveError, setSaveError] = useState("");
   const [enrollSearch, setEnrollSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
     Promise.all([fetchPrograms(100), fetchEnrollments(100)]).then(([p, e]) => {
       setPrograms(p); setEnrollments(e); setLoading(false);
+      const pend = e.filter(x => x.status === "pending").length;
+      setPendingCount(pend);
     }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
@@ -41,6 +44,21 @@ export default function DashboardProgramsPage() {
     const next = sectionOrder === "normal" ? "swapped" : "normal";
     setSectionOrder(next);
     localStorage.setItem("programsSectionOrder", next);
+  };
+
+  const handleEnrollStatus = async (id: string, status: "approved" | "rejected") => {
+    await updateEnrollment(id, { status });
+    const refreshed = await fetchEnrollments(100);
+    setEnrollments(refreshed);
+    setPendingCount(refreshed.filter(x => x.status === "pending").length);
+  };
+
+  const handleBulkEnroll = async (status: "approved" | "rejected") => {
+    const pending = enrollments.filter(i => i.status === "pending" && i.id);
+    await Promise.allSettled(pending.map(i => updateEnrollment(i.id!, { status })));
+    const refreshed = await fetchEnrollments(100);
+    setEnrollments(refreshed);
+    setPendingCount(refreshed.filter(x => x.status === "pending").length);
   };
 
   const filtered = programs.filter(i => {
@@ -267,7 +285,13 @@ export default function DashboardProgramsPage() {
               <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} program{filtered.length !== 1 ? "s" : ""}</p>
 
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Enrollments</h2>
+                <h2 className="text-xl font-bold text-gray-900">Enrollments {pendingCount > 0 && <span className="text-sm font-normal text-amber-600">({pendingCount} pending)</span>}</h2>
+                {pendingCount > 0 && (
+                  <div className="flex gap-2">
+                    <button onClick={() => handleBulkEnroll("approved")} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Approve All</button>
+                    <button onClick={() => handleBulkEnroll("rejected")} className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">Reject All</button>
+                  </div>
+                )}
                 <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
               </div>
               <div className="relative mb-6">
@@ -305,10 +329,22 @@ export default function DashboardProgramsPage() {
                             <td className="px-4 py-3">{statusBadge(i.status)}</td>
                             <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
                             <td className="px-4 py-3">
-                              <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
-                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex gap-1">
+                                {i.status === "pending" && (
+                                  <>
+                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "approved")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
+                                      <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "rejected")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
+                                      <XCircle className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
+                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -322,7 +358,13 @@ export default function DashboardProgramsPage() {
           ) : (
             <>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Enrollments</h2>
+                <h2 className="text-xl font-bold text-gray-900">Enrollments {pendingCount > 0 && <span className="text-sm font-normal text-amber-600">({pendingCount} pending)</span>}</h2>
+                {pendingCount > 0 && (
+                  <div className="flex gap-2">
+                    <button onClick={() => handleBulkEnroll("approved")} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">Approve All</button>
+                    <button onClick={() => handleBulkEnroll("rejected")} className="text-xs px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">Reject All</button>
+                  </div>
+                )}
                 <button onClick={handleSwap} className="text-xs text-mhma-gold hover:text-amber-600 font-medium">Swap order</button>
               </div>
               <div className="relative mb-6">
@@ -360,10 +402,22 @@ export default function DashboardProgramsPage() {
                             <td className="px-4 py-3">{statusBadge(i.status)}</td>
                             <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
                             <td className="px-4 py-3">
-                              <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
-                                className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex gap-1">
+                                {i.status === "pending" && (
+                                  <>
+                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "approved")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
+                                      <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "rejected")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
+                                      <XCircle className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
+                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
