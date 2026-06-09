@@ -54,6 +54,7 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
 }
 
 export default function AiAssistant() {
+  const openRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', text: "Hi! I'm your MHMA assistant. Ask me anything about the dashboard." },
@@ -152,12 +153,13 @@ export default function AiAssistant() {
     };
   }, []);
 
-  const handleClose = useCallback(() => setOpen(false), []);
+  const handleClose = useCallback(() => { openRef.current = false; setOpen(false); }, []);
 
   useEffect(() => {
     if (!open) return;
     function handleMouseDown(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node) && !(e.target as HTMLElement)?.closest?.('[aria-label="AI Assistant"]')) {
+        openRef.current = false;
         setOpen(false);
       }
     }
@@ -321,8 +323,9 @@ export default function AiAssistant() {
   return (
     <>
       <button
-        onClick={() => setOpen(prev => !prev)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
+        onClick={() => { const next = !openRef.current; openRef.current = next; setOpen(next); }}
+        style={{ zIndex: 9999 }}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
         aria-label="AI Assistant"
       >
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}

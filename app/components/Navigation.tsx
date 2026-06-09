@@ -162,9 +162,14 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <button onClick={handleLogout} className="text-gray-500 hover:text-red-400 transition-colors">LOGOUT</button>
               </>
             ) : (
-              <Link href="/login" className="text-gray-800 hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
-                <User className="w-3.5 h-3.5" /> MEMBER LOGIN
-              </Link>
+              <>
+                <Link href="/settings" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1 text-sm">
+                  <Settings className="w-3.5 h-3.5" /> THEME
+                </Link>
+                <Link href="/login" className="text-gray-800 hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" /> MEMBER LOGIN
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -256,7 +261,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   CONTACT<span className="text-[10px]">▼</span>
                 </Link>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="w-44 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
+                    <div className="w-56 bg-white text-gray-800 shadow-xl rounded-lg overflow-hidden ring-1 ring-black/5">
                       <div className="h-0.5 bg-mhma-gold w-full"></div>
                       <Link href="/contact/faq" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest">FAQ</Link>
                       <Link href="/subscribe" className="block px-4 py-1.5 text-sm hover:bg-mhma-cream hover:text-mhma-forest whitespace-nowrap">Subscribe / Unsubscribe</Link>
@@ -339,7 +344,12 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
               </>
             ) : (
-              <Link href="/login" className="block py-2 text-mhma-gold font-semibold">MEMBER LOGIN</Link>
+              <>
+                <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                  <Settings className="w-4 h-4" /> THEME
+                </Link>
+                <Link href="/login" className="block py-2 text-mhma-gold font-semibold">MEMBER LOGIN</Link>
+              </>
             )}
           </div>
         </div>
