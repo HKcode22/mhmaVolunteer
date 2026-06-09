@@ -586,3 +586,14 @@ td a[href^="mailto:"] {
 [data-theme="night"] .mhma-btn-gold {
   color: #0a0a0a !important;
 }
+
+/* ── AI Assistant Nav Hint Golden Glow ── */
+@keyframes ai-nav-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(212, 168, 67, 0.4), 0 0 16px rgba(212, 168, 67, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(212, 168, 67, 0.7), 0 0 32px rgba(212, 168, 67, 0.4); }
+}
+.ai-nav-glow {
+  animation: ai-nav-pulse 1.5s ease-in-out infinite !important;
+  border-radius: 6px !important;
+  outline: 2px solid rgba(212, 168, 67, 0.5) !important;
+}

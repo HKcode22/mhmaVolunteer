@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, AlertCircle, RefreshCw } from 'lucide-react';
+import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation } from 'lucide-react';
 import { knowledgeBase } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
 import { usePathname } from 'next/navigation';
@@ -165,6 +165,18 @@ export default function AiAssistant() {
     return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [open]);
 
+  useEffect(() => {
+    if (!navHint) return;
+    const path = navHint;
+    const links = document.querySelectorAll<HTMLAnchorElement>(`a[href="${path}"]`);
+    links.forEach((el) => {
+      el.classList.add('ai-nav-glow');
+    });
+    return () => {
+      links.forEach((el) => el.classList.remove('ai-nav-glow'));
+    };
+  }, [navHint]);
+
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     resizingRef.current = true;
@@ -189,7 +201,18 @@ export default function AiAssistant() {
       return result.answer;
     }
     return new Promise((resolve) => {
-      pendingResolveRef.current = resolve;
+      const timeout = setTimeout(() => {
+        if (pendingResolveRef.current === resolve) {
+          pendingResolveRef.current = null;
+          const result = keywordMatch(query, role, pathname);
+          setNavHint(result.navHint || null);
+          resolve(result.answer);
+        }
+      }, 10000);
+      pendingResolveRef.current = (val: string | null) => {
+        clearTimeout(timeout);
+        resolve(val);
+      };
       workerRef.current?.postMessage({
         type: 'query',
         data: { query, role, currentPage: pathname },
@@ -349,10 +372,9 @@ export default function AiAssistant() {
                     }`}>
                       {msg.text}
                       {msg.navHint && (
-                        <a href={msg.navHint}
-                          className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 text-[10px] font-semibold uppercase bg-mhma-gold text-black rounded-full shadow-[0_0_12px_rgba(212,168,67,0.6)] hover:shadow-[0_0_20px_rgba(212,168,67,0.8)] transition-all">
-                          Go to {msg.navHint.split('/').pop() || msg.navHint}
-                        </a>
+                        <div className="flex items-center gap-1 mt-2 text-[10px] font-semibold uppercase text-mhma-gold">
+                          <Navigation className="w-3 h-3" /> Go to {msg.navHint.split('/').pop() || msg.navHint}
+                        </div>
                       )}
                     </div>
                   </div>

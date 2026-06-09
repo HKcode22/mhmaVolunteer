@@ -1,19 +1,28 @@
 const CDN_URLS = [
   'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js',
   'https://unpkg.com/@xenova/transformers@2.17.2/dist/transformers.min.js',
-  'https://cdn.jsdelivr.net/npm/@huggingface/transformers@2.17.2/dist/transformers.min.js',
+  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.js',
+  'https://unpkg.com/@xenova/transformers@2.17.2/dist/transformers.js',
 ];
 
 let loaded = false;
+let loadError = '';
 for (const url of CDN_URLS) {
   try {
     importScripts(url);
+    if (typeof self.Transformers === 'undefined') {
+      loadError = `CDN loaded but self.Transformers is undefined (${url})`;
+      continue;
+    }
     loaded = true;
+    loadError = '';
     break;
-  } catch (_) {}
+  } catch (e) {
+    loadError = `${e.message} (${url})`;
+  }
 }
 if (!loaded) {
-  postMessage({ type: 'init-status', status: 'error', error: 'Failed to load Transformers.js from any CDN.' });
+  postMessage({ type: 'init-status', status: 'error', error: 'Failed to load Transformers.js from any CDN. Last error: ' + loadError });
 }
 
 let extractor = null;

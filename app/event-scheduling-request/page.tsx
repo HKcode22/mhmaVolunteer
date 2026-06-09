@@ -170,10 +170,13 @@ export default function EventSchedulingRequestPage() {
           <p className="text-gray-600 mb-8">Please fill out the form below to request an event scheduling.</p>
 
           {submitSuccess ? (
-            <div className="min-h-[600px] flex items-center justify-center">
-              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                <p className="text-green-800 font-semibold text-lg">Event scheduling request submitted successfully!</p>
-                <p className="text-green-600">We will review your request and get back to you.</p>
+            <div className="flex items-center justify-center py-12">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center max-w-md w-full">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <p className="text-green-800 font-semibold text-lg mb-1">Event scheduling request submitted successfully!</p>
+                <p className="text-green-600 text-sm">We will review your request and get back to you.</p>
               </div>
             </div>
           ) : (

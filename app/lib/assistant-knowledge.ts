@@ -14,6 +14,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Events. You'll see an 'Add Event' button at the top. Click it and fill in the event title, date, time, location, description, and image. Click 'Create Event' to save. The event will appear on the public Events page and homepage automatically.",
     keywords: ["create event", "add event", "new event", "schedule event", "event form", "make event", "setup event", "host event", "organize event", "event creation"],
     roles: ["board_member", "administrator"],
+    denyRoles: ["member"],
     pages: ["/dashboard/events"],
   },
   {
@@ -21,6 +22,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Events. All events are listed there with their date, time, and status. You can also click the event title to view it on the public page. From this list you can edit or delete events.",
     keywords: ["find events", "event list", "view events", "where are events", "events page", "show events", "event directory", "list of events"],
     roles: ["board_member", "administrator"],
+    denyRoles: ["member"],
     pages: ["/dashboard/events"],
   },
   {
@@ -28,6 +30,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Events. Find the event in the list and click the Edit (pencil) or Delete (trash) icon next to it. Editing lets you change the title, date, time, location, description, or image. Deleting removes it permanently.",
     keywords: ["edit event", "delete event", "modify event", "remove event", "update event", "change event", "cancel event"],
     roles: ["board_member", "administrator"],
+    denyRoles: ["member"],
     pages: ["/dashboard/events"],
   },
   {
@@ -35,6 +38,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Events. Scroll down to the RSVPs section. You'll see Approve (green check) and Reject (red X) buttons next to each pending RSVP. You can also use the 'Approve All' or 'Reject All' buttons to process all pending RSVPs at once.",
     keywords: ["approve rsvp", "reject rsvp", "confirm rsvp", "cancel rsvp", "rsvp pending", "rsvp approval", "manage rsvp", "rsvp list", "rsvp management"],
     roles: ["board_member", "administrator"],
+    denyRoles: ["member"],
     pages: ["/dashboard/events"],
   },
 
@@ -44,28 +48,28 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Programs. Click 'Add Program'. Fill in the title, slug (URL name), description, images, stats, and testimonial quote. Click 'Create Program' to save. The program will appear on the Programs page.",
     keywords: ["create program", "add program", "new program", "program form", "make program", "setup program", "program creation", "start program", "launch program"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/programs"],
+    denyRoles: ["member"],    pages: ["/dashboard/programs"],
   },
   {
     q: "Where do I find and edit programs?",
     a: "Go to Dashboard → Programs. All programs are shown in a list with Edit (pencil) and Delete (trash) buttons. Click Edit to change the title, description, images, or any other field. Changes save immediately.",
     keywords: ["find programs", "program list", "edit program", "modify program", "update program", "program page", "view programs", "change program"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/programs"],
+    denyRoles: ["member"],    pages: ["/dashboard/programs"],
   },
   {
     q: "How do I approve or reject program enrollments?",
     a: "Go to Dashboard → Programs. The Enrollments section shows all sign-ups with their status (pending, approved, rejected, completed). Use the Approve (green) or Reject (red) buttons next to pending enrollments, or use 'Approve All' / 'Reject All' to batch process them.",
     keywords: ["approve enrollment", "reject enrollment", "enrollment pending", "program enrollment", "manage enrollment", "enrollment approval", "student enrollment", "sign up approval"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/programs"],
+    denyRoles: ["member"],    pages: ["/dashboard/programs"],
   },
   {
     q: "How do I delete a program?",
     a: "Go to Dashboard → Programs. Find the program you want to remove and click the Delete (trash) icon. Confirm the deletion. This cannot be undone, so make sure the program is no longer needed.",
     keywords: ["delete program", "remove program", "destroy program", "erase program"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/programs"],
+    denyRoles: ["member"],    pages: ["/dashboard/programs"],
   },
 
   // ─── News Management ───
@@ -74,14 +78,14 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → News. Click 'Add News'. Fill in the title, slug, excerpt (short summary), and content. You can also add an image. Set the published toggle to make it visible on the homepage. Click 'Save'.",
     keywords: ["create news", "add news", "new article", "news article", "publish news", "write news", "post news", "news post", "announcement"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/news"],
+    denyRoles: ["member"],    pages: ["/dashboard/news"],
   },
   {
     q: "How do I edit or unpublish a news article?",
     a: "Go to Dashboard → News. Find the article and click Edit (pencil) to change its content. Toggle the 'Published' switch off to unpublish (hide from public). You can also delete the article with the Delete (trash) button.",
     keywords: ["edit news", "unpublish news", "delete news", "remove article", "hide news", "news edit", "modify news"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/news"],
+    denyRoles: ["member"],    pages: ["/dashboard/news"],
   },
 
   // ─── Testimonial Management ───
@@ -90,7 +94,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Testimonials. You can add new testimonials with a person's name, their role, the testimonial text, and select which pages to display it on. Use the Activate/Deactivate buttons to toggle visibility. Use 'Activate All' / 'Deactivate All' for bulk changes.",
     keywords: ["testimonial", "review", "feedback", "activate testimonial", "deactivate testimonial", "add testimonial", "manage review", "community voice"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/testimonials"],
+    denyRoles: ["member"],    pages: ["/dashboard/testimonials"],
   },
 
   // ─── Masjid Construction ───
@@ -99,14 +103,14 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Construction. You can add updates with images, videos, captions, and phase information. Each update tracks the fundraising progress (raised amount vs goal). Updates appear on the Masjid Construction page.",
     keywords: ["construction update", "masjid progress", "building update", "fundraising progress", "add construction", "construction photo", "building phase", "masjid status"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/construction"],
+    denyRoles: ["member"],    pages: ["/dashboard/construction"],
   },
   {
     q: "How do I add construction photos?",
     a: "Go to Dashboard → Construction. Click 'Add Update'. Upload images showing the latest progress. Add a caption describing what's in the photo. These images appear in the gallery on the public Masjid Construction page.",
     keywords: ["construction photo", "upload image", "add photo", "building picture", "masjid image", "gallery photo"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/construction"],
+    denyRoles: ["member"],    pages: ["/dashboard/construction"],
   },
 
   // ─── Donations & Pledges ───
@@ -115,21 +119,21 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Donations. Here you can see all donations, add manual donations (cash/check), and export data as CSV. The Pledges section below shows pending pledges that you can mark as fulfilled or cancelled.",
     keywords: ["donation", "pledge", "manual donation", "cash donation", "check donation", "export donations", "donation list", "view donations", "donation management"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/donations"],
+    denyRoles: ["member"],    pages: ["/dashboard/donations"],
   },
   {
     q: "How do I record a cash or check donation?",
     a: "Go to Dashboard → Donations. Click 'Add Manual Donation' to record a cash or check donation. Enter the donor's name, email, amount, and designation (e.g., Masjid Construction, General Fund). This creates a record like any other donation.",
     keywords: ["cash donation", "check donation", "manual donation", "record donation", "offline donation", "add donation"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/donations"],
+    denyRoles: ["member"],    pages: ["/dashboard/donations"],
   },
   {
     q: "How do I manage pledges?",
     a: "Go to Dashboard → Pledges. All pledges are listed with their status (pending/fulfilled/cancelled). Use 'Fulfill' to mark a pledge as completed, or 'Cancel' to void it. Use 'Fulfill All' / 'Cancel All' for bulk actions.",
     keywords: ["pledge", "fulfill pledge", "cancel pledge", "pledge management", "pledge status", "pending pledge", "pledge list", "manage pledge"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/pledges"],
+    denyRoles: ["member"],    pages: ["/dashboard/pledges"],
   },
 
   // ─── Contact & FAQ ───
@@ -138,21 +142,21 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Contact & FAQ. Contact submissions are listed with a 'Mark as Read' button. Use 'Mark All Read' to batch process unread submissions. You can also manage FAQs, view volunteer submissions, and reorder FAQ items.",
     keywords: ["contact submission", "contact form", "mark read", "faq", "volunteer submission", "contact inquiry", "message from public", "contact management"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/contact-submissions"],
+    denyRoles: ["member"],    pages: ["/dashboard/contact-submissions"],
   },
   {
     q: "How do I manage FAQ questions?",
     a: "Go to Dashboard → Contact & FAQ. Scroll to the FAQ section. You can add new FAQs, edit existing ones, reorder them using the up/down arrows, and toggle them active/inactive. FAQs with 'Active' checked appear on the public FAQ page.",
     keywords: ["faq", "add question", "edit faq", "faq answer", "faq order", "frequently asked", "manage faq", "faq list"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/contact-submissions"],
+    denyRoles: ["member"],    pages: ["/dashboard/contact-submissions"],
   },
   {
     q: "How do I view volunteer submissions?",
     a: "Go to Dashboard → Contact & FAQ. Scroll down to the Volunteer Submissions section. You'll see all volunteer sign-ups with their contact info, availability, and interests. You can delete entries that are no longer needed.",
     keywords: ["volunteer", "volunteer submission", "volunteer signup", "volunteer list", "volunteer interest"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/contact-submissions"],
+    denyRoles: ["member"],    pages: ["/dashboard/contact-submissions"],
   },
 
   // ─── User Management ───
@@ -161,7 +165,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Members. You can see all registered users, their roles (board member or regular member), and their activity (enrollments, RSVPs, pledges, donations). You can delete users if needed.",
     keywords: ["user", "member", "board member", "delete user", "user list", "manage user", "member list", "registered user", "user role"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/users"],
+    denyRoles: ["member"],    pages: ["/dashboard/users"],
   },
 
   // ─── Activity Log ───
@@ -170,7 +174,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Activity Log. This shows all actions taken by board members (creating events, approving RSVPs, etc.). You can revert certain changes if needed using the 'Revert' button.",
     keywords: ["activity log", "audit trail", "history", "revert", "board activity", "action log", "change history", "who did what"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/activity"],
+    denyRoles: ["member"],    pages: ["/dashboard/activity"],
   },
 
   // ─── Analytics ───
@@ -179,7 +183,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Analytics. This shows charts and cards with key metrics: events, programs, users, donations, enrollments, RSVPs, and more. You can also edit the About page stats (years serving, number of families) from this page.",
     keywords: ["analytics", "statistics", "stats", "metrics", "dashboard stats", "about stats", "data", "charts", "report", "performance"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/analytics"],
+    denyRoles: ["member"],    pages: ["/dashboard/analytics"],
   },
 
   // ─── Scheduling Requests ───
@@ -188,7 +192,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Scheduling. Event scheduling requests from the public appear here with details about their event. Use Approve (green) or Reject (red) buttons per request, or use 'Approve All' / 'Reject All' for bulk processing.",
     keywords: ["scheduling request", "event request", "approve scheduling", "reject scheduling", "facility request", "room booking", "calendar request"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/scheduling"],
+    denyRoles: ["member"],    pages: ["/dashboard/scheduling"],
   },
 
   // ─── Invite Codes ───
@@ -197,6 +201,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard. In the Quick Actions or sections, find 'Invite Codes'. Click 'Generate New Code'. A unique code will appear. Share this code with the new board member — they'll enter it during registration. Each code works only once.",
     keywords: ["invite code", "board registration", "new board member", "generate code", "invite link", "registration code", "board invite"],
     roles: ["administrator"],
+    denyRoles: ["member"],
     pages: ["/dashboard"],
   },
   {
@@ -204,6 +209,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Invite Codes section. Each code has a Copy button (for sharing) and a Delete button. Copied codes go to your clipboard. Delete codes that have been used or are no longer needed.",
     keywords: ["copy code", "delete code", "share code", "invite code copy", "remove code"],
     roles: ["administrator"],
+    denyRoles: ["member"],
     pages: ["/dashboard"],
   },
 
@@ -241,7 +247,7 @@ export const knowledgeBase: QAItem[] = [
     a: "Go to Dashboard → Subscribers. You can see all newsletter subscribers and their status (active/unsubscribed). You can manually unsubscribe someone if they request it, or delete their record entirely.",
     keywords: ["subscriber", "subscriber list", "email subscriber", "newsletter list", "manage subscriber"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/subscribers"],
+    denyRoles: ["member"],    pages: ["/dashboard/subscribers"],
   },
 
   // ─── Public Pages ───
@@ -302,14 +308,14 @@ export const knowledgeBase: QAItem[] = [
     a: "If you're a board member, click on 'Dashboard' in the top navigation bar (the word 'DASHBOARD' with a dropdown arrow). From there you can access all sections: Events, Programs, News, Testimonials, Construction, Donations, Pledges, Contact, Members, Analytics, and more.",
     keywords: ["go to dashboard", "dashboard link", "where is dashboard", "access dashboard", "open dashboard", "board dashboard", "admin panel"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard"],
+    denyRoles: ["member"],    pages: ["/dashboard"],
   },
   {
     q: "What is the dashboard?",
     a: "The Dashboard is the control center for board members. It shows all pending items (enrollments, RSVPs, contacts), quick action buttons for common tasks, and individual sections for managing events, programs, news, donations, and more. You can customize which sections appear using the 'Customize' button.",
     keywords: ["what is dashboard", "dashboard overview", "dashboard explain", "what can i do in dashboard", "dashboard help"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard"],
+    denyRoles: ["member"],    pages: ["/dashboard"],
   },
 
   // ─── Bulk Operations ───
@@ -318,13 +324,13 @@ export const knowledgeBase: QAItem[] = [
     a: "Many sections have 'Approve All' and 'Reject All' buttons at the top. For example: Enrollments, Scheduling Requests, and RSVPs all support bulk processing. These buttons process all pending items with a single click. Use with care — there's no undo!",
     keywords: ["approve all", "reject all", "bulk approve", "bulk reject", "batch process", "approve multiple", "mass approve"],
     roles: ["board_member", "administrator"],
-  },
+    denyRoles: ["member"],  },
   {
     q: "How do I mark all contact submissions as read?",
     a: "Go to Dashboard → Contact & FAQ. At the top of the Contact Submissions section, there's a 'Mark All Read' button. This marks all unread submissions as read in one click.",
     keywords: ["mark all read", "mark read", "bulk read", "all read", "read all messages"],
     roles: ["board_member", "administrator"],
-    pages: ["/dashboard/contact-submissions"],
+    denyRoles: ["member"],    pages: ["/dashboard/contact-submissions"],
   },
 
   // ─── Security & Role Help ───

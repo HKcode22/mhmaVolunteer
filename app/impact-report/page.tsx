@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Heart, Users, BookOpen, Building2, ChevronRight } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
+import { formatCompactAmount } from "@/lib/stats-utils";
 
 export default function ImpactReportPage() {
   const [stats, setStats] = useState<any>(null);
@@ -36,7 +37,7 @@ export default function ImpactReportPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             {[
-              { icon: Building2, label: "Raised for Masjid", value: stats ? `$${(stats.constructionTotal / 1000).toFixed(0)}K+` : "—", color: "bg-mhma-forest" },
+              { icon: Building2, label: "Raised for Masjid", value: stats ? `${formatCompactAmount(stats.constructionTotal)}+` : "—", color: "bg-mhma-forest" },
               { icon: Heart, label: "Total Donors", value: stats ? `${stats.donorCount}+` : "—", color: "bg-mhma-gold/20 text-gray-900" },
               { icon: Users, label: "Youth Served", value: stats ? `${stats.enrollmentCount}+` : "—", color: "bg-mhma-forest-mid" },
               { icon: BookOpen, label: "Programs Running", value: "10+", color: "bg-teal-700" },

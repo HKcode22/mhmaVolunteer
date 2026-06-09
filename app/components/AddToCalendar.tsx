@@ -60,7 +60,7 @@ export default function AddToCalendar({ title, description, date, time, location
         href={googleUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 px-5 py-3 border-2 border-blue-500 text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-all text-sm"
+        className="inline-flex items-center justify-center gap-2 px-5 py-3 border-2 border-mhma-forest text-mhma-forest font-semibold rounded-xl hover:bg-mhma-forest hover:text-white transition-all text-sm"
       >
         <Calendar className="w-4 h-4" /> Google Calendar
       </a>

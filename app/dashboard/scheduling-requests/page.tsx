@@ -107,7 +107,7 @@ export default function DashboardSchedulingRequestsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col gap-0.5">
-                              <a href={`mailto:${i.organizer?.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.organizer?.email}</a>
+                              <a href={`mailto:${i.organizer?.email}`} className="flex items-center gap-1 text-mhma-forest hover:underline"><Mail className="w-3 h-3" /> {i.organizer?.email}</a>
                               {i.organizer?.phone && <a href={`tel:${i.organizer?.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.organizer?.phone}</a>}
                             </div>
                           </td>

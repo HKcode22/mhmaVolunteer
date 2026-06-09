@@ -464,7 +464,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <button type="submit" disabled={changingEmail}
-                className="bg-blue-700 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
+                className="bg-mhma-forest hover:bg-mhma-forest-light text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50">
                 {changingEmail ? "Processing..." : "Change Email"}
               </button>
             </form>

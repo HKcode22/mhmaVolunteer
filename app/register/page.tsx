@@ -348,8 +348,8 @@ export default function RegisterPage() {
                     </p>
                   )}
                   {tab === "member" && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                      <p className="text-sm text-blue-800">
+                    <div className="bg-mhma-cream border border-mhma-forest/20 rounded-xl p-4">
+                      <p className="text-sm text-mhma-forest font-medium">
                         Already an MHMA member? Visit{" "}
                         <a href="https://s.mhma.info/join" target="_blank" rel="noopener noreferrer" className="text-mhma-gold hover:underline font-medium">
                           s.mhma.info/join

@@ -164,18 +164,18 @@ export default function ContactPage() {
           <p className="text-gray-600 mb-8">Stay connected on social media for the latest updates.</p>
           <div className="flex justify-center gap-6">
             <a href="https://www.youtube.com/@mhmuslimassociation/videos" target="_blank" rel="noopener noreferrer"
-              className="flex flex-col items-center gap-2 p-6 bg-red-50 rounded-2xl border border-red-200 hover:bg-red-100 hover:shadow-lg transition-all group w-36">
+              className="flex flex-col items-center gap-2 p-6 bg-mhma-cream rounded-2xl border border-gray-200 hover:bg-mhma-gold/10 hover:shadow-lg transition-all group w-36">
               <Youtube className="w-10 h-10 text-red-600 group-hover:scale-110 transition-transform" />
               <span className="text-sm font-semibold text-gray-700">YouTube</span>
             </a>
             <a href="https://www.instagram.com/mhma.ig/" target="_blank" rel="noopener noreferrer"
-              className="flex flex-col items-center gap-2 p-6 bg-pink-50 rounded-2xl border border-pink-200 hover:bg-pink-100 hover:shadow-lg transition-all group w-36">
+              className="flex flex-col items-center gap-2 p-6 bg-mhma-cream rounded-2xl border border-gray-200 hover:bg-mhma-gold/10 hover:shadow-lg transition-all group w-36">
               <Instagram className="w-10 h-10 text-pink-600 group-hover:scale-110 transition-transform" />
               <span className="text-sm font-semibold text-gray-700">Instagram</span>
             </a>
             <a href="https://mhma.us" target="_blank" rel="noopener noreferrer"
-              className="flex flex-col items-center gap-2 p-6 bg-blue-50 rounded-2xl border border-blue-200 hover:bg-blue-100 hover:shadow-lg transition-all group w-36">
-              <Globe className="w-10 h-10 text-blue-600 group-hover:scale-110 transition-transform" />
+              className="flex flex-col items-center gap-2 p-6 bg-mhma-cream rounded-2xl border border-gray-200 hover:bg-mhma-gold/10 hover:shadow-lg transition-all group w-36">
+              <Globe className="w-10 h-10 text-mhma-forest group-hover:scale-110 transition-transform" />
               <span className="text-sm font-semibold text-gray-700">Website</span>
             </a>
           </div>

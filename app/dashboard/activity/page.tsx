@@ -186,7 +186,7 @@ export default function ActivityLogPage() {
           </div>
 
           {message && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">{message}</div>
+            <div className="mb-4 p-3 bg-mhma-cream border border-mhma-forest/20 rounded-lg text-sm text-mhma-forest font-medium">{message}</div>
           )}
 
           {filteredEntries.length === 0 ? (

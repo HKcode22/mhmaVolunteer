@@ -59,7 +59,7 @@ export default function MemberNotificationsPage() {
               <Link key={n.id} href={`/news/${n.slug}`}
                 className="block bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all">
                 <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-full bg-blue-50 text-blue-600 shrink-0">
+                  <div className="p-2 rounded-full bg-mhma-cream text-mhma-forest shrink-0">
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
