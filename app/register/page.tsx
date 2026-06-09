@@ -151,7 +151,7 @@ export default function RegisterPage() {
       />
 
       <main className="pt-8">
-        <section className="py-16 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <section className="py-16 px-4">
           <div className="max-w-xl mx-auto">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               {/* Tabs */}

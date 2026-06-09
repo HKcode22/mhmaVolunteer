@@ -115,7 +115,7 @@ export default function SubscribePage() {
                   </div>
 
                   <button type="submit" disabled={submitting}
-                    className={`w-full py-3 font-bold rounded-lg transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${mode === "subscribe" ? "bg-mhma-gold text-white hover:bg-amber-600" : "bg-gray-700 text-white hover:bg-gray-600"}`}>
+                    className={`w-full py-3 font-bold rounded-lg transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 bg-mhma-gold text-white hover:bg-amber-600`}>
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                     {submitting ? "Processing..." : mode === "subscribe" ? "Subscribe" : "Unsubscribe"}
                   </button>

@@ -321,7 +321,7 @@ export default function AiAssistant() {
   return (
     <>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(prev => !prev)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
         aria-label="AI Assistant"
       >
