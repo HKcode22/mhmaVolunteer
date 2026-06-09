@@ -406,7 +406,7 @@ export default function DonatePage() {
                         </div>
                         <h4 className="font-bold text-white">MHMA Builders Club</h4>
                       </div>
-                      <p className="text-sm text-mhma-sage mb-2">Join our monthly giving program. Set it and forget it — your recurring gift provides stable funding for programs year-round.</p>
+                      <p className="text-sm text-gray-200 mb-2">Join our monthly giving program. Set it and forget it — your recurring gift provides stable funding for programs year-round.</p>
                       <p className="text-xs text-mhma-gold font-semibold">Toggle "Monthly" above to start your sustainer membership.</p>
                     </div>
 
@@ -419,21 +419,21 @@ export default function DonatePage() {
               <div className="lg:w-5/12 flex flex-col gap-8">
                 {statsLoaded && masjidLoaded ? (
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-mhma-teal p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-mhma-forest p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Campaign Goal</p>
                     <p className="text-4xl md:text-5xl font-bold font-serif">{formatCampaignDollars(goal)}</p>
                   </div>
-                  <div className="bg-mhma-gold p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-mhma-forest p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Raised to Date</p>
                     <p className="text-4xl md:text-5xl font-bold font-serif">{formatCampaignDollars(raised)}</p>
                   </div>
-                  <div className="bg-mhma-dark p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
+                  <div className="bg-mhma-forest p-8 rounded-3xl shadow-lg text-white transform hover:scale-[1.02] transition-transform">
                     <p className="text-xs uppercase tracking-widest opacity-70 mb-2 font-bold">Remaining</p>
                     <p className="text-4xl md:text-5xl font-bold font-serif">{formatCampaignDollars(remaining)}</p>
                   </div>
-                  <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-gray-200 text-center">
-                    <p className="text-2xl font-bold text-mhma-forest">{statsLoaded ? donorCount : "—"}</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">Donors Contributed</p>
+                  <div className="bg-mhma-forest p-6 rounded-3xl shadow-lg text-white text-center">
+                    <p className="text-2xl font-bold">{statsLoaded ? donorCount : "—"}</p>
+                    <p className="text-xs uppercase tracking-wider opacity-70">Donors Contributed</p>
                   </div>
                 </div>
                 ) : null}

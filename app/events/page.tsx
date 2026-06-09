@@ -244,15 +244,15 @@ export default function EventsPage() {
       </main>
 
       {/* Call to Action */}
-      <section className="py-24 bg-mhma-dark relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-8 font-serif italic">Together we are stronger.</h2>
-          <p className="text-gray-400 text-lg mb-12 font-light leading-relaxed">
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-8 font-serif italic">Together we are stronger.</h2>
+          <p className="text-gray-500 text-lg mb-12 font-light leading-relaxed">
             Join us in our mission to build a vibrant Muslim community in Mountain House. Your support and presence make all the difference.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/feedback" className="px-10 py-4 border-2 border-white text-white font-bold rounded-full hover:bg-white hover:text-mhma-dark transition-all">VOLUNTEER</Link>
-            <Link href="/donate" className="px-10 py-4 bg-mhma-gold text-white font-bold rounded-full hover:bg-amber-600 transition-all shadow-xl">DONATE NOW</Link>
+            <Link href="/feedback" className="px-10 py-4 border-2 border-mhma-forest text-mhma-forest font-bold rounded-full hover:bg-mhma-forest hover:text-white transition-all">VOLUNTEER</Link>
+            <Link href="/donate" className="px-10 py-4 bg-mhma-forest text-white font-bold rounded-full hover:bg-mhma-forest-light transition-all shadow-xl">DONATE NOW</Link>
           </div>
         </div>
       </section>

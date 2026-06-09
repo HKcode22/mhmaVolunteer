@@ -28,7 +28,7 @@ export default function PageBanner({
             {badgeText}
           </div>
         )}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-serif uppercase tracking-tight">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-serif uppercase tracking-tight">
           {title.split(' ').map((word, i) =>
             word === highlightedText ? (
               <span key={i} className="text-mhma-gold italic"> {word}</span>
@@ -38,7 +38,7 @@ export default function PageBanner({
           )}
         </h1>
         {subtitle && (
-          <p className="text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
             {subtitle}
           </p>
         )}

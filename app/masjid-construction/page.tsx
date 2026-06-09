@@ -89,8 +89,8 @@ export default function MasjidConstructionPage() {
         {/* Hero */}
         <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16 md:py-20">
           <div className="max-w-6xl mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Islamic Center Campaign</h1>
-            <p className="text-lg md:text-xl text-mhma-sage/90 max-w-3xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Islamic Center Campaign</h1>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
               Building a permanent place of worship, education, and community for Mountain House.
             </p>
             <p className="text-sm text-mhma-gold/80 mt-4 italic max-w-2xl mx-auto">
@@ -173,7 +173,7 @@ export default function MasjidConstructionPage() {
           <section className="max-w-6xl mx-auto px-4 py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
-                <p className="text-3xl md:text-4xl font-bold text-mhma-forest">{formatCampaignDollars(goal)}</p>
+                <p className="text-3xl md:text-4xl font-bold text-gray-900">{formatCampaignDollars(goal)}</p>
                 <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Campaign Goal</p>
               </div>
               <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
@@ -184,8 +184,8 @@ export default function MasjidConstructionPage() {
                 <p className="text-3xl md:text-4xl font-bold text-gray-900">{formatCampaignDollars(remaining)}</p>
                 <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Remaining</p>
               </div>
-              <div className="bg-white/90 rounded-2xl p-8 text-center shadow-lg border border-gray-200">
-                <p className="text-3xl md:text-4xl font-bold text-mhma-forest">{donorCount}</p>
+              <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100">
+                <p className="text-3xl md:text-4xl font-bold text-gray-900">{donorCount}</p>
                 <p className="text-gray-500 text-sm mt-2 uppercase tracking-wider">Donors Contributed</p>
               </div>
             </div>
@@ -418,14 +418,14 @@ export default function MasjidConstructionPage() {
         {/* Testimonials */}
         <TestimonialsDisplay page="masjid-construction" />
 
-        {/* Donate Section */}
-        <section className="bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light py-16">
+        {/* Support Section */}
+        <section className="py-16 bg-white">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">Support the Campaign</h2>
-            <p className="text-mhma-sage/90 mb-8 max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Support the Campaign</h2>
+            <p className="text-gray-600 mb-8 max-w-xl mx-auto">
               Your donation brings us closer to having a permanent masjid. Every contribution counts.
             </p>
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-8 max-w-lg mx-auto">
+            <div className="bg-mhma-cream rounded-2xl p-8 max-w-lg mx-auto">
               <Link href="/donate" className="inline-flex items-center gap-2 px-8 py-3 bg-mhma-gold text-mhma-forest font-bold rounded-lg hover:bg-amber-500 transition-all shadow-lg text-lg">
               <Heart className="w-5 h-5" /> Donate Now
             </Link>

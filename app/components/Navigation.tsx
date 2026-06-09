@@ -300,7 +300,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
@@ -332,7 +332,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>

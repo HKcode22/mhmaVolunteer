@@ -492,7 +492,7 @@ useEffect(() => {
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-xs sm:text-sm tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
               </div>
-              <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2 text-gray-800/80" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2 text-mhma-gold" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight text-gray-900">
                 <span className="whitespace-nowrap">welcome to <span className="text-mhma-gold italic">MHMA</span></span>
                 {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block">{user.displayName}</span></> : '!'}

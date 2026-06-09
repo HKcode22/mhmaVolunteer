@@ -181,14 +181,14 @@ export default function ProgramsPage() {
       </main>
 
       {/* Secondary Banner */}
-      <section className="py-24 bg-mhma-dark text-white">
+      <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <Sparkles className="w-12 h-12 text-mhma-gold mx-auto mb-8" />
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 font-serif">Community Enrichment</h2>
-          <p className="text-gray-400 text-lg mb-12 font-light">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 font-serif text-gray-900">Community Enrichment</h2>
+          <p className="text-gray-500 text-lg mb-12 font-light">
             Don't see a program that fits your needs? We're always looking for new ideas and volunteers to lead community initiatives.
           </p>
-          <Link href="/feedback" className="inline-flex items-center px-10 py-4 bg-mhma-gold text-white font-bold rounded-full hover:bg-amber-600 transition-all shadow-xl">
+          <Link href="/feedback" className="inline-flex items-center px-10 py-4 bg-mhma-forest text-white font-bold rounded-full hover:bg-mhma-forest-light transition-all shadow-xl">
             SUGGEST A PROGRAM <Zap className="ml-2 w-5 h-5" />
           </Link>
         </div>

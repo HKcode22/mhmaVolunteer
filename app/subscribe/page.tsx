@@ -72,11 +72,11 @@ export default function SubscribePage() {
               <>
                 <div className="flex justify-center mb-6 bg-gray-100 rounded-lg p-0.5">
                   <button onClick={() => { setMode("subscribe"); setError(""); }}
-                    className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-colors whitespace-nowrap tracking-wide ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+                    className={`px-3 py-1 text-[10px] font-semibold rounded transition-colors whitespace-nowrap tracking-wide ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
                     SUBSCRIBE
                   </button>
                   <button onClick={() => { setMode("unsubscribe"); setError(""); }}
-                    className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-colors whitespace-nowrap tracking-wide ${mode === "unsubscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+                    className={`px-3 py-1 text-[10px] font-semibold rounded transition-colors whitespace-nowrap tracking-wide ${mode === "unsubscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
                     UNSUBSCRIBE
                   </button>
                 </div>

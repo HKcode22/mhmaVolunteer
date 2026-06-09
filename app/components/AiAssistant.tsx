@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, AlertCircle, WifiOff } from 'lucide-react';
+import { X, Send, Loader2, Bot, AlertCircle } from 'lucide-react';
 import { knowledgeBase } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
 import { usePathname } from 'next/navigation';
@@ -203,13 +203,11 @@ export default function AiAssistant() {
               <p className="text-[10px] text-white/70">
                 {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
                 {workerStatus === 'ready' && 'Transformers.js ML · Offline'}
-                {workerStatus === 'error' && usingFallback && 'ML unavailable · Using keyword mode'}
-                {workerStatus === 'unsupported' && 'Using keyword matching'}
+                {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching · Offline'}
                 {workerStatus === 'unloaded' && 'Initializing...'}
               </p>
             </div>
             {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
-            {usingFallback && <WifiOff className="w-4 h-4 text-white/70" />}
           </div>
 
           {workerStatus === 'loading' && (
@@ -217,12 +215,6 @@ export default function AiAssistant() {
               <Loader2 className="w-8 h-8 animate-spin mx-auto text-mhma-gold" />
               <p>Downloading ML model (~23MB)...</p>
               <p className="text-xs text-gray-400">Cached after first load for instant use.</p>
-            </div>
-          )}
-
-          {(workerStatus === 'error' || workerStatus === 'unsupported') && usingFallback && (
-            <div className="px-4 py-3 text-center text-xs text-amber-600 bg-amber-50 border-b border-gray-200">
-              ML model unavailable — answering with keyword matching instead.
             </div>
           )}
 

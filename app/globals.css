@@ -112,6 +112,10 @@
   background-color: #1E4C30 !important;
 }
 
+[data-theme="dark"] .bg-mhma-dark {
+  background-color: #1A221D !important;
+}
+
 /* ── Dark Mode Gradient Overrides ── */
 [data-theme="dark"] .from-mhma-forest {
   --tw-gradient-from: #0A1F12 !important;
@@ -268,6 +272,10 @@
 
 [data-theme="night"] .bg-mhma-forest-light {
   background-color: #143A22 !important;
+}
+
+[data-theme="night"] .bg-mhma-dark {
+  background-color: #0E1510 !important;
 }
 
 /* ── Night Mode Gradient Overrides ── */
