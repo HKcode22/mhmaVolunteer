@@ -56,15 +56,19 @@ export default function AiAssistant() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unloaded');
   const [workerError, setWorkerError] = useState('');
   const [usingFallback, setUsingFallback] = useState(false);
+  const [width, setWidth] = useState(360);
+  const [height, setHeight] = useState(500);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
   const { user } = useAuth();
   const pathname = usePathname();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,7 +87,7 @@ export default function AiAssistant() {
           setWorkerError('Model load timed out.');
           setUsingFallback(true);
         }
-      }, 30000);
+      }, 15000);
       initTimeoutRef.current = timeout;
 
       worker.onmessage = (event) => {
@@ -138,6 +142,19 @@ export default function AiAssistant() {
       if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
     };
   }, []);
+
+  const handleClose = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleMouseDown(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [open]);
 
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
     if (usingFallback || workerStatus === 'error' || workerStatus === 'unsupported') {
@@ -195,20 +212,27 @@ export default function AiAssistant() {
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2">
-            <Bot className="w-5 h-5" />
-            <div className="flex-1">
-              <p className="font-bold text-sm">MHMA Assistant</p>
-              <p className="text-[10px] text-white/70">
-                {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
-                {workerStatus === 'ready' && 'Transformers.js ML · Offline'}
-                {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching · Offline'}
-                {workerStatus === 'unloaded' && 'Initializing...'}
-              </p>
+        <>
+          <div className="fixed inset-0 z-40" />
+          <div ref={panelRef}
+            style={{ width: `${width}px`, height: `${height}px` }}
+            className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden resize overflow-auto">
+            <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
+              <Bot className="w-5 h-5" />
+              <div className="flex-1">
+                <p className="font-bold text-sm">MHMA Assistant</p>
+                <p className="text-[10px] text-white/70">
+                  {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
+                  {workerStatus === 'ready' && 'Transformers.js ML · Offline'}
+                  {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching · Offline'}
+                  {workerStatus === 'unloaded' && 'Initializing...'}
+                </p>
+              </div>
+              {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
+              <button onClick={handleClose} className="text-white/70 hover:text-white ml-1">
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
-          </div>
 
           {workerStatus === 'loading' && (
             <div className="px-4 py-6 text-center text-sm text-gray-500 space-y-3">
@@ -268,7 +292,8 @@ export default function AiAssistant() {
               </div>
             </>
           )}
-        </div>
+          </div>
+        </>
       )}
     </>
   );

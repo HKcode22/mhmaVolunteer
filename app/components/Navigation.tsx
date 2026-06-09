@@ -19,6 +19,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
 
   useEffect(() => {
     if (!user) return;
+    if (sessionStorage.getItem('mhma_notifs_viewed')) return;
     if (isBoardMember) {
       const fetchCounts = async () => {
         try {
@@ -65,19 +66,19 @@ export default function Navigation({ currentPage }: NavigationProps) {
     <nav className="fixed w-full z-50 top-0">
       <div className="bg-mhma-forest text-xs py-2">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
-          <div className="hidden md:flex items-center gap-4 text-white/90">
+          <div className="hidden md:flex items-center gap-4 text-gray-800">
             <a href="https://www.instagram.com/mhma.ig/" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors flex items-center" aria-label="Instagram">
               <Instagram className="w-3.5 h-3.5" />
             </a>
             <a href="https://www.youtube.com/@mhmuslimassociation" target="_blank" rel="noopener noreferrer" className="hover:text-mhma-gold transition-colors flex items-center" aria-label="YouTube">
               <Youtube className="w-3.5 h-3.5" />
             </a>
-            <span className="text-white/30">|</span>
+            <span className="text-gray-400">|</span>
             <a href="mailto:info@mhma.info" className="flex items-center gap-1.5 hover:text-mhma-gold transition-colors">
               <Mail className="w-3.5 h-3.5" />
               <span>info@mhma.info</span>
             </a>
-            <span className="text-white/30">|</span>
+            <span className="text-gray-400">|</span>
             <a href="/contact#directions" className="flex items-center gap-1.5 hover:text-mhma-gold transition-colors">
               <MapPin className="w-3.5 h-3.5" />
               <span>250 E. Main St., Mountain House 95391</span>
@@ -87,10 +88,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
           <div className="flex items-center gap-4 ml-auto relative z-[60]">
             {isBoardMember ? (
               <>
-                <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/settings" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)} className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <span className="relative">
                     <Bell className="w-4 h-4" />
                     {notifCount > 0 && (
@@ -101,11 +102,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   </span>
                   NOTIFICATIONS
                 </Link>
-                <Link href="/profile" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/profile" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <User className="w-3.5 h-3.5" /> PROFILE
                 </Link>
                 <div className="relative group">
-                  <Link href="/dashboard" className="text-white hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
+                  <Link href="/dashboard" className="text-gray-800 hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
                     DASHBOARD<span className="text-[10px]">▼</span>
                   </Link>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[70]">
@@ -140,10 +141,10 @@ export default function Navigation({ currentPage }: NavigationProps) {
               </>
             ) : isLoggedIn ? (
               <>
-                <Link href="/settings" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/settings" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/member/notifications" onClick={() => setNotifCount(0)} className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/member/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <span className="relative">
                     <Bell className="w-4 h-4" />
                     {notifCount > 0 && (
@@ -154,14 +155,14 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   </span>
                   NOTIFICATIONS
                 </Link>
-                <Link href="/profile" className="text-white hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/profile" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <User className="w-3.5 h-3.5" /> PROFILE
                 </Link>
-                <span className="text-white/70 text-xs">Welcome, {user?.displayName || "Member"}</span>
-                <button onClick={handleLogout} className="text-gray-300 hover:text-red-400 transition-colors">LOGOUT</button>
+                <span className="text-gray-600 text-xs">Welcome, {user?.displayName || "Member"}</span>
+                <button onClick={handleLogout} className="text-gray-500 hover:text-red-400 transition-colors">LOGOUT</button>
               </>
             ) : (
-              <Link href="/login" className="text-white hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
+              <Link href="/login" className="text-gray-800 hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
                 <User className="w-3.5 h-3.5" /> MEMBER LOGIN
               </Link>
             )}
@@ -300,7 +301,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
@@ -332,7 +333,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>

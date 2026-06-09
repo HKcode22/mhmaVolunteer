@@ -415,9 +415,6 @@ export default function MasjidConstructionPage() {
           </div>
         </section>
 
-        {/* Testimonials */}
-        <TestimonialsDisplay page="masjid-construction" />
-
         {/* Support Section */}
         <section className="py-16 bg-white">
           <div className="max-w-4xl mx-auto px-4 text-center">
@@ -432,6 +429,9 @@ export default function MasjidConstructionPage() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials */}
+        <TestimonialsDisplay page="masjid-construction" />
 
         {/* Contact Info */}
         <section className="grid grid-cols-1 md:grid-cols-3">

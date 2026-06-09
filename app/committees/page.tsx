@@ -99,10 +99,10 @@ export default function CommitteesPage() {
               <div key={index} className="text-center">
                 <a 
                   href={committee.href}
-                  className="block hover:opacity-90 transition-opacity"
+                  className="block group"
                   aria-label={committee.name}
                 >
-                  <div className="relative mx-auto w-full max-w-[400px] overflow-hidden">
+                  <div className="relative mx-auto w-full max-w-[400px] overflow-hidden bg-mhma-cream rounded-sm">
                     <img
                       src={committee.image}
                       alt={committee.name}
@@ -111,6 +111,7 @@ export default function CommitteesPage() {
                       height="500"
                     />
                   </div>
+                  <p className="mt-3 text-sm font-semibold text-gray-900 uppercase tracking-wide">{committee.name}</p>
                 </a>
               </div>
             ))}

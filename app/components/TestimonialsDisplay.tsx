@@ -8,9 +8,11 @@ interface Props {
   page: string;
   limit?: number;
   className?: string;
+  sectionBg?: string;
+  cardBg?: string;
 }
 
-export default function TestimonialsDisplay({ page, limit: max = 6, className = "" }: Props) {
+export default function TestimonialsDisplay({ page, limit: max = 6, className = "", sectionBg = "bg-mhma-cream", cardBg = "bg-white" }: Props) {
   const [items, setItems] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,12 +27,12 @@ export default function TestimonialsDisplay({ page, limit: max = 6, className = 
   if (items.length === 0) return null;
 
   return (
-    <section className={`py-16 bg-white ${className}`}>
+    <section className={`py-16 ${sectionBg} ${className}`}>
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Community Voices</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {items.map(t => (
-            <div key={t.id} className="bg-mhma-cream rounded-2xl p-6 border border-gray-200">
+            <div key={t.id} className={`${cardBg} rounded-2xl p-6 border border-gray-200`}>
               <div className="flex items-center gap-1 mb-3">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-mhma-gold text-mhma-gold" />)}
               </div>
