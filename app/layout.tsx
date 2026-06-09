@@ -3,6 +3,9 @@ import { DM_Sans, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
+import dynamic from "next/dynamic";
+
+const AiAssistant = dynamic(() => import("@/app/components/AiAssistant"), { ssr: false });
 
 const dmsans = DM_Sans({
   subsets: ["latin"],
@@ -116,7 +119,7 @@ export default function RootLayout({
         )}
       </head>
       <body className="antialiased font-sans" style={{ color: 'var(--color-text)', backgroundColor: 'var(--color-bg)' }}>
-        <AuthProvider><ThemeProvider>{children}</ThemeProvider></AuthProvider>
+        <AuthProvider><ThemeProvider>{children}<AiAssistant /></ThemeProvider></AuthProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
 import { useAuth } from "@/lib/auth-context";
@@ -35,7 +36,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { router.push("/login"); return; }
+    if (!user) { setLoading(false); return; }
     loadSettings();
   }, [user, authLoading]);
 
@@ -90,49 +91,62 @@ export default function SettingsPage() {
                 <Bell className="w-5 h-5 text-mhma-gold" />
                 Email Notification Preferences
               </h2>
-              <p className="text-sm text-gray-500 mt-1">Choose which emails you receive from MHMA.</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {user ? "Choose which emails you receive from MHMA." : "Sign in to manage your email preferences."}
+              </p>
             </div>
-            <div className="px-6 py-4 space-y-4">
-              {[
-                { key: "notifyOnNewEvents", label: "New Events", desc: "When a new event is posted" },
-                { key: "notifyOnNewPrograms", label: "New Programs", desc: "When a new program is announced" },
-                { key: "notifyOnNews", label: "News Updates", desc: "When news articles are published" },
-                { key: "notifyOnRsvpReminders", label: "RSVP Reminders", desc: "Reminders for events you've RSVP'd to" },
-              ].map(({ key, label, desc }) => (
-                <label key={key} className="flex items-start gap-3 py-2 cursor-pointer group">
-                  <div className="relative mt-0.5">
-                    <input
-                      type="checkbox"
-                      checked={(settings as any)[key]}
-                      onChange={(e) => setSettings({ ...settings, [key]: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-mhma-forest peer-checked:border-mhma-forest transition-colors flex items-center justify-center">
-                      {(settings as any)[key] && (
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                      )}
-                    </div>
+            {user ? (
+              <>
+                <div className="px-6 py-4 space-y-4">
+                  {[
+                    { key: "notifyOnNewEvents", label: "New Events", desc: "When a new event is posted" },
+                    { key: "notifyOnNewPrograms", label: "New Programs", desc: "When a new program is announced" },
+                    { key: "notifyOnNews", label: "News Updates", desc: "When news articles are published" },
+                    { key: "notifyOnRsvpReminders", label: "RSVP Reminders", desc: "Reminders for events you've RSVP'd to" },
+                  ].map(({ key, label, desc }) => (
+                    <label key={key} className="flex items-start gap-3 py-2 cursor-pointer group">
+                      <div className="relative mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[key]}
+                          onChange={(e) => setSettings({ ...settings, [key]: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-mhma-forest peer-checked:border-mhma-forest transition-colors flex items-center justify-center">
+                          {(settings as any)[key] && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-mhma-forest transition-colors">{label}</p>
+                        <p className="text-xs text-gray-500">{desc}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                  <div>
+                    {saved && <span className="text-sm text-green-600">Preferences saved!</span>}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-mhma-forest transition-colors">{label}</p>
-                    <p className="text-xs text-gray-500">{desc}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
-              <div>
-                {saved && <span className="text-sm text-green-600">Preferences saved!</span>}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="px-6 py-2 bg-mhma-forest text-white rounded-md hover:bg-mhma-forest-light disabled:opacity-50 transition-colors text-sm font-medium flex items-center gap-2"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    {saving ? "Saving..." : "Save Preferences"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="px-6 py-8 text-center">
+                <p className="text-sm text-gray-500 mb-3">Sign in to customize your email notification preferences.</p>
+                <Link href="/login" className="inline-flex items-center px-4 py-2 bg-mhma-forest text-white rounded-md hover:bg-mhma-forest-light transition-colors text-sm font-medium">
+                  Sign In
+                </Link>
               </div>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-6 py-2 bg-mhma-forest text-white rounded-md hover:bg-mhma-forest-light disabled:opacity-50 transition-colors text-sm font-medium flex items-center gap-2"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                {saving ? "Saving..." : "Save Preferences"}
-              </button>
-            </div>
+            )}
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-6">
@@ -165,6 +179,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {user && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-6">
             <div className="px-6 py-5 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -194,6 +209,7 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
+          )}
         </div>
       </div>
     </>

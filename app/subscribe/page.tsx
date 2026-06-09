@@ -70,13 +70,13 @@ export default function SubscribePage() {
               </div>
             ) : (
               <>
-                <div className="flex mb-8 bg-gray-100 rounded-lg p-1 whitespace-nowrap">
+                <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
                   <button onClick={() => { setMode("subscribe"); setError(""); }}
-                    className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+                    className={`flex-shrink-0 px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
                     Subscribe
                   </button>
                   <button onClick={() => { setMode("unsubscribe"); setError(""); }}
-                    className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${mode === "unsubscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+                    className={`flex-shrink-0 px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${mode === "unsubscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
                     Unsubscribe
                   </button>
                 </div>

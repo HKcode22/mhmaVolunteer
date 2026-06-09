@@ -101,44 +101,44 @@
 }
 
 [data-theme="dark"] .bg-mhma-forest {
-  background-color: #1A3A26 !important;
+  background-color: #0A1F12 !important;
 }
 
 [data-theme="dark"] .bg-mhma-forest-mid {
-  background-color: #2D4236 !important;
+  background-color: #143A22 !important;
 }
 
 [data-theme="dark"] .bg-mhma-forest-light {
-  background-color: #3D5A48 !important;
+  background-color: #1E4C30 !important;
 }
 
 /* ── Dark Mode Gradient Overrides ── */
 [data-theme="dark"] .from-mhma-forest {
-  --tw-gradient-from: #1A3A26 !important;
+  --tw-gradient-from: #0A1F12 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 [data-theme="dark"] .via-mhma-forest-mid {
-  --tw-gradient-via: #2D4236 !important;
+  --tw-gradient-via: #143A22 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="dark"] .via-mhma-forest-light {
-  --tw-gradient-via: #3D5A48 !important;
+  --tw-gradient-via: #1E4C30 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="dark"] .to-mhma-forest-light,
 [data-theme="dark"] .to-mhma-forest {
-  --tw-gradient-to: #3D5A48 !important;
+  --tw-gradient-to: #1E4C30 !important;
 }
 
 [data-theme="dark"] .to-mhma-forest-mid {
-  --tw-gradient-to: #2D4236 !important;
+  --tw-gradient-to: #143A22 !important;
 }
 
 [data-theme="dark"] .from-mhma-forest-mid {
-  --tw-gradient-from: #2D4236 !important;
+  --tw-gradient-from: #143A22 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
@@ -167,7 +167,7 @@
 }
 
 [data-theme="dark"] .text-mhma-forest {
-  color: #8AB89A !important;
+  color: #7AC090 !important;
 }
 
 [data-theme="dark"] .text-mhma-sage {
@@ -259,44 +259,44 @@
 }
 
 [data-theme="night"] .bg-mhma-forest {
-  background-color: #112B1A !important;
+  background-color: #05140A !important;
 }
 
 [data-theme="night"] .bg-mhma-forest-mid {
-  background-color: #1A3A26 !important;
+  background-color: #0A1F12 !important;
 }
 
 [data-theme="night"] .bg-mhma-forest-light {
-  background-color: #2D4236 !important;
+  background-color: #143A22 !important;
 }
 
 /* ── Night Mode Gradient Overrides ── */
 [data-theme="night"] .from-mhma-forest {
-  --tw-gradient-from: #112B1A !important;
+  --tw-gradient-from: #05140A !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 [data-theme="night"] .via-mhma-forest-mid {
-  --tw-gradient-via: #1A3A26 !important;
+  --tw-gradient-via: #0A1F12 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="night"] .via-mhma-forest-light {
-  --tw-gradient-via: #2D4236 !important;
+  --tw-gradient-via: #143A22 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="night"] .to-mhma-forest-light,
 [data-theme="night"] .to-mhma-forest {
-  --tw-gradient-to: #2D4236 !important;
+  --tw-gradient-to: #143A22 !important;
 }
 
 [data-theme="night"] .to-mhma-forest-mid {
-  --tw-gradient-to: #1A3A26 !important;
+  --tw-gradient-to: #0A1F12 !important;
 }
 
 [data-theme="night"] .from-mhma-forest-mid {
-  --tw-gradient-from: #1A3A26 !important;
+  --tw-gradient-from: #0A1F12 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
@@ -325,7 +325,7 @@
 }
 
 [data-theme="night"] .text-mhma-forest {
-  color: #6A987A !important;
+  color: #5AA070 !important;
 }
 
 [data-theme="night"] .text-mhma-sage {

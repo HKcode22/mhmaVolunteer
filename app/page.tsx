@@ -501,12 +501,6 @@ useEffect(() => {
                 Serving the Muslim Community in Mountain House since 2010
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                <Link href="/events" className="mhma-btn-gold">
-                  Explore Events
-                </Link>
-                <Link href="/programs" className="mhma-btn-gold">
-                  Explore Programs
-                </Link>
                 <Link href="/masjid-construction" className="mhma-btn-gold">
                   MASJID CONSTRUCTION
                 </Link>
