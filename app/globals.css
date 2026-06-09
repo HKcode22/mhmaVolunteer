@@ -119,26 +119,26 @@
 }
 
 [data-theme="dark"] .via-mhma-forest-mid {
-  --tw-gradient-via: #143A22 !important;
+  --tw-gradient-via: #0C2618 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="dark"] .via-mhma-forest-light {
-  --tw-gradient-via: #1E4C30 !important;
+  --tw-gradient-via: #0F2E1C !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="dark"] .to-mhma-forest-light,
 [data-theme="dark"] .to-mhma-forest {
-  --tw-gradient-to: #1E4C30 !important;
+  --tw-gradient-to: #0F2E1C !important;
 }
 
 [data-theme="dark"] .to-mhma-forest-mid {
-  --tw-gradient-to: #143A22 !important;
+  --tw-gradient-to: #0C2618 !important;
 }
 
 [data-theme="dark"] .from-mhma-forest-mid {
-  --tw-gradient-from: #143A22 !important;
+  --tw-gradient-from: #0C2618 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
@@ -277,26 +277,26 @@
 }
 
 [data-theme="night"] .via-mhma-forest-mid {
-  --tw-gradient-via: #0A1F12 !important;
+  --tw-gradient-via: #061A0C !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="night"] .via-mhma-forest-light {
-  --tw-gradient-via: #143A22 !important;
+  --tw-gradient-via: #081F10 !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 [data-theme="night"] .to-mhma-forest-light,
 [data-theme="night"] .to-mhma-forest {
-  --tw-gradient-to: #143A22 !important;
+  --tw-gradient-to: #081F10 !important;
 }
 
 [data-theme="night"] .to-mhma-forest-mid {
-  --tw-gradient-to: #0A1F12 !important;
+  --tw-gradient-to: #061A0C !important;
 }
 
 [data-theme="night"] .from-mhma-forest-mid {
-  --tw-gradient-from: #0A1F12 !important;
+  --tw-gradient-from: #061A0C !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 

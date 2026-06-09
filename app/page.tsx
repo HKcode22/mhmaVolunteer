@@ -492,12 +492,12 @@ useEffect(() => {
                 <span className="w-6 h-px bg-mhma-gold"></span>
                 <span className="text-xs sm:text-sm tracking-[.18em] uppercase text-mhma-gold font-medium">Mountain House Muslim Association</span>
               </div>
-              <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight">
+              <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2 text-gray-800/80" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight text-gray-900">
                 <span className="whitespace-nowrap">welcome to <span className="text-mhma-gold italic">MHMA</span></span>
                 {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block">{user.displayName}</span></> : '!'}
               </h1>
-              <p className="text-base md:text-lg lg:text-xl text-mhma-sage/90 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">
+              <p className="text-base md:text-lg lg:text-xl text-gray-600 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">
                 Serving the Muslim Community in Mountain House since 2010
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">
@@ -753,17 +753,16 @@ useEffect(() => {
               );
             })}
           </div>
+          {events.length > 0 && (
+            <div className="mt-8">
+              <EventCalendar events={events} />
+            </div>
+          )}
           <div className="text-center mt-8">
             <Link href="/events" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
               View All Events <ChevronRight className="ml-1 w-5 h-5" />
             </Link>
           </div>
-
-          {events.length > 0 && (
-            <div className="mt-12">
-              <EventCalendar events={events} />
-            </div>
-          )}
         </div>
       </section>
 
@@ -836,17 +835,17 @@ useEffect(() => {
                   title.toLowerCase().includes("3d") || title.toLowerCase().includes("print") ? "🖨️" : "🏫";
 
                 return (
-                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-mhma-forest p-6 rounded-xl border border-mhma-forest hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
+                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
                     {program.image ? (
-                      <img src={program.image} alt={title} className="w-full h-40 object-cover rounded-lg mb-4" />
+                      <img src={program.image} alt={title} className="w-full h-40 object-cover rounded-lg mb-3" />
                     ) : (
-                      <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">{icon}</div>
+                      <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{icon}</div>
                     )}
-                    <h3 className="font-bold text-white mb-2 group-hover:text-mhma-gold">{title}</h3>
-                    <p className="text-mhma-sage text-sm line-clamp-3 leading-relaxed">{desc}</p>
+                    <h3 className="font-bold text-gray-900 mb-2 group-hover:text-mhma-gold transition-colors">{title}</h3>
+                    <p className="text-gray-500 text-sm line-clamp-2">{desc}</p>
                     {isBoardMember && (
                       <Link href={`/dashboard/programs/edit?id=${program.id}`} onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 p-1.5 bg-white/20 rounded hover:bg-mhma-gold transition-colors" title="Edit program">
-                        <Edit3 className="w-3.5 h-3.5 text-white/70 hover:text-white" />
+                        <Edit3 className="w-3.5 h-3.5 text-gray-400 hover:text-mhma-gold" />
                       </Link>
                     )}
                   </Link>
@@ -855,8 +854,8 @@ useEffect(() => {
             })()}
           </div>
           <div className="text-center">
-            <Link href="/programs" className="inline-flex items-center px-6 py-2.5 bg-mhma-forest text-white font-semibold rounded-lg hover:bg-mhma-forest-mid hover:scale-105 transition-all shadow-lg">
-              Explore Programs <ChevronRight className="ml-2 w-5 h-5" />
+            <Link href="/programs" className="inline-flex items-center text-mhma-gold font-semibold hover:text-amber-600">
+              Explore Programs <ChevronRight className="ml-1 w-5 h-5" />
             </Link>
           </div>
         </div>
