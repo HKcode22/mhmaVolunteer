@@ -164,7 +164,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             ) : (
               <>
                 <Link href="/settings" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1 text-sm">
-                  <Settings className="w-3.5 h-3.5" /> THEME
+                  <Settings className="w-3.5 h-3.5" /> SETTINGS
                 </Link>
                 <Link href="/login" className="text-gray-800 hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">
                   <User className="w-3.5 h-3.5" /> MEMBER LOGIN
@@ -346,7 +346,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
             ) : (
               <>
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
-                  <Settings className="w-4 h-4" /> THEME
+                  <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
                 <Link href="/login" className="block py-2 text-mhma-gold font-semibold">MEMBER LOGIN</Link>
               </>
