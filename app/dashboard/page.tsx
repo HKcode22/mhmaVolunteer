@@ -19,6 +19,9 @@ import {
   fetchUsers, fetchSubscribers, fetchPledges, fetchDonations, fetchAllNews,
   fetchFAQs, addFAQ, updateFAQ, deleteFAQ, FAQItem,
   fetchVolunteers, VolunteerSubmission,
+  fetchTestimonials, Testimonial,
+  fetchActivityLog, ActivityLogEntry,
+  fetchMasjidUpdates, FirebaseMasjidUpdate,
   FirebaseEvent, FirebaseProgram, FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission, FirebaseRSVP, InviteCode,
   FirebaseUser, Subscriber, Pledge, Donation,
 } from "@/lib/firebase";
@@ -55,16 +58,25 @@ export default function DashboardPage() {
   const [showAllDonations, setShowAllDonations] = useState(false);
   const [showAllNews, setShowAllNews] = useState(false);
   const [showAllVolunteers, setShowAllVolunteers] = useState(false);
+  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [showAllTestimonials, setShowAllTestimonials] = useState(false);
+  const [showAllConstruction, setShowAllConstruction] = useState(false);
+  const [showAllAnalytics, setShowAllAnalytics] = useState(false);
+  const [showAllUnsubscribers, setShowAllUnsubscribers] = useState(false);
+  const [showAllNotifs, setShowAllNotifs] = useState(false);
   const [news, setNews] = useState<any[]>([]);
   const [volunteers, setVolunteers] = useState<VolunteerSubmission[]>([]);
   const [aboutStats, setAboutStats] = useState<any>(null);
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [masjidUpdates, setMasjidUpdates] = useState<FirebaseMasjidUpdate[]>([]);
   const [expandedDashboardId, setExpandedDashboardId] = useState<string | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
   const [showCustomize, setShowCustomize] = useState(false);
   const [customizeTab, setCustomizeTab] = useState<"actions" | "sections">("actions");
-  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "volunteers", "faq", "requests", "pledges", "donations", "codes", "users", "subscribers", "stats"];
+  const defaultOrder = ["news", "programs", "events", "enrollments", "rsvps", "submissions", "volunteers", "faq", "notifications", "testimonials", "construction", "activity", "unsubscribers", "analytics", "requests", "pledges", "donations", "codes", "users", "subscribers", "stats"];
   const [layoutOrder, setLayoutOrder] = useState<string[]>(defaultOrder);
   const defaultQuickOrder = [
     "events", "programs", "news", "testimonials", "scheduling",
@@ -140,6 +152,8 @@ export default function DashboardPage() {
       enrollments: "Enrollments", rsvps: "Event RSVPs", submissions: "Contact Submissions",
       codes: "Invite Codes", users: "Members", subscribers: "Subscribers",
       pledges: "Pledges", donations: "Donations", volunteers: "Volunteers", stats: "Stats",
+      notifications: "Notifications", testimonials: "Testimonials", construction: "Construction Updates",
+      activity: "Activity Log", unsubscribers: "Unsubscribers", analytics: "Analytics",
     };
     return labels[s] || s.charAt(0).toUpperCase() + s.slice(1);
   };
@@ -174,9 +188,12 @@ export default function DashboardPage() {
         timeout(fetchAllNews(100), 15000).catch(() => [] as any[]),
         timeout(fetchFAQs(100), 15000).catch(() => [] as FAQItem[]),
         timeout(fetchVolunteers(100), 15000).catch(() => [] as VolunteerSubmission[]),
+        timeout(fetchActivityLog(50), 15000).catch(() => [] as ActivityLogEntry[]),
+        timeout(fetchTestimonials(50), 15000).catch(() => [] as Testimonial[]),
+        timeout(fetchMasjidUpdates(20), 15000).catch(() => [] as FirebaseMasjidUpdate[]),
         fetch("/api/about-stats").then(r => r.json()).catch(() => null),
       ]);
-      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, stats] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, alog, t, mu, stats] = results.map(r => (r as any).value || (r as any).reason || []);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -192,6 +209,9 @@ export default function DashboardPage() {
       setFaqItems(f || []);
       setFaqLoading(false);
       setVolunteers(v || []);
+      setActivityLog(alog || []);
+      setTestimonials(t || []);
+      setMasjidUpdates(mu || []);
       setAboutStats(stats);
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
@@ -349,6 +369,18 @@ export default function DashboardPage() {
   const visiblePledges = showAllPledges ? pledges : pledges.slice(0, 5);
   const visibleDonations = showAllDonations ? donations : donations.slice(0, 5);
   const visibleVolunteers = showAllVolunteers ? volunteers : volunteers.slice(0, 5);
+  const visibleActivity = showAllActivity ? activityLog : activityLog.slice(0, 5);
+  const visibleTestimonials = showAllTestimonials ? testimonials : testimonials.slice(0, 5);
+  const visibleConstruction = showAllConstruction ? masjidUpdates : masjidUpdates.slice(0, 5);
+  const unsubscribers = subscribers.filter(s => s.status === "unsubscribed");
+  const visibleUnsubscribers = showAllUnsubscribers ? unsubscribers : unsubscribers.slice(0, 5);
+  const notifSummary = [
+    { label: "Pending Enrollments", count: enrollments.filter(e => e.status === "pending").length, icon: "Users", href: "#" },
+    { label: "Unread Contacts", count: contactSubmissions.filter(s => !s.read).length, icon: "MessageSquare", href: "#" },
+    { label: "Scheduling Requests", count: eventRequests.filter(r => r.status === "pending").length, icon: "Clock", href: "#" },
+    { label: "Pending RSVPs", count: rsvps.filter(r => r.status === "pending").length, icon: "Calendar", href: "#" },
+  ];
+  const visibleNotifs = showAllNotifs ? notifSummary : notifSummary.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-mhma-cream">
@@ -761,6 +793,121 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-sm text-gray-700">Manage in Analytics</span>
                       <Link href="/dashboard/analytics" className="text-mhma-gold text-sm font-semibold hover:underline">Edit →</Link>
+                    </div>
+                  </div>
+                </Section>
+              );
+            case "notifications":
+              return (
+                <Section key="notifications" title="Notifications" count={notifSummary.reduce((a, b) => a + b.count, 0)} href="#" allShown={showAllNotifs} onToggle={() => setShowAllNotifs(!showAllNotifs)} scrollable>
+                  {visibleNotifs.map((n, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                          <Bell className="w-4 h-4 text-amber-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">{n.label}</p>
+                          <p className="text-xs text-gray-500">{n.count} pending</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-bold text-amber-600">{n.count}</span>
+                    </div>
+                  ))}
+                  {notifSummary.reduce((a, b) => a + b.count, 0) === 0 && <p className="text-gray-400 text-sm p-3">All caught up! No pending items.</p>}
+                </Section>
+              );
+            case "testimonials":
+              return (
+                <Section key="testimonials" title="Testimonials" count={testimonials.length} href="/dashboard/testimonials" allShown={showAllTestimonials} onToggle={() => setShowAllTestimonials(!showAllTestimonials)} scrollable>
+                  {visibleTestimonials.map(t => (
+                    <div key={t.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{t.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{t.content}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0 ml-2">
+                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${t.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{t.active ? "Active" : "Inactive"}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {testimonials.length === 0 && <p className="text-gray-400 text-sm p-3">No testimonials yet.</p>}
+                </Section>
+              );
+            case "construction":
+              return (
+                <Section key="construction" title="Construction Updates" count={masjidUpdates.length} href="/dashboard/masjid-construction" allShown={showAllConstruction} onToggle={() => setShowAllConstruction(!showAllConstruction)} scrollable>
+                  {visibleConstruction.map(u => (
+                    <div key={u.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{u.caption || u.phase}</p>
+                      <p className="text-xs text-gray-500">{u.progressDate || ""} {u.phase ? `· ${u.phase}` : ""}</p>
+                      </div>
+                      {u.image && <img src={u.image} alt="" className="w-10 h-10 rounded object-cover ml-2 shrink-0" />}
+                    </div>
+                  ))}
+                  {masjidUpdates.length === 0 && <p className="text-gray-400 text-sm p-3">No construction updates yet.</p>}
+                </Section>
+              );
+            case "activity":
+              return (
+                <Section key="activity" title="Activity Log" count={activityLog.length} href="/dashboard/activity" allShown={showAllActivity} onToggle={() => setShowAllActivity(!showAllActivity)} scrollable>
+                  {visibleActivity.map(a => (
+                    <div key={a.id} className="p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <Activity className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-gray-900 truncate">{a.details || a.action}</p>
+                          <p className="text-xs text-gray-500">{a.userName || a.userEmail} · {a.createdAt?.toDate ? a.createdAt.toDate().toLocaleDateString() : ""}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {activityLog.length === 0 && <p className="text-gray-400 text-sm p-3">No activity logged yet.</p>}
+                </Section>
+              );
+            case "unsubscribers":
+              return (
+                <Section key="unsubscribers" title="Unsubscribers" count={unsubscribers.length} href="/dashboard/subscribers" allShown={showAllUnsubscribers} onToggle={() => setShowAllUnsubscribers(!showAllUnsubscribers)} scrollable>
+                  {visibleUnsubscribers.map(s => (
+                    <div key={s.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{s.email}</p>
+                        <p className="text-xs text-gray-500">{s.name || "No name"} · {s.source || "signup"} · <span className="text-red-500">unsubscribed</span></p>
+                      </div>
+                      <Link href="/dashboard/subscribers" className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></Link>
+                    </div>
+                  ))}
+                  {unsubscribers.length === 0 && <p className="text-gray-400 text-sm p-3">No unsubscribers.</p>}
+                </Section>
+              );
+            case "analytics":
+              return (
+                <Section key="analytics" title="Analytics" count={0} href="/dashboard/analytics" allShown={showAllAnalytics} onToggle={() => setShowAllAnalytics(!showAllAnalytics)} scrollable={false}>
+                  <div className="space-y-3 p-1">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Total Programs</span>
+                      <span className="font-bold text-gray-900">{programs.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Total Events</span>
+                      <span className="font-bold text-gray-900">{events.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Total Members</span>
+                      <span className="font-bold text-gray-900">{users.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Total Donations</span>
+                      <span className="font-bold text-gray-900">{donations.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Total Pledges</span>
+                      <span className="font-bold text-gray-900">{pledges.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Full Analytics</span>
+                      <Link href="/dashboard/analytics" className="text-mhma-gold text-sm font-semibold hover:underline">Open →</Link>
                     </div>
                   </div>
                 </Section>
