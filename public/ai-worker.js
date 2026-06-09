@@ -4,6 +4,16 @@ let extractor = null;
 let knowledgeEmbeddings = [];
 let knowledgeItems = [];
 
+function cosineSimilarity(a, b) {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  return magA > 0 && magB > 0 ? dot / (Math.sqrt(magA) * Math.sqrt(magB)) : 0;
+}
+
 self.addEventListener('message', async (event) => {
   const { type, data } = event.data;
 
@@ -12,9 +22,7 @@ self.addEventListener('message', async (event) => {
     postMessage({ type: 'init-status', status: 'loading' });
 
     try {
-      extractor = await self.Transformers.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
-        quantized: true,
-      });
+      extractor = await self.Transformers.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 
       knowledgeEmbeddings = [];
       for (const item of knowledgeItems) {
@@ -40,12 +48,8 @@ self.addEventListener('message', async (event) => {
         let score = cosineSimilarity(queryEmbedding, knowledgeEmbeddings[i]);
 
         const item = knowledgeItems[i];
-        if (role && item.roles && item.roles.includes(role)) {
-          score += 0.15;
-        }
-        if (currentPage && item.pages && item.pages.includes(currentPage)) {
-          score += 0.1;
-        }
+        if (role && item.roles && item.roles.includes(role)) score += 0.15;
+        if (currentPage && item.pages && item.pages.includes(currentPage)) score += 0.1;
 
         if (score > bestScore) {
           bestScore = score;
@@ -65,13 +69,3 @@ self.addEventListener('message', async (event) => {
     }
   }
 });
-
-function cosineSimilarity(a, b) {
-  let dot = 0, magA = 0, magB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    magA += a[i] * a[i];
-    magB += b[i] * b[i];
-  }
-  return magA > 0 && magB > 0 ? dot / (Math.sqrt(magA) * Math.sqrt(magB)) : 0;
-}

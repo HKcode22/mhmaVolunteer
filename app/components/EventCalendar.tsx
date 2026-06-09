@@ -196,8 +196,8 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
               const isSelected = selectedDate && isSameDay(date, selectedDate);
               return (
                 <div key={day} onClick={() => setSelectedDate(date)}
-                  className={`min-h-[100px] p-1.5 border-b border-r border-gray-100 cursor-pointer transition-colors ${isSelected ? "bg-amber-50" : isToday ? "bg-blue-50/50" : "hover:bg-gray-50"}`}>
-                  <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full ${isToday ? "bg-mhma-gold text-white" : "text-gray-700"}`}>
+                  className={`min-h-[100px] p-1.5 border-b border-r border-gray-100 cursor-pointer transition-colors ${isSelected ? "bg-amber-50" : isToday ? "bg-mhma-forest/10" : "hover:bg-gray-50"}`}>
+                  <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full ${isToday ? "bg-mhma-forest text-white" : "text-gray-700"}`}>
                     {day}
                   </span>
                   {renderDayEvents(dayEvents)}
@@ -224,8 +224,8 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
               const isSelected = selectedDate && isSameDay(d, selectedDate);
               return (
                 <div key={i} onClick={() => setSelectedDate(d)}
-                  className={`min-h-[120px] p-1.5 border-b border-r border-gray-100 cursor-pointer transition-colors ${isSelected ? "bg-amber-50" : isToday ? "bg-blue-50/50" : "hover:bg-gray-50"}`}>
-                  <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full ${isToday ? "bg-mhma-gold text-white" : "text-gray-700"}`}>
+                  className={`min-h-[120px] p-1.5 border-b border-r border-gray-100 cursor-pointer transition-colors ${isSelected ? "bg-amber-50" : isToday ? "bg-mhma-forest/10" : "hover:bg-gray-50"}`}>
+                  <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full ${isToday ? "bg-mhma-forest text-white" : "text-gray-700"}`}>
                     {d.getDate()}
                   </span>
                   {renderDayEvents(dayEvents)}

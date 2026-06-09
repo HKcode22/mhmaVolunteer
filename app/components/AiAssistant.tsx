@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, AlertCircle } from 'lucide-react';
+import { X, Send, Loader2, Bot, AlertCircle, WifiOff } from 'lucide-react';
 import { knowledgeBase } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
 import { usePathname } from 'next/navigation';
@@ -11,74 +11,138 @@ interface Message {
   text: string;
 }
 
-type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error';
+type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
+
+function tokenize(text: string): string[] {
+  return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
+}
+
+function keywordMatch(query: string, role?: string, page?: string): string | null {
+  const qTokens = tokenize(query);
+  if (qTokens.length === 0) return null;
+  const stopWords = new Set(['the','a','an','is','are','was','were','be','been','have','has','had',
+    'do','does','did','will','would','can','could','may','might','shall','should','to','of','in',
+    'for','on','with','at','by','from','as','into','through','during','before','after','above',
+    'below','between','out','off','over','under','again','further','then','once','here','there',
+    'when','where','why','how','all','each','every','both','few','more','most','other','some',
+    'such','no','nor','not','only','own','same','so','than','too','very','just','about','up',
+    'and','but','or','if','because','what','which','who','whom','this','that','these','those',
+    'it','its','my','your','his','her','our','their']);
+  const qFiltered = qTokens.filter((w) => !stopWords.has(w));
+  if (qFiltered.length === 0) return null;
+
+  let bestScore = 0;
+  let bestItem = null;
+  for (const item of knowledgeBase) {
+    const kw = [...item.keywords, ...tokenize(item.q)];
+    const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
+    let matches = 0;
+    for (const qWord of qFiltered) {
+      if (kTokens.some((kt) => kt.includes(qWord) || qWord.includes(kt))) matches++;
+    }
+    let score = matches / Math.max(kTokens.length, qFiltered.length) * 2;
+    if (role && item.roles?.includes(role as any)) score += 0.15;
+    if (page && item.pages?.includes(page)) score += 0.1;
+    score = Math.min(score, 1);
+    if (score > 0.2 && score > bestScore) { bestScore = score; bestItem = item; }
+  }
+  return bestItem ? bestItem.a : null;
+}
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', text: "Hi! I'm your MHMA assistant — powered by Transformers.js ML running directly in your browser. Ask me anything about the dashboard." },
+    { role: 'assistant', text: "Hi! I'm your MHMA assistant. Ask me anything about the dashboard." },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unloaded');
   const [workerError, setWorkerError] = useState('');
+  const [usingFallback, setUsingFallback] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
   const { user } = useAuth();
   const pathname = usePathname();
+  const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    const worker = new Worker('/ai-worker.js');
-    workerRef.current = worker;
+    try {
+      const worker = new Worker('/ai-worker.js');
+      workerRef.current = worker;
 
-    worker.onmessage = (event) => {
-      const { type, status, error, bestMatch } = event.data;
-
-      if (type === 'init-status') {
-        if (status === 'loading') {
-          setWorkerStatus('loading');
-        } else if (status === 'ready') {
-          setWorkerStatus('ready');
-          setLoading(false);
-        } else if (status === 'error') {
+      const timeout = setTimeout(() => {
+        if (workerRef.current && workerStatus !== 'ready' && workerStatus !== 'error') {
+          worker.terminate();
+          workerRef.current = null;
           setWorkerStatus('error');
-          setWorkerError(error);
-          setLoading(false);
+          setWorkerError('Model load timed out.');
+          setUsingFallback(true);
         }
-      } else if (type === 'result') {
-        setLoading(false);
-        if (pendingResolveRef.current) {
-          if (bestMatch) {
-            pendingResolveRef.current(bestMatch.item.a);
-          } else {
-            pendingResolveRef.current(null);
-          }
-          pendingResolveRef.current = null;
-        }
-      } else if (type === 'error') {
-        setLoading(false);
-        setWorkerError(error);
-        if (pendingResolveRef.current) {
-          pendingResolveRef.current(null);
-          pendingResolveRef.current = null;
-        }
-      }
-    };
+      }, 30000);
+      initTimeoutRef.current = timeout;
 
-    worker.postMessage({ type: 'init', data: { knowledgeBase } });
+      worker.onmessage = (event) => {
+        const { type, status, error, bestMatch } = event.data;
+
+        if (type === 'init-status') {
+          if (status === 'loading') {
+            setWorkerStatus('loading');
+          } else if (status === 'ready') {
+            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            setWorkerStatus('ready');
+            setLoading(false);
+          } else if (status === 'error') {
+            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            setWorkerStatus('error');
+            setWorkerError(error || 'Unknown error');
+            setUsingFallback(true);
+            setLoading(false);
+          }
+        } else if (type === 'result') {
+          setLoading(false);
+          if (pendingResolveRef.current) {
+            pendingResolveRef.current(bestMatch ? bestMatch.item.a : null);
+            pendingResolveRef.current = null;
+          }
+        } else if (type === 'error') {
+          setLoading(false);
+          if (pendingResolveRef.current) {
+            pendingResolveRef.current(null);
+            pendingResolveRef.current = null;
+          }
+        }
+      };
+
+      worker.onerror = (err) => {
+        if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+        setWorkerStatus('error');
+        setWorkerError(err.message || 'Worker failed');
+        setUsingFallback(true);
+        setLoading(false);
+      };
+
+      worker.postMessage({ type: 'init', data: { knowledgeBase } });
+    } catch (err: any) {
+      setWorkerStatus('unsupported');
+      setWorkerError('Web Workers not supported.');
+      setUsingFallback(true);
+    }
 
     return () => {
-      worker.terminate();
-      workerRef.current = null;
+      if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+      if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
     };
   }, []);
 
-  const askQuestion = useCallback((query: string): Promise<string | null> => {
+  const askQuestion = useCallback(async (query: string): Promise<string | null> => {
+    if (usingFallback || workerStatus === 'error' || workerStatus === 'unsupported') {
+      return keywordMatch(query, user?.role, pathname);
+    }
     return new Promise((resolve) => {
       pendingResolveRef.current = resolve;
       const role = user?.role || undefined;
@@ -87,11 +151,11 @@ export default function AiAssistant() {
         data: { query, role, currentPage: pathname },
       });
     });
-  }, [user?.role, pathname]);
+  }, [usingFallback, workerStatus, user?.role, pathname]);
 
   const handleSend = async () => {
     const q = input.trim();
-    if (!q || loading || workerStatus !== 'ready') return;
+    if (!q || loading) return;
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
@@ -101,22 +165,15 @@ export default function AiAssistant() {
     if (answer) {
       setMessages((prev) => [...prev, { role: 'assistant', text: answer }]);
     } else {
-      const roleLabel = user?.role === 'admin' ? 'admin' : user?.role === 'board' ? 'board member' : 'member';
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          text: `I couldn't find a specific answer to that. As a ${roleLabel}, try asking about available dashboard features or how to manage content. You can also rephrase your question.`,
-        },
-      ]);
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        text: `I couldn't find a specific answer to that. Try asking about: creating events, approving RSVPs, managing programs, handling donations, or other dashboard features.`,
+      }]);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
   const suggestions = [
@@ -125,7 +182,7 @@ export default function AiAssistant() {
     'How do I manage pledges?',
   ];
 
-  const botDisabled = workerStatus === 'error';
+  const botDisabled = workerStatus === 'error' || workerStatus === 'unsupported';
 
   return (
     <>
@@ -144,13 +201,15 @@ export default function AiAssistant() {
             <div className="flex-1">
               <p className="font-bold text-sm">MHMA Assistant</p>
               <p className="text-[10px] text-white/70">
-                {workerStatus === 'loading' && 'Loading ML model...'}
+                {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
                 {workerStatus === 'ready' && 'Transformers.js ML · Offline'}
-                {workerStatus === 'error' && 'Model unavailable'}
+                {workerStatus === 'error' && usingFallback && 'ML unavailable · Using keyword mode'}
+                {workerStatus === 'unsupported' && 'Using keyword matching'}
                 {workerStatus === 'unloaded' && 'Initializing...'}
               </p>
             </div>
             {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
+            {usingFallback && <WifiOff className="w-4 h-4 text-white/70" />}
           </div>
 
           {workerStatus === 'loading' && (
@@ -161,26 +220,22 @@ export default function AiAssistant() {
             </div>
           )}
 
-          {workerStatus === 'error' && (
-            <div className="px-4 py-4 text-center text-sm text-red-500 space-y-2">
-              <AlertCircle className="w-6 h-6 mx-auto" />
-              <p>Could not load the ML model.</p>
-              <p className="text-xs text-gray-400">{workerError || 'Check your internet connection and try refreshing.'}</p>
+          {(workerStatus === 'error' || workerStatus === 'unsupported') && usingFallback && (
+            <div className="px-4 py-3 text-center text-xs text-amber-600 bg-amber-50 border-b border-gray-200">
+              ML model unavailable — answering with keyword matching instead.
             </div>
           )}
 
-          {workerStatus === 'ready' && (
+          {(workerStatus === 'ready' || usingFallback) && (
             <>
               <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[400px]">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                        msg.role === 'user'
-                          ? 'bg-mhma-forest text-white rounded-br-md'
-                          : 'bg-gray-100 text-gray-800 rounded-bl-md'
-                      }`}
-                    >
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-mhma-forest text-white rounded-br-md'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-md'
+                    }`}>
                       {msg.text}
                     </div>
                   </div>
@@ -188,25 +243,20 @@ export default function AiAssistant() {
                 {loading && (
                   <div className="flex justify-start">
                     <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-gray-500 flex items-center gap-2">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Computing...
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Thinking...
                     </div>
                   </div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
-              {messages.length === 1 && user && (
+              {messages.length === 1 && (
                 <div className="px-4 pb-2">
-                  <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-wide font-medium">
-                    Context: {user.role} · {pathname}
-                  </p>
+                  <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-wide font-medium">Try asking:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {suggestions.map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setInput(s)}
-                        className="text-[11px] px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-mhma-forest hover:text-white transition-colors"
-                      >
+                      <button key={s} onClick={() => setInput(s)}
+                        className="text-[11px] px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-mhma-forest hover:text-white transition-colors">
                         {s}
                       </button>
                     ))}
@@ -215,20 +265,12 @@ export default function AiAssistant() {
               )}
 
               <div className="border-t border-gray-200 p-3 flex gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask about dashboard features..."
+                <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown} placeholder="Ask about dashboard features..."
                   className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none"
-                  disabled={loading || botDisabled}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={loading || !input.trim() || botDisabled}
-                  className="w-9 h-9 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-mid transition-colors flex items-center justify-center disabled:opacity-50"
-                >
+                  disabled={loading} />
+                <button onClick={handleSend} disabled={loading || !input.trim()}
+                  className="w-9 h-9 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-mid transition-colors flex items-center justify-center disabled:opacity-50">
                   <Send className="w-4 h-4" />
                 </button>
               </div>

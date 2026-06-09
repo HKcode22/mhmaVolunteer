@@ -70,14 +70,14 @@ export default function SubscribePage() {
               </div>
             ) : (
               <>
-                <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+                <div className="flex justify-center mb-6 bg-gray-100 rounded-lg p-0.5">
                   <button onClick={() => { setMode("subscribe"); setError(""); }}
-                    className={`flex-shrink-0 px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
-                    Subscribe
+                    className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-colors whitespace-nowrap tracking-wide ${mode === "subscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+                    SUBSCRIBE
                   </button>
                   <button onClick={() => { setMode("unsubscribe"); setError(""); }}
-                    className={`flex-shrink-0 px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${mode === "unsubscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
-                    Unsubscribe
+                    className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-colors whitespace-nowrap tracking-wide ${mode === "unsubscribe" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+                    UNSUBSCRIBE
                   </button>
                 </div>
 
