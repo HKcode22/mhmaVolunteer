@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, AlertCircle } from 'lucide-react';
+import { X, Send, Loader2, Bot, AlertCircle, RefreshCw } from 'lucide-react';
 import { knowledgeBase } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
 import { usePathname } from 'next/navigation';
@@ -87,7 +87,7 @@ export default function AiAssistant() {
           setWorkerError('Model load timed out.');
           setUsingFallback(true);
         }
-      }, 15000);
+      }, 60000);
       initTimeoutRef.current = timeout;
 
       worker.onmessage = (event) => {
@@ -157,7 +157,7 @@ export default function AiAssistant() {
   }, [open]);
 
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
-    if (usingFallback || workerStatus === 'error' || workerStatus === 'unsupported') {
+    if (workerStatus === 'loading' || usingFallback || workerStatus === 'error' || workerStatus === 'unsupported') {
       return keywordMatch(query, user?.role, pathname);
     }
     return new Promise((resolve) => {
@@ -201,6 +201,69 @@ export default function AiAssistant() {
 
   const botDisabled = workerStatus === 'error' || workerStatus === 'unsupported';
 
+  const retryWorker = useCallback(() => {
+    if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
+    setWorkerStatus('unloaded');
+    setWorkerError('');
+    setUsingFallback(false);
+    setLoading(false);
+    try {
+      const worker = new Worker('/ai-worker.js');
+      workerRef.current = worker;
+      const timeout = setTimeout(() => {
+        if (workerRef.current && workerStatus !== 'ready' && workerStatus !== 'error') {
+          worker.terminate();
+          workerRef.current = null;
+          setWorkerStatus('error');
+          setWorkerError('Model load timed out.');
+          setUsingFallback(true);
+        }
+      }, 60000);
+      initTimeoutRef.current = timeout;
+      worker.onmessage = (event) => {
+        const { type, status, error, bestMatch } = event.data;
+        if (type === 'init-status') {
+          if (status === 'loading') setWorkerStatus('loading');
+          else if (status === 'ready') {
+            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            setWorkerStatus('ready');
+            setLoading(false);
+          } else if (status === 'error') {
+            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            setWorkerStatus('error');
+            setWorkerError(error || 'Unknown error');
+            setUsingFallback(true);
+            setLoading(false);
+          }
+        } else if (type === 'result') {
+          setLoading(false);
+          if (pendingResolveRef.current) {
+            pendingResolveRef.current(bestMatch ? bestMatch.item.a : null);
+            pendingResolveRef.current = null;
+          }
+        } else if (type === 'error') {
+          setLoading(false);
+          if (pendingResolveRef.current) {
+            pendingResolveRef.current(null);
+            pendingResolveRef.current = null;
+          }
+        }
+      };
+      worker.onerror = (err) => {
+        if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+        setWorkerStatus('error');
+        setWorkerError(err.message || 'Worker failed');
+        setUsingFallback(true);
+        setLoading(false);
+      };
+      worker.postMessage({ type: 'init', data: { knowledgeBase } });
+    } catch (err: any) {
+      setWorkerStatus('unsupported');
+      setWorkerError('Web Workers not supported.');
+      setUsingFallback(true);
+    }
+  }, [workerStatus]);
+
   return (
     <>
       <button
@@ -229,6 +292,7 @@ export default function AiAssistant() {
                 </p>
               </div>
               {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
+              {botDisabled && <button onClick={retryWorker} title="Retry ML model" className="text-white/70 hover:text-white ml-1"><RefreshCw className="w-3.5 h-3.5" /></button>}
               <button onClick={handleClose} className="text-white/70 hover:text-white ml-1">
                 <X className="w-4 h-4" />
               </button>

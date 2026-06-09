@@ -315,6 +315,7 @@ export default function HomePage() {
   const [programs, setPrograms] = useState<any[]>([]);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [prayerTimesLoading, setPrayerTimesLoading] = useState(true);
+  const [programsLoaded, setProgramsLoaded] = useState(false);
   const [heroImage, setHeroImage] = useState<string | null>(null);
   const [heroVideo, setHeroVideo] = useState<string | null>(null);
   const [heroLoading, setHeroLoading] = useState(true);
@@ -418,6 +419,7 @@ useEffect(() => {
 
       setEvents(events);
       setPrograms(prog);
+      setProgramsLoaded(true);
       setMasjidUpdates(masjid);
       setNews(newsArr);
       setAboutStats(stats);
@@ -802,7 +804,7 @@ useEffect(() => {
       </section>
 
       {/* Programs Section */}
-      <section className="py-16 bg-mhma-cream border-t border-gray-200">
+      <section className="py-16 bg-white border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 text-center uppercase tracking-wide">
             Our <span className="text-mhma-gold">Programs</span> & Classes
@@ -812,6 +814,7 @@ useEffect(() => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {(() => {
+              if (!programsLoaded) return null;
               const validPrograms = programs.filter((p: any) => p.title && p.slug);
               const fallbacks = [
                 { title: "Quran Maktab", description: "Foundational Quran recitation for children with Tajweed instruction.", slug: "maktab-program" },
@@ -835,7 +838,7 @@ useEffect(() => {
                   title.toLowerCase().includes("3d") || title.toLowerCase().includes("print") ? "🖨️" : "🏫";
 
                 return (
-                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-white p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
+                  <Link key={program.id || i} href={`/programs/${slug}`} className="bg-mhma-cream p-6 rounded-xl border border-gray-100 hover:border-mhma-gold hover:shadow-xl transition-all group relative block">
                     {program.image ? (
                       <img src={program.image} alt={title} className="w-full h-40 object-cover rounded-lg mb-3" />
                     ) : (
