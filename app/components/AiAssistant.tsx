@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
 interface Message {
   role: 'user' | 'assistant';
   text: string;
+  navHint?: string;
 }
 
 type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
@@ -17,9 +18,9 @@ function tokenize(text: string): string[] {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
 }
 
-function keywordMatch(query: string, role?: string, page?: string): string | null {
+function keywordMatch(query: string, role?: string, page?: string): { answer: string | null; navHint?: string } {
   const qTokens = tokenize(query);
-  if (qTokens.length === 0) return null;
+  if (qTokens.length === 0) return { answer: null };
   const stopWords = new Set(['the','a','an','is','are','was','were','be','been','have','has','had',
     'do','does','did','will','would','can','could','may','might','shall','should','to','of','in',
     'for','on','with','at','by','from','as','into','through','during','before','after','above',
@@ -29,11 +30,13 @@ function keywordMatch(query: string, role?: string, page?: string): string | nul
     'and','but','or','if','because','what','which','who','whom','this','that','these','those',
     'it','its','my','your','his','her','our','their']);
   const qFiltered = qTokens.filter((w) => !stopWords.has(w));
-  if (qFiltered.length === 0) return null;
+  if (qFiltered.length === 0) return { answer: null };
 
   let bestScore = 0;
   let bestItem = null;
   for (const item of knowledgeBase) {
+    // Skip if user's role is denied
+    if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
     const kw = [...item.keywords, ...tokenize(item.q)];
     const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
     let matches = 0;
@@ -46,7 +49,8 @@ function keywordMatch(query: string, role?: string, page?: string): string | nul
     score = Math.min(score, 1);
     if (score > 0.2 && score > bestScore) { bestScore = score; bestItem = item; }
   }
-  return bestItem ? bestItem.a : null;
+  if (!bestItem) return { answer: null };
+  return { answer: bestItem.a, navHint: bestItem.pages?.[0] };
 }
 
 export default function AiAssistant() {
@@ -56,6 +60,7 @@ export default function AiAssistant() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [navHint, setNavHint] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unloaded');
   const [workerError, setWorkerError] = useState('');
@@ -69,6 +74,8 @@ export default function AiAssistant() {
   const pathname = usePathname();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const resizingRef = useRef(false);
+  const resizeStartRef = useRef({ x: 0, y: 0, w: 360, h: 500 });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -110,7 +117,9 @@ export default function AiAssistant() {
         } else if (type === 'result') {
           setLoading(false);
           if (pendingResolveRef.current) {
-            pendingResolveRef.current(bestMatch ? bestMatch.item.a : null);
+            const answer = bestMatch ? bestMatch.item.a : null;
+            setNavHint(bestMatch && bestMatch.item.pages?.[0] ? bestMatch.item.pages[0] : null);
+            pendingResolveRef.current(answer);
             pendingResolveRef.current = null;
           }
         } else if (type === 'error') {
@@ -156,13 +165,31 @@ export default function AiAssistant() {
     return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [open]);
 
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    resizingRef.current = true;
+    resizeStartRef.current = { x: e.clientX, y: e.clientY, w: width, h: height };
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!resizingRef.current) return;
+      const newW = Math.max(260, Math.min(800, resizeStartRef.current.w + (ev.clientX - resizeStartRef.current.x)));
+      const newH = Math.max(300, Math.min(800, resizeStartRef.current.h + (ev.clientY - resizeStartRef.current.y)));
+      setWidth(newW);
+      setHeight(newH);
+    };
+    const onMouseUp = () => { resizingRef.current = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [width, height]);
+
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
+    const role = user?.role;
     if (workerStatus === 'loading' || usingFallback || workerStatus === 'error' || workerStatus === 'unsupported') {
-      return keywordMatch(query, user?.role, pathname);
+      const result = keywordMatch(query, role, pathname);
+      setNavHint(result.navHint || null);
+      return result.answer;
     }
     return new Promise((resolve) => {
       pendingResolveRef.current = resolve;
-      const role = user?.role || undefined;
       workerRef.current?.postMessage({
         type: 'query',
         data: { query, role, currentPage: pathname },
@@ -176,11 +203,12 @@ export default function AiAssistant() {
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
+    setNavHint(null);
 
     const answer = await askQuestion(q);
 
     if (answer) {
-      setMessages((prev) => [...prev, { role: 'assistant', text: answer }]);
+      setMessages((prev) => [...prev, { role: 'assistant', text: answer, navHint: navHint || undefined }]);
     } else {
       setMessages((prev) => [...prev, {
         role: 'assistant',
@@ -238,7 +266,9 @@ export default function AiAssistant() {
         } else if (type === 'result') {
           setLoading(false);
           if (pendingResolveRef.current) {
-            pendingResolveRef.current(bestMatch ? bestMatch.item.a : null);
+            const answer = bestMatch ? bestMatch.item.a : null;
+            setNavHint(bestMatch && bestMatch.item.pages?.[0] ? bestMatch.item.pages[0] : null);
+            pendingResolveRef.current(answer);
             pendingResolveRef.current = null;
           }
         } else if (type === 'error') {
@@ -249,6 +279,7 @@ export default function AiAssistant() {
           }
         }
       };
+
       worker.onerror = (err) => {
         if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
         setWorkerStatus('error');
@@ -279,7 +310,7 @@ export default function AiAssistant() {
           <div className="fixed inset-0 z-40" />
           <div ref={panelRef}
             style={{ width: `${width}px`, height: `${height}px` }}
-            className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden resize overflow-auto">
+            className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative">
             <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
               <Bot className="w-5 h-5" />
               <div className="flex-1">
@@ -308,7 +339,7 @@ export default function AiAssistant() {
 
           {(workerStatus === 'ready' || usingFallback) && (
             <>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[400px]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
@@ -317,6 +348,12 @@ export default function AiAssistant() {
                         : 'bg-gray-100 text-gray-800 rounded-bl-md'
                     }`}>
                       {msg.text}
+                      {msg.navHint && (
+                        <a href={msg.navHint}
+                          className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 text-[10px] font-semibold uppercase bg-mhma-gold text-black rounded-full shadow-[0_0_12px_rgba(212,168,67,0.6)] hover:shadow-[0_0_20px_rgba(212,168,67,0.8)] transition-all">
+                          Go to {msg.navHint.split('/').pop() || msg.navHint}
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -356,6 +393,9 @@ export default function AiAssistant() {
               </div>
             </>
           )}
+          <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize">
+            <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
+          </div>
           </div>
         </>
       )}

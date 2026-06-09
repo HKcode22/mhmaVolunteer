@@ -1,4 +1,20 @@
-importScripts('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js');
+const CDN_URLS = [
+  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js',
+  'https://unpkg.com/@xenova/transformers@2.17.2/dist/transformers.min.js',
+  'https://cdn.jsdelivr.net/npm/@huggingface/transformers@2.17.2/dist/transformers.min.js',
+];
+
+let loaded = false;
+for (const url of CDN_URLS) {
+  try {
+    importScripts(url);
+    loaded = true;
+    break;
+  } catch (_) {}
+}
+if (!loaded) {
+  postMessage({ type: 'init-status', status: 'error', error: 'Failed to load Transformers.js from any CDN.' });
+}
 
 let extractor = null;
 let knowledgeEmbeddings = [];
@@ -18,6 +34,7 @@ self.addEventListener('message', async (event) => {
   const { type, data } = event.data;
 
   if (type === 'init') {
+    if (!loaded) return;
     knowledgeItems = data.knowledgeBase;
     postMessage({ type: 'init-status', status: 'loading' });
 
@@ -36,6 +53,10 @@ self.addEventListener('message', async (event) => {
       postMessage({ type: 'init-status', status: 'error', error: error.message });
     }
   } else if (type === 'query') {
+    if (!extractor) {
+      postMessage({ type: 'error', error: 'Model not initialized.' });
+      return;
+    }
     try {
       const { query, role, currentPage } = data;
       const output = await extractor(query, { pooling: 'mean', normalize: true });
