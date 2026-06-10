@@ -163,7 +163,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
               </>
             ) : (
               <>
-                <Link href="/settings" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1 text-sm">
+                <Link href="/settings" className="text-gray-800 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-3.5 h-3.5" /> SETTINGS
                 </Link>
                 <Link href="/login" className="text-gray-800 hover:text-mhma-gold font-medium transition-colors flex items-center gap-1">

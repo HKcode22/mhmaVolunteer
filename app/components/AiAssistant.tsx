@@ -79,6 +79,10 @@ export default function AiAssistant() {
   const resizeStartRef = useRef({ x: 0, y: 0, w: 360, h: 500 });
 
   useEffect(() => {
+    console.log('[AI] open state changed to:', open);
+  }, [open]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -323,7 +327,13 @@ export default function AiAssistant() {
   return (
     <>
       <button
-        onClick={() => { const next = !openRef.current; openRef.current = next; setOpen(next); }}
+        onClick={() => {
+          console.log('[AI] button clicked, current open:', openRef.current);
+          const next = !openRef.current;
+          openRef.current = next;
+          setOpen(next);
+          console.log('[AI] new open state:', next);
+        }}
         style={{ zIndex: 9999 }}
         className="fixed bottom-6 right-6 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
         aria-label="AI Assistant"
