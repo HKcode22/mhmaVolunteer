@@ -18,7 +18,7 @@ function tokenize(text: string): string[] {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
 }
 
-function keywordMatch(query: string, role?: string, page?: string): { answer: string | null; navHint?: string } {
+function keywordMatch(query: string, role?: string, page?: string, lastQuery?: string, lastPage?: string): { answer: string | null; navHint?: string } {
   const qTokens = tokenize(query);
   if (qTokens.length === 0) return { answer: null };
   const stopWords = new Set(['the','a','an','is','are','was','were','be','been','have','has','had',
@@ -30,7 +30,17 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
     'and','but','or','if','because','what','which','who','whom','this','that','these','those',
     'it','its','my','your','his','her','our','their']);
   const qFiltered = qTokens.filter((w) => !stopWords.has(w));
-  if (qFiltered.length === 0) return { answer: null };
+
+  // If query is very short (pronoun/follow-up), use last query context
+  let effectiveTokens = qFiltered;
+  let effectivePage = page;
+  if (qFiltered.length <= 2 && lastQuery) {
+    const lastTokens = tokenize(lastQuery).filter((w) => !stopWords.has(w));
+    effectiveTokens = [...lastTokens, ...qFiltered];
+    effectivePage = lastPage || page;
+  }
+
+  if (effectiveTokens.length === 0) return { answer: null };
 
   let bestScore = 0;
   let bestItem = null;
@@ -39,7 +49,7 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
     const kw = [...item.keywords, ...tokenize(item.q)];
     const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
     let matches = 0;
-    for (const qWord of qFiltered) {
+    for (const qWord of effectiveTokens) {
       const matched = kTokens.some((kt) => {
         if (qWord === kt) return true;
         if (qWord.length >= 4 && kt.length >= 4) {
@@ -49,9 +59,9 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
       });
       if (matched) matches++;
     }
-    let score = matches / Math.max(kTokens.length, qFiltered.length);
+    let score = matches / Math.max(kTokens.length, effectiveTokens.length);
     if (role && item.roles?.includes(role as any)) score += 0.2;
-    if (page && item.pages?.includes(page)) score += 0.15;
+    if (effectivePage && item.pages?.includes(effectivePage)) score += 0.15;
     if (score > 0.3 && score > bestScore) { bestScore = score; bestItem = item; }
   }
   if (!bestItem) return { answer: null };
@@ -67,9 +77,9 @@ export default function AiAssistant() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [navHint, setNavHint] = useState<string | null>(null);
-  const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unloaded');
+  const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unsupported');
   const [workerError, setWorkerError] = useState('');
-  const [usingFallback, setUsingFallback] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(true);
   const [width, setWidth] = useState(360);
   const [height, setHeight] = useState(500);
   const [posX, setPosX] = useState(0);
@@ -78,12 +88,12 @@ export default function AiAssistant() {
   const heightRef = useRef(500);
   const posXRef = useRef(0);
   const posYRef = useRef(0);
+  const lastQueryRef = useRef('');
+  const lastAnswerRef = useRef('');
+  const lastNavHintRef = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const workerRef = useRef<Worker | null>(null);
-  const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
   const { user } = useAuth();
   const pathname = usePathname();
-  const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
   const resizeRef = useRef({ resizing: false, edge: '', startX: 0, startY: 0, startW: 360, startH: 500, startPosX: 0, startPosY: 0 });
@@ -98,87 +108,7 @@ export default function AiAssistant() {
   useEffect(() => { posYRef.current = posY; }, [posY]);
 
   useEffect(() => {
-    try {
-      const worker = new Worker('/ai-worker.js');
-      workerRef.current = worker;
-
-      const timeout = setTimeout(() => {
-        if (workerRef.current && workerStatus !== 'ready' && workerStatus !== 'error') {
-          worker.terminate();
-          workerRef.current = null;
-          setWorkerStatus('error');
-          setWorkerError('Model load timed out.');
-          setUsingFallback(true);
-        }
-      }, 20000);
-      initTimeoutRef.current = timeout;
-
-      worker.onmessage = (event) => {
-        const { type, status, error, bestMatch } = event.data;
-
-        if (type === 'init-status') {
-          if (status === 'loading') {
-            setWorkerStatus('loading');
-          } else if (status === 'ready') {
-            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-            setWorkerStatus('ready');
-            setLoading(false);
-          } else if (status === 'error') {
-            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-            setWorkerStatus('error');
-            setWorkerError(error || 'Unknown error');
-            setUsingFallback(true);
-            setLoading(false);
-          }
-        } else if (type === 'result') {
-          setLoading(false);
-          if (pendingResolveRef.current) {
-            const answer = bestMatch ? bestMatch.item.a : null;
-            setNavHint(bestMatch && bestMatch.item.pages?.[0] ? bestMatch.item.pages[0] : null);
-            pendingResolveRef.current(answer);
-            pendingResolveRef.current = null;
-          }
-        } else if (type === 'error') {
-          setLoading(false);
-          if (pendingResolveRef.current) {
-            pendingResolveRef.current(null);
-            pendingResolveRef.current = null;
-          }
-        }
-      };
-
-      worker.onerror = (err) => {
-        if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-        setWorkerStatus('error');
-        setWorkerError(err.message || 'Worker failed');
-        setUsingFallback(true);
-        setLoading(false);
-      };
-
-      worker.postMessage({ type: 'init', data: { knowledgeBase } });
-    } catch (err: any) {
-      setWorkerStatus('unsupported');
-      setWorkerError('Web Workers not supported.');
-      setUsingFallback(true);
-    }
-
-    return () => {
-      if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-      if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
-    };
-  }, []);
-
-  const handleClose = useCallback(() => { setOpen(false); }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleMouseDown(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node) && !(e.target as HTMLElement)?.closest?.('[aria-label="AI Assistant"]')) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleMouseDown);
-    return () => document.removeEventListener('mousedown', handleMouseDown);
+    localStorage.setItem('mhma_ai_open', open.toString());
   }, [open]);
 
   useEffect(() => {
@@ -202,6 +132,8 @@ export default function AiAssistant() {
     localStorage.setItem('mhma_ai_open', open.toString());
   }, [open]);
 
+  const handleClose = useCallback(() => setOpen(false), []);
+
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
     e.preventDefault();
@@ -221,8 +153,6 @@ export default function AiAssistant() {
     e.preventDefault();
     e.stopPropagation();
     dragRef.current.dragging = false;
-    const rect = panelRef.current?.getBoundingClientRect();
-    if (!rect) return;
     const startW = widthRef.current;
     const startH = heightRef.current;
     const startPosX = posXRef.current;
@@ -232,28 +162,12 @@ export default function AiAssistant() {
       if (!resizeRef.current.resizing) return;
       const dx = ev.clientX - resizeRef.current.startX;
       const dy = ev.clientY - resizeRef.current.startY;
-      let newW = resizeRef.current.startW, newH = resizeRef.current.startH, newX = resizeRef.current.startPosX, newY = resizeRef.current.startPosY;
-      const edge = resizeRef.current.edge;
-      if (edge.includes('e')) newW = Math.max(260, Math.min(800, resizeRef.current.startW + dx));
-      if (edge.includes('w')) {
-        const w = Math.max(260, Math.min(800, resizeRef.current.startW - dx));
-        newW = w;
-        newX = resizeRef.current.startPosX + (resizeRef.current.startW - w);
-      }
-      if (edge.includes('s')) newH = Math.max(300, Math.min(800, resizeRef.current.startH + dy));
-      if (edge.includes('n')) {
-        const h = Math.max(300, Math.min(800, resizeRef.current.startH - dy));
-        newH = h;
-        newY = resizeRef.current.startPosY + (resizeRef.current.startH - h);
-      }
+      const newW = Math.max(260, Math.min(800, resizeRef.current.startW + dx));
+      const newH = Math.max(300, Math.min(800, resizeRef.current.startH + dy));
       widthRef.current = newW;
       heightRef.current = newH;
-      posXRef.current = newX;
-      posYRef.current = newY;
       setWidth(newW);
       setHeight(newH);
-      setPosX(newX);
-      setPosY(newY);
     };
     const onMouseUp = () => { resizeRef.current.resizing = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
     document.addEventListener('mousemove', onMouseMove);
@@ -262,35 +176,13 @@ export default function AiAssistant() {
 
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
     const role = user?.role;
-    if (workerStatus === 'loading' || usingFallback || workerStatus === 'error' || workerStatus === 'unsupported') {
-      const result = keywordMatch(query, role, pathname);
-      setNavHint(result.navHint || null);
-      return result.answer;
-    }
-    return new Promise((resolve) => {
-      let resolved = false;
-      const timeout = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          setUsingFallback(true);
-          const result = keywordMatch(query, role, pathname);
-          setNavHint(result.navHint || null);
-          resolve(result.answer);
-        }
-      }, 5000);
-      pendingResolveRef.current = (val: string | null) => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(timeout);
-          resolve(val);
-        }
-      };
-      workerRef.current?.postMessage({
-        type: 'query',
-        data: { query, role, currentPage: pathname },
-      });
-    });
-  }, [usingFallback, workerStatus, user?.role, pathname]);
+    const result = keywordMatch(query, role, pathname, lastQueryRef.current, lastNavHintRef.current);
+    setNavHint(result.navHint || null);
+    lastQueryRef.current = query;
+    lastAnswerRef.current = result.answer || '';
+    lastNavHintRef.current = result.navHint || '';
+    return result.answer;
+  }, [user?.role, pathname]);
 
   const handleSend = async () => {
     const q = input.trim();
@@ -322,74 +214,6 @@ export default function AiAssistant() {
     'How do I manage pledges?',
   ];
 
-  const botDisabled = workerStatus === 'error' || workerStatus === 'unsupported';
-
-  const retryWorker = useCallback(() => {
-    if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
-    setWorkerStatus('unloaded');
-    setWorkerError('');
-    setUsingFallback(false);
-    setLoading(false);
-    try {
-      const worker = new Worker('/ai-worker.js');
-      workerRef.current = worker;
-      const timeout = setTimeout(() => {
-        if (workerRef.current && workerStatus !== 'ready' && workerStatus !== 'error') {
-          worker.terminate();
-          workerRef.current = null;
-          setWorkerStatus('error');
-          setWorkerError('Model load timed out.');
-          setUsingFallback(true);
-        }
-      }, 20000);
-      initTimeoutRef.current = timeout;
-      worker.onmessage = (event) => {
-        const { type, status, error, bestMatch } = event.data;
-        if (type === 'init-status') {
-          if (status === 'loading') setWorkerStatus('loading');
-          else if (status === 'ready') {
-            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-            setWorkerStatus('ready');
-            setLoading(false);
-          } else if (status === 'error') {
-            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-            setWorkerStatus('error');
-            setWorkerError(error || 'Unknown error');
-            setUsingFallback(true);
-            setLoading(false);
-          }
-        } else if (type === 'result') {
-          setLoading(false);
-          if (pendingResolveRef.current) {
-            const answer = bestMatch ? bestMatch.item.a : null;
-            setNavHint(bestMatch && bestMatch.item.pages?.[0] ? bestMatch.item.pages[0] : null);
-            pendingResolveRef.current(answer);
-            pendingResolveRef.current = null;
-          }
-        } else if (type === 'error') {
-          setLoading(false);
-          if (pendingResolveRef.current) {
-            pendingResolveRef.current(null);
-            pendingResolveRef.current = null;
-          }
-        }
-      };
-
-      worker.onerror = (err) => {
-        if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-        setWorkerStatus('error');
-        setWorkerError(err.message || 'Worker failed');
-        setUsingFallback(true);
-        setLoading(false);
-      };
-      worker.postMessage({ type: 'init', data: { knowledgeBase } });
-    } catch (err: any) {
-      setWorkerStatus('unsupported');
-      setWorkerError('Web Workers not supported.');
-      setUsingFallback(true);
-    }
-  }, [workerStatus]);
-
   return (
     <>
       <button
@@ -403,11 +227,6 @@ export default function AiAssistant() {
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
       </button>
 
-      <div
-        onClick={handleClose}
-        style={{ display: open ? 'block' : 'none' }}
-        className="fixed inset-0 z-40 bg-black/20"
-      />
       <div ref={panelRef}
         style={{
           display: open ? 'flex' : 'none',
@@ -417,29 +236,19 @@ export default function AiAssistant() {
         }}
         className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
         onWheel={(e) => e.stopPropagation()}>
-        {/* Edge resize handles - wider hit area */}
-        <div onMouseDown={handleResizeStart('n')} className="absolute -top-1 left-2 right-2 h-3 cursor-n-resize z-20 rounded-full" />
-        <div onMouseDown={handleResizeStart('s')} className="absolute -bottom-1 left-2 right-2 h-3 cursor-s-resize z-20 rounded-full" />
-        <div onMouseDown={handleResizeStart('w')} className="absolute -left-1 top-2 bottom-2 w-3 cursor-w-resize z-20 rounded-full" />
-        <div onMouseDown={handleResizeStart('e')} className="absolute -right-1 top-2 bottom-2 w-3 cursor-e-resize z-20 rounded-full" />
-        <div onMouseDown={handleResizeStart('nw')} className="absolute -top-1 -left-1 w-4 h-4 cursor-nw-resize z-20" />
-        <div onMouseDown={handleResizeStart('ne')} className="absolute -top-1 -right-1 w-4 h-4 cursor-ne-resize z-20" />
-        <div onMouseDown={handleResizeStart('sw')} className="absolute -bottom-1 -left-1 w-4 h-4 cursor-sw-resize z-20" />
-        <div onMouseDown={handleResizeStart('se')} className="absolute -bottom-1 -right-1 w-4 h-4 cursor-se-resize z-20" />
+        {/* Bottom-right corner resize handle */}
+        <div onMouseDown={handleResizeStart('se')} className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-20">
+          <svg viewBox="0 0 24 24" className="w-4 h-4 absolute bottom-0.5 right-0.5 text-gray-400"><path d="M20 20L12 20L20 12Z" fill="currentColor"/><path d="M20 20L16 20L20 16Z" fill="currentColor"/></svg>
+        </div>
         <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
           <div onMouseDown={handleDragStart} className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-white/10 rounded transition-colors" title="Drag to move"><GripVertical className="w-4 h-4 text-white/60" /></div>
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
             <p className="text-[10px] text-white/70 truncate">
-              {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
-              {workerStatus === 'ready' && 'Transformers.js ML • Offline'}
-              {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching • Offline'}
-              {workerStatus === 'unloaded' && 'Initializing...'}
+              Keyword matching • Offline
             </p>
           </div>
-          {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70 shrink-0" />}
-          {botDisabled && <button onClick={retryWorker} title="Retry ML model" className="text-white/70 hover:text-white ml-1 shrink-0"><RefreshCw className="w-3.5 h-3.5" /></button>}
           <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white ml-1 shrink-0">
             <span className="text-lg leading-none block w-4 h-4 text-center">{minimized ? '+' : '−'}</span>
           </button>
@@ -491,11 +300,17 @@ export default function AiAssistant() {
           </div>
         )}
 
-        <div className="border-t border-gray-200 p-3 flex gap-2">
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+        <div className="border-t border-gray-200 p-3 flex gap-2 items-end">
+          <textarea value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown} placeholder="Ask about dashboard features..."
-            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none"
-            disabled={loading} />
+            rows={1}
+            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none resize-none max-h-32"
+            disabled={loading}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = 'auto';
+              el.style.height = Math.min(el.scrollHeight, 128) + 'px';
+            }} />
           <button onClick={handleSend} disabled={loading || !input.trim()}
             className="w-9 h-9 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-mid transition-colors flex items-center justify-center disabled:opacity-50 shrink-0">
             <Send className="w-4 h-4" />

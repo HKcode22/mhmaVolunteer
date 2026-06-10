@@ -9,11 +9,11 @@ export default function StatCard({ value, label, color }: { value: string; label
   const animated = useCountUp(isNumeric && num > 0 ? num : 0);
 
   return (
-    <div className={`${color} rounded-xl p-5 text-center text-white shadow-lg`}>
-      <p className="text-2xl font-bold text-amber-600 mb-1 font-serif">
+      <div className={`${color} rounded-xl p-5 text-center shadow-lg`}>
+      <p className="text-2xl font-bold text-gray-900 mb-1 font-serif">
         {isNumeric && num > 0 ? `${animated}${suffix}` : value}
       </p>
-      <p className="text-amber-600/70 text-xs uppercase tracking-wider">{label}</p>
+      <p className="text-gray-600 text-xs uppercase tracking-wider">{label}</p>
     </div>
   );
 }
