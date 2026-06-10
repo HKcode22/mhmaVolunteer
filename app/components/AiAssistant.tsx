@@ -18,53 +18,123 @@ function tokenize(text: string): string[] {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
 }
 
-function keywordMatch(query: string, role?: string, page?: string, lastQuery?: string, lastPage?: string): { answer: string | null; navHint?: string } {
+function ngrams(tokens: string[], n: number): string[] {
+  const result: string[] = [];
+  for (let i = 0; i <= tokens.length - n; i++) {
+    result.push(tokens.slice(i, i + n).join(' '));
+  }
+  return result;
+}
+
+const stopWords = new Set(['the','a','an','is','are','was','were','be','been','have','has','had',
+  'do','does','did','will','would','can','could','may','might','shall','should','to','of','in',
+  'for','on','with','at','by','from','as','into','through','during','before','after','above',
+  'below','between','out','off','over','under','again','further','then','once','here','there',
+  'when','where','why','how','all','each','every','both','few','more','most','other','some',
+  'such','no','nor','not','only','own','same','so','than','too','very','just','about','up',
+  'and','but','or','if','because','what','which','who','whom','this','that','these','those',
+  'it','its','my','your','his','her','our','their']);
+
+function getTokens(text: string): string[] {
+  return tokenize(text).filter((w) => !stopWords.has(w));
+}
+
+function matchTokens(qFiltered: string[], kTokens: string[]): { matched: number; scores: number[] } {
+  let matched = 0;
+  const scores: number[] = [];
+  // Bigram matching
+  const qBigrams = new Set(ngrams(qFiltered, 2));
+  const kBigrams = new Set(ngrams(kTokens, 2));
+  for (const qWord of qFiltered) {
+    let best = 0;
+    for (const kt of kTokens) {
+      let s = 0;
+      if (qWord === kt) s = 4;
+      else if (qWord.length >= 4 && kt.length >= 4 && (kt.includes(qWord) || qWord.includes(kt))) s = 2;
+      else if (qWord.length >= 3 && kt.startsWith(qWord)) s = 1.5;
+      else if (qWord.length >= 3 && qWord.startsWith(kt)) s = 1.5;
+      if (s > best) best = s;
+    }
+    // Bonus if the token is also in a bigram match
+    const hasBigram = qFiltered.length > 1 && Array.from(qBigrams).some((bg) => bg.includes(qWord) && Array.from(kBigrams).some((kb) => kb.includes(bg)));
+    if (hasBigram) best += 1;
+    if (best > 0) matched++;
+    scores.push(best);
+  }
+  return { matched, scores };
+}
+
+// Precompute rarity weights for knowledge base keywords
+const kwRarity = new Map<string, number>();
+const totalItems = knowledgeBase.length;
+for (const item of knowledgeBase) {
+  const kw = [...item.keywords, ...tokenize(item.q)].map((k) => k.toLowerCase());
+  const uniqueKws = Array.from(new Set(kw));
+  for (const k of uniqueKws) {
+    kwRarity.set(k, (kwRarity.get(k) || 0) + 1);
+  }
+}
+
+function keywordMatch(query: string, role?: string, page?: string, lastQuery?: string, lastPage?: string, history?: { query: string; answer: string; navHint: string }[]): { answer: string | null; navHint?: string; suggestions?: string[] } {
   const qTokens = tokenize(query);
   if (qTokens.length === 0) return { answer: null };
-  const stopWords = new Set(['the','a','an','is','are','was','were','be','been','have','has','had',
-    'do','does','did','will','would','can','could','may','might','shall','should','to','of','in',
-    'for','on','with','at','by','from','as','into','through','during','before','after','above',
-    'below','between','out','off','over','under','again','further','then','once','here','there',
-    'when','where','why','how','all','each','every','both','few','more','most','other','some',
-    'such','no','nor','not','only','own','same','so','than','too','very','just','about','up',
-    'and','but','or','if','because','what','which','who','whom','this','that','these','those',
-    'it','its','my','your','his','her','our','their']);
-  const qFiltered = qTokens.filter((w) => !stopWords.has(w));
+  const qFiltered = getTokens(query);
 
-  // If query is very short (pronoun/follow-up), use last query context
+  // Use history for follow-up context (last 3 interactions)
   let effectiveTokens = qFiltered;
   let effectivePage = page;
-  if (qFiltered.length <= 2 && lastQuery) {
-    const lastTokens = tokenize(lastQuery).filter((w) => !stopWords.has(w));
+  if (qFiltered.length <= 3 && lastQuery) {
+    const lastTokens = getTokens(lastQuery);
     effectiveTokens = [...lastTokens, ...qFiltered];
     effectivePage = lastPage || page;
+    // Also add tokens from older history
+    if (history && qFiltered.length <= 2) {
+      for (let i = history.length - 1; i >= 0 && effectiveTokens.length < 25; i--) {
+        const hTokens = getTokens(history[i].query);
+        effectiveTokens = [...hTokens, ...effectiveTokens];
+      }
+    }
   }
 
   if (effectiveTokens.length === 0) return { answer: null };
 
   let bestScore = 0;
   let bestItem = null;
+  const scored: { score: number; item: typeof knowledgeBase[number] }[] = [];
+
   for (const item of knowledgeBase) {
     if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
     const kw = [...item.keywords, ...tokenize(item.q)];
     const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
-    let matches = 0;
-    for (const qWord of effectiveTokens) {
-      const matched = kTokens.some((kt) => {
-        if (qWord === kt) return true;
-        if (qWord.length >= 4 && kt.length >= 4) {
-          return kt.includes(qWord) || qWord.includes(kt);
-        }
-        return false;
-      });
-      if (matched) matches++;
+    if (kTokens.length === 0) continue;
+
+    const { matched, scores } = matchTokens(effectiveTokens, kTokens);
+    if (matched === 0) continue;
+
+    // Score: matched / max, weighted by rarity
+    let rarityBonus = 0;
+    for (const kt of kTokens) {
+      const freq = kwRarity.get(kt) || totalItems;
+      rarityBonus += (1 - freq / totalItems) * 0.3;
     }
-    let score = matches / Math.max(kTokens.length, effectiveTokens.length);
-    if (role && item.roles?.includes(role as any)) score += 0.2;
-    if (effectivePage && item.pages?.includes(effectivePage)) score += 0.15;
-    if (score > 0.3 && score > bestScore) { bestScore = score; bestItem = item; }
+    rarityBonus = rarityBonus / kTokens.length;
+
+    let score = (matched / Math.max(kTokens.length, effectiveTokens.length)) + rarityBonus;
+    if (role && item.roles?.includes(role as any)) score += 0.25;
+    if (effectivePage && item.pages?.includes(effectivePage)) score += 0.2;
+    if (item.q.toLowerCase().includes(query.toLowerCase())) score += 0.15;
+
+    scored.push({ score, item });
+    if (score > 0.25 && score > bestScore) { bestScore = score; bestItem = item; }
   }
-  if (!bestItem) return { answer: null };
+
+  if (!bestItem) {
+    // No good match — return top 3 suggestions
+    scored.sort((a, b) => b.score - a.score);
+    const topSuggestions = scored.slice(0, 3).map((s) => s.item.q);
+    return { answer: null, suggestions: topSuggestions.length > 0 ? topSuggestions : undefined };
+  }
+
   return { answer: bestItem.a, navHint: bestItem.pages?.[0] };
 }
 
@@ -91,7 +161,11 @@ export default function AiAssistant() {
   const lastQueryRef = useRef('');
   const lastAnswerRef = useRef('');
   const lastNavHintRef = useRef('');
+  const historyRef = useRef<{ query: string; answer: string; navHint: string }[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
+  const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { user } = useAuth();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -176,13 +250,22 @@ export default function AiAssistant() {
 
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
     const role = user?.role;
-    const result = keywordMatch(query, role, pathname, lastQueryRef.current, lastNavHintRef.current);
+    const result = keywordMatch(query, role, pathname, lastQueryRef.current, lastNavHintRef.current, historyRef.current);
     setNavHint(result.navHint || null);
     lastQueryRef.current = query;
     lastAnswerRef.current = result.answer || '';
     lastNavHintRef.current = result.navHint || '';
+    historyRef.current.push({ query, answer: result.answer || '', navHint: result.navHint || '' });
+    if (historyRef.current.length > 6) historyRef.current.shift();
+    if (!result.answer && result.suggestions) {
+      setSuggestionList(result.suggestions);
+    } else {
+      setSuggestionList([]);
+    }
     return result.answer;
   }, [user?.role, pathname]);
+
+  const [suggestionList, setSuggestionList] = useState<string[]>([]);
 
   const handleSend = async () => {
     const q = input.trim();
@@ -191,15 +274,21 @@ export default function AiAssistant() {
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
     setNavHint(null);
+    setSuggestionList([]);
 
     const answer = await askQuestion(q);
 
     if (answer) {
       setMessages((prev) => [...prev, { role: 'assistant', text: answer, navHint: navHint || undefined }]);
+    } else if (suggestionList.length > 0) {
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        text: `I couldn't find a specific answer. You might want to try asking about one of these:\n• ${suggestionList.join('\n• ')}`,
+      }]);
     } else {
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        text: `I couldn't find a specific answer to that. Try asking about: creating events, approving RSVPs, managing programs, handling donations, or other dashboard features.`,
+        text: `I couldn't find a specific answer to that. Try asking about: creating events, approving RSVPs, managing programs, handling donations, pledges, members, construction, analytics, notifications, or dashboard features.`,
       }]);
     }
   };
@@ -213,6 +302,64 @@ export default function AiAssistant() {
     'How do I approve enrollments?',
     'How do I manage pledges?',
   ];
+
+  /* ─── Transformers.js Worker (disabled for now, uncomment to re-enable) ───
+  useEffect(() => {
+    try {
+      const worker = new Worker('/ai-worker.js');
+      workerRef.current = worker;
+      const timeout = setTimeout(() => {
+        if (workerRef.current) {
+          worker.terminate();
+          workerRef.current = null;
+          setWorkerStatus('error');
+          setWorkerError('Model load timed out.');
+        }
+      }, 20000);
+      initTimeoutRef.current = timeout;
+      worker.onmessage = (event) => {
+        const { type, status, error, bestMatch } = event.data;
+        if (type === 'init-status') {
+          if (status === 'loading') setWorkerStatus('loading');
+          else if (status === 'ready') {
+            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            setWorkerStatus('ready');
+            setUsingFallback(false);
+          } else if (status === 'error') {
+            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            setWorkerStatus('error');
+            setWorkerError(error || 'Unknown error');
+          }
+        } else if (type === 'result') {
+          if (pendingResolveRef.current) {
+            const answer = bestMatch ? bestMatch.item.a : null;
+            setNavHint(bestMatch && bestMatch.item.pages?.[0] ? bestMatch.item.pages[0] : null);
+            pendingResolveRef.current(answer);
+            pendingResolveRef.current = null;
+          }
+        } else if (type === 'error') {
+          if (pendingResolveRef.current) {
+            pendingResolveRef.current(null);
+            pendingResolveRef.current = null;
+          }
+        }
+      };
+      worker.onerror = (err) => {
+        if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+        setWorkerStatus('error');
+        setWorkerError(err.message || 'Worker failed');
+      };
+      worker.postMessage({ type: 'init', data: { knowledgeBase } });
+    } catch (err: any) {
+      setWorkerStatus('unsupported');
+      setWorkerError('Web Workers not supported.');
+    }
+    return () => {
+      if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+      if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
+    };
+  }, []);
+  ─────────────────────────────────────────── */
 
   return (
     <>
