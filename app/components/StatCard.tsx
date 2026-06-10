@@ -10,7 +10,7 @@ export default function StatCard({ value, label, color }: { value: string; label
 
   return (
     <div className={`${color} rounded-xl p-5 text-center text-white shadow-lg`}>
-      <p className="text-2xl font-bold text-mhma-gold mb-1 font-serif">
+      <p className="text-2xl font-bold text-amber-600 mb-1 font-serif">
         {isNumeric && num > 0 ? `${animated}${suffix}` : value}
       </p>
       <p className="text-white/70 text-xs uppercase tracking-wider">{label}</p>

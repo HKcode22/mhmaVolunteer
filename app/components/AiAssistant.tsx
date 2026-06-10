@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation } from 'lucide-react';
+import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation, GripVertical } from 'lucide-react';
 import { knowledgeBase } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
 import { usePathname } from 'next/navigation';
@@ -402,7 +402,8 @@ export default function AiAssistant() {
         <div onMouseDown={handleResizeStart('ne')} className="absolute -top-1 -right-1 w-4 h-4 cursor-ne-resize z-20" />
         <div onMouseDown={handleResizeStart('sw')} className="absolute -bottom-1 -left-1 w-4 h-4 cursor-sw-resize z-20" />
         <div onMouseDown={handleResizeStart('se')} className="absolute -bottom-1 -right-1 w-4 h-4 cursor-se-resize z-20" />
-        <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0 cursor-move" onMouseDown={handleDragStart}>
+        <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
+          <div onMouseDown={handleDragStart} className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-white/10 rounded transition-colors" title="Drag to move"><GripVertical className="w-4 h-4 text-white/60" /></div>
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
