@@ -329,10 +329,18 @@ export default function AiAssistant() {
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
       </button>
 
-      <div style={{ display: open ? 'block' : 'none' }} className="fixed inset-0 z-40" />
+      <div
+        onClick={handleClose}
+        style={{ display: open ? 'block' : 'none' }}
+        className="fixed inset-0 z-40 bg-black/20"
+      />
       <div ref={panelRef}
-        style={{ display: open ? 'flex' : 'none', width: `${width}px`, height: `${height}px` }}
-        className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative">
+        style={{
+          display: open ? 'flex' : 'none',
+          width: width ? `${width}px` : '360px',
+          height: height ? `${height}px` : '500px',
+        }}
+        className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
         <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
@@ -378,7 +386,7 @@ export default function AiAssistant() {
           <div ref={messagesEndRef} />
         </div>
 
-        {messages.length === 1 && (
+        {messages.length === 1 && suggestions && suggestions.length > 0 && (
           <div className="px-4 pb-2">
             <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-wide font-medium">Try asking:</p>
             <div className="flex flex-wrap gap-1.5">
@@ -402,8 +410,8 @@ export default function AiAssistant() {
             <Send className="w-4 h-4" />
           </button>
         </div>
-        <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize">
-          <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
+        <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize select-none">
+          <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5 pointer-events-none"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
         </div>
       </div>
     </>
