@@ -66,6 +66,8 @@ export default function AiAssistant() {
   const [usingFallback, setUsingFallback] = useState(false);
   const [width, setWidth] = useState(360);
   const [height, setHeight] = useState(500);
+  const [posX, setPosX] = useState(0);
+  const [posY, setPosY] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
@@ -73,8 +75,8 @@ export default function AiAssistant() {
   const pathname = usePathname();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const resizingRef = useRef(false);
-  const resizeStartRef = useRef({ x: 0, y: 0, w: 360, h: 500 });
+  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+  const resizeRef = useRef({ resizing: false, edge: '', startX: 0, startY: 0, startW: 360, startH: 500, startPosX: 0, startPosY: 0 });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -176,21 +178,62 @@ export default function AiAssistant() {
     };
   }, [navHint]);
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+  useEffect(() => {
+    const saved = localStorage.getItem('mhma_ai_open');
+    if (saved === 'true') setOpen(true);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('mhma_ai_open', open.toString());
+  }, [open]);
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return;
     e.preventDefault();
-    resizingRef.current = true;
-    resizeStartRef.current = { x: e.clientX, y: e.clientY, w: width, h: height };
+    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, startPosX: posX, startPosY: posY };
     const onMouseMove = (ev: MouseEvent) => {
-      if (!resizingRef.current) return;
-      const newW = Math.max(260, Math.min(800, resizeStartRef.current.w + (ev.clientX - resizeStartRef.current.x)));
-      const newH = Math.max(300, Math.min(800, resizeStartRef.current.h + (ev.clientY - resizeStartRef.current.y)));
-      setWidth(newW);
-      setHeight(newH);
+      if (!dragRef.current.dragging) return;
+      setPosX(dragRef.current.startPosX + (ev.clientX - dragRef.current.startX));
+      setPosY(dragRef.current.startPosY + (ev.clientY - dragRef.current.startY));
     };
-    const onMouseUp = () => { resizingRef.current = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
+    const onMouseUp = () => { dragRef.current.dragging = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }, [width, height]);
+  }, [posX, posY]);
+
+  const handleResizeStart = useCallback((edge: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = panelRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    resizeRef.current = { resizing: true, edge, startX: e.clientX, startY: e.clientY, startW: width, startH: height, startPosX: posX, startPosY: posY };
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!resizeRef.current.resizing) return;
+      const dx = ev.clientX - resizeRef.current.startX;
+      const dy = ev.clientY - resizeRef.current.startY;
+      let newW = width, newH = height, newX = posX, newY = posY;
+      const edge = resizeRef.current.edge;
+      if (edge.includes('e')) newW = Math.max(260, Math.min(800, resizeRef.current.startW + dx));
+      if (edge.includes('w')) {
+        const w = Math.max(260, Math.min(800, resizeRef.current.startW - dx));
+        newW = w;
+        newX = resizeRef.current.startPosX + (resizeRef.current.startW - w);
+      }
+      if (edge.includes('s')) newH = Math.max(300, Math.min(800, resizeRef.current.startH + dy));
+      if (edge.includes('n')) {
+        const h = Math.max(300, Math.min(800, resizeRef.current.startH - dy));
+        newH = h;
+        newY = resizeRef.current.startPosY + (resizeRef.current.startH - h);
+      }
+      setWidth(newW);
+      setHeight(newH);
+      setPosX(newX);
+      setPosY(newY);
+    };
+    const onMouseUp = () => { resizeRef.current.resizing = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [width, height, posX, posY]);
 
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
     const role = user?.role;
@@ -340,12 +383,20 @@ export default function AiAssistant() {
           display: open ? 'flex' : 'none',
           width: width ? `${width}px` : '360px',
           height: minimized ? 'auto' : height ? `${height}px` : '500px',
+          transform: posX || posY ? `translate(${posX}px, ${posY}px)` : undefined,
         }}
-        className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-        <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
-          <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white shrink-0 mr-1">
-            <span className="text-lg leading-none block w-4 h-4 text-center">{minimized ? '+' : '−'}</span>
-          </button>
+        className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+        onWheel={(e) => e.stopPropagation()}>
+        {/* Edge resize handles */}
+        <div onMouseDown={handleResizeStart('n')} className="absolute top-0 left-4 right-4 h-1.5 cursor-n-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
+        <div onMouseDown={handleResizeStart('s')} className="absolute bottom-0 left-4 right-4 h-1.5 cursor-s-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
+        <div onMouseDown={handleResizeStart('w')} className="absolute left-0 top-4 bottom-4 w-1.5 cursor-w-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
+        <div onMouseDown={handleResizeStart('e')} className="absolute right-0 top-4 bottom-4 w-1.5 cursor-e-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
+        <div onMouseDown={handleResizeStart('nw')} className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize z-10" />
+        <div onMouseDown={handleResizeStart('ne')} className="absolute top-0 right-0 w-3 h-3 cursor-ne-resize z-10" />
+        <div onMouseDown={handleResizeStart('sw')} className="absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize z-10" />
+        <div onMouseDown={handleResizeStart('se')} className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize z-10" />
+        <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0 cursor-move" onMouseDown={handleDragStart}>
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
@@ -421,9 +472,6 @@ export default function AiAssistant() {
         </div>
         </>
         )}
-        <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize select-none">
-          <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5 pointer-events-none"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
-        </div>
       </div>
     </>
   );

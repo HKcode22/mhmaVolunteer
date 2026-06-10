@@ -495,11 +495,11 @@ useEffect(() => {
                 <span className="text-xs sm:text-sm tracking-[.18em] uppercase text-amber-500 font-medium">Mountain House Muslim Association</span>
               </div>
               <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2 text-amber-500" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight text-gray-900">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight text-white">
                 <span className="whitespace-nowrap">welcome to <span className="text-amber-500 italic">MHMA</span></span>
-                {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block">{user.displayName}</span></> : '!'}
+                {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block text-white/90">{user.displayName}</span></> : '!'}
               </h1>
-              <p className="text-base md:text-lg lg:text-xl text-gray-600 mb-6 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed">
+              <p className="text-base md:text-lg lg:text-xl text-white/80 mb-6 max-w-3xl mx-auto lg:mx-0 font-normal leading-relaxed">
                 Serving the Muslim Community in Mountain House since 2010
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">
@@ -667,18 +667,18 @@ useEffect(() => {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <div className="lg:w-2/5 shrink-0">
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 uppercase tracking-wide">
-                About <span className="text-mhma-gold">MHMA</span>
+                About <span className="text-amber-600">MHMA</span>
               </h2>
-              <p className="text-mhma-gold font-medium text-sm uppercase tracking-wider mb-4">
+              <p className="text-amber-600/80 font-medium text-sm uppercase tracking-wider mb-4">
                 Serving Our Community with Transparency
               </p>
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <p className="text-gray-700 leading-relaxed mb-4">
                 The Mountain House Muslim Association (MHMA) has been a cornerstone of faith and community for years. We serve the spiritual, educational, and social needs of Muslims in Mountain House and the surrounding Bay Area.
               </p>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-gray-700 leading-relaxed mb-6">
                 Our masjid is a home for every Muslim — a center of worship, learning, and brotherhood. We welcome all and work to strengthen the bonds between our community and our neighbors.
               </p>
-              <Link href="/about" className="inline-flex items-center text-mhma-gold font-semibold hover:translate-x-1 transition-transform">
+              <Link href="/about" className="inline-flex items-center text-amber-600 font-semibold hover:translate-x-1 transition-transform">
                 Learn More About Us <ChevronRight className="ml-1 w-5 h-5" />
               </Link>
             </div>
