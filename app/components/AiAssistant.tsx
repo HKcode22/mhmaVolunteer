@@ -66,49 +66,55 @@ for (const item of knowledgeBase) {
   }
 }
 
-function keywordMatch(query: string, role?: string, page?: string, lastQuery?: string, lastPage?: string, history?: { query: string; answer: string; navHint: string }[]): { answer: string | null; navHint?: string; suggestions?: string[] } {
-  const qTokens = tokenize(query);
-  if (qTokens.length === 0) return { answer: null };
+function keywordMatch(
+  query: string,
+  role?: string,
+  page?: string,
+  lastQuery?: string,
+  lastTopic?: { q: string; a: string; keywords: string[]; pages?: string[]; roles?: string[]; denyRoles?: string[] } | null,
+): { answer: string | null; navHint?: string; suggestions?: string[] } {
   const qFiltered = getTokens(query);
+  if (qFiltered.length === 0) return { answer: null };
 
-  // Use history for follow-up context (last 3 interactions)
-  let effectiveTokens = qFiltered;
-  let effectivePage = page;
-  if (qFiltered.length <= 3 && lastQuery) {
-    const lastTokens = getTokens(lastQuery);
-    effectiveTokens = [...lastTokens, ...qFiltered];
-    effectivePage = lastPage || page;
-    if (history && qFiltered.length <= 2) {
-      for (let i = history.length - 1; i >= 0 && effectiveTokens.length < 25; i--) {
-        const hTokens = getTokens(history[i].query);
-        effectiveTokens = [...hTokens, ...effectiveTokens];
-      }
+  let bestScore = 0;
+  let bestItem: typeof knowledgeBase[number] | null = null;
+  const scored: { score: number; item: typeof knowledgeBase[number] }[] = [];
+
+  function scoreItem(item: typeof knowledgeBase[number], tokens: string[]): { score: number; matched: number } {
+    const kw = [...item.keywords, ...tokenize(item.q)];
+    const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
+    if (kTokens.length === 0) return { score: 0, matched: 0 };
+    const matched = matchTokens(tokens, kTokens);
+    if (matched === 0) return { score: 0, matched: 0 };
+    let score = matched / Math.max(kTokens.length, tokens.length);
+    if (role && item.roles?.includes(role as any)) score += 0.12;
+    if (page && item.pages?.includes(page)) score += 0.08;
+    if (lastTopic && item === lastTopic) score += 0.1;
+    return { score, matched };
+  }
+
+  // First pass: match against current query
+  for (const item of knowledgeBase) {
+    if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
+    const { score, matched } = scoreItem(item, qFiltered);
+    if (matched > 0) {
+      scored.push({ score, item });
+      if (score > 0.15 && score > bestScore) { bestScore = score; bestItem = item; }
     }
   }
 
-  if (effectiveTokens.length === 0) return { answer: null };
-
-  let bestScore = 0;
-  let bestItem = null;
-  const scored: { score: number; item: typeof knowledgeBase[number] }[] = [];
-
-  for (const item of knowledgeBase) {
-    if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
-    const kw = [...item.keywords, ...tokenize(item.q)];
-    const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
-    if (kTokens.length === 0) continue;
-
-    const matched = matchTokens(effectiveTokens, kTokens);
-    if (matched === 0) continue;
-
-    // Score: fraction of query tokens matched, with rarity bonus
-    let score = matched / effectiveTokens.length;
-    if (role && item.roles?.includes(role as any)) score += 0.2;
-    if (effectivePage && item.pages?.includes(effectivePage)) score += 0.15;
-    if (item.q.toLowerCase().includes(query.toLowerCase())) score += 0.1;
-
-    scored.push({ score, item });
-    if (score > 0.2 && score > bestScore) { bestScore = score; bestItem = item; }
+  // Second pass: if no good match, merge with last query tokens
+  if (!bestItem && lastQuery) {
+    const lastTokens = getTokens(lastQuery);
+    const merged = Array.from(new Set([...lastTokens, ...qFiltered]));
+    for (const item of knowledgeBase) {
+      if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
+      const { score, matched } = scoreItem(item, merged);
+      if (matched > 0) {
+        scored.push({ score, item });
+        if (score > 0.12 && score > bestScore) { bestScore = score; bestItem = item; }
+      }
+    }
   }
 
   if (!bestItem) {
@@ -141,9 +147,8 @@ export default function AiAssistant() {
   const posXRef = useRef(0);
   const posYRef = useRef(0);
   const lastQueryRef = useRef('');
-  const lastAnswerRef = useRef('');
   const lastNavHintRef = useRef('');
-  const historyRef = useRef<{ query: string; answer: string; navHint: string }[]>([]);
+  const topicRef = useRef<{ q: string; a: string; keywords: string[]; pages?: string[]; roles?: string[]; denyRoles?: string[] } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
@@ -230,24 +235,18 @@ export default function AiAssistant() {
     document.addEventListener('mouseup', onMouseUp);
   }, []);
 
-  const askQuestion = useCallback(async (query: string): Promise<string | null> => {
+  const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null; suggestions?: string[] }> => {
     const role = user?.role;
-    const result = keywordMatch(query, role, pathname, lastQueryRef.current, lastNavHintRef.current, historyRef.current);
+    const result = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
     setNavHint(result.navHint || null);
     lastQueryRef.current = query;
-    lastAnswerRef.current = result.answer || '';
     lastNavHintRef.current = result.navHint || '';
-    historyRef.current.push({ query, answer: result.answer || '', navHint: result.navHint || '' });
-    if (historyRef.current.length > 6) historyRef.current.shift();
-    if (!result.answer && result.suggestions) {
-      setSuggestionList(result.suggestions);
-    } else {
-      setSuggestionList([]);
+    if (result.answer) {
+      const found = knowledgeBase.find((k) => k.a === result.answer);
+      if (found) topicRef.current = found;
     }
-    return result.answer;
+    return { answer: result.answer, suggestions: result.suggestions };
   }, [user?.role, pathname]);
-
-  const [suggestionList, setSuggestionList] = useState<string[]>([]);
 
   const handleSend = async () => {
     const q = input.trim();
@@ -256,16 +255,15 @@ export default function AiAssistant() {
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
     setNavHint(null);
-    setSuggestionList([]);
 
-    const answer = await askQuestion(q);
+    const { answer, suggestions } = await askQuestion(q);
 
     if (answer) {
       setMessages((prev) => [...prev, { role: 'assistant', text: answer, navHint: lastNavHintRef.current || undefined }]);
-    } else if (suggestionList.length > 0) {
+    } else if (suggestions && suggestions.length > 0) {
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        text: `I couldn't find a specific answer. You might want to try asking about one of these:\n• ${suggestionList.join('\n• ')}`,
+        text: `I couldn't find a specific answer. You might want to try asking about one of these:\n• ${suggestions.join('\n• ')}`,
       }]);
     } else {
       setMessages((prev) => [...prev, {
@@ -376,7 +374,7 @@ export default function AiAssistant() {
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
             <p className="text-[10px] text-white/70 truncate">
-              Keyword matching • Offline
+              Fallback • Active
             </p>
           </div>
           <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white ml-1 shrink-0">
