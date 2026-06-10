@@ -5,24 +5,23 @@ const CDN_URLS = [
   'https://unpkg.com/@xenova/transformers@2.17.2/dist/transformers.js',
 ];
 
-let loaded = false;
+let TransformersLib = null;
 let loadError = '';
-for (const url of CDN_URLS) {
-  try {
-    importScripts(url);
-    if (typeof self.Transformers === 'undefined') {
-      loadError = `CDN loaded but self.Transformers is undefined (${url})`;
-      continue;
+
+async function loadTransformers() {
+  for (const url of CDN_URLS) {
+    try {
+      const mod = await import(url);
+      if (mod && mod.pipeline) {
+        TransformersLib = mod;
+        loadError = '';
+        return true;
+      }
+    } catch (e) {
+      loadError = `${e.message} (${url})`;
     }
-    loaded = true;
-    loadError = '';
-    break;
-  } catch (e) {
-    loadError = `${e.message} (${url})`;
   }
-}
-if (!loaded) {
-  postMessage({ type: 'init-status', status: 'error', error: 'Failed to load Transformers.js from any CDN. Last error: ' + loadError });
+  return false;
 }
 
 let extractor = null;
@@ -43,12 +42,16 @@ self.addEventListener('message', async (event) => {
   const { type, data } = event.data;
 
   if (type === 'init') {
-    if (!loaded) return;
+    const loaded = await loadTransformers();
+    if (!loaded) {
+      postMessage({ type: 'init-status', status: 'error', error: 'Failed to load Transformers.js from any CDN. Last error: ' + loadError });
+      return;
+    }
     knowledgeItems = data.knowledgeBase;
     postMessage({ type: 'init-status', status: 'loading' });
 
     try {
-      extractor = await self.Transformers.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+      extractor = await TransformersLib.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 
       knowledgeEmbeddings = [];
       for (const item of knowledgeItems) {

@@ -54,6 +54,7 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', text: "Hi! I'm your MHMA assistant. Ask me anything about the dashboard." },
   ]);
@@ -81,7 +82,7 @@ export default function AiAssistant() {
 
   useEffect(() => {
     try {
-      const worker = new Worker('/ai-worker.js');
+      const worker = new Worker('/ai-worker.js', { type: 'module' });
       workerRef.current = worker;
 
       const timeout = setTimeout(() => {
@@ -257,7 +258,7 @@ export default function AiAssistant() {
     setUsingFallback(false);
     setLoading(false);
     try {
-      const worker = new Worker('/ai-worker.js');
+      const worker = new Worker('/ai-worker.js', { type: 'module' });
       workerRef.current = worker;
       const timeout = setTimeout(() => {
         if (workerRef.current && workerStatus !== 'ready' && workerStatus !== 'error') {
@@ -338,10 +339,13 @@ export default function AiAssistant() {
         style={{
           display: open ? 'flex' : 'none',
           width: width ? `${width}px` : '360px',
-          height: height ? `${height}px` : '500px',
+          height: minimized ? 'auto' : height ? `${height}px` : '500px',
         }}
         className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
         <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
+          <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white shrink-0 mr-1">
+            <span className="text-lg leading-none block w-4 h-4 text-center">{minimized ? '+' : '−'}</span>
+          </button>
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
@@ -354,11 +358,16 @@ export default function AiAssistant() {
           </div>
           {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70 shrink-0" />}
           {botDisabled && <button onClick={retryWorker} title="Retry ML model" className="text-white/70 hover:text-white ml-1 shrink-0"><RefreshCw className="w-3.5 h-3.5" /></button>}
+          <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white ml-1 shrink-0">
+            <span className="text-lg leading-none block w-4 h-4 text-center">{minimized ? '+' : '−'}</span>
+          </button>
           <button onClick={handleClose} className="text-white/70 hover:text-white ml-1 shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
 
+        {!minimized && (
+        <>
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -410,6 +419,8 @@ export default function AiAssistant() {
             <Send className="w-4 h-4" />
           </button>
         </div>
+        </>
+        )}
         <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize select-none">
           <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5 pointer-events-none"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
         </div>
