@@ -318,11 +318,16 @@ export default function AiAssistant() {
     }
   }, [workerStatus]);
 
+  const panelVisible = open ? '' : 'hidden';
+
   return (
     <>
       <button
         onClick={() => {
-          setOpen((prev) => !prev);
+          setOpen((prev) => {
+            console.log('[AI] toggling from', prev, 'to', !prev);
+            return !prev;
+          });
         }}
         style={{ zIndex: 9999 }}
         className="fixed bottom-6 right-6 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
@@ -331,10 +336,31 @@ export default function AiAssistant() {
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
       </button>
 
-      <div className={`fixed inset-0 z-40 ${open ? '' : 'hidden'}`} />
+      {/* Simple test div — visible when open */}
+      <div
+        style={{
+          display: open ? 'flex' : 'none',
+          position: 'fixed',
+          bottom: '96px',
+          right: '24px',
+          width: '400px',
+          height: '80px',
+          zIndex: 99999,
+          background: 'red',
+          color: 'white',
+          padding: '16px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          fontSize: '18px',
+        }}
+      >
+        {open ? 'OPEN=true' : 'OPEN=false'}
+      </div>
+
+      <div style={{ display: open ? 'block' : 'none' }} className="fixed inset-0 z-40" />
       <div ref={panelRef}
-        className={`fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative ${open ? '' : 'hidden'}`}
-        style={{ width: `${width}px`, height: `${height}px` }}>
+        style={{ display: open ? 'flex' : 'none', width: `${width}px`, height: `${height}px` }}
+        className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative">
             <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
               <Bot className="w-5 h-5" />
               <div className="flex-1">
