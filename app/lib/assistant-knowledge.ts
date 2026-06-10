@@ -343,7 +343,7 @@ export const knowledgeBase: QAItem[] = [
   },
   {
     q: "Can you create an event for me?",
-    a: "I can guide you, but I can't create events directly. As a non-board member, you can submit an event scheduling request on the Event Scheduling Request page. A board member will review and approve it.",
+    a: "Only board members can create events directly in the Dashboard. As a regular member, you can submit an Event Scheduling Request from the Contact menu. A board member will review and approve it. Go to the 'Event Scheduling Request' page to fill out the form.",
     keywords: ["create for me", "make event for me", "ai create event", "assistant create", "do it for me"],
     roles: ["member"],
     denyRoles: ["board_member", "administrator"],

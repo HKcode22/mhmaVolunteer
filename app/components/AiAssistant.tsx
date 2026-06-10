@@ -40,13 +40,19 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
     const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
     let matches = 0;
     for (const qWord of qFiltered) {
-      if (kTokens.some((kt) => kt.includes(qWord) || qWord.includes(kt))) matches++;
+      const matched = kTokens.some((kt) => {
+        if (qWord === kt) return true;
+        if (qWord.length >= 4 && kt.length >= 4) {
+          return kt.includes(qWord) || qWord.includes(kt);
+        }
+        return false;
+      });
+      if (matched) matches++;
     }
-    let score = matches / Math.max(kTokens.length, qFiltered.length) * 2;
-    if (role && item.roles?.includes(role as any)) score += 0.15;
-    if (page && item.pages?.includes(page)) score += 0.1;
-    score = Math.min(score, 1);
-    if (score > 0.2 && score > bestScore) { bestScore = score; bestItem = item; }
+    let score = matches / Math.max(kTokens.length, qFiltered.length);
+    if (role && item.roles?.includes(role as any)) score += 0.2;
+    if (page && item.pages?.includes(page)) score += 0.15;
+    if (score > 0.3 && score > bestScore) { bestScore = score; bestItem = item; }
   }
   if (!bestItem) return { answer: null };
   return { answer: bestItem.a, navHint: bestItem.pages?.[0] };
@@ -84,7 +90,7 @@ export default function AiAssistant() {
 
   useEffect(() => {
     try {
-      const worker = new Worker('/ai-worker.js', { type: 'module' });
+      const worker = new Worker('/ai-worker.js');
       workerRef.current = worker;
 
       const timeout = setTimeout(() => {
@@ -95,7 +101,7 @@ export default function AiAssistant() {
           setWorkerError('Model load timed out.');
           setUsingFallback(true);
         }
-      }, 60000);
+      }, 20000);
       initTimeoutRef.current = timeout;
 
       worker.onmessage = (event) => {
@@ -301,7 +307,7 @@ export default function AiAssistant() {
     setUsingFallback(false);
     setLoading(false);
     try {
-      const worker = new Worker('/ai-worker.js', { type: 'module' });
+      const worker = new Worker('/ai-worker.js');
       workerRef.current = worker;
       const timeout = setTimeout(() => {
         if (workerRef.current && workerStatus !== 'ready' && workerStatus !== 'error') {
@@ -311,7 +317,7 @@ export default function AiAssistant() {
           setWorkerError('Model load timed out.');
           setUsingFallback(true);
         }
-      }, 60000);
+      }, 20000);
       initTimeoutRef.current = timeout;
       worker.onmessage = (event) => {
         const { type, status, error, bestMatch } = event.data;
@@ -387,23 +393,23 @@ export default function AiAssistant() {
         }}
         className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
         onWheel={(e) => e.stopPropagation()}>
-        {/* Edge resize handles */}
-        <div onMouseDown={handleResizeStart('n')} className="absolute top-0 left-4 right-4 h-1.5 cursor-n-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
-        <div onMouseDown={handleResizeStart('s')} className="absolute bottom-0 left-4 right-4 h-1.5 cursor-s-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
-        <div onMouseDown={handleResizeStart('w')} className="absolute left-0 top-4 bottom-4 w-1.5 cursor-w-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
-        <div onMouseDown={handleResizeStart('e')} className="absolute right-0 top-4 bottom-4 w-1.5 cursor-e-resize z-10 hover:bg-mhma-gold/30 rounded-full" />
-        <div onMouseDown={handleResizeStart('nw')} className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize z-10" />
-        <div onMouseDown={handleResizeStart('ne')} className="absolute top-0 right-0 w-3 h-3 cursor-ne-resize z-10" />
-        <div onMouseDown={handleResizeStart('sw')} className="absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize z-10" />
-        <div onMouseDown={handleResizeStart('se')} className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize z-10" />
+        {/* Edge resize handles - wider hit area */}
+        <div onMouseDown={handleResizeStart('n')} className="absolute -top-1 left-2 right-2 h-3 cursor-n-resize z-20 rounded-full" />
+        <div onMouseDown={handleResizeStart('s')} className="absolute -bottom-1 left-2 right-2 h-3 cursor-s-resize z-20 rounded-full" />
+        <div onMouseDown={handleResizeStart('w')} className="absolute -left-1 top-2 bottom-2 w-3 cursor-w-resize z-20 rounded-full" />
+        <div onMouseDown={handleResizeStart('e')} className="absolute -right-1 top-2 bottom-2 w-3 cursor-e-resize z-20 rounded-full" />
+        <div onMouseDown={handleResizeStart('nw')} className="absolute -top-1 -left-1 w-4 h-4 cursor-nw-resize z-20" />
+        <div onMouseDown={handleResizeStart('ne')} className="absolute -top-1 -right-1 w-4 h-4 cursor-ne-resize z-20" />
+        <div onMouseDown={handleResizeStart('sw')} className="absolute -bottom-1 -left-1 w-4 h-4 cursor-sw-resize z-20" />
+        <div onMouseDown={handleResizeStart('se')} className="absolute -bottom-1 -right-1 w-4 h-4 cursor-se-resize z-20" />
         <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0 cursor-move" onMouseDown={handleDragStart}>
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
             <p className="text-[10px] text-white/70 truncate">
               {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
-              {workerStatus === 'ready' && 'Transformers.js ML • Offline'}
-              {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching • Offline'}
+              {workerStatus === 'ready' && 'Transformers.js ML • Online'}
+              {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching • Active'}
               {workerStatus === 'unloaded' && 'Initializing...'}
             </p>
           </div>
