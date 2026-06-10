@@ -54,7 +54,6 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
 }
 
 export default function AiAssistant() {
-  const openRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', text: "Hi! I'm your MHMA assistant. Ask me anything about the dashboard." },
@@ -77,10 +76,6 @@ export default function AiAssistant() {
   const panelRef = useRef<HTMLDivElement>(null);
   const resizingRef = useRef(false);
   const resizeStartRef = useRef({ x: 0, y: 0, w: 360, h: 500 });
-
-  useEffect(() => {
-    console.log('[AI] open state changed to:', open);
-  }, [open]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -157,13 +152,12 @@ export default function AiAssistant() {
     };
   }, []);
 
-  const handleClose = useCallback(() => { openRef.current = false; setOpen(false); }, []);
+  const handleClose = useCallback(() => { setOpen(false); }, []);
 
   useEffect(() => {
     if (!open) return;
     function handleMouseDown(e: MouseEvent) {
       if (panelRef.current && !panelRef.current.contains(e.target as Node) && !(e.target as HTMLElement)?.closest?.('[aria-label="AI Assistant"]')) {
-        openRef.current = false;
         setOpen(false);
       }
     }
@@ -328,11 +322,7 @@ export default function AiAssistant() {
     <>
       <button
         onClick={() => {
-          console.log('[AI] button clicked, current open:', openRef.current);
-          const next = !openRef.current;
-          openRef.current = next;
-          setOpen(next);
-          console.log('[AI] new open state:', next);
+          setOpen((prev) => !prev);
         }}
         style={{ zIndex: 9999 }}
         className="fixed bottom-6 right-6 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
@@ -341,12 +331,10 @@ export default function AiAssistant() {
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
       </button>
 
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" />
-          <div ref={panelRef}
-            style={{ width: `${width}px`, height: `${height}px` }}
-            className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative">
+      <div className={`fixed inset-0 z-40 ${open ? '' : 'hidden'}`} />
+      <div ref={panelRef}
+        className={`fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative ${open ? '' : 'hidden'}`}
+        style={{ width: `${width}px`, height: `${height}px` }}>
             <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
               <Bot className="w-5 h-5" />
               <div className="flex-1">
@@ -421,7 +409,5 @@ export default function AiAssistant() {
           </div>
           </div>
         </>
-      )}
-    </>
   );
 }
