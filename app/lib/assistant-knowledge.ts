@@ -361,6 +361,26 @@ export const knowledgeBase: QAItem[] = [
     roles: ["board_member", "administrator", "member"],
   },
 
+  // ─── Confused / Frustrated User Help ───
+  {
+    q: "I don't understand",
+    a: "I understand this can be frustrating. Let me try again — what would you like help with? You can ask about events, programs, navigation, donations, or any dashboard feature. Tell me what you're trying to do and I'll guide you step by step.",
+    keywords: ["dont understand", "don't understand", "confused", "not understand", "what do you mean", "huh", "not making sense", "im confused", "i'm confused", "what are you talking about", "this is confusing"],
+    roles: ["board_member", "administrator", "member"],
+  },
+  {
+    q: "Can you understand me?",
+    a: "Yes, I can hear you! I'm a keyword-based assistant, so I match your words against my knowledge base. Try being more specific about what you need. For example: 'How do I get to the events page?' or 'Show me how to enroll in a program'.",
+    keywords: ["can you understand", "do you understand", "are you listening", "hello are you there", "hello?", "you there", "are you there", "can you hear", "do you get it", "understand me"],
+    roles: ["board_member", "administrator", "member"],
+  },
+  {
+    q: "You're not helping me",
+    a: "I'm sorry I'm not giving you the right answers. Let's try a different approach. Can you tell me what you're trying to do on the website? For example: 'I want to see the events page' or 'How do I sign up for a program?'",
+    keywords: ["not helping", "you're not helping", "you not helping", "useless", "bad assistant", "not good", "wrong answer", "not what i asked", "not what i want", "you dont understand", "you don't get it"],
+    roles: ["board_member", "administrator", "member"],
+  },
+
   // ─── Navigation Help ───
   {
     q: "How do I get to the Events page?",

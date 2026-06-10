@@ -127,7 +127,7 @@ export default function EventDetailPage() {
           <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
             <Link
               href={`/rsvp?eventId=${event.id}`}
-              className="flex-1 inline-flex justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg"
+              className="flex-1 inline-flex justify-center items-center px-8 py-4 bg-mhma-gold text-gray-900 font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg"
             >
               <Users className="mr-2 w-5 h-5" /> RSVP NOW
             </Link>
@@ -136,7 +136,7 @@ export default function EventDetailPage() {
                 href={event.rsvpLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 inline-flex justify-center items-center px-8 py-4 border-2 border-mhma-gold text-mhma-gold font-bold rounded-xl hover:bg-mhma-gold/10 transition-all text-sm"
+                className="flex-1 inline-flex justify-center items-center px-8 py-4 bg-amber-600/20 text-gray-900 font-bold rounded-xl hover:bg-amber-600/30 transition-all text-sm"
               >
                 External RSVP Form →
               </a>

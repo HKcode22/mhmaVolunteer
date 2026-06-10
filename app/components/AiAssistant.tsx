@@ -89,7 +89,7 @@ function keywordMatch(
     let score = matched / Math.max(kTokens.length, tokens.length);
     if (role && item.roles?.includes(role as any)) score += 0.12;
     if (page && item.pages?.includes(page)) score += 0.08;
-    if (lastTopic && item === lastTopic) score += 0.1;
+    if (lastTopic && item === lastTopic) score += 0.05;
     return { score, matched };
   }
 
@@ -235,8 +235,32 @@ export default function AiAssistant() {
     document.addEventListener('mouseup', onMouseUp);
   }, []);
 
+  const identityPattern = /who\s+(am|is)\s+(i|me|logged|l̥in)|what\s+(is|are)\s+(my|the)\s+role|do\s+(you|u)\s+(know|remember)\s+(who|me|my)|who(\u2019s|'s)?\s+logged/i;
+  const confusionPattern = /(i\s+|i'|i)(m\s+|s\s+)?(dont|don't|not|nt)\s+understand|not\s+(making|any)\s+sense|what\s+(are|r)\s+(you|u)\s+talking|(im|i'm)\s+confused|(huh|hello\?)|are\s+(you|u)\s+(there|tere)|can\s+(you|u)\s+understand|(oh\s+my\s+god|omg)|what\s+do\s+(you|u)\s+mean|you(´|'|re|r)e?\s+(not\s+)?(helping|making|listening)|please\s+guide\s+me/i;
+
   const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null; suggestions?: string[] }> => {
     const role = user?.role;
+    const name = user?.displayName || (user?.firstName ? `${user.firstName} ${user.lastName}` : '').trim();
+
+    // Personalize identity/role queries
+    if (identityPattern.test(query)) {
+      if (name && role) {
+        const roleLabel = role === 'board_member' ? 'a Board Member' : role === 'administrator' ? 'an Administrator' : 'a Member';
+        return { answer: `You are ${name}, logged in as ${roleLabel}. You can manage your profile, notifications, and settings from the top navigation bar.${role === 'board_member' || role === 'administrator' ? ' As a board member, you also have access to the full Dashboard for managing events, programs, donations, and more.' : ''}` };
+      }
+      if (user) {
+        return { answer: `You are logged in as a ${role || 'member'}. Use the navigation bar to explore your available features.` };
+      }
+    }
+
+    // Handle confused/frustrated follow-ups
+    if (confusionPattern.test(query) && lastQueryRef.current && topicRef.current) {
+      return { answer: `I understand this can be confusing. Let me re-explain:\n\n${topicRef.current.a}` };
+    }
+    if (confusionPattern.test(query) && !lastQueryRef.current) {
+      return { answer: "I'm here to help! Try asking about dashboard features, events, programs, or navigation. For example: 'How do I create an event?' or 'Go to the programs page'." };
+    }
+
     const result = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
     setNavHint(result.navHint || null);
     lastQueryRef.current = query;

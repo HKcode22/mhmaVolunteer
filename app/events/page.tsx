@@ -209,7 +209,7 @@ export default function EventsPage() {
                           <div className="space-y-3">
                             <Link
                               href={`/rsvp?eventId=${slide.id}`}
-                              className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-black font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
+                              className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-gray-900 font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
                             >
                               RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
                             </Link>
@@ -217,7 +217,7 @@ export default function EventsPage() {
                               href={slide.eventRsvpLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex w-full justify-center items-center px-8 py-3 border-2 border-mhma-gold text-mhma-gold font-bold rounded-xl hover:bg-mhma-gold/10 transition-all text-sm"
+                              className="inline-flex w-full justify-center items-center px-8 py-4 bg-amber-600/20 text-gray-900 font-bold rounded-xl hover:bg-amber-600/30 transition-all text-sm"
                             >
                               External RSVP Form <ArrowRight className="ml-2 w-4 h-4" />
                             </a>
@@ -226,7 +226,7 @@ export default function EventsPage() {
                         {!slide.eventRsvpLink && (
                           <Link
                             href={`/events/${slide.id}`}
-                            className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
+                            className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-gray-900 font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
                           >
                             RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
                           </Link>
