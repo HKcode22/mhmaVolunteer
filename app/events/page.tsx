@@ -209,7 +209,7 @@ export default function EventsPage() {
                           <div className="space-y-3">
                             <Link
                               href={`/rsvp?eventId=${slide.id}`}
-                              className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
+                              className="inline-flex w-full justify-center items-center px-8 py-4 bg-mhma-gold text-black font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg text-lg uppercase tracking-widest"
                             >
                               RSVP NOW <ArrowRight className="ml-2 w-5 h-5" />
                             </Link>

@@ -39,29 +39,20 @@ function getTokens(text: string): string[] {
   return tokenize(text).filter((w) => !stopWords.has(w));
 }
 
-function matchTokens(qFiltered: string[], kTokens: string[]): { matched: number; scores: number[] } {
+function matchTokens(qFiltered: string[], kTokens: string[]): number {
   let matched = 0;
-  const scores: number[] = [];
-  // Bigram matching
-  const qBigrams = new Set(ngrams(qFiltered, 2));
-  const kBigrams = new Set(ngrams(kTokens, 2));
   for (const qWord of qFiltered) {
-    let best = 0;
-    for (const kt of kTokens) {
-      let s = 0;
-      if (qWord === kt) s = 4;
-      else if (qWord.length >= 4 && kt.length >= 4 && (kt.includes(qWord) || qWord.includes(kt))) s = 2;
-      else if (qWord.length >= 3 && kt.startsWith(qWord)) s = 1.5;
-      else if (qWord.length >= 3 && qWord.startsWith(kt)) s = 1.5;
-      if (s > best) best = s;
-    }
-    // Bonus if the token is also in a bigram match
-    const hasBigram = qFiltered.length > 1 && Array.from(qBigrams).some((bg) => bg.includes(qWord) && Array.from(kBigrams).some((kb) => kb.includes(bg)));
-    if (hasBigram) best += 1;
-    if (best > 0) matched++;
-    scores.push(best);
+    const hit = kTokens.some((kt) => {
+      if (qWord === kt) return true;
+      if (qWord.length >= 4 && kt.length >= 4) {
+        return kt.includes(qWord) || qWord.includes(kt);
+      }
+      if (qWord.length >= 3 && kt.length >= 3 && (kt.startsWith(qWord) || qWord.startsWith(kt))) return true;
+      return false;
+    });
+    if (hit) matched++;
   }
-  return { matched, scores };
+  return matched;
 }
 
 // Precompute rarity weights for knowledge base keywords
@@ -87,7 +78,6 @@ function keywordMatch(query: string, role?: string, page?: string, lastQuery?: s
     const lastTokens = getTokens(lastQuery);
     effectiveTokens = [...lastTokens, ...qFiltered];
     effectivePage = lastPage || page;
-    // Also add tokens from older history
     if (history && qFiltered.length <= 2) {
       for (let i = history.length - 1; i >= 0 && effectiveTokens.length < 25; i--) {
         const hTokens = getTokens(history[i].query);
@@ -108,28 +98,20 @@ function keywordMatch(query: string, role?: string, page?: string, lastQuery?: s
     const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
     if (kTokens.length === 0) continue;
 
-    const { matched, scores } = matchTokens(effectiveTokens, kTokens);
+    const matched = matchTokens(effectiveTokens, kTokens);
     if (matched === 0) continue;
 
-    // Score: matched / max, weighted by rarity
-    let rarityBonus = 0;
-    for (const kt of kTokens) {
-      const freq = kwRarity.get(kt) || totalItems;
-      rarityBonus += (1 - freq / totalItems) * 0.3;
-    }
-    rarityBonus = rarityBonus / kTokens.length;
-
-    let score = (matched / Math.max(kTokens.length, effectiveTokens.length)) + rarityBonus;
-    if (role && item.roles?.includes(role as any)) score += 0.25;
-    if (effectivePage && item.pages?.includes(effectivePage)) score += 0.2;
-    if (item.q.toLowerCase().includes(query.toLowerCase())) score += 0.15;
+    // Score: fraction of query tokens matched, with rarity bonus
+    let score = matched / effectiveTokens.length;
+    if (role && item.roles?.includes(role as any)) score += 0.2;
+    if (effectivePage && item.pages?.includes(effectivePage)) score += 0.15;
+    if (item.q.toLowerCase().includes(query.toLowerCase())) score += 0.1;
 
     scored.push({ score, item });
-    if (score > 0.25 && score > bestScore) { bestScore = score; bestItem = item; }
+    if (score > 0.2 && score > bestScore) { bestScore = score; bestItem = item; }
   }
 
   if (!bestItem) {
-    // No good match — return top 3 suggestions
     scored.sort((a, b) => b.score - a.score);
     const topSuggestions = scored.slice(0, 3).map((s) => s.item.q);
     return { answer: null, suggestions: topSuggestions.length > 0 ? topSuggestions : undefined };
@@ -279,7 +261,7 @@ export default function AiAssistant() {
     const answer = await askQuestion(q);
 
     if (answer) {
-      setMessages((prev) => [...prev, { role: 'assistant', text: answer, navHint: navHint || undefined }]);
+      setMessages((prev) => [...prev, { role: 'assistant', text: answer, navHint: lastNavHintRef.current || undefined }]);
     } else if (suggestionList.length > 0) {
       setMessages((prev) => [...prev, {
         role: 'assistant',
@@ -291,6 +273,7 @@ export default function AiAssistant() {
         text: `I couldn't find a specific answer to that. Try asking about: creating events, approving RSVPs, managing programs, handling donations, pledges, members, construction, analytics, notifications, or dashboard features.`,
       }]);
     }
+    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

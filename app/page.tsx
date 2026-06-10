@@ -479,7 +479,7 @@ useEffect(() => {
       <Navigation currentPage="home" />
 
       {/* Hero Section */}
-      <section className="pt-32 md:pt-36 pb-12 md:pb-16 bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light text-white relative overflow-hidden">
+      <section className="pt-32 md:pt-36 pb-12 md:pb-16 bg-gradient-to-br from-mhma-forest via-mhma-forest-mid to-mhma-forest-light relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
           <div className="absolute top-10 left-10 w-32 h-32 bg-mhma-gold/10 rounded-full blur-2xl"></div>
@@ -495,11 +495,11 @@ useEffect(() => {
                 <span className="text-xs sm:text-sm tracking-[.18em] uppercase text-amber-500 font-medium">Mountain House Muslim Association</span>
               </div>
               <p className="text-xl md:text-2xl lg:text-3xl font-arabic mb-2 text-amber-500" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight text-white">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold mb-3 uppercase tracking-wide leading-tight text-gray-900">
                 <span className="whitespace-nowrap">welcome to <span className="text-amber-500 italic">MHMA</span></span>
-                {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block text-white/90">{user.displayName}</span></> : '!'}
+                {user?.displayName ? <><br /><span className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-normal normal-case mt-1 inline-block text-gray-800">{user.displayName}</span></> : '!'}
               </h1>
-              <p className="text-base md:text-lg lg:text-xl text-white/80 mb-6 max-w-3xl mx-auto lg:mx-0 font-normal leading-relaxed">
+              <p className="text-base md:text-lg lg:text-xl text-gray-700 mb-6 max-w-3xl mx-auto lg:mx-0 font-normal leading-relaxed">
                 Serving the Muslim Community in Mountain House since 2010
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">
@@ -746,7 +746,7 @@ useEffect(() => {
                     </div>
                     <Link
                       href={`/rsvp?eventId=${event.id}`}
-                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-white text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
+                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-black text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
                     >
                       RSVP
                     </Link>
