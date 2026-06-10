@@ -74,6 +74,10 @@ export default function AiAssistant() {
   const [height, setHeight] = useState(500);
   const [posX, setPosX] = useState(0);
   const [posY, setPosY] = useState(0);
+  const widthRef = useRef(360);
+  const heightRef = useRef(500);
+  const posXRef = useRef(0);
+  const posYRef = useRef(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
@@ -87,6 +91,11 @@ export default function AiAssistant() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => { widthRef.current = width; }, [width]);
+  useEffect(() => { heightRef.current = height; }, [height]);
+  useEffect(() => { posXRef.current = posX; }, [posX]);
+  useEffect(() => { posYRef.current = posY; }, [posY]);
 
   useEffect(() => {
     try {
@@ -196,7 +205,8 @@ export default function AiAssistant() {
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
     e.preventDefault();
-    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, startPosX: posX, startPosY: posY };
+    resizeRef.current.resizing = false;
+    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, startPosX: posXRef.current, startPosY: posYRef.current };
     const onMouseMove = (ev: MouseEvent) => {
       if (!dragRef.current.dragging) return;
       setPosX(dragRef.current.startPosX + (ev.clientX - dragRef.current.startX));
@@ -205,19 +215,24 @@ export default function AiAssistant() {
     const onMouseUp = () => { dragRef.current.dragging = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }, [posX, posY]);
+  }, []);
 
   const handleResizeStart = useCallback((edge: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    dragRef.current.dragging = false;
     const rect = panelRef.current?.getBoundingClientRect();
     if (!rect) return;
-    resizeRef.current = { resizing: true, edge, startX: e.clientX, startY: e.clientY, startW: width, startH: height, startPosX: posX, startPosY: posY };
+    const startW = widthRef.current;
+    const startH = heightRef.current;
+    const startPosX = posXRef.current;
+    const startPosY = posYRef.current;
+    resizeRef.current = { resizing: true, edge, startX: e.clientX, startY: e.clientY, startW, startH, startPosX, startPosY };
     const onMouseMove = (ev: MouseEvent) => {
       if (!resizeRef.current.resizing) return;
       const dx = ev.clientX - resizeRef.current.startX;
       const dy = ev.clientY - resizeRef.current.startY;
-      let newW = width, newH = height, newX = posX, newY = posY;
+      let newW = resizeRef.current.startW, newH = resizeRef.current.startH, newX = resizeRef.current.startPosX, newY = resizeRef.current.startPosY;
       const edge = resizeRef.current.edge;
       if (edge.includes('e')) newW = Math.max(260, Math.min(800, resizeRef.current.startW + dx));
       if (edge.includes('w')) {
@@ -231,6 +246,10 @@ export default function AiAssistant() {
         newH = h;
         newY = resizeRef.current.startPosY + (resizeRef.current.startH - h);
       }
+      widthRef.current = newW;
+      heightRef.current = newH;
+      posXRef.current = newX;
+      posYRef.current = newY;
       setWidth(newW);
       setHeight(newH);
       setPosX(newX);
@@ -239,7 +258,7 @@ export default function AiAssistant() {
     const onMouseUp = () => { resizeRef.current.resizing = false; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }, [width, height, posX, posY]);
+  }, []);
 
   const askQuestion = useCallback(async (query: string): Promise<string | null> => {
     const role = user?.role;
@@ -249,17 +268,22 @@ export default function AiAssistant() {
       return result.answer;
     }
     return new Promise((resolve) => {
+      let resolved = false;
       const timeout = setTimeout(() => {
-        if (pendingResolveRef.current === resolve) {
-          pendingResolveRef.current = null;
+        if (!resolved) {
+          resolved = true;
+          setUsingFallback(true);
           const result = keywordMatch(query, role, pathname);
           setNavHint(result.navHint || null);
           resolve(result.answer);
         }
-      }, 10000);
+      }, 5000);
       pendingResolveRef.current = (val: string | null) => {
-        clearTimeout(timeout);
-        resolve(val);
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve(val);
+        }
       };
       workerRef.current?.postMessage({
         type: 'query',

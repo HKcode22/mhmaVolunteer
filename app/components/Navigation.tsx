@@ -19,7 +19,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
 
   useEffect(() => {
     if (!user) return;
-    if (sessionStorage.getItem('mhma_notifs_viewed')) return;
+    if (localStorage.getItem('mhma_notifs_viewed')) return;
     if (isBoardMember) {
       const fetchCounts = async () => {
         try {
@@ -91,7 +91,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="text-gray-700 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="text-gray-700 hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); localStorage.setItem('mhma_notifs_viewed', '1'); }} className="text-gray-700 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <span className="relative">
                     <Bell className="w-4 h-4" />
                     {notifCount > 0 && (
@@ -144,7 +144,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="text-gray-700 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/member/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="text-gray-700 hover:text-mhma-gold transition-colors flex items-center gap-1">
+                <Link href="/member/notifications" onClick={() => { setNotifCount(0); localStorage.setItem('mhma_notifs_viewed', '1'); }} className="text-gray-700 hover:text-mhma-gold transition-colors flex items-center gap-1">
                   <span className="relative">
                     <Bell className="w-4 h-4" />
                     {notifCount > 0 && (
@@ -306,7 +306,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); localStorage.setItem('mhma_notifs_viewed', '1'); }} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>
@@ -338,7 +338,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                 <Link href="/settings" className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Settings className="w-4 h-4" /> SETTINGS
                 </Link>
-                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); sessionStorage.setItem('mhma_notifs_viewed', '1'); }} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
+                <Link href="/dashboard/notifications" onClick={() => { setNotifCount(0); localStorage.setItem('mhma_notifs_viewed', '1'); }} className="block py-2 text-mhma-gold font-semibold flex items-center gap-2">
                   <Bell className="w-4 h-4" /> NOTIFICATIONS{notifCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{notifCount}</span>}
                 </Link>
                 <Link href="/profile" className="block py-2 text-mhma-gold font-semibold">PROFILE</Link>

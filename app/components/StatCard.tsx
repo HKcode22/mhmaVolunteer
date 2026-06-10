@@ -13,7 +13,7 @@ export default function StatCard({ value, label, color }: { value: string; label
       <p className="text-2xl font-bold text-amber-600 mb-1 font-serif">
         {isNumeric && num > 0 ? `${animated}${suffix}` : value}
       </p>
-      <p className="text-white/70 text-xs uppercase tracking-wider">{label}</p>
+      <p className="text-amber-600/70 text-xs uppercase tracking-wider">{label}</p>
     </div>
   );
 }
