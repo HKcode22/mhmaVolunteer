@@ -336,27 +336,6 @@ export default function AiAssistant() {
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
       </button>
 
-      {/* Simple test div — visible when open */}
-      <div
-        style={{
-          display: open ? 'flex' : 'none',
-          position: 'fixed',
-          bottom: '96px',
-          right: '24px',
-          width: '400px',
-          height: '80px',
-          zIndex: 99999,
-          background: 'red',
-          color: 'white',
-          padding: '16px',
-          borderRadius: '8px',
-          fontWeight: 'bold',
-          fontSize: '18px',
-        }}
-      >
-        {open ? 'OPEN=true' : 'OPEN=false'}
-      </div>
-
       <div style={{ display: open ? 'block' : 'none' }} className="fixed inset-0 z-40" />
       <div ref={panelRef}
         style={{ display: open ? 'flex' : 'none', width: `${width}px`, height: `${height}px` }}
@@ -365,20 +344,12 @@ export default function AiAssistant() {
               <Bot className="w-5 h-5" />
               <div className="flex-1">
                 <p className="font-bold text-sm">MHMA Assistant</p>
-                <p className="text-[10px] text-white/70">
-                  {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
-                  {workerStatus === 'ready' && 'Transformers.js ML · Offline'}
-                  {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching · Offline'}
-                  {workerStatus === 'unloaded' && 'Initializing...'}
-                </p>
+                <p className="text-[10px] text-white/70">test</p>
               </div>
-              {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
-              {botDisabled && <button onClick={retryWorker} title="Retry ML model" className="text-white/70 hover:text-white ml-1"><RefreshCw className="w-3.5 h-3.5" /></button>}
               <button onClick={handleClose} className="text-white/70 hover:text-white ml-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
-
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -388,38 +359,11 @@ export default function AiAssistant() {
                         : 'bg-gray-100 text-gray-800 rounded-bl-md'
                     }`}>
                       {msg.text}
-                      {msg.navHint && (
-                        <div className="flex items-center gap-1 mt-2 text-[10px] font-semibold uppercase text-mhma-gold">
-                          <Navigation className="w-3 h-3" /> Go to {msg.navHint.split('/').pop() || msg.navHint}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
-                {loading && (
-                  <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-gray-500 flex items-center gap-2">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Thinking...
-                    </div>
-                  </div>
-                )}
                 <div ref={messagesEndRef} />
               </div>
-
-              {messages.length === 1 && (
-                <div className="px-4 pb-2">
-                  <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-wide font-medium">Try asking:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {suggestions.map((s) => (
-                      <button key={s} onClick={() => setInput(s)}
-                        className="text-[11px] px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-mhma-forest hover:text-white transition-colors">
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div className="border-t border-gray-200 p-3 flex gap-2">
                 <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown} placeholder="Ask about dashboard features..."
@@ -430,9 +374,6 @@ export default function AiAssistant() {
                   <Send className="w-4 h-4" />
                 </button>
               </div>
-          <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize">
-            <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
-          </div>
           </div>
         </>
   );
