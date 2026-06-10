@@ -54,6 +54,7 @@ function keywordMatch(query: string, role?: string, page?: string): { answer: st
 }
 
 export default function AiAssistant() {
+  const openRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', text: "Hi! I'm your MHMA assistant. Ask me anything about the dashboard." },
@@ -152,12 +153,13 @@ export default function AiAssistant() {
     };
   }, []);
 
-  const handleClose = useCallback(() => { setOpen(false); }, []);
+  const handleClose = useCallback(() => { openRef.current = false; setOpen(false); }, []);
 
   useEffect(() => {
     if (!open) return;
     function handleMouseDown(e: MouseEvent) {
       if (panelRef.current && !panelRef.current.contains(e.target as Node) && !(e.target as HTMLElement)?.closest?.('[aria-label="AI Assistant"]')) {
+        openRef.current = false;
         setOpen(false);
       }
     }
@@ -318,17 +320,10 @@ export default function AiAssistant() {
     }
   }, [workerStatus]);
 
-  const panelVisible = open ? '' : 'hidden';
-
   return (
     <>
       <button
-        onClick={() => {
-          setOpen((prev) => {
-            console.log('[AI] toggling from', prev, 'to', !prev);
-            return !prev;
-          });
-        }}
+        onClick={() => { const next = !openRef.current; openRef.current = next; setOpen(next); }}
         style={{ zIndex: 9999 }}
         className="fixed bottom-6 right-6 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
         aria-label="AI Assistant"
@@ -336,20 +331,30 @@ export default function AiAssistant() {
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
       </button>
 
-      <div style={{ display: open ? 'block' : 'none' }} className="fixed inset-0 z-40" />
-      <div ref={panelRef}
-        style={{ display: open ? 'flex' : 'none', width: `${width}px`, height: `${height}px` }}
-        className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative">
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" />
+          <div ref={panelRef}
+            style={{ width: `${width}px`, height: `${height}px` }}
+            className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden relative">
             <div className="bg-mhma-forest text-white px-4 py-3 flex items-center gap-2 shrink-0">
               <Bot className="w-5 h-5" />
               <div className="flex-1">
                 <p className="font-bold text-sm">MHMA Assistant</p>
-                <p className="text-[10px] text-white/70">test</p>
+                <p className="text-[10px] text-white/70">
+                  {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
+                  {workerStatus === 'ready' && 'Transformers.js ML · Offline'}
+                  {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching · Offline'}
+                  {workerStatus === 'unloaded' && 'Initializing...'}
+                </p>
               </div>
+              {workerStatus === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-white/70" />}
+              {botDisabled && <button onClick={retryWorker} title="Retry ML model" className="text-white/70 hover:text-white ml-1"><RefreshCw className="w-3.5 h-3.5" /></button>}
               <button onClick={handleClose} className="text-white/70 hover:text-white ml-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
+
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -359,11 +364,38 @@ export default function AiAssistant() {
                         : 'bg-gray-100 text-gray-800 rounded-bl-md'
                     }`}>
                       {msg.text}
+                      {msg.navHint && (
+                        <div className="flex items-center gap-1 mt-2 text-[10px] font-semibold uppercase text-mhma-gold">
+                          <Navigation className="w-3 h-3" /> Go to {msg.navHint.split('/').pop() || msg.navHint}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-gray-500 flex items-center gap-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Thinking...
+                    </div>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
+
+              {messages.length === 1 && (
+                <div className="px-4 pb-2">
+                  <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-wide font-medium">Try asking:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestions.map((s) => (
+                      <button key={s} onClick={() => setInput(s)}
+                        className="text-[11px] px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-mhma-forest hover:text-white transition-colors">
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-gray-200 p-3 flex gap-2">
                 <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown} placeholder="Ask about dashboard features..."
@@ -374,7 +406,12 @@ export default function AiAssistant() {
                   <Send className="w-4 h-4" />
                 </button>
               </div>
+          <div onMouseDown={handleResizeStart} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize">
+            <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400 absolute bottom-0.5 right-0.5"><path d="M10 0v10H0" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
+          </div>
           </div>
         </>
+      )}
+    </>
   );
 }
