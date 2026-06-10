@@ -408,8 +408,8 @@ export default function AiAssistant() {
             <p className="font-bold text-sm">MHMA Assistant</p>
             <p className="text-[10px] text-white/70 truncate">
               {workerStatus === 'loading' && 'Downloading ML model (~23MB)...'}
-              {workerStatus === 'ready' && 'Transformers.js ML • Online'}
-              {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching • Active'}
+              {workerStatus === 'ready' && 'Transformers.js ML • Offline'}
+              {(workerStatus === 'error' || workerStatus === 'unsupported') && 'Keyword matching • Offline'}
               {workerStatus === 'unloaded' && 'Initializing...'}
             </p>
           </div>
