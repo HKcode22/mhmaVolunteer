@@ -335,7 +335,7 @@ export default function AiAssistant() {
   /* ─── SmolLM2 Worker (text-generation via Transformers.js v3) ─── */
   useEffect(() => {
     try {
-      const worker = new Worker('/ai-worker.js');
+      const worker = new Worker('/ai-worker.js', { type: 'module' });
       workerRef.current = worker;
       const timeout = setTimeout(() => {
         if (workerRef.current) {
