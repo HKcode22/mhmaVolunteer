@@ -263,22 +263,17 @@ export default function AiAssistant() {
 
     // If AI worker is ready, use it
     if (workerRef.current && workerStatus === 'ready' && !usingFallback) {
-      return new Promise((resolve) => {
-        pendingResolveRef.current = (answer: string | null) => {
-          resolve({ answer, suggestions: undefined });
-        };
+      const aiPromise = new Promise<string | null>((resolve) => {
+        pendingResolveRef.current = resolve;
         workerRef.current?.postMessage({ type: 'query', data: { query } });
-        // Safety timeout: if worker doesn't respond in 10s, fall back
-        setTimeout(() => {
-          if (pendingResolveRef.current) {
-            pendingResolveRef.current(null);
-            pendingResolveRef.current = null;
-            // Try keyword match as fallback inside the timeout handler
-            const result = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
-            resolve({ answer: result.answer, suggestions: result.suggestions });
-          }
-        }, 10000);
       });
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000));
+      const answer = await Promise.race([aiPromise, timeoutPromise]);
+      pendingResolveRef.current = null;
+      if (answer) {
+        lastQueryRef.current = query;
+        return { answer };
+      }
     }
 
     // Fallback: keyword matching
