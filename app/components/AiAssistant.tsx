@@ -274,7 +274,7 @@ export default function AiAssistant() {
         pendingResolveRef.current = resolve;
         workerRef.current?.postMessage({ type: 'query', data: { query, context } });
       });
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 15000));
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 60000));
       const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
       pendingResolveRef.current = null;
       if (aiAnswer) {
