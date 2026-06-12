@@ -294,7 +294,7 @@ export default function AiAssistant() {
       if (found) topicRef.current = found;
     }
     return { answer: fallback.answer, suggestions: fallback.suggestions };
-  }, [user?.role, pathname]);
+  }, [user?.role, pathname, workerStatus, usingFallback]);
 
   const handleSend = async () => {
     const q = input.trim();

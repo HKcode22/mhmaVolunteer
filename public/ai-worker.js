@@ -8,9 +8,14 @@ async function loadTransformers() {
   ];
   for (const url of urls) {
     try {
+      console.log('[AI Worker] Trying ESM import:', url);
       const mod = await import(url);
-      if (mod?.pipeline) return mod;
+      if (mod?.pipeline) {
+        console.log('[AI Worker] Loaded Transformers.js from:', url);
+        return mod;
+      }
     } catch (e) {
+      console.warn('[AI Worker] ESM import failed:', url, e.message);
       continue;
     }
   }
@@ -19,9 +24,11 @@ async function loadTransformers() {
 
 async function loadModel() {
   self.postMessage({ type: 'status', status: 'loading' });
+  console.log('[AI Worker] Starting model load...');
 
   const TF = await loadTransformers();
   if (!TF) {
+    console.error('[AI Worker] All CDNs exhausted, falling back');
     self.postMessage({ type: 'status', status: 'error', error: 'Failed to load Transformers.js from any CDN' });
     return;
   }
@@ -31,8 +38,10 @@ async function loadModel() {
       dtype: 'q4',
       device: 'webgpu',
     });
+    console.log('[AI Worker] Model ready!');
     self.postMessage({ type: 'status', status: 'ready' });
   } catch (err) {
+    console.error('[AI Worker] Model load failed:', err.message);
     self.postMessage({ type: 'status', status: 'error', error: 'Model load: ' + err.message });
   }
 }
@@ -53,6 +62,7 @@ self.addEventListener('message', async (event) => {
         prompt = `Context:\n${data.context}\n\nQuestion: ${data.query}\n\nAnswer concisely based on the context.`;
       }
 
+      console.log('[AI Worker] Generating response for:', prompt.slice(0, 80));
       const output = await generator(
         [{ role: 'system', content: 'You are a helpful MHMA website assistant. Keep replies under 2 sentences.' }, { role: 'user', content: prompt }],
         { max_new_tokens: 128, temperature: 0.2, do_sample: true }
@@ -60,7 +70,9 @@ self.addEventListener('message', async (event) => {
 
       const text = output[0]?.generated_text || '';
       const parts = text.split(/assistant\n/);
-      self.postMessage({ type: 'result', answer: (parts.length > 1 ? parts.pop().trim() : text) || null });
+      const answer = (parts.length > 1 ? parts.pop().trim() : text) || null;
+      console.log('[AI Worker] Generated:', answer);
+      self.postMessage({ type: 'result', answer });
     } catch (err) {
       self.postMessage({ type: 'result', answer: null });
     }
