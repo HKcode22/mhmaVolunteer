@@ -153,6 +153,8 @@ export default function AiAssistant() {
   const workerRef = useRef<Worker | null>(null);
   const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const workerReadyRef = useRef(false);
+  const usingFallbackRef = useRef(true);
   const { user } = useAuth();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -269,16 +271,20 @@ export default function AiAssistant() {
     })() : '';
 
     // If AI worker is ready, use it with the matching context (RAG)
-    if (workerRef.current && workerStatus === 'ready' && !usingFallback) {
+    const workerReady = workerReadyRef.current && !!workerRef.current;
+    console.log('[Assistant] askQuestion — workerReady:', workerReady, 'usingFallback:', usingFallbackRef.current, 'workerStatus:', workerStatus);
+    if (workerReady && usingFallbackRef.current === false) {
       const aiPromise = new Promise<string | null>((resolve) => {
         pendingResolveRef.current = resolve;
-        workerRef.current?.postMessage({ type: 'query', data: { query, context } });
+        const qid = Math.random().toString(36).slice(2, 8);
+        console.log('[Assistant] Sending query to worker, id:', qid);
+        workerRef.current?.postMessage({ type: 'query', data: { query, context, id: qid } });
       });
       const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 60000));
       const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
       pendingResolveRef.current = null;
       if (aiAnswer) {
-        console.log('[Assistant] Using AI answer');
+        console.log('[Assistant] Using AI answer:', aiAnswer.slice(0, 60));
         lastQueryRef.current = query;
         return { answer: aiAnswer };
       }
@@ -294,7 +300,7 @@ export default function AiAssistant() {
       if (found) topicRef.current = found;
     }
     return { answer: fallback.answer, suggestions: fallback.suggestions };
-  }, [user?.role, pathname, workerStatus, usingFallback]);
+  }, [user?.role, pathname]);
 
   const handleSend = async () => {
     const q = input.trim();
@@ -352,6 +358,8 @@ export default function AiAssistant() {
           if (status === 'loading') setWorkerStatus('loading');
           else if (status === 'ready') {
             if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
+            workerReadyRef.current = true;
+            usingFallbackRef.current = false;
             setWorkerStatus('ready');
             setUsingFallback(false);
           } else if (status === 'error') {

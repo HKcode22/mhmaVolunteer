@@ -65,6 +65,8 @@ self.addEventListener('message', async (event) => {
   const { type, data } = event.data;
 
   if (type === 'query') {
+    const { query, context, id } = data;
+    console.log('[AI Worker] Got query id=' + id + ': ' + query.slice(0, 50));
     if (!generator) {
       self.postMessage({ type: 'result', answer: null });
       return;
