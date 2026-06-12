@@ -68,7 +68,8 @@ self.addEventListener('message', async (event) => {
     const { query, context, id } = data;
     console.log('[AI Worker] Got query id=' + id + ': ' + query.slice(0, 50));
     if (!generator) {
-      self.postMessage({ type: 'result', answer: null });
+      console.log('[AI Worker] No generator, sending null');
+      self.postMessage({ type: 'result', id, answer: null });
       return;
     }
     try {
@@ -78,7 +79,7 @@ self.addEventListener('message', async (event) => {
       }
 
       const t0 = performance.now();
-      console.log('[AI Worker] Generating...');
+      console.log('[AI Worker] Generating for id=' + id + '...');
       const output = await generator(
         [{ role: 'system', content: 'You are a helpful MHMA website assistant. Keep replies under 2 sentences.' }, { role: 'user', content: prompt }],
         { max_new_tokens: 64, temperature: 0 }
@@ -86,13 +87,19 @@ self.addEventListener('message', async (event) => {
       const elapsed = Math.round(performance.now() - t0);
       console.log('[AI Worker] Generated in', elapsed, 'ms');
 
-      const text = output[0]?.generated_text || '';
-      const parts = text.split(/assistant\n/);
+      // Debug: inspect output structure
+      const raw = output?.[0];
+      console.log('[AI Worker] Output type:', typeof output, 'raw type:', typeof raw);
+
+      const text = raw?.generated_text || '';
+      console.log('[AI Worker] generated_text length:', text.length, 'preview:', text.slice(0, 100));
+      const parts = text.split(/assistant/gi);
       const answer = (parts.length > 1 ? parts.pop().trim() : text) || null;
-      console.log('[AI Worker] Answer:', answer);
-      self.postMessage({ type: 'result', answer });
+      console.log('[AI Worker] Answer for id=' + id + ':', answer);
+      self.postMessage({ type: 'result', id, answer });
     } catch (err) {
-      self.postMessage({ type: 'result', answer: null });
+      console.error('[AI Worker] Query error for id=' + id + ':', err.message);
+      self.postMessage({ type: 'result', id, answer: null });
     }
   }
 });

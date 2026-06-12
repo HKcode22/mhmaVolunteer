@@ -151,7 +151,7 @@ export default function AiAssistant() {
   const topicRef = useRef<{ q: string; a: string; keywords: string[]; pages?: string[]; roles?: string[]; denyRoles?: string[] } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
-  const pendingResolveRef = useRef<((value: string | null) => void) | null>(null);
+  const pendingMapRef = useRef<Map<string, (value: string | null) => void>>(new Map());
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const workerReadyRef = useRef(false);
   const usingFallbackRef = useRef(true);
@@ -274,15 +274,19 @@ export default function AiAssistant() {
     const workerReady = workerReadyRef.current && !!workerRef.current;
     console.log('[Assistant] askQuestion — workerReady:', workerReady, 'usingFallback:', usingFallbackRef.current, 'workerStatus:', workerStatus);
     if (workerReady && usingFallbackRef.current === false) {
+      const qid = Math.random().toString(36).slice(2, 8);
+      console.log('[Assistant] Sending query to worker, id:', qid);
       const aiPromise = new Promise<string | null>((resolve) => {
-        pendingResolveRef.current = resolve;
-        const qid = Math.random().toString(36).slice(2, 8);
-        console.log('[Assistant] Sending query to worker, id:', qid);
+        pendingMapRef.current.set(qid, resolve);
         workerRef.current?.postMessage({ type: 'query', data: { query, context, id: qid } });
       });
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 60000));
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => {
+        if (pendingMapRef.current.has(qid)) {
+          pendingMapRef.current.delete(qid);
+          resolve(null);
+        }
+      }, 60000));
       const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
-      pendingResolveRef.current = null;
       if (aiAnswer) {
         console.log('[Assistant] Using AI answer:', aiAnswer.slice(0, 60));
         lastQueryRef.current = query;
@@ -353,7 +357,7 @@ export default function AiAssistant() {
       }, 60000);
       initTimeoutRef.current = timeout;
       worker.onmessage = (event) => {
-        const { type, status, error, answer } = event.data;
+        const { type, status, error, answer, id } = event.data;
         if (type === 'status') {
           if (status === 'loading') setWorkerStatus('loading');
           else if (status === 'ready') {
@@ -368,9 +372,13 @@ export default function AiAssistant() {
             setWorkerError(error || 'Unknown error');
           }
         } else if (type === 'result') {
-          if (pendingResolveRef.current) {
-            pendingResolveRef.current(answer || null);
-            pendingResolveRef.current = null;
+          const resolve = id ? pendingMapRef.current.get(id) : null;
+          console.log('[Assistant] onmessage result id=' + id + ' found=' + !!resolve + ' answer:', answer?.slice(0, 60));
+          if (resolve) {
+            resolve(answer || null);
+            pendingMapRef.current.delete(id!);
+          } else {
+            console.log('[Assistant] ORPHANED result id=' + id);
           }
         }
       };
