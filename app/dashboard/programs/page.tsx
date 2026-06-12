@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, updateEnrollment, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
 import { compressImage } from "@/lib/compress-image";
@@ -24,6 +24,7 @@ export default function DashboardProgramsPage() {
   const [enrollSearch, setEnrollSearch] = useState("");
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
   const [pendingCount, setPendingCount] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -118,6 +119,192 @@ export default function DashboardProgramsPage() {
     const map: Record<string, string> = { pending: "bg-amber-100 text-amber-800", approved: "bg-green-100 text-green-800", rejected: "bg-red-100 text-red-800", completed: "bg-blue-100 text-blue-800" };
     return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${map[s] || map.pending}`}>{s}</span>;
   };
+
+  const renderProgramsTable = () => (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+      {filtered.length === 0 ? (
+        <div className="p-12 text-center"><BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching programs." : "No programs yet."}</p></div>
+      ) : (
+        <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                <th className="w-8 px-2 py-3"></th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(p => {
+                const isExpanded = expandedId === p.id;
+                return (
+                  <Fragment key={p.id}>
+                    <tr
+                      className="border-b border-gray-100 dashboard-row cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : p.id || null)}
+                    >
+                      <td className="w-8 px-2 py-3">
+                        <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : p.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-gray-900">{p.title}</p>
+                        {p.description && <p className="text-xs text-gray-500 truncate max-w-[300px]">{p.description}</p>}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <button onClick={(ev) => { ev.stopPropagation(); handleEdit(p); }} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                          <button onClick={(ev) => { ev.stopPropagation(); p.id && handleDelete(p.id, p.title); }} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${p.id}-detail`}>
+                        <td colSpan={4} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                              <p className="text-sm text-gray-700 font-mono">{p.id}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Title</h4>
+                              <p className="text-sm text-gray-700">{p.title}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Description</h4>
+                              <p className="text-sm text-gray-700">{p.description || "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Slug</h4>
+                              <p className="text-sm text-gray-700">{p.slug}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Stats</h4>
+                              <p className="text-sm text-gray-700">{p.stats?.length ? p.stats.map(s => `${s.label}: ${s.value}`).join(", ") : "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Quote</h4>
+                              <p className="text-sm text-gray-700">{p.quote ? `"${p.quote}" — ${p.quoteAuthor || ""}` : "—"}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderEnrollmentsTable = () => (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      {filteredEnroll.length === 0 ? (
+        <div className="p-12 text-center"><BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{enrollSearch ? "No matching enrollments." : "No enrollments yet."}</p></div>
+      ) : (
+        <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                <th className="w-8 px-2 py-3"></th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Program</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEnroll.map(i => {
+                const isExpanded = expandedId === `enroll-${i.id}`;
+                return (
+                  <Fragment key={i.id}>
+                    <tr
+                      className="border-b border-gray-100 dashboard-row cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : `enroll-${i.id}` || null)}
+                    >
+                      <td className="w-8 px-2 py-3">
+                        <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : `enroll-${i.id}` || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-0.5">
+                          <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
+                          {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">{i.program || "—"}</td>
+                      <td className="px-4 py-3">{statusBadge(i.status)}</td>
+                      <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          {i.status === "pending" && (
+                            <>
+                              <button onClick={(ev) => { ev.stopPropagation(); i.id && handleEnrollStatus(i.id, "approved"); }} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button onClick={(ev) => { ev.stopPropagation(); i.id && handleEnrollStatus(i.id, "rejected"); }} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                          <button onClick={(ev) => { ev.stopPropagation(); if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
+                            className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${i.id}-detail`}>
+                        <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                              <p className="text-sm text-gray-700 font-mono">{i.id}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Member Name</h4>
+                              <p className="text-sm text-gray-700">{i.fullName}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                              <a href={`mailto:${i.email}`} className="text-sm text-blue-600 hover:underline">{i.email}</a>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Program</h4>
+                              <p className="text-sm text-gray-700">{i.program || "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                              <p className="text-sm text-gray-700">{i.status}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                              <p className="text-sm text-gray-700">{i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
 
@@ -248,40 +435,7 @@ export default function DashboardProgramsPage() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
-                {filtered.length === 0 ? (
-                  <div className="p-12 text-center"><BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching programs." : "No programs yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map(p => (
-                          <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-900">{p.title}</p>
-                              {p.description && <p className="text-xs text-gray-500 truncate max-w-[300px]">{p.description}</p>}
-                            </td>
-                            <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                <button onClick={() => handleEdit(p)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                                <button onClick={() => p.id && handleDelete(p.id, p.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderProgramsTable()}
               <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} program{filtered.length !== 1 ? "s" : ""}</p>
 
               <div className="flex items-center justify-between mb-4">
@@ -299,60 +453,7 @@ export default function DashboardProgramsPage() {
                 <input type="text" placeholder="Search enrollments..." value={enrollSearch} onChange={e => setEnrollSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                {filteredEnroll.length === 0 ? (
-                  <div className="p-12 text-center"><BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{enrollSearch ? "No matching enrollments." : "No enrollments yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Program</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredEnroll.map(i => (
-                          <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex flex-col gap-0.5">
-                                <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
-                                {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">{i.program || "—"}</td>
-                            <td className="px-4 py-3">{statusBadge(i.status)}</td>
-                            <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                {i.status === "pending" && (
-                                  <>
-                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "approved")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
-                                      <CheckCircle className="w-4 h-4" />
-                                    </button>
-                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "rejected")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
-                                      <XCircle className="w-4 h-4" />
-                                    </button>
-                                  </>
-                                )}
-                                <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
-                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderEnrollmentsTable()}
               <p className="text-xs text-gray-400 mt-4">{filteredEnroll.length} enrollment{filteredEnroll.length !== 1 ? "s" : ""}</p>
             </>
           ) : (
@@ -372,60 +473,7 @@ export default function DashboardProgramsPage() {
                 <input type="text" placeholder="Search enrollments..." value={enrollSearch} onChange={e => setEnrollSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                {filteredEnroll.length === 0 ? (
-                  <div className="p-12 text-center"><BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{enrollSearch ? "No matching enrollments." : "No enrollments yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Program</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredEnroll.map(i => (
-                          <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex flex-col gap-0.5">
-                                <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
-                                {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">{i.program || "—"}</td>
-                            <td className="px-4 py-3">{statusBadge(i.status)}</td>
-                            <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                {i.status === "pending" && (
-                                  <>
-                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "approved")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
-                                      <CheckCircle className="w-4 h-4" />
-                                    </button>
-                                    <button onClick={() => i.id && handleEnrollStatus(i.id, "rejected")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
-                                      <XCircle className="w-4 h-4" />
-                                    </button>
-                                  </>
-                                )}
-                                <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setEnrollments(prev => prev.filter(x => x.id !== i.id))); }}
-                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderEnrollmentsTable()}
               <p className="text-xs text-gray-400 mb-6">{filteredEnroll.length} enrollment{filteredEnroll.length !== 1 ? "s" : ""}</p>
 
               <div className="relative mb-6">
@@ -434,40 +482,7 @@ export default function DashboardProgramsPage() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
-                {filtered.length === 0 ? (
-                  <div className="p-12 text-center"><BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching programs." : "No programs yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map(p => (
-                          <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-900">{p.title}</p>
-                              {p.description && <p className="text-xs text-gray-500 truncate max-w-[300px]">{p.description}</p>}
-                            </td>
-                            <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                <button onClick={() => handleEdit(p)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                                <button onClick={() => p.id && handleDelete(p.id, p.title)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderProgramsTable()}
               <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} program{filtered.length !== 1 ? "s" : ""}</p>
             </>
           )}

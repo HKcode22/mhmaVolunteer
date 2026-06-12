@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, Search, CheckCircle, XCircle, Trash2, Download } from "lucide-react";
+import { ArrowLeft, Mail, Search, CheckCircle, XCircle, Trash2, Download, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchSubscribers, unsubscribeSubscriber, deleteSubscriber, Subscriber } from "@/lib/firebase";
@@ -14,6 +14,7 @@ export default function DashboardSubscribersPage() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -85,6 +86,7 @@ export default function DashboardSubscribersPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="w-8 px-2 py-3"></th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Email</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Source</th>
@@ -94,34 +96,79 @@ export default function DashboardSubscribersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(s => (
-                      <tr key={s.id} className="border-b border-gray-100 cursor-pointer">
-                        <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
-                        <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
-                        <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
-                            {s.status === "active" ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                            {s.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-1">
-                            {s.status === "active" && (
-                              <button onClick={() => handleUnsubscribe(s.id!)} title="Unsubscribe"
-                                className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors">
-                                <XCircle className="w-4 h-4" />
+                    {filtered.map(s => {
+                      const isExpanded = expandedId === s.id;
+                      return (
+                        <Fragment key={s.id}>
+                          <tr
+                            className="border-b border-gray-100 dashboard-row cursor-pointer"
+                            onClick={() => setExpandedId(isExpanded ? null : s.id || null)}
+                          >
+                            <td className="w-8 px-2 py-3">
+                              <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : s.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                                {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
                               </button>
-                            )}
-                            <button onClick={() => handleDelete(s.id!)} title="Delete"
-                              className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
+                            <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
+                            <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
+                                {s.status === "active" ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                {s.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-500">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-1">
+                                {s.status === "active" && (
+                                  <button onClick={(e) => { e.stopPropagation(); handleUnsubscribe(s.id!); }} title="Unsubscribe"
+                                    className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors">
+                                    <XCircle className="w-4 h-4" />
+                                  </button>
+                                )}
+                                <button onClick={(e) => { e.stopPropagation(); handleDelete(s.id!); }} title="Delete"
+                                  className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr key={`${s.id}-detail`}>
+                              <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                    <p className="text-sm text-gray-700 font-mono">{s.id}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                    <p className="text-sm text-gray-700">{s.email}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Name</h4>
+                                    <p className="text-sm text-gray-700">{s.name || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Source</h4>
+                                    <p className="text-sm text-gray-700">{s.source || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                    <p className="text-sm text-gray-700">{s.status}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                    <p className="text-sm text-gray-700">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

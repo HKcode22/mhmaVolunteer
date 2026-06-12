@@ -597,3 +597,43 @@ td a[href^="mailto:"] {
   border-radius: 6px !important;
   outline: 2px solid rgba(212, 168, 67, 0.5) !important;
 }
+
+/* ── Dashboard Row Hover (mode-aware inversion) ── */
+.dashboard-row {
+  transition: all 0.15s ease;
+}
+.dashboard-row:hover {
+  background-color: #1f2937 !important;
+}
+.dashboard-row:hover td,
+.dashboard-row:hover td * {
+  color: #f9fafb !important;
+}
+.dashboard-row:hover td a {
+  color: #f9fafb !important;
+}
+.dashboard-row:hover td [class*="bg-"]:not([class*="bg-transparent"]) {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .dashboard-row:hover,
+[data-theme="night"] .dashboard-row:hover {
+  background-color: #ffffff !important;
+}
+[data-theme="dark"] .dashboard-row:hover td,
+[data-theme="dark"] .dashboard-row:hover td *,
+[data-theme="night"] .dashboard-row:hover td,
+[data-theme="night"] .dashboard-row:hover td * {
+  color: #111827 !important;
+}
+[data-theme="dark"] .dashboard-row:hover td a,
+[data-theme="night"] .dashboard-row:hover td a {
+  color: #111827 !important;
+}
+
+/* ── Dashboard table cell overflow prevention ── */
+.dashboard-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

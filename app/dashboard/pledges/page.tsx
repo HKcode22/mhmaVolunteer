@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
-import { ArrowLeft, Heart, Search, Mail, Phone, CheckCircle, XCircle, Clock, RefreshCw } from "lucide-react";
+import { ArrowLeft, Heart, Search, Mail, Phone, CheckCircle, XCircle, Clock, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchPledges, updatePledgeStatus, deletePledge, fetchDonations, Pledge, Donation } from "@/lib/firebase";
@@ -17,6 +17,7 @@ export default function DashboardPledgesPage() {
   const [pledgeSearch, setPledgeSearch] = useState("");
   const [donationSearch, setDonationSearch] = useState("");
   const [orderSwapped, setOrderSwapped] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -140,6 +141,7 @@ export default function DashboardPledgesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="w-8 px-2 py-3 sticky top-0 bg-gray-50"></th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Name</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Contact</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Amount</th>
@@ -149,50 +151,101 @@ export default function DashboardPledgesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPledges.map(p => (
-                  <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
-                    <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-0.5">
-                        <a href={`mailto:${p.email}`} className="flex items-center gap-1 text-blue-600 hover:underline">
-                          <Mail className="w-3 h-3" /> {p.email}
-                        </a>
-                        {p.phone && (
-                          <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline">
-                            <Phone className="w-3 h-3" /> {p.phone}
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-bold text-gray-900">${p.amount.toLocaleString()}</td>
-                    <td className="px-4 py-3">{statusBadge(p.status)}</td>
-                    <td className="px-4 py-3 text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {p.createdAt?.toDate?.()?.toLocaleDateString() || ""}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        {p.status === "pending" && (
-                          <>
-                            <button onClick={() => handleStatus(p.id!, "fulfilled")} title="Mark fulfilled"
-                              className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
-                              <CheckCircle className="w-4 h-4" />
+                {filteredPledges.map(p => {
+                  const isExpanded = expandedId === p.id;
+                  return (
+                    <Fragment key={p.id}>
+                      <tr
+                        className="border-b border-gray-100 dashboard-row cursor-pointer"
+                        onClick={() => setExpandedId(isExpanded ? null : p.id || null)}
+                      >
+                        <td className="w-8 px-2 py-3">
+                          <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : p.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-0.5">
+                            <a href={`mailto:${p.email}`} className="flex items-center gap-1 text-blue-600 hover:underline">
+                              <Mail className="w-3 h-3" /> {p.email}
+                            </a>
+                            {p.phone && (
+                              <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline">
+                                <Phone className="w-3 h-3" /> {p.phone}
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-bold text-gray-900">${p.amount.toLocaleString()}</td>
+                        <td className="px-4 py-3">{statusBadge(p.status)}</td>
+                        <td className="px-4 py-3 text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {p.createdAt?.toDate?.()?.toLocaleDateString() || ""}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            {p.status === "pending" && (
+                              <>
+                                <button onClick={(ev) => { ev.stopPropagation(); handleStatus(p.id!, "fulfilled"); }} title="Mark fulfilled"
+                                  className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                                <button onClick={(ev) => { ev.stopPropagation(); handleStatus(p.id!, "cancelled"); }} title="Cancel"
+                                  className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            <button onClick={(ev) => { ev.stopPropagation(); handleDelete(p.id!); }} title="Delete"
+                              className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
-                            <button onClick={() => handleStatus(p.id!, "cancelled")} title="Cancel"
-                              className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        <button onClick={() => handleDelete(p.id!)} title="Delete"
-                          className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          </div>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${p.id}-detail`}>
+                          <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                <p className="text-sm text-gray-700 font-mono">{p.id}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Pledger Name</h4>
+                                <p className="text-sm text-gray-700">{p.name}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                <a href={`mailto:${p.email}`} className="text-sm text-blue-600 hover:underline">{p.email}</a>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</h4>
+                                <p className="text-sm text-gray-700 font-bold">${p.amount.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                <p className="text-sm text-gray-700">{p.status}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                <p className="text-sm text-gray-700">{p.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                              </div>
+                              {p.message && (
+                                <div>
+                                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Message</h4>
+                                  <p className="text-sm text-gray-700">{p.message}</p>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -226,6 +279,7 @@ export default function DashboardPledgesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="w-8 px-2 py-3 sticky top-0 bg-gray-50"></th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Donor</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Amount</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Designation</th>
@@ -235,29 +289,88 @@ export default function DashboardPledgesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredDonations.map(d => (
-                  <tr key={d.id} className="border-b border-gray-100 cursor-pointer">
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-900">{d.donorName}</p>
-                      {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">
-                        <Mail className="w-3 h-3" /> {d.donorEmail}
-                      </a>}
-                    </td>
-                    <td className="px-4 py-3 font-bold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 capitalize">{d.designation}</span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 capitalize">{d.method}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
-                        {d.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {fmtDate(d)}</span>
-                    </td>
-                  </tr>
-                ))}
+                {filteredDonations.map(d => {
+                  const isExpanded = expandedId === `don-${d.id}`;
+                  return (
+                    <Fragment key={d.id}>
+                      <tr
+                        className="border-b border-gray-100 dashboard-row cursor-pointer"
+                        onClick={() => setExpandedId(isExpanded ? null : `don-${d.id}` || null)}
+                      >
+                        <td className="w-8 px-2 py-3">
+                          <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : `don-${d.id}` || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-gray-900">{d.donorName}</p>
+                          {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">
+                            <Mail className="w-3 h-3" /> {d.donorEmail}
+                          </a>}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 capitalize">{d.designation}</span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 capitalize">{d.method}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
+                            {d.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {fmtDate(d)}</span>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${d.id}-detail`}>
+                          <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                <p className="text-sm text-gray-700 font-mono">{d.id}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Donor Name</h4>
+                                <p className="text-sm text-gray-700">{d.donorName}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                <a href={`mailto:${d.donorEmail}`} className="text-sm text-blue-600 hover:underline">{d.donorEmail}</a>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</h4>
+                                <p className="text-sm text-gray-700 font-bold">${((d.amount || 0) / 100).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Designation</h4>
+                                <p className="text-sm text-gray-700 capitalize">{d.designation}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Method</h4>
+                                <p className="text-sm text-gray-700 capitalize">{d.method}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                <p className="text-sm text-gray-700">{d.status}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                <p className="text-sm text-gray-700">{fmtDate(d)}</p>
+                              </div>
+                              {d.notes && (
+                                <div>
+                                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</h4>
+                                  <p className="text-sm text-gray-700">{d.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

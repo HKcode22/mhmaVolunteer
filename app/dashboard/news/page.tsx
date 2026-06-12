@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Mail, Download, Send } from "lucide-react";
+import { ArrowLeft, Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Mail, Download, Send, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchAllNews, addNews, updateNews, deleteNews, fetchSubscribers, unsubscribeSubscriber, deleteSubscriber, NewsItem, Subscriber } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
@@ -25,6 +25,7 @@ export default function DashboardNewsPage() {
   const [sectionOrder, setSectionOrder] = useState<"normal" | "swapped">("normal");
   const [notifyStatus, setNotifyStatus] = useState<string | null>(null);
   const [unpubCount, setUnpubCount] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -140,6 +141,192 @@ export default function DashboardNewsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const renderNewsTable = () => (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
+      {filtered.length === 0 ? (
+        <div className="p-12 text-center"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
+      ) : (
+        <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                <th className="w-8 px-2 py-3"></th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Published</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(n => {
+                const isExpanded = expandedId === n.id;
+                return (
+                  <Fragment key={n.id}>
+                    <tr
+                      className="border-b border-gray-100 dashboard-row cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : n.id || null)}
+                    >
+                      <td className="w-8 px-2 py-3">
+                        <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : n.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-gray-900">{n.title}</p>
+                        <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button onClick={(ev) => { ev.stopPropagation(); n.id && handleTogglePublished(n.id, !n.published); }} className={`p-1 rounded-lg transition-colors ${n.published ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`} title={n.published ? "Unpublish" : "Publish"}>
+                          {n.published ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <button onClick={(ev) => { ev.stopPropagation(); handleEdit(n); }} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                          <button onClick={(ev) => { ev.stopPropagation(); n.id && handleDelete(n.id); }} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${n.id}-detail`}>
+                        <td colSpan={4} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                              <p className="text-sm text-gray-700 font-mono">{n.id}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Title</h4>
+                              <p className="text-sm text-gray-700">{n.title}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Author</h4>
+                              <p className="text-sm text-gray-700">{n.authorName || "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Excerpt</h4>
+                              <p className="text-sm text-gray-700">{n.excerpt}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                              <p className="text-sm text-gray-700">{n.published ? "Published" : "Unpublished"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Image</h4>
+                              {n.image ? (
+                                <img src={n.image} alt="" className="w-24 h-16 object-cover rounded border" />
+                              ) : (
+                                <p className="text-sm text-gray-400">—</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderSubscribersTable = () => (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      {filteredSubs.length === 0 ? (
+        <div className="p-12 text-center"><Mail className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{subSearch ? "No matching subscribers." : "No subscribers yet."}</p></div>
+      ) : (
+        <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                <th className="w-8 px-2 py-3"></th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Email</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Source</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSubs.map(s => {
+                const isExpanded = expandedId === `sub-${s.id}`;
+                return (
+                  <Fragment key={s.id}>
+                    <tr
+                      className="border-b border-gray-100 dashboard-row cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : `sub-${s.id}` || null)}
+                    >
+                      <td className="w-8 px-2 py-3">
+                        <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : `sub-${s.id}` || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
+                      <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
+                      <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
+                          {s.status === "active" ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                          {s.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          {s.status === "active" && (
+                            <button onClick={(ev) => { ev.stopPropagation(); handleUnsubscribe(s.id!); }} title="Unsubscribe"
+                              className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors"><XCircle className="w-4 h-4" /></button>
+                          )}
+                          <button onClick={(ev) => { ev.stopPropagation(); handleDeleteSub(s.id!); }} title="Delete"
+                            className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${s.id}-detail`}>
+                        <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                              <p className="text-sm text-gray-700 font-mono">{s.id}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                              <p className="text-sm text-gray-700">{s.email}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Name</h4>
+                              <p className="text-sm text-gray-700">{s.name || "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Source</h4>
+                              <p className="text-sm text-gray-700">{s.source || "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                              <p className="text-sm text-gray-700">{s.status}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                              <p className="text-sm text-gray-700">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
   if (authLoading || loading) return <div className="pt-32 text-center text-gray-500">Loading...</div>;
 
   return (
@@ -222,7 +409,7 @@ export default function DashboardNewsPage() {
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
                 </div>
                 <div className="flex items-center gap-4 pt-5">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 dashboard-row cursor-pointer">
                     <input type="checkbox" checked={form.published} onChange={e => setForm(p => ({ ...p, published: e.target.checked }))}
                       className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
                     <span className="text-xs text-gray-600">Published</span>
@@ -247,54 +434,15 @@ export default function DashboardNewsPage() {
 
           {sectionOrder === "normal" ? (
             <>
-              {/* News List */}
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input type="text" placeholder="Search news..." value={search} onChange={e => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
-                {filtered.length === 0 ? (
-                  <div className="p-12 text-center"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Published</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map(n => (
-                          <tr key={n.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-900">{n.title}</p>
-                              <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
-                            </td>
-                            <td className="px-4 py-3">
-                              <button onClick={() => n.id && handleTogglePublished(n.id, !n.published)} className={`p-1 rounded-lg transition-colors ${n.published ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`} title={n.published ? "Unpublish" : "Publish"}>
-                                {n.published ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                              </button>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                                <button onClick={() => n.id && handleDelete(n.id)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderNewsTable()}
               <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} article{filtered.length !== 1 ? "s" : ""}</p>
 
-              {/* Subscribers Section */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">Newsletter Subscribers</h2>
                 <div className="flex items-center gap-2">
@@ -309,57 +457,11 @@ export default function DashboardNewsPage() {
                 <input type="text" placeholder="Search subscribers..." value={subSearch} onChange={e => setSubSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                {filteredSubs.length === 0 ? (
-                  <div className="p-12 text-center"><Mail className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{subSearch ? "No matching subscribers." : "No subscribers yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Email</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Source</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredSubs.map(s => (
-                          <tr key={s.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
-                            <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
-                            <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
-                            <td className="px-4 py-3">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
-                                {s.status === "active" ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                                {s.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-gray-500">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                {s.status === "active" && (
-                                  <button onClick={() => handleUnsubscribe(s.id!)} title="Unsubscribe"
-                                    className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors"><XCircle className="w-4 h-4" /></button>
-                                )}
-                                <button onClick={() => handleDeleteSub(s.id!)} title="Delete"
-                                  className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderSubscribersTable()}
               <p className="text-xs text-gray-400 mt-4">{filteredSubs.length} subscriber{filteredSubs.length !== 1 ? "s" : ""}</p>
             </>
           ) : (
             <>
-              {/* Subscribers Section first */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900">Newsletter Subscribers</h2>
                 <div className="flex items-center gap-2">
@@ -374,99 +476,16 @@ export default function DashboardNewsPage() {
                 <input type="text" placeholder="Search subscribers..." value={subSearch} onChange={e => setSubSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                {filteredSubs.length === 0 ? (
-                  <div className="p-12 text-center"><Mail className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{subSearch ? "No matching subscribers." : "No subscribers yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Email</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Source</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredSubs.map(s => (
-                          <tr key={s.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
-                            <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
-                            <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
-                            <td className="px-4 py-3">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
-                                {s.status === "active" ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                                {s.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-gray-500">{s.createdAt?.toDate?.()?.toLocaleDateString() || ""}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                {s.status === "active" && (
-                                  <button onClick={() => handleUnsubscribe(s.id!)} title="Unsubscribe"
-                                    className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors"><XCircle className="w-4 h-4" /></button>
-                                )}
-                                <button onClick={() => handleDeleteSub(s.id!)} title="Delete"
-                                  className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderSubscribersTable()}
               <p className="text-xs text-gray-400 mb-6">{filteredSubs.length} subscriber{filteredSubs.length !== 1 ? "s" : ""}</p>
 
-              {/* News List */}
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input type="text" placeholder="Search news..." value={search} onChange={e => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm mb-8">
-                {filtered.length === 0 ? (
-                  <div className="p-12 text-center"><Edit3 className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p className="text-gray-500">{search ? "No matching news." : "No news articles yet."}</p></div>
-                ) : (
-                  <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Published</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map(n => (
-                          <tr key={n.id} className="border-b border-gray-100 cursor-pointer">
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-900">{n.title}</p>
-                              <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
-                            </td>
-                            <td className="px-4 py-3">
-                              <button onClick={() => n.id && handleTogglePublished(n.id, !n.published)} className={`p-1 rounded-lg transition-colors ${n.published ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`} title={n.published ? "Unpublish" : "Publish"}>
-                                {n.published ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                              </button>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-1">
-                                <button onClick={() => handleEdit(n)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit3 className="w-4 h-4" /></button>
-                                <button onClick={() => n.id && handleDelete(n.id)} className="p-1.5 bg-gray-100 text-red-500 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              {renderNewsTable()}
               <p className="text-xs text-gray-400 -mt-6 mb-6">{filtered.length} article{filtered.length !== 1 ? "s" : ""}</p>
             </>
           )}

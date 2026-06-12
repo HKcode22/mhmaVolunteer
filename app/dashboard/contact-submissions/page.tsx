@@ -179,7 +179,7 @@ export default function DashboardContactSubmissionsPage() {
                                 {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
                               </button>
                             </td>
-                            <td className={`px-4 py-3 cursor-pointer font-semibold text-gray-900 ${!i.read ? "font-bold" : ""}`} onClick={() => setExpandedId(isExpanded ? null : i.id || null)}>{i.name}</td>
+                            <td className={`px-4 py-3 dashboard-row cursor-pointer font-semibold text-gray-900 ${!i.read ? "font-bold" : ""}`} onClick={() => setExpandedId(isExpanded ? null : i.id || null)}>{i.name}</td>
                             <td className="px-4 py-3">
                               <div className="flex flex-col gap-0.5">
                                 <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
@@ -207,7 +207,36 @@ export default function DashboardContactSubmissionsPage() {
                           {isExpanded && (
                             <tr>
                               <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-100">{i.message}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                    <p className="text-sm text-gray-700 font-mono">{i.id}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Name</h4>
+                                    <p className="text-sm text-gray-700">{i.name}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                    <a href={`mailto:${i.email}`} className="text-sm text-blue-600 hover:underline">{i.email}</a>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Subject</h4>
+                                    <p className="text-sm text-gray-700">{i.subject}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                    <p className="text-sm text-gray-700">{i.read ? "Read" : "Unread"}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                    <p className="text-sm text-gray-700">{i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                                  </div>
+                                  <div className="md:col-span-3">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Message</h4>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-4 rounded-lg border border-gray-100">{i.message}</p>
+                                  </div>
+                                </div>
                               </td>
                             </tr>
                           )}
@@ -256,7 +285,7 @@ export default function DashboardContactSubmissionsPage() {
                         const q = volunteerSearch.toLowerCase();
                         return !q || v.firstName.toLowerCase().includes(q) || v.lastName.toLowerCase().includes(q) || v.email.toLowerCase().includes(q);
                       }).map(v => (
-                        <tr key={v.id} className="border-b border-gray-100 cursor-pointer">
+                        <tr key={v.id} className="border-b border-gray-100 dashboard-row cursor-pointer">
                           <td className="px-2 py-3">
                             <button onClick={() => setExpandedId(expandedId === `vol-${v.id}` ? null : `vol-${v.id}`)} className="p-1 text-gray-400 hover:text-gray-700">
                               {expandedId === `vol-${v.id}` ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -339,7 +368,7 @@ export default function DashboardContactSubmissionsPage() {
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
                     </div>
                   </div>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 dashboard-row cursor-pointer">
                     <input type="checkbox" checked={faqForm.active} onChange={e => setFaqForm(p => ({ ...p, active: e.target.checked }))}
                       className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
                     <span className="text-xs text-gray-600">Active (visible on public FAQ page)</span>
@@ -368,41 +397,87 @@ export default function DashboardContactSubmissionsPage() {
                 <div className="p-12 text-center text-gray-500 text-sm">{faqSearch ? "No matching FAQs." : "No FAQs yet."}</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700 w-8">Order</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Question</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Category</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Active</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredFaqs.map((item, i) => (
-                        <tr key={item.id} className="border-b border-gray-100 cursor-pointer">
-                          <td className="px-4 py-3">
-                            <div className="flex flex-col items-center gap-0.5">
-                              <button onClick={() => moveFaqOrder(item.id!, "up")} disabled={i === 0} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3 h-3" /></button>
-                              <span className="text-xs text-gray-500">{item.order || 0}</span>
-                              <button onClick={() => moveFaqOrder(item.id!, "down")} disabled={i === filteredFaqs.length - 1} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3 h-3" /></button>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <p className="font-semibold text-gray-900">{item.question}</p>
-                            <p className="text-xs text-gray-500 truncate max-w-md">{item.answer}</p>
-                          </td>
-                          <td className="px-4 py-3">{item.category && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{item.category}</span>}</td>
-                          <td className="px-4 py-3">{item.active !== false ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex gap-1">
-                              <button onClick={() => handleFaqEdit(item)} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 text-xs font-medium">Edit</button>
-                              <button onClick={() => handleFaqDelete(item.id!)} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                            </div>
-                          </td>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="w-8 px-2 py-3"></th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700 w-8">Order</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Question</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Category</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Active</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
+                      </thead>
+                      <tbody>
+                        {filteredFaqs.map((item, i) => {
+                          const isExpanded = expandedId === `faq-${item.id}`;
+                          return (
+                            <React.Fragment key={item.id}>
+                              <tr
+                                className="border-b border-gray-100 dashboard-row cursor-pointer"
+                                onClick={() => setExpandedId(isExpanded ? null : `faq-${item.id}` || null)}
+                              >
+                                <td className="w-8 px-2 py-3">
+                                  <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : `faq-${item.id}` || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                                    {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                                  </button>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <button onClick={(ev) => { ev.stopPropagation(); moveFaqOrder(item.id!, "up"); }} disabled={i === 0} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3 h-3" /></button>
+                                    <span className="text-xs text-gray-500">{item.order || 0}</span>
+                                    <button onClick={(ev) => { ev.stopPropagation(); moveFaqOrder(item.id!, "down"); }} disabled={i === filteredFaqs.length - 1} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3 h-3" /></button>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <p className="font-semibold text-gray-900">{item.question}</p>
+                                  <p className="text-xs text-gray-500 truncate max-w-md">{item.answer}</p>
+                                </td>
+                                <td className="px-4 py-3">{item.category && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{item.category}</span>}</td>
+                                <td className="px-4 py-3">{item.active !== false ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}</td>
+                                <td className="px-4 py-3">
+                                  <div className="flex gap-1">
+                                    <button onClick={(ev) => { ev.stopPropagation(); handleFaqEdit(item); }} className="p-1.5 bg-gray-100 text-blue-600 rounded-lg hover:bg-blue-50 text-xs font-medium">Edit</button>
+                                    <button onClick={(ev) => { ev.stopPropagation(); handleFaqDelete(item.id!); }} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                  </div>
+                                </td>
+                              </tr>
+                              {isExpanded && (
+                                <tr key={`${item.id}-detail`}>
+                                  <td colSpan={6} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                      <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                        <p className="text-sm text-gray-700 font-mono">{item.id}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Question</h4>
+                                        <p className="text-sm text-gray-700">{item.question}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Category</h4>
+                                        <p className="text-sm text-gray-700">{item.category || "—"}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Answer</h4>
+                                        <p className="text-sm text-gray-700">{item.answer}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Active</h4>
+                                        <p className="text-sm text-gray-700">{item.active !== false ? "Active" : "Inactive"}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order</h4>
+                                        <p className="text-sm text-gray-700">{item.order || 0}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
                   </table>
                 </div>
               )}

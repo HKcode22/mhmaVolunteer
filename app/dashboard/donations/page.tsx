@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
-import { ArrowLeft, Heart, Search, Mail, DollarSign, Clock, Trash2, Plus, X, User, Phone, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, Heart, Search, Mail, DollarSign, Clock, Trash2, Plus, X, User, Phone, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchDonations, addManualDonation, deleteDonation, fetchUsers, fetchPledges, updatePledgeStatus, deletePledge, Donation, FirebaseUser, Pledge } from "@/lib/firebase";
@@ -28,6 +28,7 @@ export default function DashboardDonationsPage() {
   const [manual, setManual] = useState({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "", showOnWall: true, anonymous: false });
   const [saving, setSaving] = useState(false);
   const [orderSwapped, setOrderSwapped] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -187,7 +188,7 @@ export default function DashboardDonationsPage() {
         <button onClick={() => setShowManual(true)} className="flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
           <Plus className="w-4 h-4" /> Record Donation
         </button>
-        <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl cursor-pointer font-medium text-sm border border-gray-200">
+        <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl dashboard-row cursor-pointer font-medium text-sm border border-gray-200">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           Export CSV
         </button>
@@ -235,12 +236,12 @@ export default function DashboardDonationsPage() {
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mhma-gold outline-none text-sm" />
             </div>
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 dashboard-row cursor-pointer">
                 <input type="checkbox" checked={manual.showOnWall} onChange={e => setManual(p => ({ ...p, showOnWall: e.target.checked }))}
                   className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
                 <span className="text-xs text-gray-600">Show on donor wall</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 dashboard-row cursor-pointer">
                 <input type="checkbox" checked={manual.anonymous} onChange={e => setManual(p => ({ ...p, anonymous: e.target.checked }))}
                   className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
                 <span className="text-xs text-gray-600">Anonymous (hide name)</span>
@@ -306,8 +307,9 @@ export default function DashboardDonationsPage() {
             <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[20%]">Donor</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[20%]">Member</th>
+                  <th className="w-8 px-2 py-3 sticky top-0 bg-gray-50"></th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[18%]">Donor</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[18%]">Member</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Amount</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[12%]">Designation</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Method</th>
@@ -317,50 +319,109 @@ export default function DashboardDonationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(d => (
-                  <tr key={d.id} className="border-b border-gray-100 cursor-pointer">
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-900">{d.donorName}</p>
-                      {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">
-                        <Mail className="w-3 h-3" /> {d.donorEmail}
-                      </a>}
-                      {d.donorId && <p className="text-xs text-gray-400 mt-0.5">ID: {d.donorId.slice(0, 12)}...</p>}
-                    </td>
-                    <td className="px-4 py-3">
-                      {(() => {
-                        const member = d.donorId ? users.find(u => u.id === d.donorId) : null;
-                        return member ? (
-                          <div>
-                            <p className="font-medium text-gray-900 text-sm">{member.displayName || `${member.firstName || ""} ${member.lastName || ""}`.trim() || "—"}</p>
-                            <p className="text-xs text-gray-500">{member.email}</p>
-                            <span className="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-mhma-cream text-mhma-forest mt-0.5">{member.role}</span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400">—</span>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-4 py-3 font-bold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 capitalize">{d.designation}</span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 capitalize">{d.method}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
-                        {d.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {fmtDate(d)}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => handleDelete(d.id!)} title="Delete"
-                        className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map(d => {
+                  const isExpanded = expandedId === d.id;
+                  return (
+                    <Fragment key={d.id}>
+                      <tr
+                        className="border-b border-gray-100 dashboard-row cursor-pointer"
+                        onClick={() => setExpandedId(isExpanded ? null : d.id || null)}
+                      >
+                        <td className="w-8 px-2 py-3">
+                          <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : d.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 overflow-hidden">
+                          <p className="font-semibold text-gray-900 truncate">{d.donorName}</p>
+                          {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">
+                            <Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{d.donorEmail}</span>
+                          </a>}
+                          {d.donorId && <p className="text-xs text-gray-400 mt-0.5">ID: {d.donorId.slice(0, 12)}...</p>}
+                        </td>
+                        <td className="px-4 py-3 overflow-hidden">
+                          {(() => {
+                            const member = d.donorId ? users.find(u => u.id === d.donorId) : null;
+                            return member ? (
+                              <div>
+                                <p className="font-medium text-gray-900 text-sm truncate">{member.displayName || `${member.firstName || ""} ${member.lastName || ""}`.trim() || "—"}</p>
+                                <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                                <span className="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-mhma-cream text-mhma-forest mt-0.5">{member.role}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-gray-900">${((d.amount || 0) / 100).toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 capitalize">{d.designation}</span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 capitalize">{d.method}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${d.status === "completed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
+                            {d.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {fmtDate(d)}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button onClick={(ev) => { ev.stopPropagation(); handleDelete(d.id!); }} title="Delete"
+                            className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${d.id}-detail`}>
+                          <td colSpan={9} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                <p className="text-sm text-gray-700 font-mono">{d.id}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Donor Name</h4>
+                                <p className="text-sm text-gray-700">{d.donorName}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                <a href={`mailto:${d.donorEmail}`} className="text-sm text-blue-600 hover:underline">{d.donorEmail}</a>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</h4>
+                                <p className="text-sm text-gray-700 font-bold">${((d.amount || 0) / 100).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Designation</h4>
+                                <p className="text-sm text-gray-700 capitalize">{d.designation}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Method</h4>
+                                <p className="text-sm text-gray-700 capitalize">{d.method}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                <p className="text-sm text-gray-700">{d.status}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                <p className="text-sm text-gray-700">{fmtDate(d)}</p>
+                              </div>
+                              {d.notes && (
+                                <div>
+                                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</h4>
+                                  <p className="text-sm text-gray-700">{d.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -452,8 +513,9 @@ export default function DashboardDonationsPage() {
             <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[20%]">Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[25%]">Contact</th>
+                  <th className="w-8 px-2 py-3 sticky top-0 bg-gray-50"></th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[18%]">Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[22%]">Contact</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[15%]">Amount</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[15%]">Status</th>
                   <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[15%]">Date</th>
@@ -461,50 +523,101 @@ export default function DashboardDonationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPledges.map(p => (
-                  <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
-                    <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-0.5">
-                        <a href={`mailto:${p.email}`} className="flex items-center gap-1 text-blue-600 hover:underline">
-                          <Mail className="w-3 h-3" /> {p.email}
-                        </a>
-                        {p.phone && (
-                          <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline">
-                            <Phone className="w-3 h-3" /> {p.phone}
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-bold text-gray-900">${p.amount.toLocaleString()}</td>
-                    <td className="px-4 py-3">{statusBadge(p.status)}</td>
-                    <td className="px-4 py-3 text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {p.createdAt?.toDate?.()?.toLocaleDateString() || ""}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        {p.status === "pending" && (
-                          <>
-                            <button onClick={() => handlePledgeStatus(p.id!, "fulfilled")} title="Mark fulfilled"
-                              className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
-                              <CheckCircle className="w-4 h-4" />
+                {filteredPledges.map(p => {
+                  const isExpanded = expandedId === `pledge-${p.id}`;
+                  return (
+                    <Fragment key={p.id}>
+                      <tr
+                        className="border-b border-gray-100 dashboard-row cursor-pointer"
+                        onClick={() => setExpandedId(isExpanded ? null : `pledge-${p.id}` || null)}
+                      >
+                        <td className="w-8 px-2 py-3">
+                          <button onClick={(ev) => { ev.stopPropagation(); setExpandedId(isExpanded ? null : `pledge-${p.id}` || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-0.5">
+                            <a href={`mailto:${p.email}`} className="flex items-center gap-1 text-blue-600 hover:underline">
+                              <Mail className="w-3 h-3" /> {p.email}
+                            </a>
+                            {p.phone && (
+                              <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline">
+                                <Phone className="w-3 h-3" /> {p.phone}
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-bold text-gray-900">${p.amount.toLocaleString()}</td>
+                        <td className="px-4 py-3">{statusBadge(p.status)}</td>
+                        <td className="px-4 py-3 text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {p.createdAt?.toDate?.()?.toLocaleDateString() || ""}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            {p.status === "pending" && (
+                              <>
+                                <button onClick={(ev) => { ev.stopPropagation(); handlePledgeStatus(p.id!, "fulfilled"); }} title="Mark fulfilled"
+                                  className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                                <button onClick={(ev) => { ev.stopPropagation(); handlePledgeStatus(p.id!, "cancelled"); }} title="Cancel"
+                                  className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            <button onClick={(ev) => { ev.stopPropagation(); handlePledgeDelete(p.id!); }} title="Delete"
+                              className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
-                            <button onClick={() => handlePledgeStatus(p.id!, "cancelled")} title="Cancel"
-                              className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        <button onClick={() => handlePledgeDelete(p.id!)} title="Delete"
-                          className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          </div>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${p.id}-detail`}>
+                          <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                <p className="text-sm text-gray-700 font-mono">{p.id}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Pledger Name</h4>
+                                <p className="text-sm text-gray-700">{p.name}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                <a href={`mailto:${p.email}`} className="text-sm text-blue-600 hover:underline">{p.email}</a>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</h4>
+                                <p className="text-sm text-gray-700 font-bold">${p.amount.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                <p className="text-sm text-gray-700">{p.status}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                <p className="text-sm text-gray-700">{p.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                              </div>
+                              {p.message && (
+                                <div>
+                                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Message</h4>
+                                  <p className="text-sm text-gray-700">{p.message}</p>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

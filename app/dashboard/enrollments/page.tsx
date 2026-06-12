@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Mail, Phone, Clock, BookOpen, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Search, Mail, Phone, Clock, BookOpen, CheckCircle, XCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchEnrollments, updateEnrollment, deleteEnrollment, FirebaseEnrollment } from "@/lib/firebase";
@@ -14,6 +14,7 @@ export default function DashboardEnrollmentsPage() {
   const [items, setItems] = useState<FirebaseEnrollment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -79,6 +80,7 @@ export default function DashboardEnrollmentsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="w-8 px-2 py-3"></th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Contact</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Program</th>
@@ -88,38 +90,83 @@ export default function DashboardEnrollmentsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(i => (
-                      <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
-                        <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col gap-0.5">
-                            <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
-                            {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-700">{i.program || "—"}</td>
-                        <td className="px-4 py-3">{statusBadge(i.status)}</td>
-                        <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            {i.status === "pending" && (
-                              <>
-                                <button onClick={() => i.id && handleStatus(i.id, "approved")} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
-                                  <CheckCircle className="w-4 h-4" />
+                    {filtered.map(i => {
+                      const isExpanded = expandedId === i.id;
+                      return (
+                        <Fragment key={i.id}>
+                          <tr
+                            className="border-b border-gray-100 dashboard-row cursor-pointer"
+                            onClick={() => setExpandedId(isExpanded ? null : i.id || null)}
+                          >
+                            <td className="w-8 px-2 py-3">
+                              <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : i.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                                {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                              </button>
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-col gap-0.5">
+                                <a href={`mailto:${i.email}`} className="flex items-center gap-1 text-blue-600 hover:underline"><Mail className="w-3 h-3" /> {i.email}</a>
+                                {i.phone && <a href={`tel:${i.phone}`} className="flex items-center gap-1 text-gray-500 hover:underline"><Phone className="w-3 h-3" /> {i.phone}</a>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">{i.program || "—"}</td>
+                            <td className="px-4 py-3">{statusBadge(i.status)}</td>
+                            <td className="px-4 py-3 text-gray-500"><span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</span></td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1">
+                                {i.status === "pending" && (
+                                  <>
+                                    <button onClick={(e) => { e.stopPropagation(); i.id && handleStatus(i.id, "approved"); }} className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors" title="Approve">
+                                      <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={(e) => { e.stopPropagation(); i.id && handleStatus(i.id, "rejected"); }} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
+                                      <XCircle className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={(e) => { e.stopPropagation(); if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setItems(prev => prev.filter(x => x.id !== i.id))); }}
+                                  className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
-                                <button onClick={() => i.id && handleStatus(i.id, "rejected")} className="p-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 transition-colors" title="Reject">
-                                  <XCircle className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                            <button onClick={() => { if (!confirm("Delete this enrollment?")) return; deleteEnrollment(i.id!).then(() => setItems(prev => prev.filter(x => x.id !== i.id))); }}
-                              className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              </div>
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr key={`${i.id}-detail`}>
+                              <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                    <p className="text-sm text-gray-700 font-mono">{i.id}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Member Name</h4>
+                                    <p className="text-sm text-gray-700">{i.fullName}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Email</h4>
+                                    <a href={`mailto:${i.email}`} className="text-sm text-blue-600 hover:underline">{i.email}</a>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Program</h4>
+                                    <p className="text-sm text-gray-700">{i.program || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                    <p className="text-sm text-gray-700">{i.status}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</h4>
+                                    <p className="text-sm text-gray-700">{i.createdAt?.toDate?.()?.toLocaleDateString() || ""}</p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

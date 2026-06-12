@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus, Search, Clock, Star, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
@@ -24,6 +24,7 @@ export default function DashboardTestimonialsPage() {
   const [showProgList, setShowProgList] = useState(false);
   const [showEventList, setShowEventList] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
@@ -217,7 +218,7 @@ export default function DashboardTestimonialsPage() {
                 )}
               </div>
               <div className="flex items-center gap-2 mb-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 dashboard-row cursor-pointer">
                   <input type="checkbox" checked={form.active} onChange={e => setForm(p => ({ ...p, active: e.target.checked }))}
                     className="rounded border-gray-300 text-mhma-gold focus:ring-mhma-gold" />
                   <span className="text-xs text-gray-600">Active (visible on pages)</span>
@@ -262,6 +263,7 @@ export default function DashboardTestimonialsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="w-8 px-2 py-3"></th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Name</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Content</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">Pages</th>
@@ -270,43 +272,89 @@ export default function DashboardTestimonialsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(t => (
-                      <tr key={t.id} className="border-b border-gray-100 cursor-pointer">
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-gray-900">{t.name}</p>
-                          {t.role && <p className="text-xs text-gray-500">{t.role}</p>}
-                        </td>
-                        <td className="px-4 py-3 text-gray-700 max-w-[300px] truncate">{t.content}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1">
-                            {(t.displayOn || []).map(p => (
-                              <span key={p} className="inline-block px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">{p}</span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            {t.active ? (
-                              <button onClick={() => handleToggleActive(t.id!, false)} className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors">
-                                <CheckCircle className="w-3 h-3" /> Active
+                    {filtered.map(t => {
+                      const isExpanded = expandedId === t.id;
+                      return (
+                        <Fragment key={t.id}>
+                          <tr
+                            className="border-b border-gray-100 dashboard-row cursor-pointer"
+                            onClick={() => setExpandedId(isExpanded ? null : t.id || null)}
+                          >
+                            <td className="w-8 px-2 py-3">
+                              <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : t.id || null); }} className="p-1 hover:bg-gray-100 rounded transition-colors">
+                                {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
                               </button>
-                            ) : (
-                              <button onClick={() => handleToggleActive(t.id!, true)} className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-amber-100 hover:text-amber-700 transition-colors">
-                                <Clock className="w-3 h-3" /> Pending
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="font-semibold text-gray-900">{t.name}</p>
+                              {t.role && <p className="text-xs text-gray-500">{t.role}</p>}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700 max-w-[300px] truncate">{t.content}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-wrap gap-1">
+                                {(t.displayOn || []).map(p => (
+                                  <span key={p} className="inline-block px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">{p}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {t.active ? (
+                                  <button onClick={(e) => { e.stopPropagation(); handleToggleActive(t.id!, false); }} className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors">
+                                    <CheckCircle className="w-3 h-3" /> Active
+                                  </button>
+                                ) : (
+                                  <button onClick={(e) => { e.stopPropagation(); handleToggleActive(t.id!, true); }} className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-amber-100 hover:text-amber-700 transition-colors">
+                                    <Clock className="w-3 h-3" /> Pending
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <button onClick={(e) => {
+                                e.stopPropagation();
+                                if (!confirm("Delete this testimonial?")) return;
+                                deleteTestimonial(t.id!).then(() => setItems(prev => prev.filter(x => x.id !== t.id)));
+                              }} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
+                                <Trash2 className="w-4 h-4" />
                               </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => {
-                            if (!confirm("Delete this testimonial?")) return;
-                            deleteTestimonial(t.id!).then(() => setItems(prev => prev.filter(x => x.id !== t.id)));
-                          }} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr key={`${t.id}-detail`}>
+                              <td colSpan={6} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
+                                    <p className="text-sm text-gray-700 font-mono">{t.id}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Name</h4>
+                                    <p className="text-sm text-gray-700">{t.name}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Role</h4>
+                                    <p className="text-sm text-gray-700">{t.role || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Testimonial</h4>
+                                    <p className="text-sm text-gray-700">{t.content}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Page Assignment</h4>
+                                    <p className="text-sm text-gray-700">{(t.displayOn || []).join(", ") || "—"}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Status</h4>
+                                    <p className="text-sm text-gray-700">{t.active ? "Active" : "Inactive"}</p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
