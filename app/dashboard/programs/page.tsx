@@ -263,7 +263,7 @@ export default function DashboardProgramsPage() {
                       </thead>
                       <tbody>
                         {filtered.map(p => (
-                          <tr key={p.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3">
                               <p className="font-semibold text-gray-900">{p.title}</p>
                               {p.description && <p className="text-xs text-gray-500 truncate max-w-[300px]">{p.description}</p>}
@@ -317,7 +317,7 @@ export default function DashboardProgramsPage() {
                       </thead>
                       <tbody>
                         {filteredEnroll.map(i => (
-                          <tr key={i.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
                             <td className="px-4 py-3">
                               <div className="flex flex-col gap-0.5">
@@ -390,7 +390,7 @@ export default function DashboardProgramsPage() {
                       </thead>
                       <tbody>
                         {filteredEnroll.map(i => (
-                          <tr key={i.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
                             <td className="px-4 py-3">
                               <div className="flex flex-col gap-0.5">
@@ -449,7 +449,7 @@ export default function DashboardProgramsPage() {
                       </thead>
                       <tbody>
                         {filtered.map(p => (
-                          <tr key={p.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3">
                               <p className="font-semibold text-gray-900">{p.title}</p>
                               {p.description && <p className="text-xs text-gray-500 truncate max-w-[300px]">{p.description}</p>}

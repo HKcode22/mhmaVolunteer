@@ -231,7 +231,7 @@ export default function DashboardEventsPage() {
                       </thead>
                       <tbody>
                         {filtered.map(e => (
-                          <tr key={e.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={e.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3">
                               <p className="font-semibold text-gray-900">{e.title}</p>
                               {e.description && <p className="text-xs text-gray-500 truncate max-w-[250px]">{e.description}</p>}
@@ -291,7 +291,7 @@ export default function DashboardEventsPage() {
                       </thead>
                       <tbody>
                         {filteredRsvps.map(i => (
-                          <tr key={i.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
                             <td className="px-4 py-3">
                               <div className="flex flex-col gap-0.5">
@@ -369,7 +369,7 @@ export default function DashboardEventsPage() {
                       </thead>
                       <tbody>
                         {filteredRsvps.map(i => (
-                          <tr key={i.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={i.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
                             <td className="px-4 py-3">
                               <div className="flex flex-col gap-0.5">
@@ -432,7 +432,7 @@ export default function DashboardEventsPage() {
                       </thead>
                       <tbody>
                         {filtered.map(e => (
-                          <tr key={e.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                          <tr key={e.id} className="border-b border-gray-100 cursor-pointer">
                             <td className="px-4 py-3">
                               <p className="font-semibold text-gray-900">{e.title}</p>
                               {e.description && <p className="text-xs text-gray-500 truncate max-w-[250px]">{e.description}</p>}

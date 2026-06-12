@@ -261,31 +261,39 @@ export default function AiAssistant() {
       return { answer: "I'm here to help! Try asking about dashboard features, events, programs, or navigation. For example: 'How do I create an event?' or 'Go to the programs page'." };
     }
 
-    // If AI worker is ready, use it
+    // First, run keyword matching to get context + fallback answer
+    const fallback = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
+    const context = fallback.answer ? (() => {
+      const found = knowledgeBase.find((k) => k.a === fallback.answer);
+      return found ? `Q: ${found.q}\nA: ${found.a}` : '';
+    })() : '';
+
+    // If AI worker is ready, use it with the matching context (RAG)
     if (workerRef.current && workerStatus === 'ready' && !usingFallback) {
       const aiPromise = new Promise<string | null>((resolve) => {
         pendingResolveRef.current = resolve;
-        workerRef.current?.postMessage({ type: 'query', data: { query } });
+        workerRef.current?.postMessage({ type: 'query', data: { query, context } });
       });
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000));
-      const answer = await Promise.race([aiPromise, timeoutPromise]);
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 15000));
+      const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
       pendingResolveRef.current = null;
-      if (answer) {
+      if (aiAnswer) {
+        console.log('[Assistant] Using AI answer');
         lastQueryRef.current = query;
-        return { answer };
+        return { answer: aiAnswer };
       }
+      console.log('[Assistant] AI timeout/no answer, using fallback');
     }
 
-    // Fallback: keyword matching
-    const result = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
-    setNavHint(result.navHint || null);
+    // Fallback: keyword matching result
+    setNavHint(fallback.navHint || null);
     lastQueryRef.current = query;
-    lastNavHintRef.current = result.navHint || '';
-    if (result.answer) {
-      const found = knowledgeBase.find((k) => k.a === result.answer);
+    lastNavHintRef.current = fallback.navHint || '';
+    if (fallback.answer) {
+      const found = knowledgeBase.find((k) => k.a === fallback.answer);
       if (found) topicRef.current = found;
     }
-    return { answer: result.answer, suggestions: result.suggestions };
+    return { answer: fallback.answer, suggestions: fallback.suggestions };
   }, [user?.role, pathname]);
 
   const handleSend = async () => {
@@ -327,7 +335,7 @@ export default function AiAssistant() {
   /* ─── SmolLM2 Worker (text-generation via Transformers.js v3) ─── */
   useEffect(() => {
     try {
-      const worker = new Worker('/ai-worker.js', { type: 'module' });
+      const worker = new Worker('/ai-worker.js');
       workerRef.current = worker;
       const timeout = setTimeout(() => {
         if (workerRef.current) {

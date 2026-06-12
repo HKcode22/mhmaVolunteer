@@ -162,7 +162,7 @@ export default function UsersPage() {
                       return (
                         <Fragment key={u.id}>
                           <tr
-                            className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all cursor-pointer"
+                            className="border-b border-gray-100 cursor-pointer"
                             onClick={() => setExpandedUserId(isExpanded ? null : u.id || null)}
                           >
                             <td className="w-8 px-2 py-3">

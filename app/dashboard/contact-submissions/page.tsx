@@ -256,7 +256,7 @@ export default function DashboardContactSubmissionsPage() {
                         const q = volunteerSearch.toLowerCase();
                         return !q || v.firstName.toLowerCase().includes(q) || v.lastName.toLowerCase().includes(q) || v.email.toLowerCase().includes(q);
                       }).map(v => (
-                        <tr key={v.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                        <tr key={v.id} className="border-b border-gray-100 cursor-pointer">
                           <td className="px-2 py-3">
                             <button onClick={() => setExpandedId(expandedId === `vol-${v.id}` ? null : `vol-${v.id}`)} className="p-1 text-gray-400 hover:text-gray-700">
                               {expandedId === `vol-${v.id}` ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -380,7 +380,7 @@ export default function DashboardContactSubmissionsPage() {
                     </thead>
                     <tbody>
                       {filteredFaqs.map((item, i) => (
-                        <tr key={item.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                        <tr key={item.id} className="border-b border-gray-100 cursor-pointer">
                           <td className="px-4 py-3">
                             <div className="flex flex-col items-center gap-0.5">
                               <button onClick={() => moveFaqOrder(item.id!, "up")} disabled={i === 0} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3 h-3" /></button>

@@ -187,7 +187,7 @@ export default function DashboardDonationsPage() {
         <button onClick={() => setShowManual(true)} className="flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
           <Plus className="w-4 h-4" /> Record Donation
         </button>
-        <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl hover:-translate-y-px hover:shadow-sm transition-all font-medium text-sm border border-gray-200">
+        <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl cursor-pointer font-medium text-sm border border-gray-200">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           Export CSV
         </button>
@@ -303,22 +303,22 @@ export default function DashboardDonationsPage() {
           </div>
         ) : (
           <div className="max-h-[320px] overflow-y-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Donor</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Member</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Amount</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Designation</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Method</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Date</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Actions</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[20%]">Donor</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[20%]">Member</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Amount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[12%]">Designation</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Method</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Status</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Date</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[8%]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(d => (
-                  <tr key={d.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                  <tr key={d.id} className="border-b border-gray-100 cursor-pointer">
                     <td className="px-4 py-3">
                       <p className="font-semibold text-gray-900">{d.donorName}</p>
                       {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">
@@ -449,20 +449,20 @@ export default function DashboardDonationsPage() {
           </div>
         ) : (
           <div className="max-h-[320px] overflow-y-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Contact</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Amount</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Date</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50">Actions</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[20%]">Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[25%]">Contact</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[15%]">Amount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[15%]">Status</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[15%]">Date</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky top-0 bg-gray-50 w-[10%]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPledges.map(p => (
-                  <tr key={p.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
+                  <tr key={p.id} className="border-b border-gray-100 cursor-pointer">
                     <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-0.5">
