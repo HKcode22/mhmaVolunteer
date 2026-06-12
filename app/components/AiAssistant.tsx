@@ -261,6 +261,27 @@ export default function AiAssistant() {
       return { answer: "I'm here to help! Try asking about dashboard features, events, programs, or navigation. For example: 'How do I create an event?' or 'Go to the programs page'." };
     }
 
+    // If AI worker is ready, use it
+    if (workerRef.current && workerStatus === 'ready' && !usingFallback) {
+      return new Promise((resolve) => {
+        pendingResolveRef.current = (answer: string | null) => {
+          resolve({ answer, suggestions: undefined });
+        };
+        workerRef.current?.postMessage({ type: 'query', data: { query } });
+        // Safety timeout: if worker doesn't respond in 10s, fall back
+        setTimeout(() => {
+          if (pendingResolveRef.current) {
+            pendingResolveRef.current(null);
+            pendingResolveRef.current = null;
+            // Try keyword match as fallback inside the timeout handler
+            const result = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
+            resolve({ answer: result.answer, suggestions: result.suggestions });
+          }
+        }, 10000);
+      });
+    }
+
+    // Fallback: keyword matching
     const result = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
     setNavHint(result.navHint || null);
     lastQueryRef.current = query;
@@ -308,10 +329,10 @@ export default function AiAssistant() {
     'How do I manage pledges?',
   ];
 
-  /* ─── Transformers.js Worker (disabled for now, uncomment to re-enable) ───
+  /* ─── SmolLM2 Worker (text-generation via Transformers.js v3) ─── */
   useEffect(() => {
     try {
-      const worker = new Worker('/ai-worker.js');
+      const worker = new Worker('/ai-worker.js', { type: 'module' });
       workerRef.current = worker;
       const timeout = setTimeout(() => {
         if (workerRef.current) {
@@ -320,11 +341,11 @@ export default function AiAssistant() {
           setWorkerStatus('error');
           setWorkerError('Model load timed out.');
         }
-      }, 20000);
+      }, 60000);
       initTimeoutRef.current = timeout;
       worker.onmessage = (event) => {
-        const { type, status, error, bestMatch } = event.data;
-        if (type === 'init-status') {
+        const { type, status, error, answer } = event.data;
+        if (type === 'status') {
           if (status === 'loading') setWorkerStatus('loading');
           else if (status === 'ready') {
             if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
@@ -337,14 +358,7 @@ export default function AiAssistant() {
           }
         } else if (type === 'result') {
           if (pendingResolveRef.current) {
-            const answer = bestMatch ? bestMatch.item.a : null;
-            setNavHint(bestMatch && bestMatch.item.pages?.[0] ? bestMatch.item.pages[0] : null);
-            pendingResolveRef.current(answer);
-            pendingResolveRef.current = null;
-          }
-        } else if (type === 'error') {
-          if (pendingResolveRef.current) {
-            pendingResolveRef.current(null);
+            pendingResolveRef.current(answer || null);
             pendingResolveRef.current = null;
           }
         }
@@ -354,7 +368,6 @@ export default function AiAssistant() {
         setWorkerStatus('error');
         setWorkerError(err.message || 'Worker failed');
       };
-      worker.postMessage({ type: 'init', data: { knowledgeBase } });
     } catch (err: any) {
       setWorkerStatus('unsupported');
       setWorkerError('Web Workers not supported.');
@@ -364,7 +377,7 @@ export default function AiAssistant() {
       if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
     };
   }, []);
-  ─────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────────── */
 
   return (
     <>
@@ -398,7 +411,7 @@ export default function AiAssistant() {
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
             <p className="text-[10px] text-white/70 truncate">
-              Fallback • Active
+              {workerStatus === 'ready' ? 'AI • Ready' : workerStatus === 'loading' ? 'Initializing micro-AI (~90MB)...' : workerStatus === 'error' ? 'AI unavailable • Using fallback' : 'Fallback • Active'}
             </p>
           </div>
           <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white ml-1 shrink-0">

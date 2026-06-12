@@ -271,7 +271,7 @@ export default function DashboardTestimonialsPage() {
                   </thead>
                   <tbody>
                     {filtered.map(t => (
-                      <tr key={t.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <tr key={t.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                         <td className="px-4 py-3">
                           <p className="font-semibold text-gray-900">{t.name}</p>
                           {t.role && <p className="text-xs text-gray-500">{t.role}</p>}

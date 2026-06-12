@@ -137,7 +137,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                     </div>
                   </div>
                 </div>
-                <button onClick={handleLogout} className="text-gray-500 hover:text-red-400 transition-colors">LOGOUT</button>
+                <button onClick={handleLogout} className="text-gray-700 hover:text-red-400 transition-colors">LOGOUT</button>
               </>
             ) : isLoggedIn ? (
               <>
@@ -159,7 +159,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
                   <User className="w-3.5 h-3.5" /> PROFILE
                 </Link>
                 <span className="text-gray-800 text-xs">Welcome, {user?.displayName || "Member"}</span>
-                <button onClick={handleLogout} className="text-gray-500 hover:text-red-400 transition-colors">LOGOUT</button>
+                <button onClick={handleLogout} className="text-gray-700 hover:text-red-400 transition-colors">LOGOUT</button>
               </>
             ) : (
               <>

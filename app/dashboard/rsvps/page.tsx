@@ -90,7 +90,7 @@ export default function DashboardRSVPsPage() {
                   </thead>
                   <tbody>
                     {filtered.map(i => (
-                      <tr key={i.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <tr key={i.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                         <td className="px-4 py-3 font-semibold text-gray-900">{i.fullName}</td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-0.5">

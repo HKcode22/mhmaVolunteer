@@ -95,7 +95,7 @@ export default function DashboardSubscribersPage() {
                   </thead>
                   <tbody>
                     {filtered.map(s => (
-                      <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <tr key={s.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                         <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
                         <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
                         <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>

@@ -150,7 +150,7 @@ export default function DashboardPledgesPage() {
               </thead>
               <tbody>
                 {filteredPledges.map(p => (
-                  <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <tr key={p.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                     <td className="px-4 py-3 font-semibold text-gray-900">{p.name}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-0.5">
@@ -236,7 +236,7 @@ export default function DashboardPledgesPage() {
               </thead>
               <tbody>
                 {filteredDonations.map(d => (
-                  <tr key={d.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <tr key={d.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                     <td className="px-4 py-3">
                       <p className="font-semibold text-gray-900">{d.donorName}</p>
                       {d.donorEmail && <a href={`mailto:${d.donorEmail}`} className="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5">

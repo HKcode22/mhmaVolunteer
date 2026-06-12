@@ -746,7 +746,7 @@ useEffect(() => {
                     </div>
                     <Link
                       href={`/rsvp?eventId=${event.id}`}
-                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-black text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
+                      className="inline-block w-full text-center px-3 py-1.5 bg-mhma-gold text-gray-900 text-xs font-semibold rounded hover:bg-mhma-gold-light transition-colors"
                     >
                       RSVP
                     </Link>

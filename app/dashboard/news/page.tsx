@@ -269,7 +269,7 @@ export default function DashboardNewsPage() {
                       </thead>
                       <tbody>
                         {filtered.map(n => (
-                          <tr key={n.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <tr key={n.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                             <td className="px-4 py-3">
                               <p className="font-semibold text-gray-900">{n.title}</p>
                               <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>
@@ -327,7 +327,7 @@ export default function DashboardNewsPage() {
                       </thead>
                       <tbody>
                         {filteredSubs.map(s => (
-                          <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <tr key={s.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                             <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
                             <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
                             <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
@@ -392,7 +392,7 @@ export default function DashboardNewsPage() {
                       </thead>
                       <tbody>
                         {filteredSubs.map(s => (
-                          <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <tr key={s.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                             <td className="px-4 py-3 font-medium text-gray-900">{s.email}</td>
                             <td className="px-4 py-3 text-gray-600">{s.name || "—"}</td>
                             <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{s.source || "—"}</span></td>
@@ -444,7 +444,7 @@ export default function DashboardNewsPage() {
                       </thead>
                       <tbody>
                         {filtered.map(n => (
-                          <tr key={n.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <tr key={n.id} className="border-b border-gray-100 hover:-translate-y-px hover:shadow-sm transition-all">
                             <td className="px-4 py-3">
                               <p className="font-semibold text-gray-900">{n.title}</p>
                               <p className="text-xs text-gray-500 truncate max-w-[400px]">{n.excerpt}</p>

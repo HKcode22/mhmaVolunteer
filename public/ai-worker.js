@@ -1,111 +1,59 @@
-const CDN_URLS = [
-  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js',
-  'https://unpkg.com/@xenova/transformers@2.17.2/dist/transformers.min.js',
-  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.js',
-  'https://unpkg.com/@xenova/transformers@2.17.2/dist/transformers.js',
-];
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/+esm';
 
-let loaded = false;
-let loadError = '';
+let generator = null;
 
-async function tryLoad() {
-  for (const url of CDN_URLS) {
-    try {
-      const resp = await fetch(url);
-      const text = await resp.text();
-      // Transform the ESM export to a global assignment
-      const wrapped = text.replace(
-        /^export \{([^}]+)\};/m,
-        'self.Transformers = { $1 };'
-      );
-      (0, eval)(wrapped);
-      if (typeof self.Transformers !== 'undefined') {
-        loaded = true;
-        loadError = '';
-        return true;
-      }
-    } catch (e) {
-      loadError = `${e.message} (${url})`;
-    }
+async function loadModel() {
+  try {
+    generator = await pipeline('text-generation', 'onnx-community/SmolLM2-135M-Instruct', {
+      dtype: 'q4',
+      device: 'webgpu',
+    });
+    return true;
+  } catch (err) {
+    return false;
   }
-  return false;
 }
 
-let extractor = null;
-let knowledgeEmbeddings = [];
-let knowledgeItems = [];
+const systemPrompt =
+  "You are a helpful assistant for the MHMA (Mountain House Muslim Association) website. " +
+  "Help users navigate the site and answer questions about features including events, programs, " +
+  "donations, pledges, members, construction, and dashboard management. " +
+  "Keep replies extremely concise (1-2 short sentences), polite, and helpful. " +
+  "If asked something completely unrelated to the website, politely redirect. " +
+  "For navigation questions, direct users to the correct page or menu item.";
 
-function cosineSimilarity(a, b) {
-  let dot = 0, magA = 0, magB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    magA += a[i] * a[i];
-    magB += b[i] * b[i];
-  }
-  return magA > 0 && magB > 0 ? dot / (Math.sqrt(magA) * Math.sqrt(magB)) : 0;
-}
+loadModel().then((ok) => {
+  self.postMessage({ type: 'status', status: ok ? 'ready' : 'error', error: ok ? '' : 'Failed to load model' });
+});
 
 self.addEventListener('message', async (event) => {
   const { type, data } = event.data;
 
-  if (type === 'init') {
-    const ok = await tryLoad();
-    if (!ok) {
-      postMessage({ type: 'init-status', status: 'error', error: 'Failed to load Transformers.js from any CDN. Last error: ' + loadError });
+  if (type === 'query') {
+    if (!generator) {
+      self.postMessage({ type: 'result', answer: null });
       return;
     }
-    knowledgeItems = data.knowledgeBase;
-    postMessage({ type: 'init-status', status: 'loading' });
 
     try {
-      extractor = await self.Transformers.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: data.query },
+      ];
 
-      knowledgeEmbeddings = [];
-      for (const item of knowledgeItems) {
-        const text = item.keywords.join(' ') + ' ' + item.q;
-        const output = await extractor(text, { pooling: 'mean', normalize: true });
-        knowledgeEmbeddings.push(Array.from(output.data));
-      }
-
-      postMessage({ type: 'init-status', status: 'ready', count: knowledgeItems.length });
-    } catch (error) {
-      postMessage({ type: 'init-status', status: 'error', error: error.message });
-    }
-  } else if (type === 'query') {
-    if (!extractor) {
-      postMessage({ type: 'error', error: 'Model not initialized.' });
-      return;
-    }
-    try {
-      const { query, role, currentPage } = data;
-      const output = await extractor(query, { pooling: 'mean', normalize: true });
-      const queryEmbedding = Array.from(output.data);
-
-      let bestIndex = -1;
-      let bestScore = 0;
-
-      for (let i = 0; i < knowledgeEmbeddings.length; i++) {
-        let score = cosineSimilarity(queryEmbedding, knowledgeEmbeddings[i]);
-
-        const item = knowledgeItems[i];
-        if (role && item.roles && item.roles.includes(role)) score += 0.15;
-        if (currentPage && item.pages && item.pages.includes(currentPage)) score += 0.1;
-
-        if (score > bestScore) {
-          bestScore = score;
-          bestIndex = i;
-        }
-      }
-
-      postMessage({
-        type: 'result',
-        query,
-        bestMatch: bestIndex >= 0 && bestScore > 0.3
-          ? { index: bestIndex, score: bestScore, item: knowledgeItems[bestIndex] }
-          : null,
+      const output = await generator(messages, {
+        max_new_tokens: 128,
+        temperature: 0.2,
+        do_sample: true,
       });
-    } catch (error) {
-      postMessage({ type: 'error', error: error.message });
+
+      const fullText = output[0]?.generated_text || '';
+      const parts = fullText.split(/<\|im_start\|>assistant/);
+      const answer = parts.length > 1 ? parts[parts.length - 1].replace(/<\|im_end\|>/g, '').trim() : fullText;
+
+      self.postMessage({ type: 'result', answer: answer || null });
+    } catch (err) {
+      self.postMessage({ type: 'result', answer: null, error: err.message });
     }
   }
 });
