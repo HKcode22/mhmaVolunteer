@@ -155,6 +155,7 @@ export default function AiAssistant() {
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const workerReadyRef = useRef(false);
   const usingFallbackRef = useRef(true);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -332,6 +333,12 @@ export default function AiAssistant() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (!loading && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [loading]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
@@ -485,7 +492,7 @@ export default function AiAssistant() {
         )}
 
         <div className="border-t border-gray-200 p-3 flex gap-2 items-end">
-          <textarea value={input} onChange={(e) => setInput(e.target.value)}
+          <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown} placeholder="Ask about dashboard features..."
             rows={1}
             className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-mhma-gold outline-none resize-none max-h-32"

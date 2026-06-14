@@ -91,10 +91,15 @@ self.addEventListener('message', async (event) => {
       const raw = output?.[0];
       console.log('[AI Worker] Output type:', typeof output, 'raw type:', typeof raw);
 
-      const text = raw?.generated_text || '';
-      console.log('[AI Worker] generated_text length:', text.length, 'preview:', text.slice(0, 100));
-      const parts = text.split(/assistant/gi);
-      const answer = (parts.length > 1 ? parts.pop().trim() : text) || null;
+      let answer = null;
+      const gt = raw?.generated_text;
+      if (Array.isArray(gt)) {
+        // Chat format: [{role, content}, ...] — last message is the assistant reply
+        const last = gt[gt.length - 1];
+        answer = last?.content || null;
+      } else if (typeof gt === 'string') {
+        answer = gt || null;
+      }
       console.log('[AI Worker] Answer for id=' + id + ':', answer);
       self.postMessage({ type: 'result', id, answer });
     } catch (err) {
