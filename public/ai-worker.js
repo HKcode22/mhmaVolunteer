@@ -81,7 +81,7 @@ self.addEventListener('message', async (event) => {
       const t0 = performance.now();
       console.log('[AI Worker] Generating for id=' + id + '...');
       const output = await generator(
-        [{ role: 'system', content: 'You are a helpful MHMA website assistant. Keep replies under 2 sentences.' }, { role: 'user', content: prompt }],
+        [{ role: 'system', content: 'You are the MHMA (Mountain House Muslim Association) website assistant. Answer ONLY about the MHMA website, its dashboard, events, programs, donations, members, and navigation. If a question is not about the MHMA website, reply: "I can only answer questions about the MHMA website." Keep replies under 2 sentences.' }, { role: 'user', content: prompt }],
         { max_new_tokens: 64, temperature: 0 }
       );
       const elapsed = Math.round(performance.now() - t0);
