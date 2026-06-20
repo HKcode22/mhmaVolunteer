@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation, GripVertical } from 'lucide-react';
 import { knowledgeBase, QAItem } from '@/app/lib/assistant-knowledge';
+import { fetchLiveData, formatLiveContext, clearLiveCache } from '@/app/lib/live-knowledge';
 import { useAuth } from '@/lib/auth-context';
 
 interface Message {
@@ -146,12 +147,28 @@ export default function AiAssistant() {
     console.log('[Assistant] askQuestion — workerReady:', workerReady);
 
     if (workerReady && usingFallbackRef.current === false) {
-      // Step 1: Retrieve relevant context from knowledge base
+      // Step 1: Retrieve static context from knowledge base
       const role = user?.role;
-      const context = retrieve(query, role);
-      if (context) console.log('[Assistant] Retrieved context');
+      const staticCtx = retrieve(query, role);
 
-      // Step 2: Send query + context to the AI worker
+      // Step 2: Fetch live data from Firestore
+      let liveCtx = '';
+      try {
+        const live = await fetchLiveData();
+        liveCtx = formatLiveContext(live);
+      } catch (e) {
+        console.warn('[Assistant] Live data fetch failed:', e);
+      }
+
+      // Step 3: Combine contexts
+      const parts: string[] = [];
+      if (staticCtx) parts.push(staticCtx);
+      if (liveCtx) parts.push('=== Live Data ===\n' + liveCtx);
+      const context = parts.join('\n\n');
+
+      if (context) console.log('[Assistant] Context length:', context.length, 'chars');
+
+      // Step 4: Send query + context to the AI worker
       const qid = Math.random().toString(36).slice(2, 8);
       console.log('[Assistant] Sending query to worker, id:', qid);
       const aiPromise = new Promise<string | null>((resolve) => {
