@@ -13,30 +13,36 @@ interface Message {
 type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
 /* ─── RAG Retriever: keyword search over knowledgeBase ─── */
-function retrieve(query: string, role?: string): string[] {
-  const q = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
-  if (q.length === 0) return [];
+function retrieve(query: string, role?: string): string {
+  const q = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
+  if (q.length === 0) return '';
 
-  const scored: { item: QAItem; score: number }[] = [];
+  const scored: { item: QAItem; score: number; matched: number }[] = [];
 
   for (const item of knowledgeBase) {
     if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
 
-    const kw = [...item.keywords, item.q.toLowerCase()].join(' ').toLowerCase();
-    let matches = 0;
+    // Build searchable text from keywords + question
+    const searchText = [...item.keywords, item.q.toLowerCase()].join(' ').toLowerCase();
+    let matched = 0;
     for (const word of q) {
-      if (word.length < 2) continue;
-      if (kw.includes(word)) matches++;
+      if (searchText.includes(word)) matched++;
     }
-    if (matches === 0) continue;
+    if (matched === 0) continue;
 
-    let score = matches / Math.max(q.length, 1);
-    if (role && item.roles?.includes(role as any)) score += 0.1;
-    scored.push({ item, score });
+    let score = matched / Math.max(q.length, 1);
+    // Boost for role-matched entries
+    if (role && item.roles?.includes(role as any)) score += 0.15;
+
+    scored.push({ item, score, matched });
   }
 
+  if (scored.length === 0) return '';
+
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map((s) => s.item.a);
+  // Return top 2 answers as context (keep it short for the 135M model)
+  const top = scored.slice(0, 2);
+  return top.map((s, i) => s.item.q + '\n' + s.item.a).join('\n---\n');
 }
 
 export default function AiAssistant() {
@@ -142,11 +148,8 @@ export default function AiAssistant() {
     if (workerReady && usingFallbackRef.current === false) {
       // Step 1: Retrieve relevant context from knowledge base
       const role = user?.role;
-      const retrieved = retrieve(query, role);
-      const context = retrieved.length > 0
-        ? retrieved.map((a, i) => `[INFO ${i + 1}]\n${a}`).join('\n\n')
-        : '';
-      if (context) console.log('[Assistant] Retrieved context:', context.slice(0, 120) + '...');
+      const context = retrieve(query, role);
+      if (context) console.log('[Assistant] Retrieved context');
 
       // Step 2: Send query + context to the AI worker
       const qid = Math.random().toString(36).slice(2, 8);

@@ -80,6 +80,8 @@ Event: "Eid Festival"
 
 ## 3. RAG Knowledge Store (Firestore Collection)
 
+**Purpose:** This is NOT for saving chat history. It stores the knowledge documents that the RAG retriever searches against. Currently this data lives in `assistant-knowledge.ts` (a TypeScript file). Moving it to Firestore means board members can add/update knowledge without a code deploy.
+
 ### 3.1 Collection Schema: `ai_knowledge`
 
 ```json
@@ -96,9 +98,11 @@ Event: "Eid Festival"
 }
 ```
 
-### 3.2 Embeddings (Future Phase)
-Use `Transformers.js` `feature-extraction` pipeline to generate embeddings client-side.
-Compare via cosine similarity. Implement when latency permits.
+**Why Firestore instead of a TS file?**
+- Dynamic updates: board members can add knowledge via dashboard
+- Live data sync: real-time RSVP counts, enrollment numbers
+- No code deploy needed for content changes
+- Can store per-event/per-program stats that change daily
 
 ---
 
