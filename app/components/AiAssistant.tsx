@@ -2,129 +2,30 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation, GripVertical } from 'lucide-react';
-import { knowledgeBase } from '@/app/lib/assistant-knowledge';
+// import { knowledgeBase } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
-import { usePathname } from 'next/navigation';
+// import { usePathname } from 'next/navigation';
 
 interface Message {
   role: 'user' | 'assistant';
   text: string;
-  navHint?: string;
+  // navHint?: string;
 }
 
 type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
+// ─── Fallback keyword-matching (disabled, using AI model only) ───
+/*
 function tokenize(text: string): string[] {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
 }
 
-function ngrams(tokens: string[], n: number): string[] {
-  const result: string[] = [];
-  for (let i = 0; i <= tokens.length - n; i++) {
-    result.push(tokens.slice(i, i + n).join(' '));
-  }
-  return result;
-}
-
-const stopWords = new Set(['the','a','an','is','are','was','were','be','been','have','has','had',
-  'do','does','did','will','would','can','could','may','might','shall','should','to','of','in',
-  'for','on','with','at','by','from','as','into','through','during','before','after','above',
-  'below','between','out','off','over','under','again','further','then','once','here','there',
-  'when','where','why','how','all','each','every','both','few','more','most','other','some',
-  'such','no','nor','not','only','own','same','so','than','too','very','just','about','up',
-  'and','but','or','if','because','what','which','who','whom','this','that','these','those',
-  'it','its','my','your','his','her','our','their']);
-
-function getTokens(text: string): string[] {
-  return tokenize(text).filter((w) => !stopWords.has(w));
-}
-
-function matchTokens(qFiltered: string[], kTokens: string[]): number {
-  let matched = 0;
-  for (const qWord of qFiltered) {
-    const hit = kTokens.some((kt) => {
-      if (qWord === kt) return true;
-      if (qWord.length >= 4 && kt.length >= 4) {
-        return kt.includes(qWord) || qWord.includes(kt);
-      }
-      if (qWord.length >= 3 && kt.length >= 3 && (kt.startsWith(qWord) || qWord.startsWith(kt))) return true;
-      return false;
-    });
-    if (hit) matched++;
-  }
-  return matched;
-}
-
-// Precompute rarity weights for knowledge base keywords
+const stopWords = new Set([...]);
+function getTokens(text: string): string[] { ... }
+function matchTokens(...): number { ... }
 const kwRarity = new Map<string, number>();
-const totalItems = knowledgeBase.length;
-for (const item of knowledgeBase) {
-  const kw = [...item.keywords, ...tokenize(item.q)].map((k) => k.toLowerCase());
-  const uniqueKws = Array.from(new Set(kw));
-  for (const k of uniqueKws) {
-    kwRarity.set(k, (kwRarity.get(k) || 0) + 1);
-  }
-}
-
-function keywordMatch(
-  query: string,
-  role?: string,
-  page?: string,
-  lastQuery?: string,
-  lastTopic?: { q: string; a: string; keywords: string[]; pages?: string[]; roles?: string[]; denyRoles?: string[] } | null,
-): { answer: string | null; navHint?: string; suggestions?: string[] } {
-  const qFiltered = getTokens(query);
-  if (qFiltered.length === 0) return { answer: null };
-
-  let bestScore = 0;
-  let bestItem: typeof knowledgeBase[number] | null = null;
-  const scored: { score: number; item: typeof knowledgeBase[number] }[] = [];
-
-  function scoreItem(item: typeof knowledgeBase[number], tokens: string[]): { score: number; matched: number } {
-    const kw = [...item.keywords, ...tokenize(item.q)];
-    const kTokens = Array.from(new Set(kw.map((k) => k.toLowerCase())));
-    if (kTokens.length === 0) return { score: 0, matched: 0 };
-    const matched = matchTokens(tokens, kTokens);
-    if (matched === 0) return { score: 0, matched: 0 };
-    let score = matched / Math.max(kTokens.length, tokens.length);
-    if (role && item.roles?.includes(role as any)) score += 0.12;
-    if (page && item.pages?.includes(page)) score += 0.08;
-    if (lastTopic && item === lastTopic) score += 0.05;
-    return { score, matched };
-  }
-
-  // First pass: match against current query
-  for (const item of knowledgeBase) {
-    if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
-    const { score, matched } = scoreItem(item, qFiltered);
-    if (matched > 0) {
-      scored.push({ score, item });
-      if (score > 0.15 && score > bestScore) { bestScore = score; bestItem = item; }
-    }
-  }
-
-  // Second pass: if no good match, merge with last query tokens
-  if (!bestItem && lastQuery) {
-    const lastTokens = getTokens(lastQuery);
-    const merged = Array.from(new Set([...lastTokens, ...qFiltered]));
-    for (const item of knowledgeBase) {
-      if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
-      const { score, matched } = scoreItem(item, merged);
-      if (matched > 0) {
-        scored.push({ score, item });
-        if (score > 0.12 && score > bestScore) { bestScore = score; bestItem = item; }
-      }
-    }
-  }
-
-  if (!bestItem) {
-    scored.sort((a, b) => b.score - a.score);
-    const topSuggestions = scored.slice(0, 3).map((s) => s.item.q);
-    return { answer: null, suggestions: topSuggestions.length > 0 ? topSuggestions : undefined };
-  }
-
-  return { answer: bestItem.a, navHint: bestItem.pages?.[0] };
-}
+function keywordMatch(...) { ... }
+*/
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
@@ -134,7 +35,7 @@ export default function AiAssistant() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [navHint, setNavHint] = useState<string | null>(null);
+  // const [navHint, setNavHint] = useState<string | null>(null);
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unsupported');
   const [workerError, setWorkerError] = useState('');
   const [usingFallback, setUsingFallback] = useState(true);
@@ -146,9 +47,9 @@ export default function AiAssistant() {
   const heightRef = useRef(500);
   const posXRef = useRef(0);
   const posYRef = useRef(0);
-  const lastQueryRef = useRef('');
-  const lastNavHintRef = useRef('');
-  const topicRef = useRef<{ q: string; a: string; keywords: string[]; pages?: string[]; roles?: string[]; denyRoles?: string[] } | null>(null);
+  // const lastQueryRef = useRef('');
+  // const lastNavHintRef = useRef('');
+  // const topicRef = useRef<...>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingMapRef = useRef<Map<string, (value: string | null) => void>>(new Map());
@@ -157,7 +58,7 @@ export default function AiAssistant() {
   const usingFallbackRef = useRef(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
-  const pathname = usePathname();
+  // const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
   const resizeRef = useRef({ resizing: false, edge: '', startX: 0, startY: 0, startW: 360, startH: 500, startPosX: 0, startPosY: 0 });
@@ -175,17 +76,12 @@ export default function AiAssistant() {
     localStorage.setItem('mhma_ai_open', open.toString());
   }, [open]);
 
+  /* ─── navHint glow effect (disabled with fallback) ───
   useEffect(() => {
     if (!navHint) return;
-    const path = navHint;
-    const links = document.querySelectorAll<HTMLAnchorElement>(`a[href="${path}"]`);
-    links.forEach((el) => {
-      el.classList.add('ai-nav-glow');
-    });
-    return () => {
-      links.forEach((el) => el.classList.remove('ai-nav-glow'));
-    };
+    ...
   }, [navHint]);
+  */
 
   useEffect(() => {
     const saved = localStorage.getItem('mhma_ai_open');
@@ -238,48 +134,16 @@ export default function AiAssistant() {
     document.addEventListener('mouseup', onMouseUp);
   }, []);
 
-  const identityPattern = /who\s+(am|is)\s+(i|me|logged|l̥in)|what\s+(is|are)\s+(my|the)\s+role|do\s+(you|u)\s+(know|remember)\s+(who|me|my)|who(\u2019s|'s)?\s+logged/i;
-  const confusionPattern = /(i\s+|i'|i)(m\s+|s\s+)?(dont|don't|not|nt)\s+understand|not\s+(making|any)\s+sense|what\s+(are|r)\s+(you|u)\s+talking|(im|i'm)\s+confused|(huh|hello\?)|are\s+(you|u)\s+(there|tere)|can\s+(you|u)\s+understand|(oh\s+my\s+god|omg)|what\s+do\s+(you|u)\s+mean|you(´|'|re|r)e?\s+(not\s+)?(helping|making|listening)|please\s+guide\s+me/i;
-
-  const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null; suggestions?: string[] }> => {
-    const role = user?.role;
-    const name = user?.displayName || (user?.firstName ? `${user.firstName} ${user.lastName}` : '').trim();
-
-    // Personalize identity/role queries
-    if (identityPattern.test(query)) {
-      if (name && role) {
-        const roleLabel = role === 'board_member' ? 'a Board Member' : role === 'administrator' ? 'an Administrator' : 'a Member';
-        return { answer: `You are ${name}, logged in as ${roleLabel}. You can manage your profile, notifications, and settings from the top navigation bar.${role === 'board_member' || role === 'administrator' ? ' As a board member, you also have access to the full Dashboard for managing events, programs, donations, and more.' : ''}` };
-      }
-      if (user) {
-        return { answer: `You are logged in as a ${role || 'member'}. Use the navigation bar to explore your available features.` };
-      }
-    }
-
-    // Handle confused/frustrated follow-ups
-    if (confusionPattern.test(query) && lastQueryRef.current && topicRef.current) {
-      return { answer: `I understand this can be confusing. Let me re-explain:\n\n${topicRef.current.a}` };
-    }
-    if (confusionPattern.test(query) && !lastQueryRef.current) {
-      return { answer: "I'm here to help! Try asking about dashboard features, events, programs, or navigation. For example: 'How do I create an event?' or 'Go to the programs page'." };
-    }
-
-    // First, run keyword matching to get context + fallback answer
-    const fallback = keywordMatch(query, role, pathname, lastQueryRef.current, topicRef.current);
-    const context = fallback.answer ? (() => {
-      const found = knowledgeBase.find((k) => k.a === fallback.answer);
-      return found ? `Q: ${found.q}\nA: ${found.a}` : '';
-    })() : '';
-
-    // If AI worker is ready, use it with the matching context (RAG)
+  const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null }> => {
+    // Send query directly to the AI model (no fallback, no keyword context)
     const workerReady = workerReadyRef.current && !!workerRef.current;
-    console.log('[Assistant] askQuestion — workerReady:', workerReady, 'usingFallback:', usingFallbackRef.current, 'workerStatus:', workerStatus);
+    console.log('[Assistant] askQuestion — workerReady:', workerReady, 'usingFallback:', usingFallbackRef.current);
     if (workerReady && usingFallbackRef.current === false) {
       const qid = Math.random().toString(36).slice(2, 8);
       console.log('[Assistant] Sending query to worker, id:', qid);
       const aiPromise = new Promise<string | null>((resolve) => {
         pendingMapRef.current.set(qid, resolve);
-        workerRef.current?.postMessage({ type: 'query', data: { query, context, id: qid } });
+        workerRef.current?.postMessage({ type: 'query', data: { query, id: qid } });
       });
       const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => {
         if (pendingMapRef.current.has(qid)) {
@@ -290,22 +154,12 @@ export default function AiAssistant() {
       const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
       if (aiAnswer) {
         console.log('[Assistant] Using AI answer:', aiAnswer.slice(0, 60));
-        lastQueryRef.current = query;
         return { answer: aiAnswer };
       }
-      console.log('[Assistant] AI timeout/no answer, using fallback');
+      console.log('[Assistant] AI timeout');
     }
-
-    // Fallback: keyword matching result
-    setNavHint(fallback.navHint || null);
-    lastQueryRef.current = query;
-    lastNavHintRef.current = fallback.navHint || '';
-    if (fallback.answer) {
-      const found = knowledgeBase.find((k) => k.a === fallback.answer);
-      if (found) topicRef.current = found;
-    }
-    return { answer: fallback.answer, suggestions: fallback.suggestions };
-  }, [user?.role, pathname]);
+    return { answer: null };
+  }, []);
 
   const handleSend = async () => {
     const q = input.trim();
@@ -313,21 +167,16 @@ export default function AiAssistant() {
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
-    setNavHint(null);
+    // setNavHint(null);
 
-    const { answer, suggestions } = await askQuestion(q);
+    const { answer } = await askQuestion(q);
 
     if (answer) {
-      setMessages((prev) => [...prev, { role: 'assistant', text: answer, navHint: lastNavHintRef.current || undefined }]);
-    } else if (suggestions && suggestions.length > 0) {
-      setMessages((prev) => [...prev, {
-        role: 'assistant',
-        text: `I couldn't find a specific answer. You might want to try asking about one of these:\n• ${suggestions.join('\n• ')}`,
-      }]);
+      setMessages((prev) => [...prev, { role: 'assistant', text: answer }]);
     } else {
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        text: `I couldn't find a specific answer to that. Try asking about: creating events, approving RSVPs, managing programs, handling donations, pledges, members, construction, analytics, notifications, or dashboard features.`,
+        text: `I'm having trouble answering that right now. Try rephrasing your question.`,
       }]);
     }
     setLoading(false);
@@ -349,7 +198,7 @@ export default function AiAssistant() {
     'How do I manage pledges?',
   ];
 
-  /* ─── SmolLM2 Worker (text-generation via Transformers.js v3) ─── */
+  /* ─── SmolLM2 Worker (text-generation via Transformers.js) ─── */
   useEffect(() => {
     try {
       const worker = new Worker('/ai-worker.js', { type: 'module' });
@@ -437,7 +286,7 @@ export default function AiAssistant() {
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
             <p className="text-[10px] text-white/70 truncate">
-              {workerStatus === 'ready' ? 'AI • Ready' : workerStatus === 'loading' ? 'Initializing micro-AI (~90MB)...' : workerStatus === 'error' ? 'AI unavailable • Using fallback' : 'Fallback • Active'}
+              {workerStatus === 'ready' ? 'AI • Ready' : workerStatus === 'loading' ? 'Initializing micro-AI (~90MB)...' : workerStatus === 'error' ? 'AI unavailable' : 'Fallback • Active'}
             </p>
           </div>
           <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white ml-1 shrink-0">
@@ -459,11 +308,7 @@ export default function AiAssistant() {
                   : 'bg-gray-100 text-gray-800 rounded-bl-md'
               }`}>
                 {msg.text}
-                {msg.navHint && (
-                  <div className="flex items-center gap-1 mt-2 text-[10px] font-semibold uppercase text-mhma-gold">
-                    <Navigation className="w-3 h-3" /> Go to {msg.navHint.split('/').pop() || msg.navHint}
-                  </div>
-                )}
+                {/* msg.navHint && (...)*/}
               </div>
             </div>
           ))}
