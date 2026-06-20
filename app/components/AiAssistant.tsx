@@ -2,30 +2,42 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation, GripVertical } from 'lucide-react';
-// import { knowledgeBase } from '@/app/lib/assistant-knowledge';
+import { knowledgeBase, QAItem } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
-// import { usePathname } from 'next/navigation';
 
 interface Message {
   role: 'user' | 'assistant';
   text: string;
-  // navHint?: string;
 }
 
 type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
-// ─── Fallback keyword-matching (disabled, using AI model only) ───
-/*
-function tokenize(text: string): string[] {
-  return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
-}
+/* ─── RAG Retriever: keyword search over knowledgeBase ─── */
+function retrieve(query: string, role?: string): string[] {
+  const q = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+  if (q.length === 0) return [];
 
-const stopWords = new Set([...]);
-function getTokens(text: string): string[] { ... }
-function matchTokens(...): number { ... }
-const kwRarity = new Map<string, number>();
-function keywordMatch(...) { ... }
-*/
+  const scored: { item: QAItem; score: number }[] = [];
+
+  for (const item of knowledgeBase) {
+    if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
+
+    const kw = [...item.keywords, item.q.toLowerCase()].join(' ').toLowerCase();
+    let matches = 0;
+    for (const word of q) {
+      if (word.length < 2) continue;
+      if (kw.includes(word)) matches++;
+    }
+    if (matches === 0) continue;
+
+    let score = matches / Math.max(q.length, 1);
+    if (role && item.roles?.includes(role as any)) score += 0.1;
+    scored.push({ item, score });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 3).map((s) => s.item.a);
+}
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
@@ -35,7 +47,6 @@ export default function AiAssistant() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  // const [navHint, setNavHint] = useState<string | null>(null);
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unsupported');
   const [workerError, setWorkerError] = useState('');
   const [usingFallback, setUsingFallback] = useState(true);
@@ -47,9 +58,6 @@ export default function AiAssistant() {
   const heightRef = useRef(500);
   const posXRef = useRef(0);
   const posYRef = useRef(0);
-  // const lastQueryRef = useRef('');
-  // const lastNavHintRef = useRef('');
-  // const topicRef = useRef<...>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const pendingMapRef = useRef<Map<string, (value: string | null) => void>>(new Map());
@@ -58,7 +66,6 @@ export default function AiAssistant() {
   const usingFallbackRef = useRef(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
-  // const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
   const resizeRef = useRef({ resizing: false, edge: '', startX: 0, startY: 0, startW: 360, startH: 500, startPosX: 0, startPosY: 0 });
@@ -75,13 +82,6 @@ export default function AiAssistant() {
   useEffect(() => {
     localStorage.setItem('mhma_ai_open', open.toString());
   }, [open]);
-
-  /* ─── navHint glow effect (disabled with fallback) ───
-  useEffect(() => {
-    if (!navHint) return;
-    ...
-  }, [navHint]);
-  */
 
   useEffect(() => {
     const saved = localStorage.getItem('mhma_ai_open');
@@ -134,16 +134,26 @@ export default function AiAssistant() {
     document.addEventListener('mouseup', onMouseUp);
   }, []);
 
+  /* ─── RAG Pipeline: retrieve context → send to AI model ─── */
   const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null }> => {
-    // Send query directly to the AI model (no fallback, no keyword context)
     const workerReady = workerReadyRef.current && !!workerRef.current;
-    console.log('[Assistant] askQuestion — workerReady:', workerReady, 'usingFallback:', usingFallbackRef.current);
+    console.log('[Assistant] askQuestion — workerReady:', workerReady);
+
     if (workerReady && usingFallbackRef.current === false) {
+      // Step 1: Retrieve relevant context from knowledge base
+      const role = user?.role;
+      const retrieved = retrieve(query, role);
+      const context = retrieved.length > 0
+        ? retrieved.map((a, i) => `[INFO ${i + 1}]\n${a}`).join('\n\n')
+        : '';
+      if (context) console.log('[Assistant] Retrieved context:', context.slice(0, 120) + '...');
+
+      // Step 2: Send query + context to the AI worker
       const qid = Math.random().toString(36).slice(2, 8);
       console.log('[Assistant] Sending query to worker, id:', qid);
       const aiPromise = new Promise<string | null>((resolve) => {
         pendingMapRef.current.set(qid, resolve);
-        workerRef.current?.postMessage({ type: 'query', data: { query, id: qid } });
+        workerRef.current?.postMessage({ type: 'query', data: { query, context, id: qid } });
       });
       const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => {
         if (pendingMapRef.current.has(qid)) {
@@ -159,7 +169,7 @@ export default function AiAssistant() {
       console.log('[Assistant] AI timeout');
     }
     return { answer: null };
-  }, []);
+  }, [user?.role]);
 
   const handleSend = async () => {
     const q = input.trim();
@@ -167,7 +177,6 @@ export default function AiAssistant() {
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
-    // setNavHint(null);
 
     const { answer } = await askQuestion(q);
 
@@ -198,7 +207,7 @@ export default function AiAssistant() {
     'How do I manage pledges?',
   ];
 
-  /* ─── SmolLM2 Worker (text-generation via Transformers.js) ─── */
+  /* ─── SmolLM2 Worker ─── */
   useEffect(() => {
     try {
       const worker = new Worker('/ai-worker.js', { type: 'module' });
@@ -252,14 +261,11 @@ export default function AiAssistant() {
       if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
     };
   }, []);
-  /* ─────────────────────────────────────────────────────────────── */
 
   return (
     <>
       <button
-        onClick={() => {
-          setOpen((prev) => !prev);
-        }}
+        onClick={() => { setOpen((prev) => !prev); }}
         style={{ zIndex: 9999 }}
         className="fixed bottom-6 right-6 w-14 h-14 bg-mhma-forest text-white rounded-full shadow-lg hover:bg-mhma-forest-mid transition-all hover:scale-110 flex items-center justify-center"
         aria-label="AI Assistant"
@@ -276,7 +282,6 @@ export default function AiAssistant() {
         }}
         className="fixed bottom-24 right-6 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
         onWheel={(e) => e.stopPropagation()}>
-        {/* Bottom-right corner resize handle */}
         <div onMouseDown={handleResizeStart('se')} className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-20">
           <svg viewBox="0 0 24 24" className="w-4 h-4 absolute bottom-0.5 right-0.5 text-gray-400"><path d="M20 20L12 20L20 12Z" fill="currentColor"/><path d="M20 20L16 20L20 16Z" fill="currentColor"/></svg>
         </div>
@@ -308,7 +313,6 @@ export default function AiAssistant() {
                   : 'bg-gray-100 text-gray-800 rounded-bl-md'
               }`}>
                 {msg.text}
-                {/* msg.navHint && (...)*/}
               </div>
             </div>
           ))}

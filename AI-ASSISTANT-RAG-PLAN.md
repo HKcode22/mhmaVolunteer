@@ -17,11 +17,13 @@ Serialize the app's route tree into structured text:
   "title": "Events Management",
   "actions": ["create_event", "edit_event", "delete_event", "approve_rsvp"],
   "description": "Create and manage events, view RSVPs",
-  "roles": ["board_member", "administrator"]
+  "roles": ["board_member", "administrator", "member"]
 }
 ```
 
 This lives in a file `app/lib/assistant-knowledge.ts` (already exists — expand it).
+
+
 
 ### 1.2 Form Schemas & Workflows
 For each dashboard page, document the form fields and workflows:
