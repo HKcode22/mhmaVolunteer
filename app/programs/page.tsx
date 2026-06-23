@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Facebook, Instagram, Twitter, Linkedin, Youtube,
-  Heart, BookOpen, ArrowRight, ChevronRight, Sparkles, Zap, Star, Edit3
+  Heart, BookOpen, ArrowRight, ChevronRight, Sparkles, Zap, Star, Edit3, Users
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -19,6 +19,7 @@ interface Program {
   description?: string;
   image?: string;
   useHardcodedVersion?: boolean;
+  enrollmentCount?: number;
 }
 
 const hardcodedPrograms = [
@@ -69,9 +70,9 @@ export default function ProgramsPage() {
   }, []);
 
   // Merge programs from Firestore, WordPress API, and hardcoded fallback
-  const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string; id?: string; isFirestore?: boolean }> = [...hardcodedPrograms];
+  const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string; id?: string; isFirestore?: boolean; enrollmentCount?: number }> = [...hardcodedPrograms];
 
-  // Add WordPress API programs
+  // Add WordPress API programs (which include enrollment counts from the API)
   wpPrograms.forEach(wpProgram => {
     const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
     if (!existingSlugs.includes(wpProgram.slug)) {
@@ -81,11 +82,12 @@ export default function ProgramsPage() {
         image: wpProgram.image || "",
         href: `/programs/${wpProgram.slug}`,
         slug: wpProgram.slug,
+        enrollmentCount: wpProgram.enrollmentCount || 0,
       });
     }
   });
 
-  // Add Firestore programs
+  // Add Firestore programs (from client-side fetch — no enrollment count)
   firestorePrograms.forEach((fp: any) => {
     const slug = fp.slug || fp.title?.toLowerCase().replace(/\s+/g, '-');
     const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
@@ -155,9 +157,15 @@ export default function ProgramsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-6 flex flex-col flex-grow text-white">
-                      <h3 className="text-lg font-bold mb-3 font-serif group-hover:text-mhma-gold transition-colors text-white">{displayTitle}</h3>
-                      <p className="text-sm leading-relaxed mb-4 font-light line-clamp-2 text-gray-200">{displayDesc}</p>
+                      <div className="p-6 flex flex-col flex-grow text-white">
+                        <h3 className="text-lg font-bold mb-3 font-serif group-hover:text-mhma-gold transition-colors text-white">{displayTitle}</h3>
+                        <p className="text-sm leading-relaxed mb-4 font-light line-clamp-2 text-gray-200">{displayDesc}</p>
+                        {program.enrollmentCount !== undefined && (
+                          <div className="flex items-center gap-2 text-sm text-gray-300 mb-3">
+                            <Users className="w-4 h-4 text-mhma-gold" />
+                            <span>{program.enrollmentCount} enrolled</span>
+                          </div>
+                        )}
                       <div className="mt-auto space-y-3">
                         <Link
                           href={`/enroll?program=${encodeURIComponent(program.title)}`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, ChevronRight } from "lucide-react";
@@ -72,6 +72,19 @@ export default function DashboardProgramsPage() {
     return !q || i.fullName.toLowerCase().includes(q) || i.email.toLowerCase().includes(q) || i.program.toLowerCase().includes(q);
   });
 
+  const enrollmentCounts = useMemo(() => {
+    const map: Record<string, { total: number; approved: number; pending: number; rejected: number }> = {};
+    for (const e of enrollments) {
+      const key = e.program || "unknown";
+      if (!map[key]) map[key] = { total: 0, approved: 0, pending: 0, rejected: 0 };
+      map[key].total++;
+      if (e.status === "approved") map[key].approved++;
+      else if (e.status === "pending") map[key].pending++;
+      else if (e.status === "rejected" || e.status === "completed") map[key][e.status === "completed" ? "approved" : "rejected"]++;
+    }
+    return map;
+  }, [enrollments]);
+
   const resetForm = () => {
     setForm({ title: "", slug: "", description: "", image: "", imagePoster: "", stats: [{ label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }, { label: "", value: "" }], quote: "", quoteAuthor: "" });
     setEditing(null);
@@ -131,6 +144,7 @@ export default function DashboardProgramsPage() {
               <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                 <th className="w-8 px-2 py-3"></th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">Enrollments</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Actions</th>
               </tr>
@@ -153,6 +167,22 @@ export default function DashboardProgramsPage() {
                         <p className="font-semibold text-gray-900">{p.title}</p>
                         {p.description && <p className="text-xs text-gray-500 truncate max-w-[300px]">{p.description}</p>}
                       </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-gray-900">{(enrollmentCounts[p.title] || enrollmentCounts[p.slug] || { total: 0 }).total}</span>
+                          <span className="text-xs text-gray-400">total</span>
+                          {(() => {
+                            const c = enrollmentCounts[p.title] || enrollmentCounts[p.slug];
+                            if (!c) return null;
+                            return (
+                              <div className="flex gap-1.5 ml-1">
+                                {c.approved > 0 && <span className="text-xs text-green-600 font-medium">{c.approved} ✅</span>}
+                                {c.pending > 0 && <span className="text-xs text-amber-600 font-medium">{c.pending} ⏳</span>}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{p.slug}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
@@ -163,7 +193,7 @@ export default function DashboardProgramsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${p.id}-detail`}>
-                        <td colSpan={4} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <td colSpan={5} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
@@ -180,6 +210,15 @@ export default function DashboardProgramsPage() {
                             <div>
                               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Slug</h4>
                               <p className="text-sm text-gray-700">{p.slug}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Enrollments</h4>
+                              <p className="text-sm text-gray-700">
+                                {(() => {
+                                  const c = enrollmentCounts[p.title] || enrollmentCounts[p.slug];
+                                  return c ? `${c.total} total (${c.approved} approved, ${c.pending} pending, ${c.rejected} rejected)` : "No enrollments yet";
+                                })()}
+                              </p>
                             </div>
                             <div>
                               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Stats</h4>

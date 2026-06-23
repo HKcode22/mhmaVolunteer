@@ -393,6 +393,17 @@ export default function AnalyticsPage() {
             </div>
           </Card>
         </div>
+
+        {/* AI Knowledge Base */}
+        <div className="mt-6">
+          <Card title="AI Knowledge Base">
+            <p className="text-sm text-gray-600 mb-4">Manage Q&A entries used by the AI Assistant to answer member and board member questions.</p>
+            <Link href="/dashboard/ai-knowledge"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
+              <BookOpen className="w-4 h-4" /> Open Knowledge Manager
+            </Link>
+          </Card>
+        </div>
       </div>
     </div>
   );

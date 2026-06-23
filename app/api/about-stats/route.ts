@@ -6,8 +6,19 @@ export const dynamic = "force-dynamic";
 const STATS_DOC = "stats";
 const STATS_COLLECTION = "aboutStats";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const rangeParam = searchParams.get('range') || '30';
+    const rangeDays = rangeParam === 'all' ? null : parseInt(rangeParam, 10);
+    const since = rangeDays ? new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000) : null;
+
+    const inRange = (doc: any): boolean => {
+      if (!since) return true;
+      const ts = doc.data().createdAt?.toDate?.();
+      return ts && ts >= since;
+    };
+
     const [
       statsSnap,
       programsSnap,
@@ -48,6 +59,7 @@ export async function GET() {
     const constructionDonors = new Set<string>();
 
     donationSnap.forEach((doc: any) => {
+      if (!inRange(doc)) return;
       const d = doc.data();
       const amt = d.amount || 0;
       const des = (d.designation || "other").toLowerCase();
@@ -75,16 +87,16 @@ export async function GET() {
       yearsServing: statsData.yearsServing ?? null,
       numberOfFamilies: statsData.numberOfFamilies ?? null,
       programsCount: programsSnap.size,
-      eventsCount: eventsSnap.size,
-      usersCount: usersSnap.size,
-      youthInPrograms: enrollmentSnap.size,
-      rsvpCount: rsvpSnap.size,
+      eventsCount: [...eventsSnap.docs].filter(inRange).length,
+      usersCount: [...usersSnap.docs].filter(inRange).length,
+      youthInPrograms: [...enrollmentSnap.docs].filter(inRange).length,
+      rsvpCount: [...rsvpSnap.docs].filter(inRange).length,
       subscriberCount: subscriberSnap.size,
-      contactCount: contactSnap.size,
-      pledgeCount: pledgeSnap.size,
-      volunteerCount: volunteerSnap.size,
-      newsCount: newsSnap.size,
-      totalDonationCount: donationSnap.size,
+      contactCount: [...contactSnap.docs].filter(inRange).length,
+      pledgeCount: [...pledgeSnap.docs].filter(inRange).length,
+      volunteerCount: [...volunteerSnap.docs].filter(inRange).length,
+      newsCount: [...newsSnap.docs].filter(inRange).length,
+      totalDonationCount: [...donationSnap.docs].filter(inRange).length,
       donorCount: constructionDonors.size,
       raisedForMasjid: Math.round(constructionTotal / 100),
       raisedForPrograms: Math.round(programsTotal / 100),
@@ -96,6 +108,7 @@ export async function GET() {
       totalRaised: Math.round(
         (donationSnap.docs.reduce((s, d) => s + (d.data().amount || 0), 0)) / 100
       ),
+      range: rangeDays || 'all',
     }, {
       headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
     });

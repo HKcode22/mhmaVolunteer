@@ -12,12 +12,13 @@ import { formatCompactAmount, formatCount } from "@/lib/stats-utils";
 
 export default function AboutPage() {
   const [aboutStats, setAboutStats] = useState<any>(null);
+  const [range, setRange] = useState<string>("30");
 
   useEffect(() => { document.title = "About MHMA | MHMA | Mountain House"; }, []);
 
   useEffect(() => {
-    fetch("/api/about-stats").then(r => r.json()).then(data => setAboutStats(data)).catch(() => {});
-  }, []);
+    fetch(`/api/about-stats?range=${range}`).then(r => r.json()).then(data => setAboutStats(data)).catch(() => {});
+  }, [range]);
   return (
     <div className="min-h-screen bg-mhma-cream font-sans">
       <Navigation currentPage="about" />
@@ -48,6 +49,21 @@ export default function AboutPage() {
             </div>
             <div className="lg:w-3/5">
                 <div className="bg-teal-50 rounded-xl p-6 border border-teal-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Community Stats</h3>
+                    <div className="flex gap-1 bg-white rounded-lg p-0.5 border border-teal-200">
+                      {[
+                        { key: "30", label: "30 days" },
+                        { key: "365", label: "1 year" },
+                        { key: "all", label: "All time" },
+                      ].map(opt => (
+                        <button key={opt.key} onClick={() => setRange(opt.key)}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${range === opt.key ? "bg-mhma-forest text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     <StatCard value={aboutStats?.yearsServing ? `${aboutStats.yearsServing}+` : "—"} label="Years" color="bg-mhma-forest" />
                     <StatCard value={aboutStats?.numberOfFamilies ? `${aboutStats.numberOfFamilies}+` : "—"} label="Families" color="bg-mhma-forest-mid" />

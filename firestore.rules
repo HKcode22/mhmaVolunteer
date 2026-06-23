@@ -185,6 +185,14 @@ service cloud.firestore {
       allow create, update, delete: if isBoardMember();
     }
 
+    // ─── AI Knowledge Store ───
+    // Anyone can read (used by the AI assistant for RAG context).
+    // Only board members can create/update/delete knowledge entries.
+    match /ai_knowledge/{entry} {
+      allow read: if true;
+      allow create, update, delete: if isBoardMember();
+    }
+
     // ─── Volunteers ───
     // Anyone can submit a volunteer form. Board members can read and delete.
     match /volunteers/{submission} {

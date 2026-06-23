@@ -335,6 +335,7 @@ export default function HomePage() {
   const [masjidUpdates, setMasjidUpdates] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [aboutStats, setAboutStats] = useState<any>(null);
+  const [statsRange, setStatsRange] = useState<string>("30");
 
   // Fetch prayer times from AlAdhan API
   useEffect(() => {
@@ -407,7 +408,7 @@ useEffect(() => {
         fetchEvents(3),
         fetchPrograms(3),
         fetchMasjidUpdates(3),
-        fetch("/api/about-stats").then(r => r.json()),
+        fetch(`/api/about-stats?range=${statsRange}`).then(r => r.json()),
         fetchNews(3),
       ]);
 
@@ -460,7 +461,7 @@ useEffect(() => {
     }
   };
   loadData();
-}, []);
+}, [statsRange]);
 
   const displayEvents = events.length > 0 ? events.slice(0, 3) : [];
 
@@ -682,7 +683,23 @@ useEffect(() => {
                 Learn More About Us <ChevronRight className="ml-1 w-5 h-5" />
               </Link>
             </div>
-            <div className="lg:flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="lg:flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Community Stats</h3>
+                <div className="flex gap-0.5 bg-white rounded-lg p-0.5 border border-gray-200">
+                  {[
+                    { key: "30", label: "30d" },
+                    { key: "365", label: "1y" },
+                    { key: "all", label: "All" },
+                  ].map(opt => (
+                    <button key={opt.key} onClick={() => setStatsRange(opt.key)}
+                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-colors ${statsRange === opt.key ? "bg-mhma-forest text-white shadow-sm" : "text-gray-400 hover:text-gray-600"}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               <StatCard value={aboutStats?.yearsServing ? `${aboutStats.yearsServing}+` : "—"} label="Years" color="bg-mhma-forest" />
               <StatCard value={aboutStats?.numberOfFamilies ? `${aboutStats.numberOfFamilies}+` : "—"} label="Families" color="bg-mhma-forest-mid" />
               <StatCard value={aboutStats?.programsCount ? `${formatCount(aboutStats.programsCount)}` : "—"} label="Programs" color="bg-mhma-forest" />
@@ -706,6 +723,7 @@ useEffect(() => {
             </div>
           </div>
         </div>
+      </div>
       </section>
 
       {/* Upcoming Events */}

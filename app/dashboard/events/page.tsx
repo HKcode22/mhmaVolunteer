@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, Calendar, Mail, Phone, Clock, Users, CheckCircle, XCircle, ChevronDown, ChevronRight } from "lucide-react";
@@ -47,6 +47,19 @@ export default function DashboardEventsPage() {
     const q = search.toLowerCase();
     return !q || i.title.toLowerCase().includes(q) || (i.description || "").toLowerCase().includes(q);
   });
+
+  const rsvpCounts = useMemo(() => {
+    const map: Record<string, { total: number; confirmed: number; pending: number; cancelled: number }> = {};
+    for (const r of rsvps) {
+      const key = r.eventTitle || r.eventId || "unknown";
+      if (!map[key]) map[key] = { total: 0, confirmed: 0, pending: 0, cancelled: 0 };
+      map[key].total++;
+      if (r.status === "confirmed") map[key].confirmed++;
+      else if (r.status === "pending") map[key].pending++;
+      else if (r.status === "cancelled") map[key].cancelled++;
+    }
+    return map;
+  }, [rsvps]);
 
   const filteredRsvps = rsvps.filter(i => {
     const q = rsvpSearch.toLowerCase();
@@ -131,6 +144,7 @@ export default function DashboardEventsPage() {
               <tr className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                 <th className="w-8 px-2 py-3"></th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-700">RSVPs</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Time</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-700">Location</th>
@@ -155,6 +169,22 @@ export default function DashboardEventsPage() {
                         <p className="font-semibold text-gray-900">{e.title}</p>
                         {e.description && <p className="text-xs text-gray-500 truncate max-w-[250px]">{e.description}</p>}
                       </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-gray-900">{(rsvpCounts[e.title] || rsvpCounts[e.id!] || { total: 0 }).total}</span>
+                          <span className="text-xs text-gray-400">total</span>
+                          {(() => {
+                            const c = rsvpCounts[e.title] || rsvpCounts[e.id!];
+                            if (!c) return null;
+                            return (
+                              <div className="flex gap-1.5 ml-1">
+                                {c.confirmed > 0 && <span className="text-xs text-green-600 font-medium">{c.confirmed} ✅</span>}
+                                {c.pending > 0 && <span className="text-xs text-amber-600 font-medium">{c.pending} ⏳</span>}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-gray-600 text-sm">{e.date || "—"}</td>
                       <td className="px-4 py-3 text-gray-600">{formatTime(e.time) || "—"}</td>
                       <td className="px-4 py-3 text-gray-600">{e.location || "—"}</td>
@@ -167,7 +197,7 @@ export default function DashboardEventsPage() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${e.id}-detail`}>
-                        <td colSpan={6} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID</h4>
@@ -192,6 +222,16 @@ export default function DashboardEventsPage() {
                             <div>
                               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Description</h4>
                               <p className="text-sm text-gray-700">{e.description || "—"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">RSVPs</h4>
+                              <div className="text-sm text-gray-700">
+                                {(rsvpCounts[e.title] || rsvpCounts[e.id!])
+                                  ? (() => { const c = rsvpCounts[e.title] || rsvpCounts[e.id!];
+                                      return `${c.total} total (${c.confirmed} confirmed, ${c.pending} pending, ${c.cancelled} cancelled)`;
+                                    })()
+                                  : "No RSVPs yet"}
+                              </div>
                             </div>
                           </div>
                         </td>

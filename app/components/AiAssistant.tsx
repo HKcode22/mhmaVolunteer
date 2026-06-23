@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation, GripVertical } from 'lucide-react';
-import { knowledgeBase, QAItem } from '@/app/lib/assistant-knowledge';
-import { fetchLiveData, formatLiveContext, clearLiveCache } from '@/app/lib/live-knowledge';
+import { knowledgeBase } from '@/app/lib/assistant-knowledge';
+// import { fetchLiveData, formatLiveContext, clearLiveCache } from '@/app/lib/live-knowledge';
+// import { fetchKnowledgeDocs, KnowledgeDoc } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 
 interface Message {
@@ -13,37 +14,66 @@ interface Message {
 
 type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
-/* ─── RAG Retriever: keyword search over knowledgeBase ─── */
-function retrieve(query: string, role?: string): string {
+interface Retrievable {
+  question: string;
+  answer: string;
+  keywords: string[];
+  roleAccess?: string[];
+  denyRoles?: string[];
+}
+
+/* ─── RAG Retriever: keyword + fuzzy search over any doc array ─── */
+function charOverlap(a: string, b: string): number {
+  let ai = 0, bi = 0, matches = 0;
+  while (ai < a.length && bi < b.length) {
+    if (a[ai] === b[bi]) { matches++; ai++; bi++; }
+    else if (a.length - ai > b.length - bi) ai++;
+    else bi++;
+  }
+  return matches / Math.max(a.length, b.length);
+}
+
+function wordMatchesQuery(word: string, queryWord: string): boolean {
+  if (word.includes(queryWord) || queryWord.includes(word)) return true;
+  if (word.startsWith(queryWord) || queryWord.startsWith(word)) return true;
+  if (word.length < 3 || queryWord.length < 3) return false;
+  return charOverlap(word, queryWord) >= 0.65;
+}
+
+function retrieveFromDocs(docs: Retrievable[], query: string, role?: string): string {
   const q = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
   if (q.length === 0) return '';
 
-  const scored: { item: QAItem; score: number; matched: number }[] = [];
+  const scored: { doc: Retrievable; score: number; matched: number }[] = [];
 
-  for (const item of knowledgeBase) {
-    if (item.denyRoles && role && item.denyRoles.includes(role as any)) continue;
+  for (const doc of docs) {
+    if (doc.denyRoles && role && doc.denyRoles.includes(role)) continue;
 
-    // Build searchable text from keywords + question
-    const searchText = [...item.keywords, item.q.toLowerCase()].join(' ').toLowerCase();
+    const searchWords = [...doc.keywords, doc.question.toLowerCase()]
+      .join(' ').toLowerCase().split(/\s+/).filter(w => w.length > 1);
+
     let matched = 0;
-    for (const word of q) {
-      if (searchText.includes(word)) matched++;
+    for (const queryWord of q) {
+      if (searchWords.some(sw => wordMatchesQuery(sw, queryWord))) matched++;
     }
     if (matched === 0) continue;
 
     let score = matched / Math.max(q.length, 1);
-    // Boost for role-matched entries
-    if (role && item.roles?.includes(role as any)) score += 0.15;
+    if (role && doc.roleAccess?.includes(role)) score += 0.15;
 
-    scored.push({ item, score, matched });
+    scored.push({ doc, score, matched });
   }
 
-  if (scored.length === 0) return '';
-
   scored.sort((a, b) => b.score - a.score);
-  // Return top 2 answers as context (keep it short for the 135M model)
-  const top = scored.slice(0, 2);
-  return top.map((s, i) => s.item.q + '\n' + s.item.a).join('\n---\n');
+  return scored.slice(0, 2).map((s) => s.doc.question + '\n' + s.doc.answer).join('\n---\n');
+}
+
+function retrieve(query: string, role?: string): string {
+  return retrieveFromDocs(
+    knowledgeBase.map(k => ({ question: k.q, answer: k.a, keywords: k.keywords, roleAccess: k.roles, denyRoles: k.denyRoles })),
+    query,
+    role
+  );
 }
 
 export default function AiAssistant() {
@@ -99,6 +129,14 @@ export default function AiAssistant() {
     localStorage.setItem('mhma_ai_open', open.toString());
   }, [open]);
 
+  // [DEPRECATED] Firestore-based knowledge docs — using static assistant-knowledge.ts only
+  // useEffect(() => {
+  //   fetchKnowledgeDocs(200).then(docs => {
+  //     setFirestoreDocs(docs);
+  //     firestoreDocsRef.current = docs;
+  //   }).catch(() => {});
+  // }, []);
+
   const handleClose = useCallback(() => setOpen(false), []);
 
   const handleDragStart = useCallback((e: React.MouseEvent) => {
@@ -144,33 +182,16 @@ export default function AiAssistant() {
   /* ─── RAG Pipeline: retrieve context → send to AI model ─── */
   const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null }> => {
     const workerReady = workerReadyRef.current && !!workerRef.current;
-    console.log('[Assistant] askQuestion — workerReady:', workerReady);
 
     if (workerReady && usingFallbackRef.current === false) {
-      // Step 1: Retrieve static context from knowledge base
+      // Retrieve context from static knowledge base only
       const role = user?.role;
-      const staticCtx = retrieve(query, role);
-
-      // Step 2: Fetch live data from Firestore
-      let liveCtx = '';
-      try {
-        const live = await fetchLiveData();
-        liveCtx = formatLiveContext(live);
-      } catch (e) {
-        console.warn('[Assistant] Live data fetch failed:', e);
-      }
-
-      // Step 3: Combine contexts
-      const parts: string[] = [];
-      if (staticCtx) parts.push(staticCtx);
-      if (liveCtx) parts.push('=== Live Data ===\n' + liveCtx);
-      const context = parts.join('\n\n');
+      const context = retrieve(query, role);
 
       if (context) console.log('[Assistant] Context length:', context.length, 'chars');
 
-      // Step 4: Send query + context to the AI worker
+      // Send query + context to the AI worker
       const qid = Math.random().toString(36).slice(2, 8);
-      console.log('[Assistant] Sending query to worker, id:', qid);
       const aiPromise = new Promise<string | null>((resolve) => {
         pendingMapRef.current.set(qid, resolve);
         workerRef.current?.postMessage({ type: 'query', data: { query, context, id: qid } });
@@ -183,10 +204,8 @@ export default function AiAssistant() {
       }, 60000));
       const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
       if (aiAnswer) {
-        console.log('[Assistant] Using AI answer:', aiAnswer.slice(0, 60));
         return { answer: aiAnswer };
       }
-      console.log('[Assistant] AI timeout');
     }
     return { answer: null };
   }, [user?.role]);

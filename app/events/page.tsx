@@ -12,6 +12,7 @@ import {
   Calendar,
   Clock,
   MapPin,
+  Users,
   ArrowRight,
   ChevronRight,
   ChevronLeft,
@@ -39,6 +40,7 @@ interface Slide {
   showTime: boolean;
   showLocation: boolean;
   showDescription: boolean;
+  rsvpCount: number;
 }
 
 export default function EventsPage() {
@@ -98,6 +100,7 @@ export default function EventsPage() {
             showTime: !!formattedTime,
             showLocation: !!event.location,
             showDescription: !!event.description,
+            rsvpCount: event.rsvpCount || 0,
           };
         });
 
@@ -196,6 +199,10 @@ export default function EventsPage() {
                               <span className="font-light">{slide.eventLocation}</span>
                             </div>
                           )}
+                          <div className="flex items-center text-gray-600">
+                            <Users className="w-5 h-5 mr-3 text-mhma-gold" />
+                            <span className="font-light">{slide.rsvpCount} RSVP{slide.rsvpCount !== 1 ? 's' : ''}</span>
+                          </div>
                         </div>
 
                         {slide.showDescription && slide.eventDescription && (

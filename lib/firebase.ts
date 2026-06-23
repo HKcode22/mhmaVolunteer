@@ -1131,6 +1131,51 @@ export interface FAQItem {
 
 const FAQ_COLLECTION = "faq";
 
+// ─── AI Knowledge Store (for RAG assistant) ───
+const AI_KNOWLEDGE_COLLECTION = "ai_knowledge";
+
+export interface KnowledgeDoc {
+  id?: string;
+  type: "static" | "dynamic";
+  category: string;
+  question: string;
+  answer: string;
+  keywords: string[];
+  source?: string;
+  roleAccess: string[];
+  createdAt?: Timestamp | null;
+  updatedAt?: Timestamp | null;
+}
+
+export async function fetchKnowledgeDocs(limitCount = 200): Promise<KnowledgeDoc[]> {
+  const q = query(collection(db, AI_KNOWLEDGE_COLLECTION), orderBy("updatedAt", "desc"), limit(limitCount));
+  const snap = await getDocs(q);
+  return collectionData<KnowledgeDoc>(snap);
+}
+
+export async function fetchKnowledgeDocById(id: string): Promise<KnowledgeDoc | null> {
+  const snap = await getDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as KnowledgeDoc;
+}
+
+export async function addKnowledgeDoc(data: Omit<KnowledgeDoc, "id" | "createdAt" | "updatedAt">): Promise<string> {
+  const ref = await addDoc(collection(db, AI_KNOWLEDGE_COLLECTION), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateKnowledgeDoc(id: string, data: Partial<KnowledgeDoc>): Promise<void> {
+  await updateDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
+}
+
+export async function deleteKnowledgeDoc(id: string): Promise<void> {
+  await deleteDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id));
+}
+
 export async function fetchFAQs(limitCount = 50): Promise<FAQItem[]> {
   const q = query(collection(db, FAQ_COLLECTION), orderBy("order", "asc"), limit(limitCount));
   const snap = await getDocs(q);

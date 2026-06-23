@@ -1628,4 +1628,84 @@ export const knowledgeBase: QAItem[] = [
     roles: ["member", "board_member", "administrator"],
     pages: ["/contact"],
   },
+  // ─── Site Map / Route Structure ───
+  {
+    q: "What pages are available on the MHMA website?",
+    a: "Public pages: Home (/), About, Events, Programs (with sub-pages for each program), News, Prayer Times, Masjid Construction, Donate, Pledge, Contact, FAQ, Volunteer, Event Scheduling Request, Subscribe, Enroll, RSVP, Board of Directors, Committees (12 committees), Builders Club, Impact Report, Journal, Zakat, Feedback, Community Commitment, Community Transparency, Serving Our Community. Member pages: Profile, Settings, Member Hub, Notifications. Dashboard pages (board only): Dashboard Home, Events (with Add/Edit), Programs (with Add/Edit), Enrollments, RSVPs, News (with Add/Edit), Testimonials, Donations, Pledges, Members, Subscribers, Contact & FAQ, Scheduling Requests, Activity Log, Analytics, Construction Updates, Notifications, FAQ Management, AI Knowledge.",
+    keywords: ["site map", "pages list", "all pages", "website pages", "available pages", "sitemap", "page directory", "list of pages", "what pages exist"],
+    roles: ["member", "board_member", "administrator"],
+  },
+  // ─── Navigation UI Structure ───
+  {
+    q: "What is in the navigation bar?",
+    a: "The top navigation bar has: MHMA logo (home link), Events dropdown, Programs dropdown, News, About, Masjid Construction, Donate button, Prayer Times, and Member Login button (or profile menu when logged in). When logged in, you also see: Dashboard link (board only), Bell icon (notifications), Settings gear, Profile name/menu. The mobile menu collapses everything into a hamburger button.",
+    keywords: ["navigation bar", "nav bar", "top nav", "menu bar", "header nav", "navbar items", "nav structure", "menu structure", "navigation menu"],
+    roles: ["member", "board_member", "administrator"],
+  },
+  {
+    q: "What is in the Dashboard sidebar?",
+    a: "The Dashboard sidebar (when viewing on desktop) has links to: Dashboard Home, Events, Programs, Enrollments, RSVPs, News, Testimonials, Donations, Pledges, Members, Subscribers, Contact & FAQ, Scheduling Requests, Activity Log, Analytics, Construction, Notifications. On mobile, the sidebar collapses into the top nav menu.",
+    keywords: ["dashboard sidebar", "dashboard nav", "dashboard menu", "sidebar links", "dashboard navigation", "left sidebar"],
+    roles: ["board_member", "administrator"],
+  },
+  // ─── AI Assistant ───
+  {
+    q: "What is the AI assistant?",
+    a: "The AI assistant is a browser-based chatbot that runs locally using WebGPU and a lightweight AI model (SmolLM2-135M). It can answer questions about the MHMA website, dashboard features, events, programs, donations, and more. It uses RAG (Retrieval-Augmented Generation) to search a knowledge base and live Firestore data before answering.",
+    keywords: ["ai assistant", "chatbot", "ai bot", "what is the ai", "how does the ai work", "ai helper", "assistant bot"],
+    roles: ["member", "board_member", "administrator"],
+  },
+  {
+    q: "How do I use the AI assistant?",
+    a: "Click the chat bubble icon (bottom-right corner of any page) to open the assistant. Type your question in the text box and press Enter. The AI will search its knowledge base and live data to answer. You can drag the panel by the grip handle, or resize it from the bottom-right corner.",
+    keywords: ["use ai", "open assistant", "chat with ai", "how to use ai", "ask ai", "start chat", "ai chat", "ai panel"],
+    roles: ["member", "board_member", "administrator"],
+  },
+  {
+    q: "How do I manage the AI knowledge base?",
+    a: "Board members can manage knowledge entries from Dashboard → AI Knowledge. There you can add new Q&A entries, edit existing ones, delete outdated entries, and search/filter by category and keywords. Changes are saved to Firestore and the AI will use the latest data on the next query.",
+    keywords: ["manage knowledge", "knowledge base", "ai knowledge dashboard", "add knowledge", "edit knowledge", "delete knowledge", "knowledge entries", "knowledge management"],
+    roles: ["board_member", "administrator"],
+    pages: ["/dashboard/ai-knowledge"],
+  },
+  {
+    q: "What is the AI Knowledge dashboard page?",
+    a: "The AI Knowledge page (Dashboard → AI Knowledge) is where board members can view, add, edit, and delete knowledge entries used by the AI assistant. Each entry has a question, answer, keywords for search, category, and role access settings. You can also filter by category and search through all entries.",
+    keywords: ["ai knowledge page", "knowledge dashboard", "knowledge base page", "ai knowledge panel", "knowledge management page"],
+    roles: ["board_member", "administrator"],
+    pages: ["/dashboard/ai-knowledge"],
+  },
+  // ─── Live Counts / Data Visibility ───
+  {
+    q: "How many people RSVP'd to an event?",
+    a: "Each event on the Events page shows its RSVP count directly. Visit the Events page to see the number of RSVPs for each event. Click on an event for more details. Board members can also view RSVP details from Dashboard → Events.",
+    keywords: ["rsvp count", "how many rsvp", "event attendance", "rsvp numbers", "attendee count", "how many people coming", "event popularity", "rsvp total"],
+    roles: ["member", "board_member", "administrator"],
+    pages: ["/events"],
+  },
+  {
+    q: "How many people are enrolled in programs?",
+    a: "Each program on the Programs page shows its enrollment count. Visit the Programs page to see how many people are enrolled in each program. Click on a program for more details. Board members can view enrollment details from Dashboard → Programs.",
+    keywords: ["enrollment count", "how many enrolled", "program participants", "enrollment numbers", "students in program", "class size", "program attendance", "enrolled total"],
+    roles: ["member", "board_member", "administrator"],
+    pages: ["/programs"],
+  },
+  {
+    q: "What are API routes?",
+    a: "API routes are special files in app/api/.../route.ts that run on the Next.js SERVER (not in the browser). They let the server do things like send emails, aggregate data from multiple collections, and use Admin SDK credentials. Examples include /api/enroll (submits enrollments and sends email confirmations), /api/rsvp (submits RSVPs and sends confirmations), /api/events (returns events with RSVP counts), /api/programs (returns programs with enrollment counts), and /api/about-stats (returns aggregated community stats). The website itself uses direct client-side Firebase calls for most operations, but uses API routes for operations that need server-only features like email sending.",
+    keywords: ["api route", "api", "server side", "backend", "enroll api", "rsvp api", "events api", "programs api", "about stats api", "what is api", "how api works", "server route"],
+    roles: ["member", "board_member", "administrator"],
+  },
+  {
+    q: "How does the AI assistant get its answers?",
+    a: "The AI assistant uses a static knowledge base (a TypeScript file with 250+ Q&A entries) and a local AI model (SmolLM2-135M) that runs in your browser. When you ask a question, it searches the knowledge base for matching entries, sends the best matches as context to the AI model, and the model generates a response. Everything runs locally in your browser — no data is sent to external servers. The knowledge base is updated when the website code is deployed.",
+    keywords: ["how ai gets answers", "ai knowledge source", "where ai data comes from", "static knowledge base", "ai doesn't use firestore", "ai local model", "browser ai", "how ai answers", "assistant data source"],
+    roles: ["member", "board_member", "administrator"],
+  },
+  {
+    q: "Can the AI tell me real-time counts?",
+    a: "For live counts like RSVP numbers and enrollment numbers, visit the Events page (for RSVP counts) and the Programs page (for enrollment counts) — those numbers are displayed directly. The AI assistant uses a static knowledge base and doesn't fetch real-time counts from Firestore. This keeps the assistant fast and reduces database reads.",
+    keywords: ["real time data", "live counts", "current numbers", "up to date", "live data", "latest counts", "realtime", "current stats", "fresh data"],
+    roles: ["member", "board_member", "administrator"],
+  },
 ];
