@@ -61,6 +61,11 @@ function retrieveFromDocs(docs: Retrievable[], query: string, role?: string): st
     let score = matched / Math.max(q.length, 1);
     if (role && doc.roleAccess?.includes(role)) score += 0.15;
 
+    // Require a meaningful match: score >= 0.3 and at least 2 words matched
+    // (or 1 word matched if the query has only 1-2 words and score is high enough)
+    const minMatch = q.length <= 2 ? 1 : 2;
+    if (matched < minMatch) continue;
+
     scored.push({ doc, score, matched });
   }
 
@@ -179,16 +184,79 @@ export default function AiAssistant() {
     document.addEventListener('mouseup', onMouseUp);
   }, []);
 
-  /* ─── RAG Pipeline: retrieve context → send to AI model ─── */
+/* ─── RAG Pipeline: retrieve context → send to AI model ─── */
+
+const GREETING_WORDS = ['hi', 'hello', 'hey', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening', 'howdy', 'greetings', 'whats up', 'what\'s up'];
+const IDENTITY_WORDS = ['who are you', 'who r u', 'what are you', 'what r u', 'tell me about yourself', 'your name', 'what is your name'];
+const NONSENSE_WORDS = ['kutti', 'eat paper', 'grow branches', 'poop', 'poopoo', 'peepee', 'butt', 'fart'];
+const MATH_PATTERN = /^[\d\s\+\-\*\/\(\)]+$/;
+
+function isGreeting(q: string): boolean {
+  const lower = q.toLowerCase().trim();
+  if (GREETING_WORDS.includes(lower)) return true;
+  if (lower.length <= 3 && GREETING_WORDS.some(g => g.startsWith(lower))) return true;
+  return false;
+}
+
+function isIdentity(q: string): boolean {
+  const lower = q.toLowerCase().trim();
+  return IDENTITY_WORDS.some(w => lower.includes(w));
+}
+
+function isNonsense(q: string): boolean {
+  const lower = q.toLowerCase().trim();
+  return NONSENSE_WORDS.some(w => lower.includes(w));
+}
+
+function isMath(q: string): boolean {
+  const cleaned = q.replace(/\s/g, '');
+  if (MATH_PATTERN.test(cleaned) && cleaned.length >= 3) return true;
+  const lower = q.toLowerCase().trim();
+  if (/^(what is|whats|what's|calculate|how much is)\s/.test(lower) && /[\d]/.test(lower)) return true;
+  return false;
+}
+
+function countQuestions(q: string): number {
+  const matches = q.match(/[?]/g);
+  return matches ? matches.length : 0;
+}
+
+const cannedResponse = (query: string): string | null => {
+  if (isIdentity(query)) {
+    return "I'm the MHMA Assistant — a local AI that answers questions about the MHMA website and dashboard. I can help with navigating pages, managing events, programs, donations, and more. Try asking 'How do I create an event?'";
+  }
+  if (isGreeting(query)) {
+    return "Hi there! I'm the MHMA Assistant. I can help you with the dashboard, events, programs, donations, and navigating the website. What would you like to know?";
+  }
+  if (isMath(query)) {
+    return "I'm designed to answer questions about the MHMA website and dashboard, not math problems. Try asking 'How do I create an event?' or 'Show me the programs page'.";
+  }
+  if (isNonsense(query)) {
+    return "I can't help with that. I'm an assistant for the MHMA website. Try asking about events, programs, or dashboard features.";
+  }
+  if (countQuestions(query) >= 4) {
+    return "That's a lot of questions! Could you ask them one at a time so I can give you a clear answer for each?";
+  }
+  return null;
+};
+
   const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null }> => {
     const workerReady = workerReadyRef.current && !!workerRef.current;
+
+    // Check for canned responses first (greetings, nonsense, math, etc.)
+    const canned = cannedResponse(query);
+    if (canned) {
+      return { answer: canned };
+    }
 
     if (workerReady && usingFallbackRef.current === false) {
       // Retrieve context from static knowledge base only
       const role = user?.role;
       const context = retrieve(query, role);
 
-      if (context) console.log('[Assistant] Context length:', context.length, 'chars');
+      if (!context) {
+        return { answer: "I don't have information about that. Try asking about events, programs, or dashboard features." };
+      }
 
       // Send query + context to the AI worker
       const qid = Math.random().toString(36).slice(2, 8);
