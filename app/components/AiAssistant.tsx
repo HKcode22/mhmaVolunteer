@@ -1,18 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Bot, AlertCircle, RefreshCw, Navigation, GripVertical } from 'lucide-react';
-import { knowledgeBase } from '@/app/lib/assistant-knowledge';
-// import { fetchLiveData, formatLiveContext, clearLiveCache } from '@/app/lib/live-knowledge';
-// import { fetchKnowledgeDocs, KnowledgeDoc } from '@/lib/firebase';
+import { X, Send, Loader2, Bot, GripVertical } from 'lucide-react';
+import { knowledgeBase, QAItem } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
 
 interface Message {
   role: 'user' | 'assistant';
   text: string;
 }
-
-type WorkerStatus = 'unloaded' | 'loading' | 'ready' | 'error' | 'unsupported';
 
 interface Retrievable {
   question: string;
@@ -22,7 +18,70 @@ interface Retrievable {
   denyRoles?: string[];
 }
 
-/* ─── RAG Retriever: keyword + fuzzy search over any doc array ─── */
+/* ─── Stop words: common English words that don't carry topic meaning ─── */
+const STOP_WORDS = new Set([
+  'who', 'what', 'where', 'when', 'why', 'how', 'which', 'whom', 'whose',
+  'are', 'is', 'am', 'was', 'were', 'be', 'been', 'being',
+  'do', 'does', 'did', 'doing', 'done',
+  'have', 'has', 'had', 'having',
+  'can', 'could', 'will', 'would', 'shall', 'should', 'may', 'might', 'must',
+  'a', 'an', 'the', 'this', 'that', 'these', 'those',
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+  'my', 'your', 'his', 'its', 'our', 'their', 'mine', 'yours', 'hers', 'ours', 'theirs',
+  'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'down', 'into', 'onto',
+  'and', 'or', 'but', 'if', 'so', 'as', 'than', 'then', 'else',
+  'no', 'not', 'nor', 'neither', 'either', 'both',
+  'isnt', 'arent', 'wasnt', 'werent', 'dont', 'doesnt', 'didnt', 'cant', 'couldnt', 'wont', 'wouldnt', 'shouldnt', 'havent', 'hasnt', 'hadnt',
+  'isn\'t', 'aren\'t', 'wasn\'t', 'weren\'t', 'don\'t', 'doesn\'t', 'didn\'t', 'can\'t', 'couldn\'t', 'won\'t', 'wouldn\'t', 'shouldn\'t', 'haven\'t', 'hasn\'t', 'hadn\'t',
+  'its', 'itself', 'themselves', 'yourself', 'myself',
+  'about', 'above', 'after', 'again', 'all', 'am', 'any', 'because', 'before',
+  'between', 'each', 'few', 'here', 'just', 'like', 'more', 'most', 'much',
+  'only', 'other', 'out', 'over', 'same', 'some', 'such', 'there', 'through',
+  'too', 'under', 'very', 'while', 'still',
+]);
+
+/* ─── Canned responses for off-topic queries ─── */
+const IDENTITY_WORDS = ['who are you', 'who r u', 'who are u', 'what are you', 'what r u', 'what are u', 'tell me about yourself', 'your name', 'what is your name', 'what\'s your name', 'who am i speaking to'];
+const WHERE_WORDS = ['where are you', 'where r u', 'where are u', 'where is your office', 'where is your location', 'where r u located', 'where is the ai'];
+const MATH_PATTERN = /^[\d\s\+\-\*\/\(\)]+$/;
+
+function cannedResponse(query: string): string | null {
+  const lower = query.toLowerCase().trim();
+  if (WHERE_WORDS.some(w => lower.includes(w))) {
+    return "I'm in your browser! I'm running inside this webpage as a local AI. I don't have a physical location.";
+  }
+  if (IDENTITY_WORDS.some(w => lower.includes(w))) {
+    return "I'm the MHMA Assistant — I answer questions about the MHMA website and dashboard. I can help with navigating pages, managing events, programs, donations, and more. Try asking 'How do I create an event?'";
+  }
+  if (['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings', 'whats up', "what's up", 'good morning', 'good afternoon', 'good evening'].includes(lower)) {
+    return "Hi there! I'm the MHMA Assistant. I can help you with the dashboard, events, programs, donations, and navigating the website. What would you like to know?";
+  }
+  if (['what', 'huh', 'ok', 'okay', 'test test', 'test'].includes(lower)) {
+    return "I can help with MHMA website questions. Try 'How do I create an event?' or 'Go to the programs page'.";
+  }
+  if (lower.includes('kutti') || lower.includes('eat paper') || lower.includes('grow branches') || lower.includes('poop') || lower.includes('fart') || lower.includes('butt') || lower.includes('peepee') || lower.includes('sex') || lower.includes('kutta') || lower.includes('billy')) {
+    return "I can't help with that. I'm an assistant for the MHMA website. Try asking about events, programs, or dashboard features.";
+  }
+  if (lower.includes('dont understand') || lower.includes("don't understand") || lower.includes('not helping') || lower.includes('not understanding') || lower.includes('not making sense')) {
+    return "Let me try again. I can answer questions about the MHMA website. Try: 'How do I create an event?' or 'Show me the programs page'.";
+  }
+  if ((lower.startsWith('what is ') || lower.startsWith('whats ') || lower.startsWith("what's ")) && /[\d]/.test(lower)) {
+    return "I'm designed to answer questions about the MHMA website and dashboard, not math problems. Try asking 'How do I create an event?' or 'Show me the programs page'.";
+  }
+  const cleaned = query.replace(/\s/g, '');
+  if (MATH_PATTERN.test(cleaned) && cleaned.length >= 3) {
+    return "I'm designed to answer questions about the MHMA website and dashboard, not math problems. Try asking 'How do I create an event?' or 'Show me the programs page'.";
+  }
+  if (lower.startsWith('what happens') || lower.startsWith('tell me about') && !lower.includes('dashboard') && !lower.includes('event') && !lower.includes('program') && !lower.includes('mhma')) {
+    return "I only know about the MHMA website and dashboard. Try asking about events, programs, or navigation.";
+  }
+  if ((query.match(/[?]/g) || []).length >= 4) {
+    return "That's a lot of questions! Could you ask them one at a time so I can give you a clear answer for each?";
+  }
+  return null;
+}
+
+/* ─── RAG Retriever: keyword match with stop word filtering ─── */
 function charOverlap(a: string, b: string): number {
   let ai = 0, bi = 0, matches = 0;
   while (ai < a.length && bi < b.length) {
@@ -40,17 +99,19 @@ function wordMatchesQuery(word: string, queryWord: string): boolean {
   return charOverlap(word, queryWord) >= 0.65;
 }
 
-function retrieveFromDocs(docs: Retrievable[], query: string, role?: string): string {
-  const q = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
-  if (q.length === 0) return '';
+function retrieveFromDocs(docs: Retrievable[], query: string, role?: string): { context: string; score: number } {
+  const raw = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w) => w.length > 1);
+  // Remove stop words — only keep meaningful words
+  const q = raw.filter(w => !STOP_WORDS.has(w));
+  if (q.length === 0) return { context: '', score: 0 };
 
-  const scored: { doc: Retrievable; score: number; matched: number }[] = [];
+  const scored: { doc: Retrievable; score: number; matchedMeaningful: number }[] = [];
 
   for (const doc of docs) {
     if (doc.denyRoles && role && doc.denyRoles.includes(role)) continue;
 
     const searchWords = [...doc.keywords, doc.question.toLowerCase()]
-      .join(' ').toLowerCase().split(/\s+/).filter(w => w.length > 1);
+      .join(' ').toLowerCase().split(/\s+/).filter(w => w.length > 1 && !STOP_WORDS.has(w));
 
     let matched = 0;
     for (const queryWord of q) {
@@ -58,19 +119,24 @@ function retrieveFromDocs(docs: Retrievable[], query: string, role?: string): st
     }
     if (matched === 0) continue;
 
+    // Score = proportion of meaningful query words that matched
     let score = matched / Math.max(q.length, 1);
     if (role && doc.roleAccess?.includes(role)) score += 0.15;
 
-    // Require a meaningful match: score >= 0.3 and at least 2 words matched
-    // (or 1 word matched if the query has only 1-2 words and score is high enough)
-    const minMatch = q.length <= 2 ? 1 : 2;
+    // Require at least 1 meaningful word matched for short queries, 2 for longer ones
+    const minMatch = q.length <= 1 ? 1 : 2;
     if (matched < minMatch) continue;
 
-    scored.push({ doc, score, matched });
+    scored.push({ doc, score, matchedMeaningful: matched });
   }
 
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 2).map((s) => s.doc.question + '\n' + s.doc.answer).join('\n---\n');
+
+  if (scored.length === 0) return { context: '', score: 0 };
+
+  const topScore = scored[0].score;
+  const context = scored.slice(0, 2).map((s) => s.doc.question + '\n' + s.doc.answer).join('\n---\n');
+  return { context, score: topScore };
 }
 
 function retrieve(query: string, role?: string): string {
@@ -78,7 +144,7 @@ function retrieve(query: string, role?: string): string {
     knowledgeBase.map(k => ({ question: k.q, answer: k.a, keywords: k.keywords, roleAccess: k.roles, denyRoles: k.denyRoles })),
     query,
     role
-  );
+  ).context;
 }
 
 export default function AiAssistant() {
@@ -89,9 +155,6 @@ export default function AiAssistant() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [workerStatus, setWorkerStatus] = useState<WorkerStatus>('unsupported');
-  const [workerError, setWorkerError] = useState('');
-  const [usingFallback, setUsingFallback] = useState(true);
   const [width, setWidth] = useState(360);
   const [height, setHeight] = useState(500);
   const [posX, setPosX] = useState(0);
@@ -105,7 +168,6 @@ export default function AiAssistant() {
   const pendingMapRef = useRef<Map<string, (value: string | null) => void>>(new Map());
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const workerReadyRef = useRef(false);
-  const usingFallbackRef = useRef(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -122,10 +184,6 @@ export default function AiAssistant() {
   useEffect(() => { posYRef.current = posY; }, [posY]);
 
   useEffect(() => {
-    localStorage.setItem('mhma_ai_open', open.toString());
-  }, [open]);
-
-  useEffect(() => {
     const saved = localStorage.getItem('mhma_ai_open');
     if (saved === 'true') setOpen(true);
   }, []);
@@ -133,14 +191,6 @@ export default function AiAssistant() {
   useEffect(() => {
     localStorage.setItem('mhma_ai_open', open.toString());
   }, [open]);
-
-  // [DEPRECATED] Firestore-based knowledge docs — using static assistant-knowledge.ts only
-  // useEffect(() => {
-  //   fetchKnowledgeDocs(200).then(docs => {
-  //     setFirestoreDocs(docs);
-  //     firestoreDocsRef.current = docs;
-  //   }).catch(() => {});
-  // }, []);
 
   const handleClose = useCallback(() => setOpen(false), []);
 
@@ -184,81 +234,38 @@ export default function AiAssistant() {
     document.addEventListener('mouseup', onMouseUp);
   }, []);
 
-/* ─── RAG Pipeline: retrieve context → send to AI model ─── */
-
-const GREETING_WORDS = ['hi', 'hello', 'hey', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening', 'howdy', 'greetings', 'whats up', 'what\'s up'];
-const IDENTITY_WORDS = ['who are you', 'who r u', 'what are you', 'what r u', 'tell me about yourself', 'your name', 'what is your name'];
-const NONSENSE_WORDS = ['kutti', 'eat paper', 'grow branches', 'poop', 'poopoo', 'peepee', 'butt', 'fart'];
-const MATH_PATTERN = /^[\d\s\+\-\*\/\(\)]+$/;
-
-function isGreeting(q: string): boolean {
-  const lower = q.toLowerCase().trim();
-  if (GREETING_WORDS.includes(lower)) return true;
-  if (lower.length <= 3 && GREETING_WORDS.some(g => g.startsWith(lower))) return true;
-  return false;
-}
-
-function isIdentity(q: string): boolean {
-  const lower = q.toLowerCase().trim();
-  return IDENTITY_WORDS.some(w => lower.includes(w));
-}
-
-function isNonsense(q: string): boolean {
-  const lower = q.toLowerCase().trim();
-  return NONSENSE_WORDS.some(w => lower.includes(w));
-}
-
-function isMath(q: string): boolean {
-  const cleaned = q.replace(/\s/g, '');
-  if (MATH_PATTERN.test(cleaned) && cleaned.length >= 3) return true;
-  const lower = q.toLowerCase().trim();
-  if (/^(what is|whats|what's|calculate|how much is)\s/.test(lower) && /[\d]/.test(lower)) return true;
-  return false;
-}
-
-function countQuestions(q: string): number {
-  const matches = q.match(/[?]/g);
-  return matches ? matches.length : 0;
-}
-
-const cannedResponse = (query: string): string | null => {
-  if (isIdentity(query)) {
-    return "I'm the MHMA Assistant — a local AI that answers questions about the MHMA website and dashboard. I can help with navigating pages, managing events, programs, donations, and more. Try asking 'How do I create an event?'";
-  }
-  if (isGreeting(query)) {
-    return "Hi there! I'm the MHMA Assistant. I can help you with the dashboard, events, programs, donations, and navigating the website. What would you like to know?";
-  }
-  if (isMath(query)) {
-    return "I'm designed to answer questions about the MHMA website and dashboard, not math problems. Try asking 'How do I create an event?' or 'Show me the programs page'.";
-  }
-  if (isNonsense(query)) {
-    return "I can't help with that. I'm an assistant for the MHMA website. Try asking about events, programs, or dashboard features.";
-  }
-  if (countQuestions(query) >= 4) {
-    return "That's a lot of questions! Could you ask them one at a time so I can give you a clear answer for each?";
-  }
-  return null;
-};
-
+  /* ─── RAG Pipeline ─── */
   const askQuestion = useCallback(async (query: string): Promise<{ answer: string | null }> => {
-    const workerReady = workerReadyRef.current && !!workerRef.current;
-
-    // Check for canned responses first (greetings, nonsense, math, etc.)
+    // 1. Check canned responses first
     const canned = cannedResponse(query);
-    if (canned) {
-      return { answer: canned };
+    if (canned) return { answer: canned };
+
+    // 2. Retrieve context with score
+    const role = user?.role;
+    const { context, score } = retrieveFromDocs(
+      knowledgeBase.map(k => ({ question: k.q, answer: k.a, keywords: k.keywords, roleAccess: k.roles, denyRoles: k.denyRoles })),
+      query,
+      role
+    );
+
+    // 3. No context found
+    if (!context) {
+      return { answer: "I don't have information about that. Try asking about events, programs, or dashboard features." };
     }
 
-    if (workerReady && usingFallbackRef.current === false) {
-      // Retrieve context from static knowledge base only
-      const role = user?.role;
-      const context = retrieve(query, role);
-
-      if (!context) {
-        return { answer: "I don't have information about that. Try asking about events, programs, or dashboard features." };
+    // 4. High-confidence match (score >= 0.6): return raw KB answer directly
+    //    KB entries are already written as complete answers — no AI needed
+    if (score >= 0.6) {
+      const answerStart = context.indexOf('\n') + 1;
+      if (answerStart > 0 && answerStart < context.length) {
+        return { answer: context.slice(answerStart).replace(/^---\s*\n/, '') };
       }
+      return { answer: context };
+    }
 
-      // Send query + context to the AI worker
+    // 5. Medium-confidence match: try AI model to synthesize
+    const workerReady = workerReadyRef.current && !!workerRef.current;
+    if (workerReady) {
       const qid = Math.random().toString(36).slice(2, 8);
       const aiPromise = new Promise<string | null>((resolve) => {
         pendingMapRef.current.set(qid, resolve);
@@ -271,11 +278,15 @@ const cannedResponse = (query: string): string | null => {
         }
       }, 60000));
       const aiAnswer = await Promise.race([aiPromise, timeoutPromise]);
-      if (aiAnswer) {
-        return { answer: aiAnswer };
-      }
+      if (aiAnswer) return { answer: aiAnswer };
     }
-    return { answer: null };
+
+    // 6. Fallback: return raw answer anyway (better than nothing)
+    const answerStart = context.indexOf('\n') + 1;
+    if (answerStart > 0 && answerStart < context.length) {
+      return { answer: context.slice(answerStart).replace(/^---\s*\n/, '') };
+    }
+    return { answer: context };
   }, [user?.role]);
 
   const handleSend = async () => {
@@ -284,9 +295,7 @@ const cannedResponse = (query: string): string | null => {
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setLoading(true);
-
     const { answer } = await askQuestion(q);
-
     if (answer) {
       setMessages((prev) => [...prev, { role: 'assistant', text: answer }]);
     } else {
@@ -299,9 +308,7 @@ const cannedResponse = (query: string): string | null => {
   };
 
   useEffect(() => {
-    if (!loading && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (!loading && inputRef.current) inputRef.current.focus();
   }, [loading]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -314,7 +321,7 @@ const cannedResponse = (query: string): string | null => {
     'How do I manage pledges?',
   ];
 
-  /* ─── SmolLM2 Worker ─── */
+  /* ─── SmolLM2 Worker (for medium-confidence queries) ─── */
   useEffect(() => {
     try {
       const worker = new Worker('/ai-worker.js', { type: 'module' });
@@ -323,46 +330,26 @@ const cannedResponse = (query: string): string | null => {
         if (workerRef.current) {
           worker.terminate();
           workerRef.current = null;
-          setWorkerStatus('error');
-          setWorkerError('Model load timed out.');
         }
       }, 60000);
       initTimeoutRef.current = timeout;
       worker.onmessage = (event) => {
-        const { type, status, error, answer, id } = event.data;
+        const { type, status, answer, id } = event.data;
         if (type === 'status') {
-          if (status === 'loading') setWorkerStatus('loading');
-          else if (status === 'ready') {
+          if (status === 'ready') {
             if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
             workerReadyRef.current = true;
-            usingFallbackRef.current = false;
-            setWorkerStatus('ready');
-            setUsingFallback(false);
-          } else if (status === 'error') {
-            if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-            setWorkerStatus('error');
-            setWorkerError(error || 'Unknown error');
           }
         } else if (type === 'result') {
           const resolve = id ? pendingMapRef.current.get(id) : null;
-          console.log('[Assistant] onmessage result id=' + id + ' found=' + !!resolve + ' answer:', answer?.slice(0, 60));
           if (resolve) {
             resolve(answer || null);
             pendingMapRef.current.delete(id!);
-          } else {
-            console.log('[Assistant] ORPHANED result id=' + id);
           }
         }
       };
-      worker.onerror = (err) => {
-        if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
-        setWorkerStatus('error');
-        setWorkerError(err.message || 'Worker failed');
-      };
-    } catch (err: any) {
-      setWorkerStatus('unsupported');
-      setWorkerError('Web Workers not supported.');
-    }
+      worker.onerror = () => {};
+    } catch (_) {}
     return () => {
       if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current);
       if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
@@ -397,9 +384,6 @@ const cannedResponse = (query: string): string | null => {
           <Bot className="w-5 h-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm">MHMA Assistant</p>
-            <p className="text-[10px] text-white/70 truncate">
-              {workerStatus === 'ready' ? 'AI • Ready' : workerStatus === 'loading' ? 'Initializing micro-AI (~90MB)...' : workerStatus === 'error' ? 'AI unavailable' : 'Fallback • Active'}
-            </p>
           </div>
           <button onClick={() => setMinimized((p) => !p)} className="text-white/70 hover:text-white ml-1 shrink-0">
             <span className="text-lg leading-none block w-4 h-4 text-center">{minimized ? '+' : '−'}</span>

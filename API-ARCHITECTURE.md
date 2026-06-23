@@ -49,10 +49,12 @@ The Firestore SDK automatically translates `getDoc()` into an HTTPS request to `
 
 ### Summary
 
-| Visibility | Example | What's actually happening |
-|---|---|---|
-| Visible | `fetch("/api/events")` | Browser → Your Server → Firestore |
-| Hidden | `getDoc(doc(db, "events", "id"))` | Browser → Firestore directly (via SDK) |
+
+| Visibility | Example                           | What's actually happening              |
+| ---------- | --------------------------------- | -------------------------------------- |
+| Visible    | `fetch("/api/events")`            | Browser → Your Server → Firestore      |
+| Hidden     | `getDoc(doc(db, "events", "id"))` | Browser → Firestore directly (via SDK) |
+
 
 ---
 
@@ -147,14 +149,16 @@ You'll see requests to `firestore.googleapis.com` — these are the Client SDK c
 
 ### What It Can Do
 
-| Action | Code | Description |
-|--------|------|-------------|
-| Read one doc | `getDoc(doc(db, "events", id))` | Read a single document |
-| Read many docs | `getDocs(collection(db, "events"))` | Read all documents in a collection |
-| Read with filter | `getDocs(query(collection(db, "users"), where("role", "==", "board")))` | Read with conditions |
-| Write a doc | `addDoc(collection(db, "rsvps"), {...})` | Create a new document |
-| Update a doc | `updateDoc(doc(db, "events", id), {...})` | Update fields |
-| Delete a doc | `deleteDoc(doc(db, "events", id))` | Delete a document |
+
+| Action           | Code                                                                    | Description                        |
+| ---------------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| Read one doc     | `getDoc(doc(db, "events", id))`                                         | Read a single document             |
+| Read many docs   | `getDocs(collection(db, "events"))`                                     | Read all documents in a collection |
+| Read with filter | `getDocs(query(collection(db, "users"), where("role", "==", "board")))` | Read with conditions               |
+| Write a doc      | `addDoc(collection(db, "rsvps"), {...})`                                | Create a new document              |
+| Update a doc     | `updateDoc(doc(db, "events", id), {...})`                               | Update fields                      |
+| Delete a doc     | `deleteDoc(doc(db, "events", id))`                                      | Delete a document                  |
+
 
 ### Security Rules
 
@@ -184,6 +188,7 @@ Request URL: https://firestore.googleapis.com/google.firestore.v1.Firestore/List
 ```
 
 These are **WebSocket connections** that the Firestore SDK opens automatically to:
+
 - Listen for real-time updates (if onSnapshot is used anywhere)
 - Keep the auth session alive
 - Enable offline persistence
@@ -191,6 +196,7 @@ These are **WebSocket connections** that the Firestore SDK opens automatically t
 **In our codebase**, we never use `onSnapshot` (confirmed by grep — zero results). But the SDK opens these channels anyway as part of its initialization. They sometimes fail with `Fetch failed` errors, which are **usually harmless** — the SDK falls back to normal HTTPS requests.
 
 If they bother you (console noise), we can configure the SDK to disable them:
+
 ```javascript
 const db = getFirestore(app);
 // Disable persistent connections
@@ -232,10 +238,12 @@ export async function POST(req: NextRequest) {
 
 ### Where Do They Run?
 
-| Environment | Location |
-|---|---|
-| Development | Your computer (`localhost:3000`) |
-| Production | Vercel's servers (serverless functions) |
+
+| Environment | Location                                |
+| ----------- | --------------------------------------- |
+| Development | Your computer (`localhost:3000`)        |
+| Production  | Vercel's servers (serverless functions) |
+
 
 When deployed, each API route becomes a **serverless function** on Vercel. When someone requests `/api/rsvp`, Vercel spins up a Node.js process, runs the route handler, and returns the response. The process shuts down shortly after.
 
@@ -254,15 +262,17 @@ The browser makes a normal HTTP request to the SAME domain as the website. There
 
 ### Complete Inventory of API Routes
 
-| File | URL | Method | Purpose |
-|------|-----|--------|---------|
-| `app/api/rsvp/route.ts` | `/api/rsvp` | POST | Submit RSVP + send emails |
-| `app/api/enroll/route.ts` | `/api/enroll` | POST | Submit enrollment + send emails |
-| `app/api/contact/route.ts` | `/api/contact` | POST | Submit contact form + send email |
-| `app/api/events/route.ts` | `/api/events` | GET | Get events with RSVP counts |
-| `app/api/programs/route.ts` | `/api/programs` | GET | Get programs with enrollment counts |
-| `app/api/about-stats/route.ts` | `/api/about-stats` | GET | Get aggregated community stats |
-| `app/api/about-stats/route.ts` | `/api/about-stats` | POST | Update about stats (board only) |
+
+| File                           | URL                | Method | Purpose                             |
+| ------------------------------ | ------------------ | ------ | ----------------------------------- |
+| `app/api/rsvp/route.ts`        | `/api/rsvp`        | POST   | Submit RSVP + send emails           |
+| `app/api/enroll/route.ts`      | `/api/enroll`      | POST   | Submit enrollment + send emails     |
+| `app/api/contact/route.ts`     | `/api/contact`     | POST   | Submit contact form + send email    |
+| `app/api/events/route.ts`      | `/api/events`      | GET    | Get events with RSVP counts         |
+| `app/api/programs/route.ts`    | `/api/programs`    | GET    | Get programs with enrollment counts |
+| `app/api/about-stats/route.ts` | `/api/about-stats` | GET    | Get aggregated community stats      |
+| `app/api/about-stats/route.ts` | `/api/about-stats` | POST   | Update about stats (board only)     |
+
 
 ---
 
@@ -292,13 +302,15 @@ export const firestore = admin.firestore();
 
 ### Key Difference from Client SDK
 
-| Aspect | Client SDK (browser) | Admin SDK (server) |
-|--------|---------------------|-------------------|
-| Auth method | Firebase API key + user token | Service account (server-to-server) |
-| Security rules | ✅ Enforced | ❌ Bypassed |
-| Can send emails | ❌ | ✅ (with email library) |
-| Has access to secrets | ❌ (all env vars with NEXT_PUBLIC_ are exposed) | ✅ (env vars stay secret) |
-| Environment variables prefix | `NEXT_PUBLIC_*` | Any (no prefix needed) |
+
+| Aspect                       | Client SDK (browser)                           | Admin SDK (server)                 |
+| ---------------------------- | ---------------------------------------------- | ---------------------------------- |
+| Auth method                  | Firebase API key + user token                  | Service account (server-to-server) |
+| Security rules               | ✅ Enforced                                     | ❌ Bypassed                         |
+| Can send emails              | ❌                                              | ✅ (with email library)             |
+| Has access to secrets        | ❌ (all env vars with NEXT_PUBLIC_ are exposed) | ✅ (env vars stay secret)           |
+| Environment variables prefix | `NEXT_PUBLIC_*`                                | Any (no prefix needed)             |
+
 
 ### Why the Admin SDK Exists
 
@@ -315,36 +327,44 @@ I grepped the entire codebase. Here is exactly what each page uses:
 
 ### Public Forms (RSVP, Enroll, Contact)
 
-| Page | Imports from firebase.ts | Uses Layer 1? | Uses Layer 2? |
-|------|--------------------------|---------------|---------------|
-| `/rsvp/page.tsx` | `fetchEvents` only (reads event list) | ✅ (reads events) | ✅ `fetch("/api/rsvp")` (submits) |
+
+| Page               | Imports from firebase.ts                  | Uses Layer 1?      | Uses Layer 2?                      |
+| ------------------ | ----------------------------------------- | ------------------ | ---------------------------------- |
+| `/rsvp/page.tsx`   | `fetchEvents` only (reads event list)     | ✅ (reads events)   | ✅ `fetch("/api/rsvp")` (submits)   |
 | `/enroll/page.tsx` | `fetchPrograms` only (reads program list) | ✅ (reads programs) | ✅ `fetch("/api/enroll")` (submits) |
-| Contact page | (not checked, but likely similar pattern) | | ✅ `fetch("/api/contact")` |
+| Contact page       | (not checked, but likely similar pattern) |                    | ✅ `fetch("/api/contact")`          |
+
 
 **These forms do:**
+
 - Read data via Layer 1 (Client SDK) — e.g., fetch event list for dropdown
 - Write data via Layer 2 + 3 (API route + Admin SDK) — submit the form + send emails
 
 ### Dashboard Pages (Board Members)
 
-| Page | Imports from firebase.ts | Uses Layer 1? | Uses Layer 2? |
-|------|--------------------------|---------------|---------------|
-| `/dashboard/events/page.tsx` | CRUD functions | ✅ (all CRUD) | ❌ |
-| `/dashboard/programs/page.tsx` | CRUD functions | ✅ (all CRUD) | ❌ |
-| `/dashboard/users/page.tsx` | User functions | ✅ (all CRUD) | ❌ |
-| Other dashboard pages | Various CRUD | ✅ | ❌ |
+
+| Page                           | Imports from firebase.ts | Uses Layer 1? | Uses Layer 2? |
+| ------------------------------ | ------------------------ | ------------- | ------------- |
+| `/dashboard/events/page.tsx`   | CRUD functions           | ✅ (all CRUD)  | ❌             |
+| `/dashboard/programs/page.tsx` | CRUD functions           | ✅ (all CRUD)  | ❌             |
+| `/dashboard/users/page.tsx`    | User functions           | ✅ (all CRUD)  | ❌             |
+| Other dashboard pages          | Various CRUD             | ✅             | ❌             |
+
 
 **Dashboard pages do:**
+
 - All CRUD via Layer 1 (Client SDK) — direct browser-to-Firestore
 - No API routes needed — board members are authenticated, no emails needed
 
 ### Public Pages That Show Data
 
-| Page | Imports | Uses Layer 1? | Uses Layer 2? |
-|------|---------|---------------|---------------|
-| `/events/page.tsx` | `fetchEvents` or `fetch("/api/events")` | Depends | Uses `/api/events` for RSVP counts |
-| `/programs/page.tsx` | `fetchPrograms` or `fetch("/api/programs")` | Depends | Uses `/api/programs` for enrollment counts |
-| `/about/page.tsx` | `fetch("/api/about-stats")` | ❌ | ✅ |
+
+| Page                 | Imports                                     | Uses Layer 1? | Uses Layer 2?                              |
+| -------------------- | ------------------------------------------- | ------------- | ------------------------------------------ |
+| `/events/page.tsx`   | `fetchEvents` or `fetch("/api/events")`     | Depends       | Uses `/api/events` for RSVP counts         |
+| `/programs/page.tsx` | `fetchPrograms` or `fetch("/api/programs")` | Depends       | Uses `/api/programs` for enrollment counts |
+| `/about/page.tsx`    | `fetch("/api/about-stats")`                 | ❌             | ✅                                          |
+
 
 **These pages use API routes** to get aggregated data (events + RSVP counts combined in one response).
 
@@ -357,6 +377,7 @@ Here is every reason, with code evidence:
 ### Reason 1: Email Sending (Primary)
 
 **Evidence:**
+
 ```typescript
 // app/api/rsvp/route.ts lines 29-47
 try {
@@ -372,6 +393,7 @@ The browser literally cannot send email. SMTP credentials are server-only secret
 ### Reason 2: Secure Admin SDK Operations
 
 **Evidence:**
+
 ```typescript
 // app/api/about-stats/route.ts lines 123-136
 const decoded = await adminAuth.verifyIdToken(token);
@@ -385,6 +407,7 @@ The API route verifies the user's role on the server before performing the write
 ### Reason 3: Server-Side Data Aggregation
 
 **Evidence:**
+
 ```typescript
 // app/api/events/route.ts
 const eventsSnap = await firestore.collection("events").get();
@@ -397,6 +420,7 @@ Instead of the client making 2 requests and doing the merge, the server does it 
 ### Reason 4: Write Data on Behalf of Users Without Auth
 
 **Evidence:**
+
 ```typescript
 // app/api/enroll/route.ts
 // No auth check — anyone can submit enrollment
@@ -413,6 +437,7 @@ We could add rate limiting (e.g., max 1 submission per IP per minute) to the API
 ### Reason 6: Server-Side Validation
 
 The API route can validate data more thoroughly than security rules allow:
+
 ```typescript
 if (!fullName || !email) {
   return NextResponse.json({ error: "Name and email required" }, { status: 400 });
@@ -503,6 +528,7 @@ STEP 4: Page shows success toast
 ```
 
 **No API route is used** because:
+
 - No email needs to be sent
 - The user is already authenticated as a board member
 - Security rules handle authorization
@@ -532,6 +558,7 @@ Path B (Client SDK — NOT used):
 ```
 
 If you wanted to use Path B, you would:
+
 1. Import `addEnrollment` in the page
 2. Call it instead of `fetch("/api/enroll")`
 3. Remove the confirmation email logic
@@ -542,6 +569,7 @@ If you wanted to use Path B, you would:
 ### Could We Remove Path B Entirely?
 
 Yes. The `addEnrollment()` and `addRSVP()` functions in `lib/firebase.ts` are unused. They could be deleted. I would keep them because:
+
 - They serve as documentation of what a client-side write looks like
 - A future page might need a simple write without email
 - Deleting code that works is unnecessary risk
@@ -552,27 +580,31 @@ Yes. The `addEnrollment()` and `addRSVP()` functions in `lib/firebase.ts` are un
 
 **Every time you call `getDoc`, `getDocs`, `addDoc`, `updateDoc`, `deleteDoc` — that is one or more reads/writes.**
 
-| Operation | Read count | Write count |
-|-----------|-----------|-------------|
-| `getDoc(doc(db, "events", "id"))` | 1 read | 0 |
-| `getDocs(collection(db, "events"))` | 1 per document | 0 |
-| `getDocs(query(...))` | 1 per matched doc | 0 |
-| `addDoc(collection(db, "rsvps"), {...})` | 0 | 1 |
-| `updateDoc(doc(db, "events", "id"), {...})` | 0 | 1 |
-| `deleteDoc(doc(db, "events", "id"))` | 0 | 1 |
+
+| Operation                                   | Read count        | Write count |
+| ------------------------------------------- | ----------------- | ----------- |
+| `getDoc(doc(db, "events", "id"))`           | 1 read            | 0           |
+| `getDocs(collection(db, "events"))`         | 1 per document    | 0           |
+| `getDocs(query(...))`                       | 1 per matched doc | 0           |
+| `addDoc(collection(db, "rsvps"), {...})`    | 0                 | 1           |
+| `updateDoc(doc(db, "events", "id"), {...})` | 0                 | 1           |
+| `deleteDoc(doc(db, "events", "id"))`        | 0                 | 1           |
+
 
 **The Spark plan (free) gives:** 50k reads/day, 20k writes/day
 
 ### Current Usage Estimate
 
-| Operation | Daily reads | Daily writes |
-|-----------|-------------|-------------|
-| Dashboard page loads (10 board members × 5 pages each) | 50 × 10 = 500 | — |
-| Public page loads (100 visitors × 3 pages each) | 300 × 3 = 900 | — |
-| RSVP submissions (10/day) | 10 (events list) | 10 |
-| Enrollment submissions (5/day) | 5 (programs list) | 5 |
-| API routes (behind the scenes) | varies | varies |
-| **TOTAL** | ~1,500 | ~20 |
+
+| Operation                                              | Daily reads       | Daily writes |
+| ------------------------------------------------------ | ----------------- | ------------ |
+| Dashboard page loads (10 board members × 5 pages each) | 50 × 10 = 500     | —            |
+| Public page loads (100 visitors × 3 pages each)        | 300 × 3 = 900     | —            |
+| RSVP submissions (10/day)                              | 10 (events list)  | 10           |
+| Enrollment submissions (5/day)                         | 5 (programs list) | 5            |
+| API routes (behind the scenes)                         | varies            | varies       |
+| **TOTAL**                                              | ~1,500            | ~20          |
+
 
 We are well within the free tier.
 
@@ -582,31 +614,37 @@ We are well within the free tier.
 
 ### External APIs (we consume)
 
-| API | Used by | Purpose |
-|-----|---------|---------|
-| Firebase Firestore REST API | Client SDK + Admin SDK | Database operations |
-| Firebase Auth REST API | `lib/firebase-client.ts` | Authentication |
-| SMTP (email server) | `lib/email.ts` | Send emails |
+
+| API                         | Used by                  | Purpose             |
+| --------------------------- | ------------------------ | ------------------- |
+| Firebase Firestore REST API | Client SDK + Admin SDK   | Database operations |
+| Firebase Auth REST API      | `lib/firebase-client.ts` | Authentication      |
+| SMTP (email server)         | `lib/email.ts`           | Send emails         |
+
 
 ### Internal APIs (we built)
 
-| Endpoint | File | Purpose |
-|----------|------|---------|
-| `POST /api/rsvp` | `app/api/rsvp/route.ts` | Submit RSVP + send emails |
-| `POST /api/enroll` | `app/api/enroll/route.ts` | Submit enrollment + send emails |
-| `POST /api/contact` | `app/api/contact/route.ts` | Submit contact form + send email |
-| `GET /api/events` | `app/api/events/route.ts` | Events with RSVP counts |
-| `GET /api/programs` | `app/api/programs/route.ts` | Programs with enrollment counts |
-| `GET /api/about-stats` | `app/api/about-stats/route.ts` | Aggregated community stats |
-| `POST /api/about-stats` | `app/api/about-stats/route.ts` | Update about stats (board only) |
+
+| Endpoint                | File                           | Purpose                          |
+| ----------------------- | ------------------------------ | -------------------------------- |
+| `POST /api/rsvp`        | `app/api/rsvp/route.ts`        | Submit RSVP + send emails        |
+| `POST /api/enroll`      | `app/api/enroll/route.ts`      | Submit enrollment + send emails  |
+| `POST /api/contact`     | `app/api/contact/route.ts`     | Submit contact form + send email |
+| `GET /api/events`       | `app/api/events/route.ts`      | Events with RSVP counts          |
+| `GET /api/programs`     | `app/api/programs/route.ts`    | Programs with enrollment counts  |
+| `GET /api/about-stats`  | `app/api/about-stats/route.ts` | Aggregated community stats       |
+| `POST /api/about-stats` | `app/api/about-stats/route.ts` | Update about stats (board only)  |
+
 
 ### Invisible APIs (SDK-managed)
 
-| SDK | Target | Purpose |
-|-----|--------|---------|
-| Firebase Client SDK | `firestore.googleapis.com` | All DB operations from browser |
-| Firebase Auth SDK | `identitytoolkit.googleapis.com` | Login, registration, magic links |
-| Firebase Admin SDK | `firestore.googleapis.com` | All DB operations from server |
+
+| SDK                 | Target                           | Purpose                          |
+| ------------------- | -------------------------------- | -------------------------------- |
+| Firebase Client SDK | `firestore.googleapis.com`       | All DB operations from browser   |
+| Firebase Auth SDK   | `identitytoolkit.googleapis.com` | Login, registration, magic links |
+| Firebase Admin SDK  | `firestore.googleapis.com`       | All DB operations from server    |
+
 
 ### Total: ~3 external APIs, ~7 internal endpoints
 
@@ -631,3 +669,4 @@ Question: "Are there two APIs calling Firestore?"
 Answer: Yes. Client SDK (browser) and Admin SDK (server). They use different
 credentials, have different permissions, and are completely independent.
 ```
+
