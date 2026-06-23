@@ -23,6 +23,7 @@ import PageBanner from "@/app/components/PageBanner";
 import EventCalendar from "@/app/components/EventCalendar";
 import { renderMarkdown } from "@/lib/markdown";
 import { useAuth } from "@/lib/auth-context";
+import { usePageData } from "@/lib/page-data-context";
 import BoardMemberCard from "@/app/components/BoardMemberCard";
 import { boardOfDirectors } from "@/app/lib/board-data";
 
@@ -45,6 +46,7 @@ interface Slide {
 
 export default function EventsPage() {
   const { isBoardMember } = useAuth();
+  const { setPageData } = usePageData();
   const [viewMode, setViewMode] = useState<"cards" | "calendar">("cards");
   const [slides, setSlides] = useState<Slide[]>([]);
   const [rawEvents, setRawEvents] = useState<any[]>([]);
@@ -105,6 +107,7 @@ export default function EventsPage() {
         });
 
         setSlides(eventSlides);
+        setPageData({ events: data, currentPath: '/events' });
       } catch (err) {
         console.error("Failed to fetch events:", err);
       } finally {
@@ -113,7 +116,7 @@ export default function EventsPage() {
     };
 
     fetchEvents();
-  }, []);
+  }, [setPageData]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-mhma-gold selection:text-white bg-mhma-cream">
