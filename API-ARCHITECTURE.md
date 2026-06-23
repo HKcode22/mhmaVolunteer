@@ -1,672 +1,918 @@
-# MHMA API Architecture — Complete Explanation
+# MHMA API Architecture — Complete Explanation with Real Code
 
-> This document explains EVERY API in the system: what it is, where it runs, how data flows, and why each exists. No assumptions, just code-level facts.
+> This document answers every question you asked about APIs, Layer 2, HTTP endpoints, Vercel as a backend, and why we do things this way. Every explanation includes **real code from this project** with comments.
 
 ---
 
 ## TABLE OF CONTENTS
 
-1. [What Is an API?](#1-what-is-an-api)
-2. [The Three Layers of API in This System](#2-the-three-layers-of-api-in-this-system)
-3. [Layer 1: Browser ↔ Firestore (Firebase Client SDK)](#3-layer-1-browser--firestore-firebase-client-sdk)
-4. [Layer 2: Browser ↔ Next.js Server (API Routes)](#4-layer-2-browser--nextjs-server-api-routes)
-5. [Layer 3: Next.js Server ↔ Firestore (Firebase Admin SDK)](#5-layer-3-nextjs-server--firestore-firebase-admin-sdk)
-6. [Which Pages Use Which Layer? (Actual Code Analysis)](#6-which-pages-use-which-layer-actual-code-analysis)
-7. [Why API Routes Exist — Complete List of Reasons](#7-why-api-routes-exist--complete-list-of-reasons)
-8. [The Full Lifecycle of an RSVP Submission](#8-the-full-lifecycle-of-an-rsvp-submission)
-9. [The Full Lifecycle of a Dashboard CRUD Operation](#9-the-full-lifecycle-of-a-dashboard-crud-operation)
-10. [The Two Paths for Enrollment: Client SDK vs API Route](#10-the-two-paths-for-enrollment-client-sdk-vs-api-route)
-11. [What Counts as a Firestore Read/Write?](#11-what-counts-as-a-firestore-readwrite)
-12. [How Many APIs Are There? (Complete Inventory)](#12-how-many-apis-are-there-complete-inventory)
+1. [What Is an API / HTTP Endpoint? (Beginner)](#1-what-is-an-api--http-endpoint-beginner)
+2. [The Three Servers in This System](#2-the-three-servers-in-this-system)
+3. [What Is Vercel Actually Doing? (Frontend + Backend)](#3-what-is-vercel-actually-doing-frontend--backend)
+4. [Layer 2 Explained: Our API Routes](#4-layer-2-explained-our-api-routes)
+5. [Why You Can't Visit /api/rsvp in a Browser](#5-why-you-cant-visit-apirsvp-in-a-browser)
+6. [Real Code: The Complete RSVP Submission (step by step)](#6-real-code-the-complete-rsvp-submission-step-by-step)
+7. [Real Code: The Complete Enrollment Submission](#7-real-code-the-complete-enrollment-submission)
+8. [Real Code: Server-Side Data Aggregation (/api/events)](#8-real-code-server-side-data-aggregation-apievents)
+9. [The 7 Reasons for API Routes — Explained with Code](#9-the-7-reasons-for-api-routes--explained-with-code)
+10. [What Would It Look Like Without API Routes?](#10-what-would-it-look-like-without-api-routes)
+11. [Your Questions Answered Directly](#11-your-questions-answered-directly)
 
 ---
 
-## 1. What Is an API?
+## 1. What Is an API / HTTP Endpoint? (Beginner)
 
-An API (Application Programming Interface) is a way for one piece of software to talk to another. In web development, "API" usually means an HTTP endpoint — a URL you send a request to and get a response back.
-
-### Example
+### Analogy: Restaurant Ordering
 
 ```
-Browser:  GET https://mhma-update.vercel.app/api/events
-Server:   [200] [{ "title": "Eid Festival", "rsvpCount": 15 }, ...]
+You (Browser)                Waiter (API)                Kitchen (Firestore)
+    │                            │                            │
+    ├── "I want a burger" ──────►│                            │
+    │                            ├── "Cook one burger" ──────►│
+    │                            │◄── "Here's your burger" ───┤
+    │◄── "Here's your burger" ───┤                            │
 ```
 
-The browser sends a GET request to the URL. The server processes it and returns JSON data.
+An **API** (Application Programming Interface) is a **waiter**. You tell it what you want, it talks to the kitchen, and brings back your food.
 
-### But APIs Are Also Hidden
+An **HTTP endpoint** is a **URL** that acts like a waiter:
+- `https://mhma-update.vercel.app/api/rsvp` — this URL is a waiter
+- `https://mhma-update.vercel.app/api/events` — this URL is also a waiter
 
-Some APIs you don't see as URLs. For example:
+### In Code
 
 ```javascript
-import { getDoc, doc } from "firebase/firestore";
-
-// This is ALSO an API call — but the URL is hidden inside the SDK
-const snapshot = await getDoc(doc(db, "users", "abc123"));
+// This is YOU (the browser) talking to a waiter (API):
+const response = await fetch("https://mhma-update.vercel.app/api/events");
+const data = await response.json();
+// data = [{ title: "Eid Festival", rsvpCount: 15 }, ...]
 ```
-
-The Firestore SDK automatically translates `getDoc()` into an HTTPS request to `firestore.googleapis.com`. You never see the URL, but it's there.
-
-### Summary
-
-
-| Visibility | Example                           | What's actually happening              |
-| ---------- | --------------------------------- | -------------------------------------- |
-| Visible    | `fetch("/api/events")`            | Browser → Your Server → Firestore      |
-| Hidden     | `getDoc(doc(db, "events", "id"))` | Browser → Firestore directly (via SDK) |
-
-
----
-
-## 2. The Three Layers of API in This System
-
-This system has THREE distinct API layers. They are NOT the same thing.
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        THE THREE API LAYERS                             │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  LAYER 1: Browser ↔ Firestore (Client SDK)                             │
-│  ─────────────────────────────────────────                               │
-│  What: Direct HTTPS calls from browser to Google's Firestore servers    │
-│  SDK:  @firebase/firestore                                              │
-│  Files: lib/firebase-client.ts (init), lib/firebase.ts (functions)     │
-│  Auth:  Firebase API key + current user's auth token                    │
-│  Rules: Enforced by firestore.rules                                     │
-│  Used:  Dashboard CRUD (events, programs, members, etc.)               │
-│                                                                         │
-│  LAYER 2: Browser ↔ Next.js Server (API Routes)                        │
-│  ─────────────────────────────────────────                               │
-│  What: Custom HTTP endpoints on YOUR server (Vercel/localhost)          │
-│  URLs:  /api/events, /api/rsvp, /api/enroll, /api/contact, etc.       │
-│  Files: app/api/**/route.ts                                             │
-│  Auth:  Whatever we implement (token check, no check, etc.)            │
-│  Rules: No Firestore rules — code-based validation instead             │
-│  Used:  Public forms, aggregated reads, admin operations               │
-│                                                                         │
-│  LAYER 3: Next.js Server ↔ Firestore (Admin SDK)                       │
-│  ─────────────────────────────────────────                               │
-│  What: Server-side calls from API routes to Firestore                   │
-│  SDK:  firebase-admin (Node.js only)                                    │
-│  Files: lib/firebase-admin.ts (init)                                    │
-│  Auth:  Service account credentials (NOT the user)                      │
-│  Rules: Bypassed — full access                                          │
-│  Used:  Everything the API routes do                                    │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### Key Insight
-
-**Layer 1 and Layer 3 both talk to Firestore, but they are different APIs.**
-
-- Layer 1 uses the **Client SDK** — runs in browser, uses user's auth, respects security rules
-- Layer 3 uses the **Admin SDK** — runs on server, uses service account, bypasses rules
-
-**Layer 2 is OUR code** — these are the endpoints we created. Layer 2 uses Layer 3 internally to talk to Firestore.
-
----
-
-## 3. Layer 1: Browser ↔ Firestore (Firebase Client SDK)
-
-### How It Works
 
 ```javascript
-// lib/firebase-client.ts
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "AIzaSy...",        // Public — safe to expose
-  projectId: "mhma-volunteer", // Identifies your Firebase project
-  // ...
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);   // This creates a connection to Firestore
+// This is YOU talking to the kitchen directly (no waiter):
+import { fetchEvents } from "@/lib/firebase";
+const data = await fetchEvents(100);
+// Same result, but different path
 ```
 
-When you call `getDoc(doc(db, "events", "abc123"))`, the SDK:
-
-1. Opens an HTTPS connection to `https://firestore.googleapis.com/v1/projects/mhma-volunteer/databases/(default)/documents/events/abc123`
-2. Attaches the Firebase API key and the user's auth token as headers
-3. Firestore checks: "Is this user allowed to read this document?" (security rules)
-4. If yes, returns the document data
-5. If no, returns "permission denied"
-
-### What it looks like in DevTools
-
-Open Chrome DevTools → Network tab → Filter by "firestore":
+### The Two Ways to Get Data
 
 ```
-Request URL: https://firestore.googleapis.com/v1/projects/mhma-volunteer/databases/(default)/documents/events
-Request Method: POST
-Status Code: 200
+Path A (waiter):  Browser → OUR SERVER (Vercel) → Firestore
+Path B (direct):  Browser → Firestore (no waiter)
 ```
 
-You'll see requests to `firestore.googleapis.com` — these are the Client SDK calls.
+In this project, **we use both paths** depending on what we need.
 
-### What It Can Do
+---
 
+## 2. The Three Servers in This System
 
-| Action           | Code                                                                    | Description                        |
-| ---------------- | ----------------------------------------------------------------------- | ---------------------------------- |
-| Read one doc     | `getDoc(doc(db, "events", id))`                                         | Read a single document             |
-| Read many docs   | `getDocs(collection(db, "events"))`                                     | Read all documents in a collection |
-| Read with filter | `getDocs(query(collection(db, "users"), where("role", "==", "board")))` | Read with conditions               |
-| Write a doc      | `addDoc(collection(db, "rsvps"), {...})`                                | Create a new document              |
-| Update a doc     | `updateDoc(doc(db, "events", id), {...})`                               | Update fields                      |
-| Delete a doc     | `deleteDoc(doc(db, "events", id))`                                      | Delete a document                  |
-
-
-### Security Rules
+There are THREE computers involved when you use this website:
 
 ```
-// firestore.rules
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /events/{eventId} {
-      allow read: if true;                    // Anyone can read events
-      allow write: if request.auth != null     // Logged-in users can write
-        && request.auth.token.role == 'board_member';
+┌─ YOUR COMPUTER (Browser) ─────────────────────────────┐
+│                                                        │
+│  Runs: React code, your Firebase API key               │
+│  Can: Display pages, call APIs, talk to Firestore      │
+│  Cannot: Send emails, keep secrets, access Admin SDK   │
+│                                                        │
+└────────────────────┬───────────────────────────────────┘
+                     │
+                     ▼
+┌─ VERCEL (Next.js Server) ──────────────────────────────┐
+│                                                        │
+│  Runs: API routes (/api/rsvp, /api/enroll, etc.)       │
+│  Has: SMTP email credentials, Admin SDK, secret keys   │
+│  Can: Send emails, read/write Firestore with full power │
+│  Cannot: Run in your browser (it's a cloud computer)    │
+│                                                        │
+└────────────────────┬───────────────────────────────────┘
+                     │
+                     ▼
+┌─ GOOGLE CLOUD (Firestore) ─────────────────────────────┐
+│                                                        │
+│  Runs: Database that stores all MHMA data              │
+│  Has: Security rules, document storage                 │
+│  Can: Store/retrieve data, enforce permissions         │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+### What People Usually Think
+
+Most people think Vercel only serves the **frontend** (HTML, CSS, JS files) — like a waiter that only brings the menu. But Vercel can also run **backend** code — like a waiter who can also cook.
+
+In Next.js, BOTH frontend and backend live in the same project:
+
+```
+Project root/
+  ├── app/page.tsx          ← Frontend (page users see)
+  ├── app/api/rsvp/route.ts ← Backend (API endpoint)
+  ├── lib/firebase.ts       ← Frontend code (runs in browser)
+  └── lib/firebase-admin.ts ← Backend code (runs on Vercel)
+```
+
+When you deploy to Vercel:
+- `page.tsx` files become web pages
+- `api/**/route.ts` files become serverless functions (API endpoints)
+- Both run on Vercel's infrastructure, but pages run in the user's browser while API routes run on Vercel's servers
+
+---
+
+## 3. What Is Vercel Actually Doing? (Frontend + Backend)
+
+### Vercel as Frontend Host
+
+When someone visits `https://mhma-update.vercel.app/events`, Vercel:
+
+1. Receives the HTTP request
+2. Runs the Next.js code to render the page
+3. Sends the HTML/JS/CSS to the browser
+4. The browser displays the page
+
+**This part you already know. Vercel hosts your website.**
+
+### Vercel as Backend (Serverless Functions)
+
+When someone submits the RSVP form, the browser sends a request to:
+
+```
+POST https://mhma-update.vercel.app/api/rsvp
+```
+
+Vercel:
+
+1. Receives the HTTP request
+2. **Spins up a temporary Node.js server** (takes ~50-200ms)
+3. Runs the code in `app/api/rsvp/route.ts`
+4. The code writes to Firestore, sends emails
+5. Returns the response
+6. **The temporary server shuts down**
+
+This "spin up, run, shut down" pattern is called a **serverless function**. It only exists when someone calls it. You don't pay for idle time.
+
+### The Key Insight You're Missing
+
+**Vercel is not JUST a file host.** It's a cloud computing platform that runs Node.js code. When you write `app/api/rsvp/route.ts`, you're writing a backend server that runs in the cloud. It's equivalent to running:
+
+```bash
+node server.js  # but Vercel manages this for you
+```
+
+You never see the server, but it's there. Every time someone calls `/api/rsvp`, a new Node.js process starts, runs your route handler, and exits.
+
+---
+
+## 4. Layer 2 Explained: Our API Routes
+
+### What Is an API Route?
+
+An API route is a **file** in `app/api/**/route.ts` that becomes a **URL endpoint**.
+
+```
+File: app/api/rsvp/route.ts
+URL:  https://mhma-update.vercel.app/api/rsvp
+
+File: app/api/enroll/route.ts
+URL:  https://mhma-update.vercel.app/api/enroll
+
+File: app/api/events/route.ts
+URL:  https://mhma-update.vercel.app/api/events
+```
+
+### What Does an API Route File Look Like?
+
+Here is the ACTUAL file `app/api/enroll/route.ts` with comments explaining every line:
+
+```typescript
+// app/api/enroll/route.ts
+// THIS RUNS ON VERCEl'S SERVER, NOT IN THE BROWSER
+
+import { NextRequest, NextResponse } from "next/server";
+// NextRequest = the incoming HTTP request from the browser
+// NextResponse = what we send back
+
+import { firestore, Timestamp } from "@/lib/firebase-admin";
+// This uses the ADMIN SDK — runs on server with full database access
+// NEVER exposed to the browser
+
+import { sendEmail, confirmationEmail, notifyBoard } from "@/lib/email";
+// Email library — only works on server (SMTP credentials are secret)
+
+export async function POST(req: NextRequest) {
+  // "POST" means this function runs when someone sends a POST request
+  // to https://mhma-update.vercel.app/api/enroll
+
+  try {
+    // Step 1: Read the form data sent by the browser
+    // The browser called: fetch("/api/enroll", { body: JSON.stringify({...}) })
+    const { fullName, email, phone, program, message } = await req.json();
+
+    // Step 2: Validate the data on the server
+    // (Security rules in Firestore can't do this level of validation)
+    if (!fullName || !email) {
+      return NextResponse.json({ error: "Name and email required" }, { status: 400 });
     }
+
+    // Step 3: Write to Firestore using Admin SDK
+    // The Admin SDK runs with FULL ACCESS — no security rules apply
+    await firestore.collection("enrollments").add({
+      fullName,
+      email,
+      phone: phone || "",
+      program: program || "",
+      message: message || "",
+      status: "pending",
+      createdAt: Timestamp.now(),
+    });
+
+    // Step 4: Send emails (THIS IS WHY WE NEED THE SERVER)
+    // A browser CANNOT send email. SMTP credentials must stay secret.
+    try {
+      await Promise.allSettled([
+        // Email to the person who enrolled — confirmation
+        sendEmail(email, "Enrollment Received - MHMA", confirmationEmail(fullName,
+          `Your enrollment for <strong>${program || "our program"}</strong> has been received.`
+        )),
+        // Email to board members — notification
+        notifyBoard("New Enrollment - MHMA",
+          `New enrollment from <strong>${fullName}</strong> (${email}) for <strong>${program || "N/A"}</strong>.`
+        ),
+      ]);
+    } catch (_) { /* ignore email errors — don't fail the request */ }
+
+    // Step 5: Tell the browser it worked
+    return NextResponse.json({ success: true });
+
+  } catch (err: any) {
+    console.error("Enroll error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 ```
 
-These rules ONLY apply to Layer 1 (Client SDK calls from browser). Layer 3 (Admin SDK from server) ignores them completely.
-
-### Firestore WebSocket Channels (Write/channel, Listen/channel)
-
-You may see these in DevTools under the "firestore.googleapis.com" domain:
+### What Happens When You Call This API Route
 
 ```
-Request URL: https://firestore.googleapis.com/google.firestore.v1.Firestore/Write/channel
-Request URL: https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel
-```
-
-These are **WebSocket connections** that the Firestore SDK opens automatically to:
-
-- Listen for real-time updates (if onSnapshot is used anywhere)
-- Keep the auth session alive
-- Enable offline persistence
-
-**In our codebase**, we never use `onSnapshot` (confirmed by grep — zero results). But the SDK opens these channels anyway as part of its initialization. They sometimes fail with `Fetch failed` errors, which are **usually harmless** — the SDK falls back to normal HTTPS requests.
-
-If they bother you (console noise), we can configure the SDK to disable them:
-
-```javascript
-const db = getFirestore(app);
-// Disable persistent connections
-db.settings({ experimentalForceLongPolling: true });
+BROWSER:                                       VERCEl SERVER:
+                                              (temporary Node.js process)
+fetch("/api/enroll", {                          │
+  method: "POST",                               │
+  body: JSON.stringify({                        │
+    fullName: "John",                           │
+    email: "john@test.com",                     │
+    program: "Quran Hifz"                       │
+  })                                            │
+})                                              │
+      │                                         │
+      └────────── HTTPS request ──────────────► │
+                                                │
+                                                ├── Parse request body
+                                                ├── Validate fields
+                                                ├── Write to Firestore (Admin SDK)
+                                                ├── Send email to John
+                                                ├── Send email to board
+                                                │
+      ◄────────── { success: true } ────────────┤
+      │                                         │
+console.log("Success!");                        │ (process shuts down)
 ```
 
 ---
 
-## 4. Layer 2: Browser ↔ Next.js Server (API Routes)
+## 5. Why You Can't Visit /api/rsvp in a Browser
 
-### What Are API Routes?
+You tried: `https://mhma-update.vercel.app/api/rsvp` and got "page not working".
 
-API routes are files in `app/api/**/route.ts` that Next.js turns into HTTP endpoints.
+**This is normal and expected.** Here's why:
+
+### GET vs POST
+
+When you type a URL into a browser and press Enter, the browser sends a **GET request**:
 
 ```
-File: app/api/events/route.ts
-URL:  https://mhma-update.vercel.app/api/events
-File: app/api/rsvp/route.ts
-URL:  https://mhma-update.vercel.app/api/rsvp
+GET https://mhma-update.vercel.app/api/rsvp
 ```
 
-### How They Work
+But our API route only handles **POST requests**:
 
 ```typescript
-// app/api/rsvp/route.ts — runs on the SERVER only
-import { NextRequest, NextResponse } from "next/server";
-
-export async function POST(req: NextRequest) {
-  // 1. Parse the request body (JSON sent by browser)
-  const body = await req.json();
-
-  // 2. Do server-side work (write to Firestore, send emails)
-  // ... (uses Admin SDK — Layer 3)
-
-  // 3. Return response to browser
-  return NextResponse.json({ success: true });
+// app/api/rsvp/route.ts
+export async function POST(req: NextRequest) {  // <-- only POST
+  // ...
 }
 ```
 
-### Where Do They Run?
+There is no `GET` handler, so the server returns an error (usually 405 Method Not Allowed).
 
+### How to Actually Test an API Route
 
-| Environment | Location                                |
-| ----------- | --------------------------------------- |
-| Development | Your computer (`localhost:3000`)        |
-| Production  | Vercel's servers (serverless functions) |
+You need to send a POST request. You can do this from:
 
-
-When deployed, each API route becomes a **serverless function** on Vercel. When someone requests `/api/rsvp`, Vercel spins up a Node.js process, runs the route handler, and returns the response. The process shuts down shortly after.
-
-### How Are They Called?
-
+**Method 1: From a web page (the normal way)**
 ```javascript
-// From ANY page — client or server component
 const res = await fetch("/api/rsvp", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ fullName: "John", email: "john@..." }),
+  body: JSON.stringify({
+    fullName: "John",
+    email: "john@test.com",
+    eventTitle: "Eid Festival",
+    attendees: 2,
+  }),
+});
+const data = await res.json();
+console.log(data); // { success: true, id: "abc123" }
+```
+
+**Method 2: From curl (terminal)**
+```bash
+curl -X POST https://mhma-update.vercel.app/api/rsvp \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":"John","email":"john@test.com","eventTitle":"Eid Festival","attendees":2}'
+```
+
+**Method 3: From Postman or Insomnia (GUI tool)**
+
+Open Postman, create a POST request to the URL, set body to JSON, and send.
+
+### But GET Endpoints DO Work in Browser
+
+API routes that handle GET requests work in the browser:
+
+```typescript
+// app/api/events/route.ts
+export async function GET() {  // <-- handles GET
+  // ...
+}
+```
+
+If you visit `https://mhma-update.vercel.app/api/events` in your browser, you'll see raw JSON:
+
+```json
+[
+  {
+    "id": "abc123",
+    "title": "Eid Festival",
+    "date": "2026-06-15",
+    "rsvpCount": 15
+  },
+  {
+    "id": "def456",
+    "title": "Quran Class",
+    "date": "2026-07-01",
+    "rsvpCount": 8
+  }
+]
+```
+
+That's the JSON data the page uses to display events. The browser just displays it as text because there's no HTML formatting.
+
+---
+
+## 6. Real Code: The Complete RSVP Submission (step by step)
+
+Here is EVERY file involved, with line numbers and comments:
+
+### Step 1: The RSVP Form Page (`/rsvp/page.tsx`)
+
+```typescript
+// LINE 66-74 — this is what runs when user clicks "Submit RSVP"
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setSubmitting(true);
+
+  try {
+    // 👇 LAYER 2: Sends data to OUR SERVER (Vercel)
+    // NOT directly to Firestore
+    const res = await fetch("/api/rsvp", {
+      method: "POST",                          // Tell server: "I'm creating data"
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({                   // The form data the user filled in
+        eventId: selectedEvent,                // e.g., "abc123"
+        eventTitle: event?.title,              // e.g., "Eid Festival"
+        fullName: formData.fullName,           // e.g., "John Doe"
+        email: formData.email,                 // e.g., "john@test.com"
+        phone: formData.phone,
+        attendees: formData.attendees,          // e.g., 2
+        notes: formData.notes,
+      }),
+    });
+
+    const data = await res.json();  // Wait for server response
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to submit RSVP");
+    }
+
+    // If we get here, the server wrote to Firestore AND sent emails
+    setSubmitted(true);  // Show "Thank you" message
+  } catch (err: any) {
+    setError(err.message);
+  }
+};
+```
+
+### Step 2: The API Route (`/api/rsvp/route.ts`)
+
+```typescript
+// This runs on VERCEl's SERVER, not in the browser
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  // body = { fullName: "John Doe", email: "john@test.com", ... }
+
+  // 👇 LAYER 3: Write to Firestore using Admin SDK
+  const rsvpRef = await firestore.collection("rsvps").add({
+    eventId: body.eventId || null,
+    eventTitle: body.eventTitle,
+    fullName: body.fullName,
+    email: body.email,
+    phone: body.phone || "",
+    attendees: parseInt(body.attendees) || 1,
+    notes: body.notes || "",
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  });
+
+  // 👇 SERVER-ONLY: Send confirmation email
+  await sendEmail(email, `RSVP Confirmed - ${body.eventTitle}`, ...);
+
+  // 👇 SERVER-ONLY: Notify board members
+  await notifyBoard(`New RSVP - ${body.eventTitle}`, ...);
+
+  return NextResponse.json({ success: true, id: rsvpRef.id });
+}
+```
+
+### Step 3: The Data Flow Diagram
+
+```
+Your Laptop (Browser)         Vercel's Server (Cloud)         Google Cloud
+─────────────────────         ──────────────────────          ────────────
+
+1. User fills out
+   RSVP form
+      │
+      ▼
+2. fetch("/api/rsvp", {  ────► 3. Server receives POST
+   method: "POST",                    │
+   body: {...}                        ├── 4. Parses form data
+   })                                  │
+                                      ├── 5. Calls firestore
+                                      │    .collection("rsvps")
+                                      │    .add({...})       ────► 6. Creates document
+                                      │                              in rsvps collection
+                                      │
+                                      ├── 7. Calls sendEmail()  ──► Sends confirmation
+                                      │                              to user's email
+                                      ├── 8. Calls notifyBoard() ──► Sends notification
+                                      │                              to board's email
+                                      │
+      ◄──── 9. { success: true } ─────┤
+      │
+10. Shows
+    "Thank you"
+    message
+```
+
+### Why Not Just Call addRSVP() Directly?
+
+The function `addRSVP()` exists in `lib/firebase.ts`:
+
+```typescript
+// lib/firebase.ts — this function exists but IS NOT USED by the RSVP page
+export async function addRSVP(data) {
+  const ref = await addDoc(collection(db, "rsvps"), {
+    ...data,
+    status: "pending",
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+```
+
+If the RSVP page called this instead of `/api/rsvp`:
+
+```javascript
+// What the page COULD do (but doesn't):
+await addRSVP({
+  fullName: "John",
+  email: "john@test.com",
+  eventTitle: "Eid Festival",
 });
 ```
 
-The browser makes a normal HTTP request to the SAME domain as the website. There is no CORS issue because it's the same origin.
-
-### Complete Inventory of API Routes
-
-
-| File                           | URL                | Method | Purpose                             |
-| ------------------------------ | ------------------ | ------ | ----------------------------------- |
-| `app/api/rsvp/route.ts`        | `/api/rsvp`        | POST   | Submit RSVP + send emails           |
-| `app/api/enroll/route.ts`      | `/api/enroll`      | POST   | Submit enrollment + send emails     |
-| `app/api/contact/route.ts`     | `/api/contact`     | POST   | Submit contact form + send email    |
-| `app/api/events/route.ts`      | `/api/events`      | GET    | Get events with RSVP counts         |
-| `app/api/programs/route.ts`    | `/api/programs`    | GET    | Get programs with enrollment counts |
-| `app/api/about-stats/route.ts` | `/api/about-stats` | GET    | Get aggregated community stats      |
-| `app/api/about-stats/route.ts` | `/api/about-stats` | POST   | Update about stats (board only)     |
-
+The data would still reach Firestore. But **no email would be sent**. Nobody would know someone RSVP'd. The board would have to manually check the dashboard.
 
 ---
 
-## 5. Layer 3: Next.js Server ↔ Firestore (Firebase Admin SDK)
+## 7. Real Code: The Complete Enrollment Submission
 
-### What Is the Admin SDK?
+Same pattern as RSVP. Here's the actual code from `/enroll/page.tsx`:
 
-The Admin SDK is a special Firebase library for **server-side** use. It uses a service account (a JSON key file) to authenticate directly with Google, bypassing all security rules.
+```typescript
+// /enroll/page.tsx, LINE 86-93
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    // 👇 LAYER 2: Send to OUR SERVER
+    const res = await fetch("/api/enroll", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        program: formData.program,
+        message: formData.message,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed");
+    setSuccess(true);  // Show "Enrollment Submitted" message
+  } catch (error) {
+    setError("Enrollment failed. Please try again.");
+  }
+};
+```
+
+And the server route (`/api/enroll/route.ts`):
+
+```typescript
+// THIS IS THE COMPLETE FILE — every line
+export async function POST(req: NextRequest) {
+  try {
+    // 1. Read form data
+    const { fullName, email, phone, program, message } = await req.json();
+
+    // 2. Validate
+    if (!fullName || !email) {
+      return NextResponse.json({ error: "Name and email required" }, { status: 400 });
+    }
+
+    // 3. Write to Firestore (Admin SDK)
+    await firestore.collection("enrollments").add({
+      fullName, email, phone: phone || "",
+      program: program || "", message: message || "",
+      status: "pending", createdAt: Timestamp.now(),
+    });
+
+    // 4. Send emails (browser can't do this)
+    await Promise.allSettled([
+      sendEmail(email, "Enrollment Received", confirmationEmail(fullName, ...)),
+      notifyBoard("New Enrollment",
+        `New enrollment from ${fullName} (${email}) for ${program || "N/A"}.`),
+    ]);
+
+    // 5. Return success
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+```
+
+---
+
+## 8. Real Code: Server-Side Data Aggregation (/api/events)
+
+**Server-side data aggregation** means: fetching data from multiple collections ON THE SERVER, combining it, and sending the result to the browser as ONE response.
+
+### Without Aggregation (Browser does the work)
 
 ```javascript
-// lib/firebase-admin.ts
-import admin from "firebase-admin";
+// The browser would need to make TWO requests:
+const events = await fetchEvents(100);           // Request 1: get events
+const rsvps = await fetchRSVPs(200);             // Request 2: get RSVPs
 
-// This runs ONLY on the server (never in browser)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-  });
-}
-
-export const firestore = admin.firestore();
+// Then manually combine them in the browser:
+const eventsWithCounts = events.map(event => ({
+  ...event,
+  rsvpCount: rsvps.filter(r => r.eventTitle === event.title).length,
+}));
 ```
 
-### Key Difference from Client SDK
+### With Aggregation (Server does the work)
 
+```typescript
+// app/api/events/route.ts — runs on VERCEl's SERVER
 
-| Aspect                       | Client SDK (browser)                           | Admin SDK (server)                 |
-| ---------------------------- | ---------------------------------------------- | ---------------------------------- |
-| Auth method                  | Firebase API key + user token                  | Service account (server-to-server) |
-| Security rules               | ✅ Enforced                                     | ❌ Bypassed                         |
-| Can send emails              | ❌                                              | ✅ (with email library)             |
-| Has access to secrets        | ❌ (all env vars with NEXT_PUBLIC_ are exposed) | ✅ (env vars stay secret)           |
-| Environment variables prefix | `NEXT_PUBLIC_*`                                | Any (no prefix needed)             |
+// Step 1: Fetch ALL events
+const eventsSnap = await firestore.collection("events").get();
 
+// Step 2: Fetch ALL RSVPs
+const rsvpsSnap = await firestore.collection("rsvps").get();
 
-### Why the Admin SDK Exists
+// Step 3: Count RSVPs per event (runs on server)
+const rsvpCounts: Record<string, number> = {};
+rsvpsSnap.forEach(doc => {
+  const title = doc.data().eventTitle;
+  rsvpCounts[title] = (rsvpCounts[title] || 0) + 1;
+});
 
-1. **Email sending** — requires SMTP credentials stored in secret env vars
-2. **Admin operations** — like updating about-stats where you need to verify the user's role first
-3. **Server-side aggregation** — combining data from multiple collections efficiently
-4. **Data validation** — more thorough validation than security rules allow
+// Step 4: Attach counts to events
+const events = eventsSnap.docs.map(doc => ({
+  id: doc.id,
+  ...doc.data(),
+  rsvpCount: rsvpCounts[doc.data().title] || 0,
+}));
+
+// Step 5: Send ONE combined response
+return NextResponse.json(events);
+```
+
+### Why Aggregation Is Better on the Server
+
+| Aspect | Browser does it | Server does it |
+|--------|----------------|----------------|
+| Requests | 2 separate requests | 1 request |
+| Data over network | Events + RSVPs = more bytes | Just the combined result |
+| Logic visibility | Everyone can see the code | Hidden from browser |
+| Speed | Depends on browser JS | Server is typically faster |
+| Firestore reads | Same reads | Same reads (both read events + RSVPs) |
+
+### The /api/about-stats Route — Aggregation Heavyweight
+
+This route fetches from **12 collections** in parallel:
+
+```typescript
+// app/api/about-stats/route.ts
+const [
+  statsSnap, programsSnap, eventsSnap, usersSnap, donationSnap,
+  enrollmentSnap, rsvpSnap, subscriberSnap, contactSnap,
+  pledgeSnap, volunteerSnap, newsSnap,
+] = await Promise.all([
+  firestore.collection("aboutStats").doc("stats").get(),
+  firestore.collection("programs").get(),
+  firestore.collection("events").get(),
+  // ... 9 more collections
+]);
+
+// Calculate totals, filter by date range, return as single JSON
+return NextResponse.json({
+  programsCount: programsSnap.size,
+  eventsCount: eventsSnap.size,
+  rsvpCount: rsvpSnap.size,
+  // ... 15+ calculated stats
+});
+```
+
+Without this API route, the About page would need to make **12 separate Firestore calls** from the browser. With it, it makes **1 call to /api/about-stats**.
 
 ---
 
-## 6. Which Pages Use Which Layer? (Actual Code Analysis)
+## 9. The 7 Reasons for API Routes — Explained with Code
 
-I grepped the entire codebase. Here is exactly what each page uses:
+### Reason 1: Sending Emails
 
-### Public Forms (RSVP, Enroll, Contact)
-
-
-| Page               | Imports from firebase.ts                  | Uses Layer 1?      | Uses Layer 2?                      |
-| ------------------ | ----------------------------------------- | ------------------ | ---------------------------------- |
-| `/rsvp/page.tsx`   | `fetchEvents` only (reads event list)     | ✅ (reads events)   | ✅ `fetch("/api/rsvp")` (submits)   |
-| `/enroll/page.tsx` | `fetchPrograms` only (reads program list) | ✅ (reads programs) | ✅ `fetch("/api/enroll")` (submits) |
-| Contact page       | (not checked, but likely similar pattern) |                    | ✅ `fetch("/api/contact")`          |
-
-
-**These forms do:**
-
-- Read data via Layer 1 (Client SDK) — e.g., fetch event list for dropdown
-- Write data via Layer 2 + 3 (API route + Admin SDK) — submit the form + send emails
-
-### Dashboard Pages (Board Members)
-
-
-| Page                           | Imports from firebase.ts | Uses Layer 1? | Uses Layer 2? |
-| ------------------------------ | ------------------------ | ------------- | ------------- |
-| `/dashboard/events/page.tsx`   | CRUD functions           | ✅ (all CRUD)  | ❌             |
-| `/dashboard/programs/page.tsx` | CRUD functions           | ✅ (all CRUD)  | ❌             |
-| `/dashboard/users/page.tsx`    | User functions           | ✅ (all CRUD)  | ❌             |
-| Other dashboard pages          | Various CRUD             | ✅             | ❌             |
-
-
-**Dashboard pages do:**
-
-- All CRUD via Layer 1 (Client SDK) — direct browser-to-Firestore
-- No API routes needed — board members are authenticated, no emails needed
-
-### Public Pages That Show Data
-
-
-| Page                 | Imports                                     | Uses Layer 1? | Uses Layer 2?                              |
-| -------------------- | ------------------------------------------- | ------------- | ------------------------------------------ |
-| `/events/page.tsx`   | `fetchEvents` or `fetch("/api/events")`     | Depends       | Uses `/api/events` for RSVP counts         |
-| `/programs/page.tsx` | `fetchPrograms` or `fetch("/api/programs")` | Depends       | Uses `/api/programs` for enrollment counts |
-| `/about/page.tsx`    | `fetch("/api/about-stats")`                 | ❌             | ✅                                          |
-
-
-**These pages use API routes** to get aggregated data (events + RSVP counts combined in one response).
-
----
-
-## 7. Why API Routes Exist — Complete List of Reasons
-
-Here is every reason, with code evidence:
-
-### Reason 1: Email Sending (Primary)
-
-**Evidence:**
+**The browser literally cannot send email.** Email requires SMTP credentials (username + password for the email server). If we put those in the browser code, anyone could steal them.
 
 ```typescript
-// app/api/rsvp/route.ts lines 29-47
-try {
-  await Promise.allSettled([
-    sendEmail(email, `RSVP Confirmed - ${eventTitle}`, ...),
-    notifyBoard(`New RSVP - ${eventTitle}`, ...),
-  ]);
-} catch (_) {}
+// This only works on the server:
+import { sendEmail } from "@/lib/email";  // Uses SMTP credentials from env vars
+
+// In API route:
+await sendEmail(userEmail, "Confirmation", htmlContent);
+// ↑ The SMTP password is in process.env.SMTP_PASSWORD
+//   which only exists on Vercel's server, NOT in the browser
 ```
 
-The browser literally cannot send email. SMTP credentials are server-only secrets.
+**Without API routes:** No confirmation emails. Nobody knows someone RSVP'd until they check the dashboard manually.
 
-### Reason 2: Secure Admin SDK Operations
+### Reason 2: Admin SDK Operations
 
-**Evidence:**
+The Admin SDK has FULL access to Firestore — no security rules apply. This is useful for:
 
 ```typescript
-// app/api/about-stats/route.ts lines 123-136
+// app/api/about-stats/route.ts (POST handler)
+// Board member wants to update the "years serving" stat
+
+// Step 1: Verify the user is legit (server-side check)
 const decoded = await adminAuth.verifyIdToken(token);
 if (role !== "board_member" && role !== "administrator") {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
+
+// Step 2: Write using Admin SDK (bypasses security rules)
+await firestore.collection("aboutStats").doc("stats").set(
+  { yearsServing: 10 },
+  { merge: true }
+);
 ```
 
-The API route verifies the user's role on the server before performing the write. This is more secure than relying on client-side checks.
+This is more secure than relying solely on Firestore security rules.
 
 ### Reason 3: Server-Side Data Aggregation
 
-**Evidence:**
+Already explained above. Combining data from multiple collections on the server reduces network requests and hides logic.
+
+### Reason 4: Writing Data for Unauthenticated Users
+
+The public RSVP and Enrollment forms accept submissions from **anyone** — even people who aren't logged in. Firestore security rules would need to allow `allow create: if true` on the rsvps collection, which is less secure.
 
 ```typescript
-// app/api/events/route.ts
-const eventsSnap = await firestore.collection("events").get();
-const rsvpsSnap = await firestore.collection("rsvps").get();
-// Combine events + RSVP counts on the server
+// In the API route, we can validate server-side instead:
+if (!fullName || !email) {
+  return NextResponse.json({ error: "Name and email required" }, { status: 400 });
+}
+// We can also add rate limiting, spam checks, etc.
 ```
 
-Instead of the client making 2 requests and doing the merge, the server does it in one request. This is faster and more efficient.
+### Reason 5: Rate Limiting, Spam Protection
 
-### Reason 4: Write Data on Behalf of Users Without Auth
-
-**Evidence:**
+We can add reCAPTCHA or rate limiting in the API route:
 
 ```typescript
-// app/api/enroll/route.ts
-// No auth check — anyone can submit enrollment
-const { fullName, email } = await req.json();
-await firestore.collection("enrollments").add({ ... });
+// Future enhancement — not in code yet, but possible:
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for");
+  
+  // Check: has this IP submitted more than 5 times in the last minute?
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  // Check reCAPTCHA token
+  const { recaptchaToken, ...formData } = await req.json();
+  if (!await verifyRecaptcha(recaptchaToken)) {
+    return NextResponse.json({ error: "reCAPTCHA failed" }, { status: 400 });
+  }
+
+  // ... process normally
+}
 ```
 
-The public enrollment form accepts submissions from anyone — even non-logged-in users. The API route writes to Firestore using the Admin SDK (bypassing rules that require auth).
-
-### Reason 5: Rate Limiting and Spam Protection
-
-We could add rate limiting (e.g., max 1 submission per IP per minute) to the API route. This is impossible with direct Client SDK calls.
+You cannot do this with direct Client SDK calls.
 
 ### Reason 6: Server-Side Validation
 
-The API route can validate data more thoroughly than security rules allow:
+Firestore security rules are limited. You can check "is the user logged in?" and "is this field a string?" but not much else. API routes can do complex validation:
 
 ```typescript
-if (!fullName || !email) {
-  return NextResponse.json({ error: "Name and email required" }, { status: 400 });
+// In API route — can validate ANYTHING:
+if (!isValidEmail(email)) {
+  return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+}
+if (attendees < 1 || attendees > 100) {
+  return NextResponse.json({ error: "Attendees must be 1-100" }, { status: 400 });
+}
+if (containsProfanity(fullName)) {
+  return NextResponse.json({ error: "Please use a real name" }, { status: 400 });
 }
 ```
 
 ### Reason 7: Access to Server-Only Services
 
-The API route can use any Node.js library — email, PDF generation, image processing, etc.
+The server can use ANY Node.js library. Examples:
+
+```typescript
+// Generate PDF certificates (future feature)
+import PDFDocument from "pdfkit";
+const doc = new PDFDocument();
+doc.text("Certificate of Completion");
+doc.pipe(fs.createWriteStream("certificate.pdf"));
+
+// Process images
+import sharp from "sharp";
+const resized = await sharp(image).resize(800, 600).toBuffer();
+
+// Call external APIs (with secret keys)
+const stripePayment = await stripe.charges.create({ amount: 1000 });
+```
+
+None of these work in the browser because they need access to the file system, secret API keys, or Node.js specific APIs.
 
 ---
 
-## 8. The Full Lifecycle of an RSVP Submission
+## 10. What Would It Look Like Without API Routes?
 
-```
-STEP 1: User opens /rsvp page
-         │
-         ▼
-STEP 2: Page loads events for dropdown
-         │  fetchEvents(100)  ← Layer 1 (Client SDK)
-         │  → firestore.googleapis.com → returns event list
-         ▼
-STEP 3: User fills form and clicks Submit
-         │
-         ▼
-STEP 4: Page calls fetch("/api/rsvp", { method: "POST", body: formData })
-         │  ← This is Layer 2 (API Route)
-         ▼
-STEP 5: Vercel serverless function starts
-         │  app/api/rsvp/route.ts runs
-         ▼
-STEP 6: Parse form data
-         │  const body = await req.json()
-         ▼
-STEP 7: Write to Firestore
-         │  firestore.collection("rsvps").add({...})  ← Layer 3 (Admin SDK)
-         │  → Goes to firestore.googleapis.com with service account credentials
-         │  → Bypasses security rules
-         ▼
-STEP 8: Send emails
-         │  sendEmail(user, "RSVP Confirmed", ...)  ← Server only!
-         │  notifyBoard("New RSVP", ...)
-         ▼
-STEP 9: Return success
-         │  return NextResponse.json({ success: true })
-         ▼
-STEP 10: Browser shows "Thank you" to user
+If we removed ALL API routes and did everything client-side:
 
-TOTAL FIRESTORE READS: 1 (step 2 — fetch events)
-TOTAL FIRESTORE WRITES: 1 (step 7 — add rsvp doc)
-TOTAL API ROUTE CALLS: 1 (step 4 — /api/rsvp)
+```javascript
+// /rsvp/page.tsx — RSVP form WITHOUT the API route
+import { addRSVP } from "@/lib/firebase";
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  // Direct browser-to-Firestore write:
+  const id = await addRSVP({
+    fullName: "John",
+    email: "john@test.com",
+    eventTitle: "Eid Festival",
+    attendees: 2,
+  });
+  // Data is saved, but NO email is sent
+  // Board members must manually check the dashboard
+  // No rate limiting, no server validation
+  // The form works for anyone (logged in or not)
+};
 ```
 
-### What If We Used Client SDK Instead?
+**What we'd lose:**
+1. ✅ Confirmation email to the user — GONE
+2. ✅ Board notification email — GONE
+3. ✅ Server-side validation — GONE
+4. ✅ Rate limiting / spam protection — GONE
+5. ✅ reCAPTCHA — GONE
+6. ✅ RSVP counts on Events page (need /api/events) — GONE
 
-```
-STEP 1: User opens /rsvp page
-STEP 2: Page loads events for dropdown
-         │  fetchEvents(100) ← Layer 1
-STEP 3: User fills form and clicks Submit
-STEP 4: Page calls addRSVP(formData)  ← Layer 1
-         │  → firestore.googleapis.com → creates document
-         │  → Security rules check: "allow create: if true"
-STEP 5: Browser shows "Thank you"
-STEP 6: ... no email is sent. Nobody knows someone RSVP'd.
-```
+**What we'd gain:**
+1. ✅ Simpler code (no server round-trip)
+2. ✅ Faster response (no server spin-up time)
+3. ✅ Fewer Vercel function invocations
 
-**The difference:** With Client SDK, no email. The board would need to manually check the dashboard to see new RSVPs.
+### The Tradeoff
+
+Every API route tradeoff:
+
+| Use API Route when... | Use Client SDK when... |
+|-----------------------|----------------------|
+| Need to send email | No email needed |
+| Need server validation | Security rules are enough |
+| Need Admin SDK access | Client SDK access is sufficient |
+| Need to aggregate data | Simple single-collection read |
+| Need rate limiting | No spam concerns |
+| Form is public (non-logged-in users) | User is already authenticated |
 
 ---
 
-## 9. The Full Lifecycle of a Dashboard CRUD Operation
+## 11. Your Questions Answered Directly
+
+### "What are HTTP endpoints and what do those URLs lead to?"
+
+An HTTP endpoint is a URL that, when requested, runs code on a server and returns data. `https://mhma-update.vercel.app/api/rsvp` leads to the file `app/api/rsvp/route.ts` on Vercel's servers. When you send a POST request to it, Vercel runs that code and sends back JSON.
+
+### "Why is /api/rsvp broken when I visit it in browser?"
+
+Because your browser sends a GET request, but the route only handles POST. Think of it like a restaurant: you walked in expecting a waiter to take your order, but the restaurant only accepts phone orders. The API route IS working — it's just waiting for the right type of request.
+
+### "Why not save directly to Firestore from the browser?"
+
+You CAN. The `addRSVP()` function in `lib/firebase.ts` would work fine. But the board wanted **email notifications** — and browsers can't send email. The API route is the solution.
+
+### "Wait, is Vercel handling backend stuff?"
+
+Yes. Vercel is a **cloud computing platform** that runs both:
+- **Frontend**: Serving pages to browsers
+- **Backend**: Running serverless functions (your API routes)
+
+Think of Vercel as a computer in the cloud that runs your Next.js app. The `page.tsx` files render in the browser, but the `api/**/route.ts` files run ON VERCEL'S SERVERS.
+
+### "So Vercel sends the data to Firestore for the RSVP form?"
+
+Exactly. The flow is:
 
 ```
-Board member creates an event via Dashboard → Events:
-
-STEP 1: User fills "Add Event" form
-         │
-         ▼
-STEP 2: Page calls addEvent(formData)  ← Layer 1 (Client SDK)
-         │  → firestore.googleapis.com
-         │  → Security rules check: "is user a board member?"
-         ▼
-STEP 3: Firestore creates document
-         │
-         ▼
-STEP 4: Page shows success toast
+Browser (user's laptop)
+  → fetch("/api/rsvp", { body: formData })  ← Layer 2
+    → Vercel server runs app/api/rsvp/route.ts
+      → firestore.collection("rsvps").add({...})  ← Layer 3 (Admin SDK)
+        → Firestore (Google Cloud) stores the data
+      → sendEmail() → user gets confirmation
+      → notifyBoard() → board gets notification
+    → Returns { success: true }
+  → Browser shows "Thank you"
 ```
 
-**No API route is used** because:
+Vercel is the middleman that takes the data from the browser, forwards it to Firestore, AND sends emails.
 
-- No email needs to be sent
-- The user is already authenticated as a board member
-- Security rules handle authorization
-- It's simpler and faster (no server round-trip)
+### "Why do we need Layer 3? If browser sends to Vercel, isn't that enough?"
 
----
-
-## 10. The Two Paths for Enrollment: Client SDK vs API Route
-
-The `addEnrollment()` function in `lib/firebase.ts` does exist, but it is **never imported by any page**. It's dead code.
+Layer 2 (browser → Vercel) gets the data to your server. But the data still needs to reach Firestore somehow. Layer 3 (Vercel → Firestore via Admin SDK) is how the server saves it.
 
 ```
-Path A (API Route — actually used):
-  /enroll/page.tsx
-    → fetch("/api/enroll")
-      → Admin SDK writes to Firestore
-      → Emails sent
-      → Returns success
-
-Path B (Client SDK — NOT used):
-  /enroll/page.tsx
-    → import { addEnrollment } from "@/lib/firebase"
-    → addEnrollment(data)
-      → Client SDK writes to Firestore
-      → No emails
-      → Returns success
+Layer 2: Browser ──► Vercel (your code runs here)
+Layer 3: Vercel ──► Firestore (data gets saved)
 ```
 
-If you wanted to use Path B, you would:
+Without Layer 3, the data would arrive at Vercel and stop. Nothing would be saved.
 
-1. Import `addEnrollment` in the page
-2. Call it instead of `fetch("/api/enroll")`
-3. Remove the confirmation email logic
-4. Keep the page simple
+### "What is server-side data aggregation?"
 
-**But we chose Path A because emails are important.** The board wants to know immediately when someone enrolls.
-
-### Could We Remove Path B Entirely?
-
-Yes. The `addEnrollment()` and `addRSVP()` functions in `lib/firebase.ts` are unused. They could be deleted. I would keep them because:
-
-- They serve as documentation of what a client-side write looks like
-- A future page might need a simple write without email
-- Deleting code that works is unnecessary risk
-
----
-
-## 11. What Counts as a Firestore Read/Write?
-
-**Every time you call `getDoc`, `getDocs`, `addDoc`, `updateDoc`, `deleteDoc` — that is one or more reads/writes.**
-
-
-| Operation                                   | Read count        | Write count |
-| ------------------------------------------- | ----------------- | ----------- |
-| `getDoc(doc(db, "events", "id"))`           | 1 read            | 0           |
-| `getDocs(collection(db, "events"))`         | 1 per document    | 0           |
-| `getDocs(query(...))`                       | 1 per matched doc | 0           |
-| `addDoc(collection(db, "rsvps"), {...})`    | 0                 | 1           |
-| `updateDoc(doc(db, "events", "id"), {...})` | 0                 | 1           |
-| `deleteDoc(doc(db, "events", "id"))`        | 0                 | 1           |
-
-
-**The Spark plan (free) gives:** 50k reads/day, 20k writes/day
-
-### Current Usage Estimate
-
-
-| Operation                                              | Daily reads       | Daily writes |
-| ------------------------------------------------------ | ----------------- | ------------ |
-| Dashboard page loads (10 board members × 5 pages each) | 50 × 10 = 500     | —            |
-| Public page loads (100 visitors × 3 pages each)        | 300 × 3 = 900     | —            |
-| RSVP submissions (10/day)                              | 10 (events list)  | 10           |
-| Enrollment submissions (5/day)                         | 5 (programs list) | 5            |
-| API routes (behind the scenes)                         | varies            | varies       |
-| **TOTAL**                                              | ~1,500            | ~20          |
-
-
-We are well within the free tier.
-
----
-
-## 12. How Many APIs Are There? (Complete Inventory)
-
-### External APIs (we consume)
-
-
-| API                         | Used by                  | Purpose             |
-| --------------------------- | ------------------------ | ------------------- |
-| Firebase Firestore REST API | Client SDK + Admin SDK   | Database operations |
-| Firebase Auth REST API      | `lib/firebase-client.ts` | Authentication      |
-| SMTP (email server)         | `lib/email.ts`           | Send emails         |
-
-
-### Internal APIs (we built)
-
-
-| Endpoint                | File                           | Purpose                          |
-| ----------------------- | ------------------------------ | -------------------------------- |
-| `POST /api/rsvp`        | `app/api/rsvp/route.ts`        | Submit RSVP + send emails        |
-| `POST /api/enroll`      | `app/api/enroll/route.ts`      | Submit enrollment + send emails  |
-| `POST /api/contact`     | `app/api/contact/route.ts`     | Submit contact form + send email |
-| `GET /api/events`       | `app/api/events/route.ts`      | Events with RSVP counts          |
-| `GET /api/programs`     | `app/api/programs/route.ts`    | Programs with enrollment counts  |
-| `GET /api/about-stats`  | `app/api/about-stats/route.ts` | Aggregated community stats       |
-| `POST /api/about-stats` | `app/api/about-stats/route.ts` | Update about stats (board only)  |
-
-
-### Invisible APIs (SDK-managed)
-
-
-| SDK                 | Target                           | Purpose                          |
-| ------------------- | -------------------------------- | -------------------------------- |
-| Firebase Client SDK | `firestore.googleapis.com`       | All DB operations from browser   |
-| Firebase Auth SDK   | `identitytoolkit.googleapis.com` | Login, registration, magic links |
-| Firebase Admin SDK  | `firestore.googleapis.com`       | All DB operations from server    |
-
-
-### Total: ~3 external APIs, ~7 internal endpoints
-
----
-
-## Quick Summary
+It means: instead of the browser making 5 separate requests and combining the data, the server does all the work in ONE request.
 
 ```
-Question: "Is the RSVP form sending data directly to Firestore from the browser?"
-Answer: NO. It sends data to our API route /api/rsvp, which runs on Vercel.
-The API route writes to Firestore using Admin SDK credentials (not the browser).
+Without aggregation:
+  Browser: GET /api/events → get events
+  Browser: GET /api/rsvps → get RSVPs  
+  Browser: manually count RSVPs per event
+  Browser: combine into one list
 
-Question: "Why not just use the Client SDK directly?"
-Answer: Because the API route sends confirmation emails + board notifications.
-The browser cannot send email. Also, the API route can validate data server-side.
-
-Question: "What about dashboard operations like creating events?"
-Answer: Those use the Client SDK directly (browser → Firestore).
-No email needed, no server-side aggregation needed. Simpler is better.
-
-Question: "Are there two APIs calling Firestore?"
-Answer: Yes. Client SDK (browser) and Admin SDK (server). They use different
-credentials, have different permissions, and are completely independent.
+With aggregation:
+  Browser: GET /api/events → get events with RSVP counts already attached
+  Server did the counting and combining before responding
 ```
 
+### "So there are multiple APIs?"
+
+Yes! Three different APIs working together:
+
+1. **Your API Routes** (7 of them): `/api/rsvp`, `/api/enroll`, `/api/events`, etc.
+2. **Firebase Client SDK** (browser → Firestore): `getDocs()`, `addDoc()`, etc.
+3. **Firebase Admin SDK** (server → Firestore): `admin.firestore().collection()`, etc.
+
+And one more:
+4. **External dependency**: The email server (SMTP) — Vercel's server talks to it to send emails.
