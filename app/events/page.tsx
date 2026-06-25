@@ -26,6 +26,8 @@ import { useAuth } from "@/lib/auth-context";
 import { usePageData } from "@/lib/page-data-context";
 import BoardMemberCard from "@/app/components/BoardMemberCard";
 import { boardOfDirectors } from "@/app/lib/board-data";
+import { getCachedData } from "@/lib/cache-manager";
+import { fetchEvents, fetchRSVPs } from "@/lib/firebase";
 
 interface Slide {
   id: number;
@@ -58,19 +60,44 @@ export default function EventsPage() {
   }, []);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadEvents = async () => {
       try {
-        // Use API proxy for reliable fetching (handles CORS and retries)
-        const timestamp = Date.now();
-        const response = await fetch(`/api/events?_=${timestamp}`, {
-          cache: 'no-store',
+        const [{ data: events }, { data: rsvps }] = await Promise.all([
+          getCachedData("events", () => fetchEvents(50)),
+          getCachedData("rsvps", () => fetchRSVPs(1000)),
+        ]);
+
+        const rsvpCounts: Record<
+          string,
+          { total: number; confirmed: number; pending: number; cancelled: number }
+        > = {};
+
+        (rsvps || []).forEach((r: any) => {
+          const key = r.eventTitle || r.eventId || "unknown";
+          if (!rsvpCounts[key]) rsvpCounts[key] = { total: 0, confirmed: 0, pending: 0, cancelled: 0 };
+          rsvpCounts[key].total++;
+          if (r.status === "confirmed") rsvpCounts[key].confirmed++;
+          else if (r.status === "pending") rsvpCounts[key].pending++;
+          else if (r.status === "cancelled") rsvpCounts[key].cancelled++;
         });
-        if (!response.ok) throw new Error("Failed to fetch events");
-        const data = await response.json();
 
-        setRawEvents(data);
+        const enrichedEvents = (events || []).map((event: any) => {
+          const counts =
+            rsvpCounts[event.title] ||
+            rsvpCounts[event.id] ||
+            ({ total: 0, confirmed: 0, pending: 0, cancelled: 0 } as any);
+          return {
+            ...event,
+            rsvpCount: counts.total,
+            rsvpConfirmed: counts.confirmed,
+            rsvpPending: counts.pending,
+            rsvpCancelled: counts.cancelled,
+          };
+        });
 
-        const eventSlides: Slide[] = data.map((event: any) => {
+        setRawEvents(enrichedEvents);
+
+        const eventSlides: Slide[] = enrichedEvents.map((event: any) => {
           let formattedDate = event.date || "";
           if (formattedDate && /^\d{8}$/.test(formattedDate)) {
             const year = formattedDate.substring(0, 4);
@@ -107,7 +134,7 @@ export default function EventsPage() {
         });
 
         setSlides(eventSlides);
-        setPageData({ events: data, currentPath: '/events' });
+        setPageData({ events: enrichedEvents, currentPath: "/events" });
       } catch (err) {
         console.error("Failed to fetch events:", err);
       } finally {
@@ -115,7 +142,7 @@ export default function EventsPage() {
       }
     };
 
-    fetchEvents();
+    loadEvents();
   }, [setPageData]);
 
   return (

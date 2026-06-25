@@ -1,5 +1,5 @@
-import { db } from "./firebase-client";
-import { invalidateCache, appendToCache, updateCachedItem, removeCachedItem } from "./cache-manager";
+import { auth, db } from "./firebase-client";
+import { invalidateCache, appendToCache, updateCachedItem, removeCachedItem, setCacheServerTimestamp } from "./cache-manager";
 import {
   collection,
   doc,
@@ -27,6 +27,34 @@ function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
       setTimeout(() => reject(new Error(`TIMEOUT: ${label} exceeded ${WRITE_TIMEOUT}ms`)), WRITE_TIMEOUT)
     ),
   ]);
+}
+
+type MetadataTouchKey = "events" | "rsvps";
+
+// Board-dashboard writes must also update `metadata/cacheTimestamps` so other browsers
+// invalidate their localStorage caches on the next reload.
+async function touchMetadataTimestamps(keys: MetadataTouchKey[]): Promise<number | null> {
+  try {
+    const idToken = await auth.currentUser?.getIdToken();
+    if (!idToken) return null;
+
+    const res = await fetch("/api/metadata-timestamps-touch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ keys }),
+    });
+
+    if (!res.ok) return null;
+
+    const json: any = await res.json().catch(() => null);
+    const updatedAt = json?.updatedAt;
+    return typeof updatedAt === "number" ? updatedAt : null;
+  } catch {
+    return null;
+  }
 }
 
 export interface FirebaseEvent {
@@ -171,6 +199,8 @@ export async function addEvent(data: Omit<FirebaseEvent, "id" | "createdAt">): P
     );
     console.log("Firestore: addEvent success, id:", ref.id);
     appendToCache('events', { id: ref.id, ...data });
+    const updatedAt = await touchMetadataTimestamps(["events"]);
+    if (updatedAt) setCacheServerTimestamp("events", updatedAt);
     return ref.id;
   } catch (err) {
     console.error("Firestore: addEvent FAILED:", err);
@@ -191,6 +221,8 @@ export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Pro
     );
     updateCachedItem('events', id, data);
     console.log("Firestore: updateEvent success, id:", id);
+    const updatedAt = await touchMetadataTimestamps(["events"]);
+    if (updatedAt) setCacheServerTimestamp("events", updatedAt);
   } catch (err) {
     console.error("Firestore: updateEvent FAILED:", err);
     throw err;
@@ -202,6 +234,8 @@ export async function deleteEvent(id: string): Promise<void> {
     await withTimeout(deleteDoc(doc(db, collections.events, id)), "deleteEvent");
     removeCachedItem('events', id);
     console.log("Firestore: deleteEvent success, id:", id);
+    const updatedAt = await touchMetadataTimestamps(["events"]);
+    if (updatedAt) setCacheServerTimestamp("events", updatedAt);
   } catch (err) {
     console.error("Firestore: deleteEvent FAILED:", err);
     throw err;
@@ -743,6 +777,8 @@ export async function addRSVP(data: Omit<FirebaseRSVP, "id" | "createdAt" | "sta
     );
     console.log("Firestore: addRSVP success, id:", ref.id);
     appendToCache('rsvps', { id: ref.id, ...data, status: "pending" });
+    const updatedAt = await touchMetadataTimestamps(["rsvps"]);
+    if (updatedAt) setCacheServerTimestamp("rsvps", updatedAt);
     return ref.id;
   } catch (err) {
     console.error("Firestore: addRSVP FAILED:", err);
@@ -758,6 +794,8 @@ export async function updateRSVP(id: string, data: Partial<FirebaseRSVP>): Promi
     );
     updateCachedItem('rsvps', id, data);
     console.log("Firestore: updateRSVP success, id:", id);
+    const updatedAt = await touchMetadataTimestamps(["rsvps"]);
+    if (updatedAt) setCacheServerTimestamp("rsvps", updatedAt);
   } catch (err) {
     console.error("Firestore: updateRSVP FAILED:", err);
     throw err;
@@ -769,6 +807,8 @@ export async function deleteRSVP(id: string): Promise<void> {
     await withTimeout(deleteDoc(doc(db, RSVP_COLLECTION, id)), "deleteRSVP");
     removeCachedItem('rsvps', id);
     console.log("Firestore: deleteRSVP success, id:", id);
+    const updatedAt = await touchMetadataTimestamps(["rsvps"]);
+    if (updatedAt) setCacheServerTimestamp("rsvps", updatedAt);
   } catch (err) {
     console.error("Firestore: deleteRSVP FAILED:", err);
     throw err;
