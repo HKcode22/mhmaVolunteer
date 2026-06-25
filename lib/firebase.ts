@@ -1,5 +1,5 @@
 import { db } from "./firebase-client";
-import { invalidateCache, appendToCache } from "./cache-manager";
+import { invalidateCache, appendToCache, updateCachedItem, removeCachedItem } from "./cache-manager";
 import {
   collection,
   doc,
@@ -143,6 +143,20 @@ export async function fetchEvents(limitCount = 10): Promise<FirebaseEvent[]> {
   return collectionData<FirebaseEvent>(snap);
 }
 
+export async function fetchEventsDirect(limitCount = 10000, dateFrom?: string, dateTo?: string): Promise<FirebaseEvent[]> {
+  const constraints: any[] = [orderBy("createdAt", "desc")];
+  if (dateFrom) constraints.push(where("createdAt", ">=", new Date(dateFrom)));
+  if (dateTo) {
+    const end = new Date(dateTo);
+    end.setDate(end.getDate() + 1);
+    constraints.push(where("createdAt", "<=", end));
+  }
+  constraints.push(limit(limitCount));
+  const q = query(collection(db, collections.events), ...constraints);
+  const snap = await getDocs(q);
+  return collectionData<FirebaseEvent>(snap);
+}
+
 export async function fetchEventById(id: string): Promise<FirebaseEvent | null> {
   const snap = await getDoc(doc(db, collections.events, id));
   if (!snap.exists()) return null;
@@ -175,7 +189,7 @@ export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Pro
       updateDoc(doc(db, collections.events, id), { ...data, updatedAt: serverTimestamp() }),
       "updateEvent"
     );
-    invalidateCache('events');
+    updateCachedItem('events', id, data);
     console.log("Firestore: updateEvent success, id:", id);
   } catch (err) {
     console.error("Firestore: updateEvent FAILED:", err);
@@ -186,7 +200,7 @@ export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Pro
 export async function deleteEvent(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.events, id)), "deleteEvent");
-    invalidateCache('events');
+    removeCachedItem('events', id);
     console.log("Firestore: deleteEvent success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteEvent FAILED:", err);
@@ -244,12 +258,13 @@ export async function updateProgram(id: string, data: Partial<FirebaseProgram>):
       await deleteDoc(doc(db, collections.programs, id));
       invalidateCache('programs');
       console.log("Firestore: updateProgram migrated from", id, "to", newSlug);
+      console.log("Firestore: full cache invalidation (slug changed)");
     } else {
       await withTimeout(
         updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
         "updateProgram"
       );
-      invalidateCache('programs');
+      updateCachedItem('programs', id, data);
       console.log("Firestore: updateProgram success, id:", id);
     }
   } catch (err) {
@@ -261,7 +276,7 @@ export async function updateProgram(id: string, data: Partial<FirebaseProgram>):
 export async function deleteProgram(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.programs, id)), "deleteProgram");
-    invalidateCache('programs');
+    removeCachedItem('programs', id);
     console.log("Firestore: deleteProgram success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteProgram FAILED:", err);
@@ -304,7 +319,7 @@ export async function updateJournalEntry(id: string, data: Partial<FirebaseJourn
       updateDoc(doc(db, collections.journal, id), { ...data, updatedAt: serverTimestamp() }),
       "updateJournalEntry"
     );
-    invalidateCache('journal');
+    updateCachedItem('journal', id, data);
     console.log("Firestore: updateJournalEntry success, id:", id);
   } catch (err) {
     console.error("Firestore: updateJournalEntry FAILED:", err);
@@ -315,7 +330,7 @@ export async function updateJournalEntry(id: string, data: Partial<FirebaseJourn
 export async function deleteJournalEntry(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.journal, id)), "deleteJournalEntry");
-    invalidateCache('journal');
+    removeCachedItem('journal', id);
     console.log("Firestore: deleteJournalEntry success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteJournalEntry FAILED:", err);
@@ -350,7 +365,7 @@ export async function updateEnrollment(id: string, data: Partial<FirebaseEnrollm
       updateDoc(doc(db, collections.enrollments, id), { ...data, updatedAt: serverTimestamp() }),
       "updateEnrollment"
     );
-    invalidateCache('enrollments');
+    updateCachedItem('enrollments', id, data);
     console.log("Firestore: updateEnrollment success, id:", id);
   } catch (err) {
     console.error("Firestore: updateEnrollment FAILED:", err);
@@ -361,7 +376,7 @@ export async function updateEnrollment(id: string, data: Partial<FirebaseEnrollm
 export async function deleteEnrollment(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.enrollments, id)), "deleteEnrollment");
-    invalidateCache('enrollments');
+    removeCachedItem('enrollments', id);
     console.log("Firestore: deleteEnrollment success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteEnrollment FAILED:", err);
@@ -396,7 +411,7 @@ export async function updateSchedulingRequest(id: string, data: Partial<Firebase
       updateDoc(doc(db, collections.schedulingRequests, id), { ...data, updatedAt: serverTimestamp() }),
       "updateSchedulingRequest"
     );
-    invalidateCache('schedulingRequests');
+    updateCachedItem('schedulingRequests', id, data);
     console.log("Firestore: updateSchedulingRequest success, id:", id);
   } catch (err) {
     console.error("Firestore: updateSchedulingRequest FAILED:", err);
@@ -407,7 +422,7 @@ export async function updateSchedulingRequest(id: string, data: Partial<Firebase
 export async function deleteSchedulingRequest(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.schedulingRequests, id)), "deleteSchedulingRequest");
-    invalidateCache('schedulingRequests');
+    removeCachedItem('schedulingRequests', id);
     console.log("Firestore: deleteSchedulingRequest success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteSchedulingRequest FAILED:", err);
@@ -427,7 +442,7 @@ export async function markContactSubmissionRead(id: string): Promise<void> {
       updateDoc(doc(db, collections.contactSubmissions, id), { read: true }),
       "markContactSubmissionRead"
     );
-    invalidateCache('contactSubmissions');
+    updateCachedItem('contactSubmissions', id, { read: true });
   } catch (err) {
     console.error("Firestore: markContactSubmissionRead FAILED:", err);
     throw err;
@@ -437,7 +452,7 @@ export async function markContactSubmissionRead(id: string): Promise<void> {
 export async function deleteContactSubmission(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.contactSubmissions, id)), "deleteContactSubmission");
-    invalidateCache('contactSubmissions');
+    removeCachedItem('contactSubmissions', id);
     console.log("Firestore: deleteContactSubmission success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteContactSubmission FAILED:", err);
@@ -506,7 +521,7 @@ export async function markInviteCodeUsed(code: string, usedBy: string): Promise<
   if (!snap.empty) {
     const docRef = doc(db, INVITE_CODES, snap.docs[0].id);
     await updateDoc(docRef, { used: true, usedBy, usedAt: serverTimestamp() });
-    invalidateCache('inviteCodes');
+    updateCachedItem('inviteCodes', snap.docs[0].id, { used: true, usedBy });
   }
 }
 
@@ -519,7 +534,7 @@ export async function fetchInviteCodes(): Promise<InviteCode[]> {
 export async function deleteInviteCode(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, INVITE_CODES, id)), "deleteInviteCode");
-    invalidateCache('inviteCodes');
+    removeCachedItem('inviteCodes', id);
     console.log("Firestore: deleteInviteCode success");
   } catch (err) {
     console.error("Firestore: deleteInviteCode FAILED:", err);
@@ -577,12 +592,12 @@ export async function addTestimonial(data: Omit<Testimonial, "id" | "createdAt">
 
 export async function updateTestimonial(id: string, data: Partial<Testimonial>): Promise<void> {
   await updateDoc(doc(db, TESTIMONIALS, id), data);
-  invalidateCache('testimonials');
+  updateCachedItem('testimonials', id, data);
 }
 
 export async function deleteTestimonial(id: string): Promise<void> {
   await deleteDoc(doc(db, TESTIMONIALS, id));
-  invalidateCache('testimonials');
+  removeCachedItem('testimonials', id);
 }
 
 // ─── Activity Log ───
@@ -741,7 +756,7 @@ export async function updateRSVP(id: string, data: Partial<FirebaseRSVP>): Promi
       updateDoc(doc(db, RSVP_COLLECTION, id), { ...data, updatedAt: serverTimestamp() }),
       "updateRSVP"
     );
-    invalidateCache('rsvps');
+    updateCachedItem('rsvps', id, data);
     console.log("Firestore: updateRSVP success, id:", id);
   } catch (err) {
     console.error("Firestore: updateRSVP FAILED:", err);
@@ -752,7 +767,7 @@ export async function updateRSVP(id: string, data: Partial<FirebaseRSVP>): Promi
 export async function deleteRSVP(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, RSVP_COLLECTION, id)), "deleteRSVP");
-    invalidateCache('rsvps');
+    removeCachedItem('rsvps', id);
     console.log("Firestore: deleteRSVP success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteRSVP FAILED:", err);
@@ -855,12 +870,12 @@ export async function addMasjidUpdate(data: Omit<FirebaseMasjidUpdate, "id" | "c
 
 export async function updateMasjidUpdate(id: string, data: Partial<FirebaseMasjidUpdate>): Promise<void> {
   await updateDoc(doc(db, MASJID_CONSTRUCTION, id), { ...data, updatedAt: serverTimestamp() });
-  invalidateCache('masjidConstruction');
+  updateCachedItem('masjidConstruction', id, data);
 }
 
 export async function deleteMasjidUpdate(id: string): Promise<void> {
   await deleteDoc(doc(db, MASJID_CONSTRUCTION, id));
-  invalidateCache('masjidConstruction');
+  removeCachedItem('masjidConstruction', id);
 }
 
 // ─── Pledges ───
@@ -926,12 +941,15 @@ export async function updatePledgeStatus(id: string, status: "fulfilled" | "canc
   if (status === "fulfilled") update.fulfilledAt = serverTimestamp();
   if (status === "cancelled") update.cancelledAt = serverTimestamp();
   await updateDoc(doc(db, PLEDGES, id), update);
-  invalidateCache('pledges');
+  const cacheUpdate = { ...update };
+  if (cacheUpdate.fulfilledAt) cacheUpdate.fulfilledAt = new Date().toISOString();
+  if (cacheUpdate.cancelledAt) cacheUpdate.cancelledAt = new Date().toISOString();
+  updateCachedItem('pledges', id, cacheUpdate);
 }
 
 export async function deletePledge(id: string): Promise<void> {
   await deleteDoc(doc(db, PLEDGES, id));
-  invalidateCache('pledges');
+  removeCachedItem('pledges', id);
 }
 
 // ─── Subscribers / Newsletter ───
@@ -962,12 +980,12 @@ export async function fetchSubscribers(limitCount = 200): Promise<Subscriber[]> 
 
 export async function unsubscribeSubscriber(id: string): Promise<void> {
   await updateDoc(doc(db, SUBSCRIBERS, id), { status: "unsubscribed", unsubscribedAt: serverTimestamp() });
-  invalidateCache('subscribers');
+  updateCachedItem('subscribers', id, { status: "unsubscribed", unsubscribedAt: new Date().toISOString() });
 }
 
 export async function deleteSubscriber(id: string): Promise<void> {
   await deleteDoc(doc(db, SUBSCRIBERS, id));
-  invalidateCache('subscribers');
+  removeCachedItem('subscribers', id);
 }
 
 // ─── Volunteers ───
@@ -1000,7 +1018,7 @@ export async function fetchVolunteers(limitCount = 200): Promise<VolunteerSubmis
 
 export async function deleteVolunteer(id: string): Promise<void> {
   await deleteDoc(doc(db, VOLUNTEERS_COLLECTION, id));
-  invalidateCache('volunteers');
+  removeCachedItem('volunteers', id);
 }
 
 // ─── Donations ───
@@ -1084,7 +1102,7 @@ export async function addManualDonation(data: Omit<Donation, "id" | "createdAt" 
 
 export async function deleteDonation(id: string): Promise<void> {
   await deleteDoc(doc(db, DONATIONS_COLLECTION, id));
-  invalidateCache('donations');
+  removeCachedItem('donations', id);
 }
 
 const FALLBACK_QUOTES = [
@@ -1155,12 +1173,12 @@ export async function addNews(data: Omit<NewsItem, "id" | "createdAt">): Promise
 
 export async function updateNews(id: string, data: Partial<NewsItem>): Promise<void> {
   await updateDoc(doc(db, NEWS_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
-  invalidateCache('news');
+  updateCachedItem('news', id, data);
 }
 
 export async function deleteNews(id: string): Promise<void> {
   await deleteDoc(doc(db, NEWS_COLLECTION, id));
-  invalidateCache('news');
+  removeCachedItem('news', id);
 }
 
 // ─── FAQ ───
@@ -1217,12 +1235,12 @@ export async function addKnowledgeDoc(data: Omit<KnowledgeDoc, "id" | "createdAt
 
 export async function updateKnowledgeDoc(id: string, data: Partial<KnowledgeDoc>): Promise<void> {
   await updateDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
-  invalidateCache('ai_knowledge');
+  updateCachedItem('ai_knowledge', id, data);
 }
 
 export async function deleteKnowledgeDoc(id: string): Promise<void> {
   await deleteDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id));
-  invalidateCache('ai_knowledge');
+  removeCachedItem('ai_knowledge', id);
 }
 
 export async function fetchFAQs(limitCount = 50): Promise<FAQItem[]> {
@@ -1239,12 +1257,12 @@ export async function addFAQ(data: Omit<FAQItem, "id" | "createdAt">): Promise<s
 
 export async function updateFAQ(id: string, data: Partial<FAQItem>): Promise<void> {
   await updateDoc(doc(db, FAQ_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
-  invalidateCache('faq');
+  updateCachedItem('faq', id, data);
 }
 
 export async function deleteFAQ(id: string): Promise<void> {
   await deleteDoc(doc(db, FAQ_COLLECTION, id));
-  invalidateCache('faq');
+  removeCachedItem('faq', id);
 }
 
 export { FALLBACK_QUOTES };

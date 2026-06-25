@@ -10,6 +10,38 @@ interface CacheEntry<T> {
   s: number;
 }
 
+// ─── Module-level batch metadata cache ───
+let metaTsPromise: Promise<Record<string, number>> | null = null;
+let metaTsCache: Record<string, number> | null = null;
+
+async function fetchAllTimestamps(): Promise<Record<string, number>> {
+  try {
+    const res = await fetch('/api/metadata-timestamps', { cache: 'no-cache' });
+    if (!res.ok) return {};
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
+
+function getCurrentTimestamps(): Promise<Record<string, number>> {
+  if (metaTsCache) return Promise.resolve(metaTsCache);
+  if (!metaTsPromise) {
+    metaTsPromise = fetchAllTimestamps().then(ts => {
+      metaTsCache = ts;
+      metaTsPromise = null;
+      return ts;
+    });
+  }
+  return metaTsPromise;
+}
+
+export function resetTimestampsCache(): void {
+  metaTsCache = null;
+  metaTsPromise = null;
+}
+
+// ─── Age filter (30-day rolling window) ───
 function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
   const cutoff = Date.now() - THIRTY_DAYS_MS;
   return items.filter((item: any) => {
@@ -21,64 +53,72 @@ function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
   });
 }
 
-export async function getCachedData<T>(
-  key: string,
-  fetchFn: () => Promise<T>,
-): Promise<{ data: T; fromCache: boolean }> {
-  const cacheKey = PREFIX + key;
-  const raw = localStorage.getItem(cacheKey);
+// No sanitization needed — all fields are required for rendering
 
-  if (raw) {
-    try {
-      const entry: CacheEntry<T> = JSON.parse(raw);
-      if (Date.now() - entry.t < TTL_24H) {
-        console.log(`[Cache] HIT  ${key} age=${((Date.now() - entry.t) / 1000 / 60).toFixed(0)}m`);
-        return { data: entry.d, fromCache: true };
-      }
-      console.log(`[Cache] EXP  ${key} age=${((Date.now() - entry.t) / 1000 / 60 / 60).toFixed(1)}h > 24h TTL`);
-      localStorage.removeItem(cacheKey);
-    } catch (parseErr) {
-      console.warn(`[Cache] CORRUPT ${key}:`, parseErr);
-      localStorage.removeItem(cacheKey);
-    }
-  }
-
-  const metaTs = await readMetadataTimestamp(key);
-  const cachedTsRaw = localStorage.getItem(cacheKey + '_lastTs');
-  const cachedTs = cachedTsRaw ? Number(cachedTsRaw) : 0;
-
-  if (metaTs !== null && metaTs > cachedTs) {
-    console.log(`[Cache] MISS ${key} (write detected meta=${metaTs} cached=${cachedTs})`);
-  } else if (metaTs === null) {
-    console.log(`[Cache] MISS ${key} (metadata API failed, fresh fetch)`);
-  } else {
-    console.log(`[Cache] MISS ${key} (no write — cache cleared or first visit)`);
-  }
-
-  return fetchAndCache(key, fetchFn, metaTs);
-}
-
-async function readMetadataTimestamp(key: string): Promise<number | null> {
+// ─── Cache entry helpers ───
+function getEntry<T>(key: string): CacheEntry<T> | null {
   try {
-    const res = await fetch('/api/metadata-timestamps', { cache: 'force-cache' });
-    if (!res.ok) {
-      console.warn(`[Cache] META-API ${key} returned ${res.status}`);
-      return null;
-    }
-    const meta = await res.json();
-    return meta[key] ?? null;
-  } catch (err) {
-    console.warn(`[Cache] META-API ${key} fetch failed:`, err);
+    const raw = localStorage.getItem(PREFIX + key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    localStorage.removeItem(PREFIX + key);
     return null;
   }
 }
 
+function setEntry<T>(key: string, entry: CacheEntry<T>): void {
+  localStorage.setItem(PREFIX + key, JSON.stringify(entry));
+}
+
+function removeEntry(key: string): void {
+  localStorage.removeItem(PREFIX + key);
+  localStorage.removeItem(PREFIX + key + '_lastTs');
+}
+
+// ─── Get data: checks cache, validates freshness via metadata, fetches if needed ───
+export async function getCachedData<T>(
+  key: string,
+  fetchFn: () => Promise<T>,
+): Promise<{ data: T; fromCache: boolean }> {
+  const entry = getEntry<T>(key);
+  const now = Date.now();
+
+  // Get current server timestamps (batched, fetched once per page load)
+  const allTs = await getCurrentTimestamps();
+  const serverTs = allTs[key] ?? 0;
+
+  if (entry) {
+    // Cache exists — check TTL
+    const age = now - entry.t;
+    if (age < TTL_24H) {
+      // Cache is fresh — check if server has newer data
+      if (entry.s >= serverTs) {
+        // ✓ No writes since cache — return cached data (0 reads)
+        console.log(`[Cache] HIT  ${key} age=${(age / 1000 / 60).toFixed(0)}m`);
+        return { data: entry.d, fromCache: true };
+      }
+      // Server has newer data — invalidate and refetch
+      console.log(`[Cache] STALE ${key} (server ts=${serverTs} > cache ts=${entry.s})`);
+      removeEntry(key);
+    } else {
+      // TTL expired
+      console.log(`[Cache] EXP  ${key} age=${(age / 1000 / 60 / 60).toFixed(1)}h`);
+      removeEntry(key);
+    }
+  }
+
+  // Cache MISS — fetch fresh data
+  console.log(`[Cache] MISS ${key} (fetching from Firestore)`);
+  return fetchAndCache(key, fetchFn, serverTs);
+}
+
+// ─── Fetch from Firestore and store in cache ───
 async function fetchAndCache<T>(
   key: string,
   fetchFn: () => Promise<T>,
-  existingMetaTs?: number | null,
+  serverTs: number,
 ): Promise<{ data: T; fromCache: boolean }> {
-  const cacheKey = PREFIX + key;
   let data = (await fetchFn()) as T;
 
   const preCount = Array.isArray(data) ? data.length : 0;
@@ -86,75 +126,83 @@ async function fetchAndCache<T>(
     data = filterByAge(data as any[]) as T;
     const postCount = Array.isArray(data) ? data.length : 0;
     if (postCount < preCount) {
-      console.log(`[Cache] AGE-FILTER ${key}: dropped ${preCount - postCount} items over 30d`);
+      console.log(`[Cache] AGE-FILTER ${key}: dropped ${preCount - postCount} items`);
     }
   }
 
-  const sanitized = sanitizeForCache(key, data);
-
-  let serverTs = existingMetaTs ?? Date.now();
-  if (existingMetaTs === undefined) {
-    try {
-      const res = await fetch('/api/metadata-timestamps', { cache: 'force-cache' });
-      if (res.ok) {
-        const meta = await res.json();
-        if (meta[key]) serverTs = meta[key];
-      }
-    } catch {}
-  }
-
-  const entry: CacheEntry<T> = { d: sanitized, t: Date.now(), s: serverTs };
-  localStorage.setItem(cacheKey, JSON.stringify(entry));
-  localStorage.setItem(cacheKey + '_lastTs', String(serverTs));
+  const entry: CacheEntry<T> = { d: data, t: Date.now(), s: serverTs };
+  setEntry(key, entry);
 
   const count = Array.isArray(data) ? data.length : 'N/A';
   console.log(`[Cache] STORE ${key} items=${count} size=${JSON.stringify(entry).length}B`);
   return { data, fromCache: false };
 }
 
-function sanitizeForCache(key: string, data: any): any {
-  if (key === 'masjidConstruction' && Array.isArray(data)) {
-    return data.map((item: any) => {
-      const { image, ...rest } = item;
-      return rest;
-    });
-  }
-  if ((key === 'events' || key === 'programs' || key === 'news') && Array.isArray(data)) {
-    return data.map((item: any) => {
-      const { image, poster, ...rest } = item;
-      return rest;
-    });
-  }
-  return data;
-}
-
+// ─── CREATE: prepend item to existing cache (0 reads, no invalidation) ───
 export function appendToCache<T>(key: string, newItem: T): void {
-  const cacheKey = PREFIX + key;
-  const raw = localStorage.getItem(cacheKey);
-  if (!raw) {
+  const entry = getEntry<T[]>(key);
+  if (!entry) {
     console.log(`[Cache] SKIP-APPEND ${key} (no cache to append to)`);
     return;
   }
 
   try {
-    const entry: CacheEntry<T[]> = JSON.parse(raw);
     const before = entry.d.length;
     entry.d = filterByAge([newItem, ...entry.d]);
-    const after = entry.d.length;
     entry.t = Date.now();
-    localStorage.setItem(cacheKey, JSON.stringify(entry));
-    console.log(`[Cache] APPEND ${key} items=${before}→${after} (+1 prepended)`);
+    setEntry(key, entry as CacheEntry<T>);
+    console.log(`[Cache] APPEND ${key} items=${before}→${entry.d.length}`);
   } catch (err) {
-    console.warn(`[Cache] APPEND-FAIL ${key}: removing corrupt cache`, err);
-    localStorage.removeItem(cacheKey);
+    console.warn(`[Cache] APPEND-FAIL ${key}:`, err);
+    removeEntry(key);
   }
 }
 
+// ─── UPDATE: merge partial data into specific cached item (no full invalidation) ───
+export function updateCachedItem(key: string, id: string, partialData: Record<string, any>): void {
+  const entry = getEntry<any[]>(key);
+  if (!entry || !Array.isArray(entry.d)) {
+    console.log(`[Cache] SKIP-UPDATE ${key} (no cache or not an array)`);
+    return;
+  }
+
+  const idx = entry.d.findIndex((item: any) => item.id === id);
+  if (idx === -1) {
+    console.log(`[Cache] SKIP-UPDATE ${key} (item ${id} not found in cache)`);
+    return;
+  }
+
+  entry.d[idx] = { ...entry.d[idx], ...partialData };
+  entry.t = Date.now();
+  setEntry(key, entry);
+  console.log(`[Cache] UPDATE ${key} item=${id} (replaced in-place, cache preserved)`);
+}
+
+// ─── DELETE: remove specific item from cached array (no full invalidation) ───
+export function removeCachedItem(key: string, id: string): void {
+  const entry = getEntry<any[]>(key);
+  if (!entry || !Array.isArray(entry.d)) {
+    console.log(`[Cache] SKIP-REMOVE ${key} (no cache or not an array)`);
+    return;
+  }
+
+  const before = entry.d.length;
+  entry.d = entry.d.filter((item: any) => item.id !== id);
+  if (entry.d.length === before) {
+    console.log(`[Cache] SKIP-REMOVE ${key} (item ${id} not found)`);
+    return;
+  }
+
+  entry.t = Date.now();
+  setEntry(key, entry as CacheEntry<any>);
+  console.log(`[Cache] REMOVE ${key} item=${id} (${before}→${entry.d.length})`);
+}
+
+// ─── Full invalidation (only for major schema changes) ───
 export function invalidateCache(key: string | string[]): void {
   const keys = Array.isArray(key) ? key : [key];
   keys.forEach(k => {
-    localStorage.removeItem(PREFIX + k);
-    localStorage.removeItem(PREFIX + k + '_lastTs');
+    removeEntry(k);
     console.log(`[Cache] INVALIDATE ${k}`);
   });
 }
@@ -164,6 +212,8 @@ export function clearAllCaches(): void {
     const k = localStorage.key(i);
     if (k?.startsWith(PREFIX)) localStorage.removeItem(k);
   }
+  metaTsCache = null;
+  metaTsPromise = null;
 }
 
 export { PREFIX, TTL_24H, THIRTY_DAYS_MS };

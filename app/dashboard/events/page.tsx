@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, Calendar, Mail, Phone, Clock, Users, CheckCircle, XCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { fetchEvents, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
+import { fetchEvents, fetchEventsDirect, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
 import { getCachedData } from "@/lib/cache-manager";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
@@ -376,7 +376,11 @@ export default function DashboardEventsPage() {
             <div className="flex items-center gap-2">
               <CsvExportButton
                 label="Export CSV"
-                fetchData={() => fetchEvents(9999).catch(() => [])}
+                fetchData={(params) =>
+                  params?.from || params?.to
+                    ? fetchEventsDirect(10000, params.from, params.to).catch(() => [])
+                    : fetchEvents(9999).catch(() => [])
+                }
                 filename="events"
                 fields={['id', 'title', 'date', 'time', 'location', 'description', 'createdAt']}
               />
