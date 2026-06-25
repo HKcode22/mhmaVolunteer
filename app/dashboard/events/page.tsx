@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { fetchEvents, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
+import CsvExportButton from "@/app/components/CsvExportButton";
 
 export default function DashboardEventsPage() {
   const router = useRouter();
@@ -371,10 +372,18 @@ export default function DashboardEventsPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Events</h1>
               <p className="text-gray-500 text-sm">Manage events and view RSVPs.</p>
             </div>
-            <button onClick={() => showForm ? resetForm() : setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
-              <Plus className="w-4 h-4" /> {showForm ? "Cancel" : "Add Event"}
-            </button>
+            <div className="flex items-center gap-2">
+              <CsvExportButton
+                label="Export CSV"
+                fetchData={() => fetchEvents(9999).catch(() => [])}
+                filename="events"
+                fields={['id', 'title', 'date', 'time', 'location', 'description', 'createdAt']}
+              />
+              <button onClick={() => showForm ? resetForm() : setShowForm(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-mhma-forest text-white rounded-xl hover:bg-mhma-forest-light transition-colors font-medium text-sm">
+                <Plus className="w-4 h-4" /> {showForm ? "Cancel" : "Add Event"}
+              </button>
+            </div>
           </div>
 
           {showForm && (

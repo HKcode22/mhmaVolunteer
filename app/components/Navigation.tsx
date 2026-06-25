@@ -58,11 +58,11 @@ export default function Navigation({ currentPage }: NavigationProps) {
           const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
           const [eventsRes, programsRes] = await Promise.all([
             getCachedData('events', () =>
-              getDocs(query(collection(db, "events"), orderBy("createdAt", "desc"), limit(5)))
+              getDocs(query(collection(db, "events"), orderBy("createdAt", "desc"), limit(100)))
                 .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
             ),
             getCachedData('programs', () =>
-              getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc"), limit(5)))
+              getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc"), limit(100)))
                 .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
             ),
           ]);

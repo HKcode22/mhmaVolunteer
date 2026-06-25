@@ -408,11 +408,11 @@ useEffect(() => {
   const loadData = async () => {
     try {
       const [eventsData, programs, masjidData, statsData, newsData] = await Promise.allSettled([
-        getCachedData('events', () => fetchEvents(3)).then(r => r.data),
-        getCachedData('programs', () => fetchPrograms(3)).then(r => r.data),
-        getCachedData('masjidConstruction', () => fetchMasjidUpdates(3)).then(r => r.data),
+        getCachedData('events', () => fetchEvents(100)).then(r => r.data),
+        getCachedData('programs', () => fetchPrograms(100)).then(r => r.data),
+        getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)).then(r => r.data),
         fetch(`/api/about-stats?range=${statsRange}`).then(r => r.json()),
-        getCachedData('news', () => fetchNews(3)).then(r => r.data),
+        getCachedData('news', () => fetchNews(100)).then(r => r.data),
       ]);
 
       const events = eventsData.status === "fulfilled" ? eventsData.value : [];

@@ -114,17 +114,16 @@ async function fetchAndCache<T>(
 
 function sanitizeForCache(key: string, data: any): any {
   if (key === 'masjidConstruction' && Array.isArray(data)) {
-    return data.map((item: any) => ({
-      id: item.id,
-      caption: item.caption,
-      phase: item.phase,
-      raised: item.raised,
-      goal: item.goal,
-      donorCount: item.donorCount,
-      squareFeet: item.squareFeet,
-      createdAt: item.createdAt,
-      imageUrl: item.imageUrl || null,
-    }));
+    return data.map((item: any) => {
+      const { image, ...rest } = item;
+      return rest;
+    });
+  }
+  if ((key === 'events' || key === 'programs' || key === 'news') && Array.isArray(data)) {
+    return data.map((item: any) => {
+      const { image, poster, ...rest } = item;
+      return rest;
+    });
   }
   return data;
 }
