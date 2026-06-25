@@ -5,10 +5,32 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, User, LogOut, MapPin, Mail, Bell, Settings, Instagram, Youtube } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { usePageData } from "@/lib/page-data-context";
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
-import { getCachedData } from "@/lib/cache-manager";
+import { getCachedData, PREFIX } from "@/lib/cache-manager";
+
+const CACHE_PREFIX = 'mhma_v5_';
+
+function readCache(key: string): any[] | null {
+  try {
+    const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed.d) ? parsed.d : null;
+  } catch { return null; }
+}
+
+// Separate cache key for notification counts (to not pollute main cache)
+const NOTIF_CACHE_PREFIX = 'mhma_v5_notif_';
+
+function readNotifCache(key: string): any[] | null {
+  try {
+    const raw = localStorage.getItem(`${NOTIF_CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed.d) ? parsed.d : null;
+  } catch { return null; }
+}
 
 interface NavigationProps {
   currentPage?: string;
@@ -18,34 +40,56 @@ export default function Navigation({ currentPage }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isBoardMember, isLoggedIn, signOut } = useAuth();
   const [notifCount, setNotifCount] = useState(0);
-  const { setPageData } = usePageData();
 
-  useEffect(() => {
+useEffect(() => {
     if (!user) return;
     if (localStorage.getItem('mhma_notifs_viewed')) return;
     if (isBoardMember) {
       const fetchCounts = async () => {
         try {
-          const [enrollRes, contactRes, schedRes, rsvpRes] = await Promise.all([
-            getCachedData('enrollments', () =>
-              getDocs(query(collection(db, "enrollments"), where("status", "==", "pending"), limit(100)))
-                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
-            ),
-            getCachedData('contactSubmissions', () =>
-              getDocs(query(collection(db, "contactSubmissions"), where("read", "==", false), limit(100)))
-                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
-            ),
-            getCachedData('schedulingRequests', () =>
-              getDocs(query(collection(db, "schedulingRequests"), where("status", "==", "pending"), limit(100)))
-                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
-            ),
-            getCachedData('rsvps', () =>
-              getDocs(query(collection(db, "rsvps"), where("status", "==", "pending"), limit(100)))
-                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
-            ),
-          ]);
-          setNotifCount(enrollRes.data.length + contactRes.data.length + schedRes.data.length + rsvpRes.data.length);
-          setPageData({ enrollments: enrollRes.data, contactSubmissions: contactRes.data, schedulingRequests: schedRes.data, rsvps: rsvpRes.data });
+          // Read directly from cache to get counts without overwriting
+          const enrollData = readCache('enrollments') as any[] | null;
+          const contactData = readCache('contactSubmissions') as any[] | null;
+          const schedData = readCache('schedulingRequests') as any[] | null;
+          const rsvpData = readCache('rsvps') as any[] | null;
+
+          // If cache miss, fetch fresh data
+          let enrolls = enrollData;
+          let contacts = contactData;
+          let scheds = schedData;
+          let rsvps = rsvpData;
+
+          const needsFetch = !enrolls || !contacts || !scheds || !rsvps;
+          if (needsFetch) {
+            const [enrollRes, contactRes, schedRes, rsvpRes] = await Promise.all([
+              getCachedData('enrollments', () =>
+                getDocs(query(collection(db, "enrollments"), where("status", "==", "pending"), limit(100)))
+                  .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+              ),
+              getCachedData('contactSubmissions', () =>
+                getDocs(query(collection(db, "contactSubmissions"), where("read", "==", false), limit(100)))
+                  .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+              ),
+              getCachedData('schedulingRequests', () =>
+                getDocs(query(collection(db, "schedulingRequests"), where("status", "==", "pending"), limit(100)))
+                  .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+              ),
+              getCachedData('rsvps', () =>
+                getDocs(query(collection(db, "rsvps"), orderBy("createdAt", "desc"), limit(100)))
+                  .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+              ),
+            ]);
+            enrolls = enrollRes.data;
+            contacts = contactRes.data;
+            scheds = schedRes.data;
+            rsvps = rsvpRes.data;
+          }
+
+          const pendingEnrollments = enrolls?.filter((e: any) => e.status === "pending").length || 0;
+          const unreadContacts = contacts?.filter((c: any) => c.read === false).length || 0;
+          const pendingSched = scheds?.filter((s: any) => s.status === "pending").length || 0;
+          const pendingRSVP = rsvps?.filter((r: any) => r.status === "pending").length || 0;
+          setNotifCount(pendingEnrollments + unreadContacts + pendingSched + pendingRSVP);
         } catch {}
       };
       fetchCounts();
@@ -56,21 +100,46 @@ export default function Navigation({ currentPage }: NavigationProps) {
       const fetchNewContent = async () => {
         try {
           const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-          const [eventsRes, programsRes] = await Promise.all([
-            getCachedData('events', () =>
-              getDocs(query(collection(db, "events"), orderBy("createdAt", "desc"), limit(100)))
-                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
-            ),
-            getCachedData('programs', () =>
-              getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc"), limit(100)))
-                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
-            ),
-          ]);
+          // Read directly from cache
+          const eventsData = readCache('events') as any[] | null;
+          const programsData = readCache('programs') as any[] | null;
+
+          // If cache miss, fetch
+          let evts = eventsData;
+          let progs = programsData;
+          const needsFetch = !evts || !progs;
+          if (needsFetch) {
+            const [eventsRes, programsRes] = await Promise.all([
+              getCachedData('events', () =>
+                getDocs(query(collection(db, "events"), orderBy("createdAt", "desc"), limit(100)))
+                  .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+              ),
+              getCachedData('programs', () =>
+                getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc"), limit(100)))
+                  .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+              ),
+            ]);
+            evts = eventsRes.data;
+            progs = programsRes.data;
+          }
+
+          const now = Date.now();
           let count = 0;
-          eventsRes.data.forEach((d: any) => { const c = d.createdAt?.toDate?.(); if (c && c > weekAgo) count++; });
-          programsRes.data.forEach((d: any) => { const c = d.createdAt?.toDate?.(); if (c && c > weekAgo) count++; });
+          evts?.forEach((d: any) => {
+            const c = d.createdAt;
+            if (c) {
+              const ts = c.seconds ? c.seconds * 1000 : (c.toDate ? c.toDate().getTime() : new Date(c).getTime());
+              if (ts > weekAgo.getTime()) count++;
+            }
+          });
+          progs?.forEach((d: any) => {
+            const c = d.createdAt;
+            if (c) {
+              const ts = c.seconds ? c.seconds * 1000 : (c.toDate ? c.toDate().getTime() : new Date(c).getTime());
+              if (ts > weekAgo.getTime()) count++;
+            }
+          });
           setNotifCount(count);
-          setPageData({ events: eventsRes.data, programs: programsRes.data });
         } catch {}
       };
       fetchNewContent();

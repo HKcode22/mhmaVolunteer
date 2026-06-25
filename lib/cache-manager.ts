@@ -1,7 +1,6 @@
 'use client';
 
 const PREFIX = 'mhma_v5_';
-const TTL_24H = 24 * 60 * 60 * 1000;
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 interface CacheEntry<T> {
@@ -47,13 +46,37 @@ function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
   return items.filter((item: any) => {
     const date = item?.[dateField];
     if (!date) return true;
-    if (typeof date === 'object' && date.seconds) return true;
+    // Handle Firestore timestamp objects (serialized as {seconds, nanoseconds} or {type: 'firestore/timestamp/...'})
+    if (typeof date === 'object' && date.seconds) {
+      const ts = date.seconds * 1000 + Math.floor((date.nanoseconds || 0) / 1000000);
+      return ts > cutoff;
+    }
+    if (typeof date === 'object' && date.type?.includes('firestore/timestamp')) {
+      const ts = (date as any).seconds * 1000 + Math.floor(((date as any).nanoseconds || 0) / 1000000);
+      return ts > cutoff;
+    }
     const ts = date.toDate ? date.toDate().getTime() : new Date(date).getTime();
     return isNaN(ts) || ts > cutoff;
   });
 }
 
-// No sanitization needed — all fields are required for rendering
+// Keep localStorage safe by stripping very large base64 media blobs.
+// For now we only sanitize `events.poster` (board posters) for the events/RSVP test.
+function sanitizeForCache(cacheKey: string, data: any): any {
+  if (cacheKey !== 'events') return data;
+
+  const sanitizeEvent = (ev: any) => {
+    if (!ev || typeof ev !== 'object') return ev;
+    if (typeof ev.poster === 'string' && ev.poster.startsWith('data:')) {
+      // Empty string keeps the render logic working (`poster || default`).
+      return { ...ev, poster: '' };
+    }
+    return ev;
+  };
+
+  if (Array.isArray(data)) return data.map(sanitizeEvent);
+  return sanitizeEvent(data);
+}
 
 // ─── Cache entry helpers ───
 function getEntry<T>(key: string): CacheEntry<T> | null {
@@ -68,7 +91,16 @@ function getEntry<T>(key: string): CacheEntry<T> | null {
 }
 
 function setEntry<T>(key: string, entry: CacheEntry<T>): void {
-  localStorage.setItem(PREFIX + key, JSON.stringify(entry));
+  try {
+    const sanitized: CacheEntry<T> =
+      key === 'events'
+        ? ({ ...entry, d: sanitizeForCache(key, entry.d) } as CacheEntry<T>)
+        : entry;
+    localStorage.setItem(PREFIX + key, JSON.stringify(sanitized));
+  } catch (err) {
+    // localStorage quota exceeded (common if base64 media was cached).
+    console.warn(`[Cache] STORE-FAIL ${key}:`, err);
+  }
 }
 
 function removeEntry(key: string): void {
@@ -91,7 +123,7 @@ export async function getCachedData<T>(
   if (entry) {
     // Cache exists — check TTL
     const age = now - entry.t;
-    if (age < TTL_24H) {
+    if (age < THIRTY_DAYS_MS) {
       // Cache is fresh — check if server has newer data
       if (entry.s >= serverTs) {
         // ✓ No writes since cache — return cached data (0 reads)
@@ -205,6 +237,17 @@ export function invalidateCache(key: string | string[]): void {
     removeEntry(k);
     console.log(`[Cache] INVALIDATE ${k}`);
   });
+  resetTimestampsCache();
+}
+
+// Sync the cached `s` (server metadata timestamp) after we touch metadata.
+// This prevents immediate refetches for the browser that performed the write.
+export function setCacheServerTimestamp(key: string, serverTs: number): void {
+  const entry = getEntry<any>(key);
+  if (!entry) return;
+  entry.s = serverTs;
+  entry.t = Date.now();
+  setEntry(key, entry as CacheEntry<any>);
 }
 
 export function clearAllCaches(): void {
@@ -216,4 +259,4 @@ export function clearAllCaches(): void {
   metaTsPromise = null;
 }
 
-export { PREFIX, TTL_24H, THIRTY_DAYS_MS };
+export { PREFIX, THIRTY_DAYS_MS };
