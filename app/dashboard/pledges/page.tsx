@@ -6,6 +6,7 @@ import { ArrowLeft, Heart, Search, Mail, Phone, CheckCircle, XCircle, Clock, Ref
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchPledges, updatePledgeStatus, deletePledge, fetchDonations, Pledge, Donation } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardPledgesPage() {
@@ -30,8 +31,8 @@ export default function DashboardPledgesPage() {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
     Promise.all([
-      fetchPledges(500),
-      fetchDonations(500),
+      getCachedData('pledges', () => fetchPledges(500)).then(r => r.data),
+      getCachedData('donations', () => fetchDonations(500)).then(r => r.data),
     ]).then(([p, d]) => {
       setPledges(p);
       setDonations(d);

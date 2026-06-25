@@ -6,6 +6,7 @@ import { ArrowLeft, Search, Mail, Phone, Clock, Calendar, ChevronDown, ChevronRi
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchSchedulingRequests, deleteSchedulingRequest, updateSchedulingRequest, FirebaseSchedulingRequest } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardSchedulingRequestsPage() {
@@ -19,7 +20,7 @@ export default function DashboardSchedulingRequestsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchSchedulingRequests(100).then(d => { setItems(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('schedulingRequests', () => fetchSchedulingRequests(100)).then(({ data }) => { setItems(data); setLoading(false); }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = items.filter(i => {

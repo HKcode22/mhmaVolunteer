@@ -12,6 +12,7 @@ import {
   deleteKnowledgeDoc,
   KnowledgeDoc,
 } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 const CATEGORIES = ["general", "event", "program", "donation", "news", "auth", "dashboard", "faq", "route", "workflow", "account"];
@@ -44,7 +45,7 @@ export default function KnowledgeManagerPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchKnowledgeDocs(200).then(setItems).catch(() => {}).finally(() => setLoading(false));
+    getCachedData('knowledgeDocs', () => fetchKnowledgeDocs(200)).then(({ data }) => setItems(data)).catch(() => {}).finally(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = items.filter(i => {

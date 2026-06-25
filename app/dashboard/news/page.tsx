@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Mail, Download, Send, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchAllNews, addNews, updateNews, deleteNews, fetchSubscribers, unsubscribeSubscriber, deleteSubscriber, NewsItem, Subscriber } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 import { compressImage } from "@/lib/compress-image";
 
@@ -30,7 +31,7 @@ export default function DashboardNewsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    Promise.all([fetchAllNews(100), fetchSubscribers(500)]).then(([n, s]) => {
+    Promise.all([getCachedData('news', () => fetchAllNews(100)).then(r => r.data), getCachedData('subscribers', () => fetchSubscribers(500)).then(r => r.data)]).then(([n, s]) => {
       setItems(n); setUnpubCount(n.filter(x => !x.published).length); setSubscribers(s); setLoading(false);
     }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);

@@ -6,6 +6,7 @@ import { ArrowLeft, Mail, Search, CheckCircle, XCircle, Trash2, Download, Chevro
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchSubscribers, unsubscribeSubscriber, deleteSubscriber, Subscriber } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardSubscribersPage() {
@@ -19,7 +20,7 @@ export default function DashboardSubscribersPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchSubscribers(500).then(d => { setSubscribers(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('subscribers', () => fetchSubscribers(500)).then(({ data }) => { setSubscribers(data); setLoading(false); }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = subscribers.filter(s => {

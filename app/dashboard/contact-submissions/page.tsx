@@ -13,6 +13,7 @@ import {
   FirebaseContactSubmission, fetchFAQs, addFAQ, updateFAQ, deleteFAQ, FAQItem,
   fetchVolunteers, deleteVolunteer, VolunteerSubmission,
 } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardContactSubmissionsPage() {
@@ -41,7 +42,7 @@ export default function DashboardContactSubmissionsPage() {
 
   const loadAll = async () => {
     try {
-      const [c, f, v] = await Promise.all([fetchContactSubmissions(100), fetchFAQs(100), fetchVolunteers(100)]);
+      const [c, f, v] = await Promise.all([getCachedData('contactSubmissions', () => fetchContactSubmissions(100)).then(r => r.data), getCachedData('faq', () => fetchFAQs(100)).then(r => r.data), getCachedData('volunteers', () => fetchVolunteers(100)).then(r => r.data)]);
       setItems(c);
       setFaqItems(f);
       setVolunteers(v);

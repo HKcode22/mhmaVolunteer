@@ -6,6 +6,7 @@ import { ArrowLeft, Heart, Search, Mail, DollarSign, Clock, Trash2, Plus, X, Use
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchDonations, addManualDonation, deleteDonation, fetchUsers, fetchPledges, updatePledgeStatus, deletePledge, Donation, FirebaseUser, Pledge } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 const designations = ["general", "construction", "zakat", "programs", "other"];
@@ -41,9 +42,9 @@ export default function DashboardDonationsPage() {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
     Promise.all([
-      fetchDonations(500),
-      fetchUsers(500),
-      fetchPledges(500),
+      getCachedData('donations', () => fetchDonations(500)).then(r => r.data),
+      getCachedData('users', () => fetchUsers(500)).then(r => r.data),
+      getCachedData('pledges', () => fetchPledges(500)).then(r => r.data),
     ]).then(([d, u, p]) => {
       setDonations(d);
       setUsers(u);

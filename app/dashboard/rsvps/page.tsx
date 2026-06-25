@@ -6,6 +6,7 @@ import { ArrowLeft, Search, Mail, Phone, Clock, Calendar, Users, CheckCircle, XC
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchRSVPs, deleteRSVP, updateRSVP, FirebaseRSVP } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardRSVPsPage() {
@@ -19,7 +20,7 @@ export default function DashboardRSVPsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchRSVPs(100).then(d => { setItems(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('rsvps', () => fetchRSVPs(100)).then(({ data }) => { setItems(data); setLoading(false); }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = items.filter(i => {

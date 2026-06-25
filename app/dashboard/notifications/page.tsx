@@ -6,6 +6,7 @@ import { ArrowLeft, Mail, Calendar, BookOpen, Users, ChevronDown, ChevronUp, X, 
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchEnrollments, fetchSchedulingRequests, fetchContactSubmissions, fetchRSVPs, updateRSVP, updateEnrollment, updateSchedulingRequest, markContactSubmissionRead, logActivity } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 type NotificationItem = {
@@ -35,10 +36,10 @@ export default function NotificationsPage() {
   const loadNotifications = async () => {
     try {
       const [enrollments, requests, contacts, rsvps] = await Promise.all([
-        fetchEnrollments(100),
-        fetchSchedulingRequests(100),
-        fetchContactSubmissions(100),
-        fetchRSVPs(100),
+        getCachedData('enrollments', () => fetchEnrollments(100)).then(r => r.data),
+        getCachedData('schedulingRequests', () => fetchSchedulingRequests(100)).then(r => r.data),
+        getCachedData('contactSubmissions', () => fetchContactSubmissions(100)).then(r => r.data),
+        getCachedData('rsvps', () => fetchRSVPs(100)).then(r => r.data),
       ]);
       const items: NotificationItem[] = [
         ...enrollments.map(e => ({

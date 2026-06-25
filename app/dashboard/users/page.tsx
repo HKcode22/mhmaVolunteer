@@ -15,6 +15,7 @@ import {
   Subscriber, FirebaseEnrollment, FirebaseRSVP, Pledge, Donation,
   NewsItem, FirebaseSchedulingRequest, FirebaseUser
 } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { db } from "@/lib/firebase-client";
 import { doc, deleteDoc } from "firebase/firestore";
 import Navigation from "@/app/components/Navigation";
@@ -39,14 +40,14 @@ export default function UsersPage() {
     if (authLoading) return;
 
     Promise.all([
-      fetchUsers(500),
-      fetchSubscribers(500),
-      fetchEnrollments(500),
-      fetchRSVPs(500),
-      fetchPledges(500),
-      fetchDonations(500),
-      fetchAllNews(500),
-      fetchSchedulingRequests(500),
+      getCachedData('users', () => fetchUsers(500)).then(r => r.data),
+      getCachedData('subscribers', () => fetchSubscribers(500)).then(r => r.data),
+      getCachedData('enrollments', () => fetchEnrollments(500)).then(r => r.data),
+      getCachedData('rsvps', () => fetchRSVPs(500)).then(r => r.data),
+      getCachedData('pledges', () => fetchPledges(500)).then(r => r.data),
+      getCachedData('donations', () => fetchDonations(500)).then(r => r.data),
+      getCachedData('news', () => fetchAllNews(500)).then(r => r.data),
+      getCachedData('schedulingRequests', () => fetchSchedulingRequests(500)).then(r => r.data),
     ]).then(([usersData, subs, enrolls, rsvpData, pledgeData, donationData, news, schedReqs]) => {
       setUsers(usersData);
       setSubscribers(subs);

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, Calendar, Mail, Phone, Clock, Users, CheckCircle, XCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchEvents, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 import CsvExportButton from "@/app/components/CsvExportButton";
@@ -28,7 +29,7 @@ export default function DashboardEventsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    Promise.all([fetchEvents(100), fetchRSVPs(100)]).then(([e, r]) => {
+    Promise.all([getCachedData('events', () => fetchEvents(100)).then(r => r.data), getCachedData('rsvps', () => fetchRSVPs(100)).then(r => r.data)]).then(([e, r]) => {
       setEvents(e); setRsvps(r); setLoading(false);
     }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);

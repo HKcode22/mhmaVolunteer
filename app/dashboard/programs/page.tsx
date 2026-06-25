@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, updateEnrollment, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 
@@ -29,7 +30,7 @@ export default function DashboardProgramsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    Promise.all([fetchPrograms(100), fetchEnrollments(100)]).then(([p, e]) => {
+    Promise.all([getCachedData('programs', () => fetchPrograms(100)).then(r => r.data), getCachedData('enrollments', () => fetchEnrollments(100)).then(r => r.data)]).then(([p, e]) => {
       setPrograms(p); setEnrollments(e); setLoading(false);
       const pend = e.filter(x => x.status === "pending").length;
       setPendingCount(pend);

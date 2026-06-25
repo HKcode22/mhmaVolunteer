@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Search, Clock, Star, CheckCircle, XCircle, Trash2, Che
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, fetchPrograms, fetchEvents, Testimonial, FirebaseProgram, FirebaseEvent } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/app/components/Navigation";
 
@@ -30,9 +31,9 @@ export default function DashboardTestimonialsPage() {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
     Promise.all([
-      fetchTestimonials(100),
-      fetchPrograms(100),
-      fetchEvents(100),
+      getCachedData('testimonials', () => fetchTestimonials(100)).then(r => r.data),
+      getCachedData('programs', () => fetchPrograms(100)).then(r => r.data),
+      getCachedData('events', () => fetchEvents(100)).then(r => r.data),
     ]).then(([t, p, e]) => {
       setItems(t);
       setPendingCount(t.filter(i => !i.active).length);

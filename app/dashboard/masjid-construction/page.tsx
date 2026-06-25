@@ -6,6 +6,7 @@ import { ArrowLeft, Upload, Loader2, Trash2, Plus, Pencil } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchMasjidUpdates, addMasjidUpdate, updateMasjidUpdate, deleteMasjidUpdate, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/app/components/Navigation";
 
@@ -38,7 +39,7 @@ export default function MasjidConstructionPage() {
 
   const loadUpdates = async () => {
     try {
-      const data = await fetchMasjidUpdates();
+      const { data } = await getCachedData('masjidConstruction', () => fetchMasjidUpdates(20));
       setUpdates(data);
       if (data.length > 0) setConstructionGoal(data[0].goal || 0);
     } catch { /* ignore */ }

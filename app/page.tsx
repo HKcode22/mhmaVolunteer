@@ -411,7 +411,7 @@ useEffect(() => {
         getCachedData('events', () => fetchEvents(100)).then(r => r.data),
         getCachedData('programs', () => fetchPrograms(100)).then(r => r.data),
         getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)).then(r => r.data),
-        fetch(`/api/about-stats?range=${statsRange}`).then(r => r.json()),
+        getCachedData('aboutStats', () => fetch(`/api/about-stats?range=${statsRange}`).then(r => r.json())).then(r => r.data),
         getCachedData('news', () => fetchNews(100)).then(r => r.data),
       ]);
 

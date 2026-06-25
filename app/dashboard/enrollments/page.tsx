@@ -6,6 +6,7 @@ import { ArrowLeft, Search, Mail, Phone, Clock, BookOpen, CheckCircle, XCircle, 
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchEnrollments, updateEnrollment, deleteEnrollment, FirebaseEnrollment } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardEnrollmentsPage() {
@@ -19,7 +20,7 @@ export default function DashboardEnrollmentsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    fetchEnrollments(100).then(d => { setItems(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('enrollments', () => fetchEnrollments(100)).then(({ data }) => { setItems(data); setLoading(false); }).catch(() => setLoading(false));
   }, [authLoading, isBoardMember, router]);
 
   const filtered = items.filter(i => {

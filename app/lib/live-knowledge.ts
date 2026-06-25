@@ -1,8 +1,4 @@
-import {
-  fetchEvents, fetchPrograms, fetchEnrollments, fetchRSVPs,
-  fetchDonations, fetchPledges, fetchContactSubmissions,
-  fetchSchedulingRequests, fetchUsers, fetchSubscribers
-} from '@/lib/firebase';
+import { getCachedData } from '@/lib/cache-manager';
 
 export interface LiveData {
   events: string;
@@ -17,34 +13,38 @@ export interface LiveData {
   subscribers: string;
 }
 
-let cached: LiveData | null = null;
-let lastFetch = 0;
-const CACHE_TTL = 30000; // 30 seconds
-
 function fmt(val: any, fallback = 'N/A'): string {
   return val != null && val !== '' ? String(val) : fallback;
 }
 
 export async function fetchLiveData(): Promise<LiveData> {
-  const now = Date.now();
-  if (cached && now - lastFetch < CACHE_TTL) return cached;
-
   const [
-    eventsSnap, programsSnap, enrollmentsSnap, rsvpsSnap,
-    donationsSnap, pledgesSnap, contactsSnap, schedulingSnap,
-    usersSnap, subscribersSnap
+    eventsRes, programsRes, enrollmentsRes, rsvpsRes,
+    donationsRes, pledgesRes, contactsRes, schedulingRes,
+    usersRes, subscribersRes
   ] = await Promise.all([
-    fetchEvents(10).catch(() => []),
-    fetchPrograms(10).catch(() => []),
-    fetchEnrollments(50).catch(() => []),
-    fetchRSVPs(50).catch(() => []),
-    fetchDonations(50).catch(() => []),
-    fetchPledges(50).catch(() => []),
-    fetchContactSubmissions(50).catch(() => []),
-    fetchSchedulingRequests(50).catch(() => []),
-    fetchUsers(50).catch(() => []),
-    fetchSubscribers(50).catch(() => []),
+    getCachedData('events', () => import('@/lib/firebase').then(m => m.fetchEvents(10))).catch(() => ({ data: [] })),
+    getCachedData('programs', () => import('@/lib/firebase').then(m => m.fetchPrograms(10))).catch(() => ({ data: [] })),
+    getCachedData('enrollments', () => import('@/lib/firebase').then(m => m.fetchEnrollments(50))).catch(() => ({ data: [] })),
+    getCachedData('rsvps', () => import('@/lib/firebase').then(m => m.fetchRSVPs(50))).catch(() => ({ data: [] })),
+    getCachedData('donations', () => import('@/lib/firebase').then(m => m.fetchDonations(50))).catch(() => ({ data: [] })),
+    getCachedData('pledges', () => import('@/lib/firebase').then(m => m.fetchPledges(50))).catch(() => ({ data: [] })),
+    getCachedData('contactSubmissions', () => import('@/lib/firebase').then(m => m.fetchContactSubmissions(50))).catch(() => ({ data: [] })),
+    getCachedData('schedulingRequests', () => import('@/lib/firebase').then(m => m.fetchSchedulingRequests(50))).catch(() => ({ data: [] })),
+    getCachedData('users', () => import('@/lib/firebase').then(m => m.fetchUsers(50))).catch(() => ({ data: [] })),
+    getCachedData('subscribers', () => import('@/lib/firebase').then(m => m.fetchSubscribers(50))).catch(() => ({ data: [] })),
   ]);
+
+  const eventsSnap = eventsRes.data || [];
+  const programsSnap = programsRes.data || [];
+  const enrollmentsSnap = enrollmentsRes.data || [];
+  const rsvpsSnap = rsvpsRes.data || [];
+  const donationsSnap = donationsRes.data || [];
+  const pledgesSnap = pledgesRes.data || [];
+  const contactsSnap = contactsRes.data || [];
+  const schedulingSnap = schedulingRes.data || [];
+  const usersSnap = usersRes.data || [];
+  const subscribersSnap = subscribersRes.data || [];
 
   // Calculate aggregates
   const totalDonations = donationsSnap.reduce((sum: number, d: any) => sum + ((d.amount || 0) / 100), 0);
@@ -86,8 +86,6 @@ export async function fetchLiveData(): Promise<LiveData> {
     subscribers: `Total: ${subscribersSnap.length} | Active: ${activeSubscribers}`,
   };
 
-  cached = data;
-  lastFetch = now;
   return data;
 }
 
@@ -104,9 +102,4 @@ export function formatLiveContext(data: LiveData): string {
     `Users: ${data.users}`,
     `Subscribers: ${data.subscribers}`,
   ].join('\n\n');
-}
-
-export function clearLiveCache(): void {
-  cached = null;
-  lastFetch = 0;
 }

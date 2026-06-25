@@ -8,7 +8,7 @@ import { ArrowLeft, Clock, User, Activity, RotateCcw, Filter } from "lucide-reac
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchActivityLog, fetchVersions, restoreVersion, ActivityLogEntry } from "@/lib/firebase";
-import { invalidateCache } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function ActivityLogPage() {
@@ -53,7 +53,7 @@ export default function ActivityLogPage() {
   const loadEntries = useCallback(() => {
     if (authLoading) return;
     if (!isBoardMember) { router.push("/login"); return; }
-    fetchActivityLog(200).then(data => {
+    getCachedData('activityLog', () => fetchActivityLog(200)).then(({ data }) => {
       setEntries(data);
       setLoading(false);
     }).catch(() => setLoading(false));
