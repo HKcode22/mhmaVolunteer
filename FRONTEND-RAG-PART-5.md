@@ -1,144 +1,403 @@
-# Frontend RAG Part 5: THE FINAL PLAN
+# Frontend RAG Part 5: THE FINAL PLAN (v3)
 
-> **This is it.** The complete, finalized plan combining Choice 1 (Simple Invalidation) as primary with Choice 2 (Metadata Timestamp) as background verification. The AI RAG integration. localStorage cleanup. Everything.
+> **Updated with 30-day rolling window, collection-specific retention rules, CSV export for historical data, and complete inventory of all 22 collections based on full codebase audit.**
 
 ---
 
 ## Table of Contents
 
-1. [The Combined Approach: How Both Choices Work Together](#1-the-combined-approach-how-both-choices-work-together)
-2. [The Cache Manager (Final Code)](#2-the-cache-manager-final-code)
-3. [The Metadata API Route (Background Verification)](#3-the-metadata-api-route-background-verification)
-4. [localStorage Cleanup Algorithm](#4-localstorage-cleanup-algorithm)
-5. [How the AI Uses localStorage (RAG Integration)](#5-how-the-ai-uses-localstorage-rag-integration)
-6. [Phase 0: Create Infrastructure](#6-phase-0-create-infrastructure)
-7. [Phase 1: Add Invalidation to Every Write Handler](#7-phase-1-add-invalidation-to-every-write-handler)
-8. [Phase 2: Wrap Fetches with Cache Manager](#8-phase-2-wrap-fetches-with-cache-manager)
-9. [Phase 3: Background Metadata Verification](#9-phase-3-background-metadata-verification)
-10. [Phase 4: Connect AI to Cached Data (RAG)](#10-phase-4-connect-ai-to-cached-data-rag)
-11. [Phase 5: localStorage Cleanup & Maintenance](#11-phase-5-localstorage-cleanup--maintenance)
-12. [Phase 6: Populate PageDataContext](#12-phase-6-populate-pagedatacontext)
-13. [Before vs After: The Numbers](#13-before-vs-after-the-numbers)
+1. [The Core Architecture](#1-the-core-architecture)
+2. [Two Types of Collections: Cache-Only vs Dual-Cleanup](#2-two-types-of-collections-cache-only-vs-dual-cleanup)
+3. [30-Day Rolling Window Cache Eviction](#3-30-day-rolling-window-cache-eviction)
+4. [Smart Invalidation: Create ≠ Update/Delete](#4-smart-invalidation-create--updatedelete)
+5. [Base64 Media Handling (Masjid Construction)](#5-base64-media-handling-masjid-construction)
+6. [Complete Collection Inventory — All 22 Collections](#6-complete-collection-inventory--all-22-collections)
+7. [The Cache Manager (Final Code)](#7-the-cache-manager-final-code)
+8. [The Metadata API Route (Fallback Only)](#8-the-metadata-api-route-fallback-only)
+9. [localStorage Cleanup & 30-Day Eviction](#9-localstorage-cleanup--30-day-eviction)
+10. [CSV Export for Historical Data](#10-csv-export-for-historical-data)
+11. [How the AI Uses localStorage (RAG Integration)](#11-how-the-ai-uses-localstorage-rag-integration)
+12. [Phase 0: Create Infrastructure](#12-phase-0-create-infrastructure)
+13. [Phase 1: Add Cache Invalidation on Update/Delete](#13-phase-1-add-cache-invalidation-on-updatedelete)
+14. [Phase 2: Add Cache Append on Create](#14-phase-2-add-cache-append-on-create)
+15. [Phase 3: Wrap Reads with Cache Manager](#15-phase-3-wrap-reads-with-cache-manager)
+16. [Phase 4: Connect AI to Cached Data (RAG)](#16-phase-4-connect-ai-to-cached-data-rag)
+17. [Phase 5: Populate PageDataContext](#17-phase-5-populate-pagedatacontext)
+18. [Before vs After: The Numbers](#18-before-vs-after-the-numbers)
+19. [Addressing Every Specific Concern](#19-addressing-every-specific-concern)
 
 ---
 
-## 1. The Combined Approach: How Both Choices Work Together
+## 1. The Core Architecture
 
-### 1.1 The Core Principle
-
-```
-Choice 1 (Simple Invalidation) — PRIMARY, FAST, 0 reads
-  └── Cache key in localStorage? → Display immediately → DONE
-      └── (99.9% of all page loads)
-
-Choice 2 (Metadata Timestamp) — BACKGROUND VERIFICATION, 1 read
-  └── Cache displayed? In background, verify with metadata
-      └── Timestamps match? → Nothing to do
-      └── Timestamp newer? → Silently refresh cache
-      └── (Only runs if cache > 30 seconds old)
-```
-
-### 1.2 The Complete Flow
+### 1.1 Three Safety Layers
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PAGE LOADS                                     │
-│                                                                   │
-│  1. Check localStorage for cache key                              │
-│     │                                                             │
-│     ├── FOUND? ──► 2a. Display IMMEDIATELY (0 reads)             │
-│     │             2b. Is cache > 30 seconds old?                   │
-│     │                 ├── YES → Background: fetch metadata (1 read)│
-│     │                 │           → Compare timestamps             │
-│     │                 │             ├── Match → do nothing         │
-│     │                 │             └── Stale → refetch (N reads)  │
-│     │                 │                  + update localStorage     │
-│     │                 │                  + dispatch event for UI   │
-│     │                 └── NO → Done (0 reads total)               │
-│     │                                                             │
-│     └── NOT FOUND? ──► 3. Was it removed by a write?             │
-│                         ├── YES → Fetch fresh (N reads)            │
-│                         ├── NO (user cleared data) → Fetch (N)    │
-│                         └── Save to localStorage + metadata ts    │
-│                                                                   │
-│  ═══════════════════════════════════════════════════════════════  │
-│                                                                   │
-│                    WRITE HAPPENS                                   │
-│                                                                   │
-│  1. Form submit → API route writes to Firestore                   │
-│  2. API route updates metadata timestamp (1 extra write)          │
-│  3. API returns { success: true, metadata: { events: 1719000000 }}│
-│  4. Browser calls: invalidateCache('events') — removes from LS   │
-│  5. Browser saves: new timestamp in LS metadata cache             │
-│                                                                   │
-│  ═══════════════════════════════════════════════════════════════  │
-│                                                                   │
-│                    BACKGROUND VERIFICATION (30s+)                  │
-│                                                                   │
-│  Only runs if cache was FOUND (Choice 1 succeeded).               │
-│  Only runs if cache is > 30 seconds old.                          │
-│                                                                   │
-│  1. fetch('/api/metadata-timestamps') → 1 read                    │
-│  2. Compare server timestamp with cached timestamp                │
-│  3. If server > cached → refetch in background → update UI       │
-│  4. If server == cached → do nothing                              │
-│                                                                   │
-│  WHY only > 30 seconds?                                           │
-│  - Rapid reloads (every 5 seconds) never trigger background check │
-│  - Only checks when user has been on the page for > 30 seconds    │
-│  - Catches edge cases where invalidation failed                   │
-└─────────────────────────────────────────────────────────────────┘
+PRIMARY: Simple Invalidation (cache key exists = no write)
+  ├── 0 Firestore reads
+  ├── Works for 99.9% of page loads
+  └── Cache is only removed on update/delete, NOT on create
+
+FALLBACK: Metadata Timestamp (only when cache key is missing unexpectedly)
+  ├── 1 Firestore read
+  ├── Used to distinguish "write happened" from "user cleared cache"
+  └── This runs ONLY when cache key is NOT found in localStorage
+
+SAFETY NET: 30-day rolling window
+  ├── 0 Firestore reads (client-side Date.now() check)
+  ├── Auto-evicts records older than 30 days from localStorage
+  ├── Activity log: also auto-deleted from Firestore after 30 days
+  └── All other collections: Firestore data preserved indefinitely
 ```
 
-### 1.3 The Three Layers of Safety
+### 1.2 The Read Decision Tree
 
 ```
-Layer 1 (Instant — 0 reads):
-  Cache key exists in localStorage → data is fresh
-  This is correct 99.9% of the time because any write removes the key.
+PAGE LOADS: needs events
 
-Layer 2 (Background — 1 read, only after 30s):
-  Metadata timestamp check confirms cache is fresh
-  Catches the 0.1% case where invalidation failed.
+  1. Check localStorage for 'mhma_v5_events'
+     │
+     ├── FOUND?
+     │    ├── Yes → Use it. Display immediately. 0 reads.
+     │    │        (This is the 99.9% case)
+     │    │
+     │    └── No → Cache missing. But WHY?
+     │             Was it invalidated by a write?
+     │             Or did the user clear their browser data?
+     │
+     │             → Read metadata (1 read from Firestore)
+     │               ├── metadata.events > lastKnownTimestamp?
+     │               │    Yes → A WRITE happened. Fetch fresh. N reads.
+     │               │    No  → Cache was cleared. Fetch fresh anyway.
+     │               │    No metadata doc → First visit. Fetch fresh.
+     │
+     └── (save fetched data to localStorage for next time)
 
-Layer 3 (Safety Net — 0 reads, client-side only):
-  24-hour TTL forces cache refresh
-  Even if both Layer 1 and Layer 2 fail, data never stays stale > 24h.
+KEY INSIGHT: The metadata is ONLY read when cache is missing.
+             Most page loads find the cache → 0 reads.
+             No background verification. No periodic checks.
 ```
 
-### 1.4 Read Cost of the Combined Approach
+### 1.3 The Write Decision Tree
 
-| Scenario | Choice 1 Only | Combined (Choice 1 + Choice 2 Background) |
-|----------|--------------|------------------------------------------|
-| Reload, cache < 30s old | **0 reads** (display) | **0 reads** (display + skip background) |
-| Reload, cache > 30s old, no changes | **0 reads** | **1 read** (background verify, matches) |
-| Reload, cache > 30s old, write since | **0 reads** (still displays old) | **1 + N reads** (verify detects stale, refetch) |
-| Reload, cache missing | **N reads** | **N reads** |
-| Cross-page nav, cache < 30s | **0 reads** | **0 reads** |
-| Average: 10 loads/day, 1 write | **~N + 2 auth + 2 theme** | **~N + 2 auth + 2 theme + 1 meta** |
+```
+MEMBER CREATES an RSVP (CREATE):
+  └── appendToCache('rsvps', newRsvpData)
+      ├── Existing cached RSVPs are PRESERVED
+      ├── New RSVP is prepended to the array
+      ├── Items older than 30 days are dropped
+      ├── 0 reads. 0 writes to Firestore metadata.
+      └── Board member's table still shows all data seamlessly
 
-**The difference:** +1 metadata read only on loads where cache > 30 seconds old. If you load 10 pages in 5 minutes (rapid navigation), 0 background checks. If you stay on one page for 2 minutes and reload, 1 background check.
+BOARD MEMBER APPROVES an RSVP (UPDATE):
+  └── invalidateCache('rsvps')
+      ├── Cache is REMOVED
+      ├── Metadata timestamp updated in Firestore (1 write)
+      └── Next page load → cache MISS → metadata says write happened → refetch
+
+BOARD MEMBER DELETES an RSVP (DELETE):
+  └── invalidateCache('rsvps') — same as update
+```
 
 ---
 
-## 2. The Cache Manager (Final Code)
+## 2. Two Types of Collections: Cache-Only vs Dual-Cleanup
+
+### 2.1 Cache-Only Collections (Firestore data preserved indefinitely)
+
+These collections stay in Firestore **forever**. Only the localStorage cache is evicted after 30 days.
+
+| Collection | Why Keep in Firestore |
+|-----------|----------------------|
+| `events` | Historical event record |
+| `programs` | Program catalog (past programs still relevant) |
+| `enrollments` | Enrollment history (who joined when) |
+| `rsvps` | RSVP history (attendance records) |
+| `news` | Published news archive |
+| `testimonials` | Testimonials display |
+| `volunteers` | Volunteer records |
+| `contactSubmissions` | Contact history |
+| `schedulingRequests` | Event request history |
+| `donations` | Donation records (financial audit trail) |
+| `pledges` | Pledge fulfillment history |
+| `users` | User accounts (never delete) |
+| `subscribers` | Newsletter subscription history |
+| `inviteCodes` | Invite code audit trail |
+| `journal` | Journal entries (minutes) |
+| `faq` | FAQ content |
+| `masjidConstruction` | Construction progress history |
+| `aboutStats` | Stats snapshot |
+| `userSettings` | User preferences |
+| `ai_knowledge` | AI knowledge base |
+| `versions` | Version history (internal) |
+
+### 2.2 Dual-Cleanup Collections (Firestore + localStorage both cleaned after 30 days)
+
+Only **one** collection falls into this category:
+
+| Collection | Why Delete from Firestore |
+|-----------|--------------------------|
+| `activityLog` | Transient activity trail. Once it's >30 days old, it's noise. Already has cleanup API route. |
+
+### 2.3 What About "Notifications"?
+
+There is **no separate `notifications` collection** in Firestore. Notifications are **computed views** from other collections:
+
+- **Dashboard notifications page** (`/dashboard/notifications`): Reads `enrollments`, `schedulingRequests`, `contactSubmissions`, `rsvps` and displays pending/actionable items
+- **Member notifications page** (`/member/notifications`): Reads `events`, `programs`, `news` and displays recent items
+- **Navigation badge**: Reads the same collections for pending counts
+
+Since these are computed views (not stored data), the 30-day cache eviction naturally handles them — old cached enrollment/RSVP data falls off, so old notifications stop appearing. No separate Firestore cleanup needed.
+
+---
+
+## 3. 30-Day Rolling Window Cache Eviction
+
+### 3.1 How It Works
+
+Every collection in localStorage is filtered to only keep records within the last 30 days. This happens in three places:
+
+1. **On fetch** (when data is first cached): items older than 30 days are dropped before saving to localStorage
+2. **On append** (when a new item is created): the cache is filtered to drop items >30 days old
+3. **On cleanup** (once per session): all cached entries are scanned and aged-out records removed
+
+### 3.2 The 30-Day Filter
+
+```typescript
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
+  const cutoff = Date.now() - THIRTY_DAYS_MS;
+  return items.filter((item: any) => {
+    const date = item[dateField];
+    if (!date) return true; // keep items without dates
+    // Handle Firestore Timestamp objects
+    const ts = date.toDate ? date.toDate().getTime() : new Date(date).getTime();
+    return ts > cutoff;
+  });
+}
+```
+
+### 3.3 What About the Array Size Limits from v2?
+
+The v2 plan used per-collection max counts (500/200/100/1). The v3 plan replaces that with **30-day age-based eviction** because:
+
+- Age-based eviction is simpler (one rule for all collections)
+- It naturally keeps more items for high-traffic collections and fewer for low-traffic ones
+- It guarantees old data doesn't accumulate regardless of how busy the masjid gets
+- The user specifically requested 30-day limits instead of count-based limits
+
+### 3.4 Practical Impact
+
+| Collection | Avg Monthly Volume | ~Items in Cache After 30 Days |
+|-----------|-------------------|-------------------------------|
+| `events` | 2-5 | 2-5 |
+| `rsvps` | 50-200 | 50-200 |
+| `enrollments` | 20-50 | 20-50 |
+| `activityLog` | 100-500 | 100-500 |
+| `donations` | 10-50 | 10-50 |
+| `contactSubmissions` | 5-20 | 5-20 |
+| `news` | 2-10 | 2-10 |
+| `users` | 0-5 new | All (accounts persist) |
+
+**Total cache size: well under 1 MB for any realistic scenario.**
+
+### 3.5 What If a Collection Has Items Without `createdAt`?
+
+Some collections (like `users`, `aboutStats`, `userSettings`) may have items without a `createdAt` field, or may not be arrays. These are kept as-is (the age filter only applies to array items that have a date field).
+
+---
+
+## 4. Smart Invalidation: Create ≠ Update/Delete
+
+### 4.1 The Problem
+
+> *"If a member fills out the RSVP form, a write occurs and the cache is removed. Does that mean the list would be GONE?"*
+
+Before this fix: **Yes, the cache would be removed. Next page load would require a full refetch.** This is wasteful when only 1 new RSVP is added.
+
+### 4.2 The Solution: Two Operations
+
+```typescript
+// ─── USE THIS FOR: Creating NEW data (RSVP, enrollment, donation, etc.)
+//     Appends to existing cached data. 0 reads. 0 refetches.
+export function appendToCache<T>(key: string, newItem: T): void {
+  const fullKey = PREFIX + key;
+  const raw = localStorage.getItem(fullKey);
+  if (!raw) return; // No cache exists yet — nothing to append to
+
+  try {
+    const entry: CacheEntry<T[]> = JSON.parse(raw);
+    // Prepend new item, then filter to only last 30 days
+    entry.d = filterByAge([newItem, ...entry.d]);
+    entry.t = Date.now();
+    localStorage.setItem(fullKey, JSON.stringify(entry));
+  } catch {
+    localStorage.removeItem(fullKey); // Corrupt cache
+  }
+}
+
+// ─── USE THIS FOR: Updating or DELETING existing data
+//     Removes the entire cache. Next load refetches fresh.
+export function invalidateCache(key: string | string[]): void {
+  const keys = Array.isArray(key) ? key : [key];
+  keys.forEach(k => {
+    localStorage.removeItem(PREFIX + k);
+    localStorage.removeItem(PREFIX + k + '_lastTs');
+  });
+}
+```
+
+### 4.3 Which Operation to Use Where
+
+| Action | Operation | Reason |
+|--------|-----------|--------|
+| **Member RSVPs** (create RSVP) | `appendToCache('rsvps', ...)` | New record added to existing list |
+| **Board approves RSVP** (update status) | `invalidateCache('rsvps')` | Existing record changed |
+| **Board rejects RSVP** (delete) | `invalidateCache('rsvps')` | Existing record removed |
+| **Member enrolls** (create enrollment) | `appendToCache('enrollments', ...)` | New record |
+| **Board approves enrollment** (update) | `invalidateCache('enrollments')` | Existing record changed |
+| **Board creates event** (create) | `appendToCache('events', ...)` | New record |
+| **Board edits event** (update) | `invalidateCache('events')` | Existing record changed |
+| **Board deletes event** (delete) | `invalidateCache('events')` | Existing record removed |
+| **Member donates** (create donation) | `appendToCache('donations', ...)` | New record |
+| **Board adds manual donation** (create) | `appendToCache('donations', ...)` | New record |
+| **Board edits donation** (update) | `invalidateCache('donations')` | Existing record changed |
+| **Member subscribes** (create) | `appendToCache('subscribers', ...)` | New record |
+| **Board removes subscriber** (delete) | `invalidateCache('subscribers')` | Existing record removed |
+
+### 4.4 What the Board Member Sees
+
+```
+BEFORE the fix:
+  Member RSVPs → cache fully invalidated
+  Board member's table → shows loading → refetches all RSVPs
+  Reads: 501 (just to add 1 new RSVP)
+
+AFTER the fix:
+  Member RSVPs → appendToCache('rsvps', newRsvp) → cache updated in place
+  Board member's table → still shows all data + 1 new → NO LOADING
+  Reads: 0
+```
+
+---
+
+## 5. Base64 Media Handling (Masjid Construction)
+
+### 5.1 The Problem
+
+Masjid construction updates may contain base64-encoded images or videos — potentially **hundreds of KB each**. Enough to fill localStorage quickly.
+
+### 5.2 The Solution: Strip Media Before Caching
+
+```typescript
+function sanitizeForCache(key: string, data: any): any {
+  if (key === 'masjidConstruction') {
+    return data.map((item: any) => ({
+      id: item.id,
+      caption: item.caption,
+      phase: item.phase,
+      raised: item.raised,
+      goal: item.goal,
+      createdAt: item.createdAt,
+      imageUrl: item.imageUrl || null, // URL string (small) not base64
+    }));
+  }
+  return data;
+}
+```
+
+### 5.3 What This Means for the AI
+
+The AI can answer:
+- "How much raised for construction?" → ✅ (raised/goal fields kept)
+- "Latest construction caption?" → ✅ (caption field kept)
+- "Show me the image" → ❌ (image not cached, but AI directs user to page)
+
+### 5.4 Other Media
+
+| Data Source | Contains Base64? | Handled By |
+|------------|-----------------|-----------|
+| Masjid Construction | Possibly (images/videos) | Stripped before cache |
+| Events | Poster URLs (strings) | Cached as-is |
+| Programs | Image URLs (strings) | Cached as-is |
+| News | Image URLs (strings) | Cached as-is |
+| Users | Avatar URLs (strings) | Cached as-is |
+
+---
+
+## 6. Complete Collection Inventory — All 22 Collections
+
+### 6.1 Master Table
+
+| # | Collection | Type | Firestore Retention | localStorage Eviction | Pages That Read It | Create Source | Update Source | Delete Source |
+|---|-----------|------|-------------------|---------------------|-------------------|--------------|--------------|--------------|
+| 1 | `events` | Cache-Only | Forever | 30 days | Homepage, Events, Dashboard, Navigation, RSVP page, Donate page | Dashboard (new event) | Dashboard (edit event) | Dashboard (delete event) |
+| 2 | `programs` | Cache-Only | Forever | 30 days | Homepage, Programs, Dashboard, Navigation, Enroll page | Dashboard (new program) | Dashboard (edit program) | Dashboard (delete program) |
+| 3 | `enrollments` | Cache-Only | Forever | 30 days | Dashboard (main + users + notifications), Navigation | Member enrolls via API | Board approves/rejects | Board deletes |
+| 4 | `schedulingRequests` | Cache-Only | Forever | 30 days | Dashboard (main + notifications), Navigation | Public scheduling form via API | Board approves/rejects | Board deletes |
+| 5 | `contactSubmissions` | Cache-Only | Forever | 30 days | Dashboard (main + notifications), Navigation | Contact form via API | Board marks as read | Board deletes |
+| 6 | `rsvps` | Cache-Only | Forever | 30 days | Dashboard (main + users + notifications), Navigation, Events page | Member RSVPs via API | Board confirms/cancels | Board deletes |
+| 7 | `users` | Cache-Only | Forever | 30 days | Dashboard (main + users), Login, Register, Profile, Auth context, Settings | User registration | Profile/settings updates | Board deletes |
+| 8 | `news` | Cache-Only | Forever | 30 days | Homepage, News, Dashboard, Member notifications | Dashboard (new article) | Dashboard (edit article) | Dashboard (delete article) |
+| 9 | `donations` | Cache-Only | Forever | 30 days | Dashboard (main + users), Donate page, Profile, Impact report | Stripe webhook, Manual entry | — | Board deletes |
+| 10 | `pledges` | Cache-Only | Forever | 30 days | Dashboard (main + users), Profile, Pledge page | Pledge form via API | Board marks fulfilled/cancelled | Board deletes |
+| 11 | `subscribers` | Cache-Only | Forever | 30 days | Dashboard (main + users) | Subscribe form via API | Unsubscribe via API | Board deletes |
+| 12 | `volunteers` | Cache-Only | Forever | 30 days | Dashboard (main) | Volunteer form via API | — | Board deletes |
+| 13 | `testimonials` | Cache-Only | Forever | 30 days | Dashboard (main), TestimonialsDisplay component | Dashboard (new testimonial) | Dashboard (edit testimonial) | Dashboard (delete testimonial) |
+| 14 | `masjidConstruction` | Cache-Only | Forever | 30 days (base64 stripped) | Homepage, Masjid Construction page, Donate page, Dashboard | Dashboard (new update) | Dashboard (edit update) | Dashboard (delete update) |
+| 15 | `activityLog` | **Dual-Cleanup** | **30 days** | **30 days** | Dashboard (main + activity page) | All admin actions (logActivity) | — | Cleanup API (auto) |
+| 16 | `journal` | Cache-Only | Forever | 30 days | Dashboard (main), Journal page | Dashboard (new entry) | Dashboard (edit entry) | Dashboard (delete entry) |
+| 17 | `inviteCodes` | Cache-Only | Forever | 30 days | Dashboard (main) | Board generates code | Board marks used | Board deletes |
+| 18 | `faq` | Cache-Only | Forever | 30 days | Dashboard (main), FAQ page, FAQAccordion component | Dashboard (new FAQ) | Dashboard (edit FAQ) | Dashboard (delete FAQ) |
+| 19 | `aboutStats` | Cache-Only | Forever | 30 days | Homepage, About page (via API), Dashboard | — | API route only | — |
+| 20 | `userSettings` | Cache-Only | Forever | 30 days | Settings page, Theme context | First save creates doc | Settings/theme change | — |
+| 21 | `ai_knowledge` | Cache-Only | Forever | 30 days (rarely read) | AiAssistant (via TS import, not cache) | Dashboard (add entry) | Dashboard (edit entry) | Dashboard (delete entry) |
+| 22 | `versions` | Cache-Only | Forever | NOT CACHED | Internal (version restore) | Auto-saved before update | — | — |
+
+### 6.2 Total Firestore Reads Per Page Load (Before vs After)
+
+| Page | Before (reads) | After with Cache (reads) | After Cold (reads) |
+|------|---------------|------------------------|-------------------|
+| Dashboard `/dashboard` | 17+ | **2** (auth + theme) | ~19 (one per collection) |
+| Homepage `/` | 8+ | **2** (auth + theme) | ~10 |
+| Events `/events` | 2 | **2** (auth + theme) | ~4 |
+| Programs `/programs` | 2 | **2** (auth + theme) | ~4 |
+| Navigation (every page) | 6 | **0** (from cache) | ~6 |
+| AI question | 0+ | **0** (from cache) | 0 (from KB) |
+
+---
+
+## 7. The Cache Manager (Final Code)
 
 ```typescript
 // lib/cache-manager.ts
-// COMBINED APPROACH: Choice 1 (Simple Invalidation) + Choice 2 (Metadata Verification)
+// v3: 30-day rolling window, smart create-vs-update invalidation,
+//     base64 stripping, metadata as fallback only
 'use client';
 
 const PREFIX = 'mhma_v5_';
 const TTL_24H = 24 * 60 * 60 * 1000;
-const BG_VERIFY_AFTER_MS = 30_000;  // Only background-verify if cache older than 30s
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 interface CacheEntry<T> {
   d: T;      // data
-  t: number; // cachedAt timestamp (Date.now())
-  s: number; // serverTimestamp from metadata doc at time of cache
+  t: number; // cachedAt (Date.now)
+  s: number; // serverTimestamp from metadata (used for fallback)
 }
 
-// ─── Display cached data instantly, THEN verify in background ───
+// ─── Filter array items to keep only those within 30 days ───
+function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
+  const cutoff = Date.now() - THIRTY_DAYS_MS;
+  return items.filter((item: any) => {
+    const date = item?.[dateField];
+    if (!date) return true;
+    const ts = date.toDate ? date.toDate().getTime() : new Date(date).getTime();
+    return !isNaN(ts) && ts > cutoff;
+  });
+}
+
+// ─── Get cached data (with fallback metadata check on miss) ───
 export async function getCachedData<T>(
   key: string,
   fetchFn: () => Promise<T>,
@@ -149,125 +408,128 @@ export async function getCachedData<T>(
   if (raw) {
     try {
       const entry: CacheEntry<T> = JSON.parse(raw);
-      const age = Date.now() - entry.t;
-
-      // Layer 3: 24-hour safety net (client-side, 0 reads)
-      if (age >= TTL_24H) {
-        localStorage.removeItem(cacheKey);
-        console.log(`[Cache] EXPIRED ${key} (>24h old)`);
-      } else {
-        // Layer 1: Display immediately from cache (0 reads!)
-        console.log(`[Cache] HIT ${key} (age: ${Math.round(age / 1000)}s)`);
-
-        // Layer 2: Background verification (only if cache > 30s old)
-        if (age > BG_VERIFY_AFTER_MS) {
-          verifyInBackground(key, entry, fetchFn);
-        }
-
+      if (Date.now() - entry.t < TTL_24H) {
         return { data: entry.d, fromCache: true };
       }
+      localStorage.removeItem(cacheKey); // Expired (>24h)
     } catch {
-      localStorage.removeItem(cacheKey); // Corrupt cache — refetch
+      localStorage.removeItem(cacheKey); // Corrupt
     }
   }
 
-  // Cache missing or expired — fetch fresh
+  // Cache MISS. FALLBACK: read metadata to check if write happened.
+  const metaTs = await readMetadataTimestamp(key);
+  const cachedTsRaw = localStorage.getItem(cacheKey + '_lastTs');
+  const cachedTs = cachedTsRaw ? Number(cachedTsRaw) : 0;
+
+  if (metaTs !== null && metaTs > cachedTs) {
+    console.log(`[Cache] MISS ${key} (write detected)`);
+  } else {
+    console.log(`[Cache] MISS ${key} (no write — cache cleared)`);
+  }
+
   return fetchAndCache(key, fetchFn);
 }
 
-// ─── Background verification: 1 metadata read to confirm freshness ───
-async function verifyInBackground<T>(
-  key: string,
-  entry: CacheEntry<T>,
-  fetchFn: () => Promise<T>,
-): Promise<void> {
+// ─── Read metadata timestamp (fallback — only on cache miss) ───
+async function readMetadataTimestamp(key: string): Promise<number | null> {
   try {
-    const res = await fetch('/api/metadata-timestamps');
-    if (!res.ok) return;
-    const metadata = await res.json();
-    const serverTs = metadata[key];
-    if (serverTs === undefined) return; // Collection not tracked in metadata
-
-    if (serverTs > entry.s) {
-      // A write happened that our invalidation didn't catch (edge case)
-      console.log(`[Cache] BACKGROUND STALE ${key} (cached:${entry.s} < server:${serverTs})`);
-      const fresh = await fetchFn();
-      const newEntry: CacheEntry<T> = { d: fresh, t: Date.now(), s: serverTs };
-      localStorage.setItem(PREFIX + key, JSON.stringify(newEntry));
-      // Notify the page that data was updated
-      window.dispatchEvent(new CustomEvent('mhma-cache-update', {
-        detail: { key, data: fresh }
-      }));
-    } else {
-      console.log(`[Cache] BACKGROUND VERIFIED ${key} (ts match: ${serverTs})`);
-      // Update the cachedAt timestamp so we don't re-verify too soon
-      entry.t = Date.now();
-      localStorage.setItem(PREFIX + key, JSON.stringify(entry));
-    }
+    const res = await fetch('/api/metadata-timestamps', { cache: 'force-cache' });
+    if (!res.ok) return null;
+    const meta = await res.json();
+    return meta[key] ?? null;
   } catch {
-    // Metadata fetch failed — cache is acceptable, do nothing
-    console.log(`[Cache] BACKGROUND VERIFY FAILED ${key} — using cache as-is`);
+    return null;
   }
 }
 
-// ─── Fetch fresh and cache ───
+// ─── Fetch fresh, apply 30-day filter, sanitize, and cache ───
 async function fetchAndCache<T>(
   key: string,
   fetchFn: () => Promise<T>,
 ): Promise<{ data: T; fromCache: boolean }> {
-  console.log(`[Cache] MISS ${key} — fetching...`);
-  const data = await fetchFn();
+  let data = await fetchFn();
 
-  // Try to get server timestamp from metadata (best-effort)
+  // Apply 30-day rolling window filter
+  if (Array.isArray(data)) {
+    data = filterByAge(data) as T;
+  }
+
+  // Sanitize: strip base64 media from large collections
+  const sanitized = sanitizeForCache(key, data);
+
+  // Get server timestamp for fallback
   let serverTs = Date.now();
   try {
-    const res = await fetch('/api/metadata-timestamps');
+    const res = await fetch('/api/metadata-timestamps', { cache: 'force-cache' });
     if (res.ok) {
-      const metadata = await res.json();
-      if (metadata[key]) serverTs = metadata[key];
+      const meta = await res.json();
+      if (meta[key]) serverTs = meta[key];
     }
-  } catch { /* Use Date.now() as fallback */ }
+  } catch {}
 
-  const entry: CacheEntry<T> = { d: data, t: Date.now(), s: serverTs };
-  try {
-    localStorage.setItem(PREFIX + key, JSON.stringify(entry));
-  } catch {
-    console.warn(`[Cache] localStorage full for ${key}`);
-  }
+  const entry: CacheEntry<T> = { d: sanitized, t: Date.now(), s: serverTs };
+  localStorage.setItem(cacheKey, JSON.stringify(entry));
+  localStorage.setItem(cacheKey + '_lastTs', String(serverTs));
+
   return { data, fromCache: false };
 }
 
-// ─── Invalidate: Call AFTER a successful write ───
+// ─── Sanitize: strip base64 media ───
+function sanitizeForCache(key: string, data: any): any {
+  if (key === 'masjidConstruction' && Array.isArray(data)) {
+    return data.map((item: any) => ({
+      id: item.id,
+      caption: item.caption,
+      phase: item.phase,
+      raised: item.raised,
+      goal: item.goal,
+      donorCount: item.donorCount,
+      squareFeet: item.squareFeet,
+      createdAt: item.createdAt,
+      imageUrl: item.imageUrl || null,
+    }));
+  }
+  return data;
+}
+
+// ─── Append new item to cached data (use for CREATES) ───
+export function appendToCache<T>(key: string, newItem: T): void {
+  const cacheKey = PREFIX + key;
+  const raw = localStorage.getItem(cacheKey);
+  if (!raw) return;
+
+  try {
+    const entry: CacheEntry<T[]> = JSON.parse(raw);
+    entry.d = filterByAge([newItem, ...entry.d]);
+    entry.t = Date.now();
+    localStorage.setItem(cacheKey, JSON.stringify(entry));
+  } catch {
+    localStorage.removeItem(cacheKey);
+  }
+}
+
+// ─── Invalidate cache (use for UPDATES and DELETES) ───
 export function invalidateCache(key: string | string[]): void {
   const keys = Array.isArray(key) ? key : [key];
   keys.forEach(k => {
     localStorage.removeItem(PREFIX + k);
-    console.log(`[Cache] INVALIDATED ${k}`);
+    localStorage.removeItem(PREFIX + k + '_lastTs');
   });
 }
 
-// ─── Listen for cache updates (to refresh UI without reload) ───
-export function onCacheUpdate(
-  key: string,
-  callback: (data: any) => void,
-): () => void {
-  const handler = (e: Event) => {
-    const detail = (e as CustomEvent).detail;
-    if (detail.key === key) callback(detail.data);
-  };
-  window.addEventListener('mhma-cache-update', handler);
-  return () => window.removeEventListener('mhma-cache-update', handler);
-}
-
-// ─── Force-clear a specific cache entry ───
-export function clearCache(key: string): void {
-  localStorage.removeItem(PREFIX + key);
+// ─── Force-clear all MHMA cache entries ───
+export function clearAllCaches(): void {
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k?.startsWith(PREFIX)) localStorage.removeItem(k);
+  }
 }
 ```
 
 ---
 
-## 3. The Metadata API Route (Background Verification)
+## 8. The Metadata API Route (Fallback Only)
 
 ```typescript
 // app/api/metadata-timestamps/route.ts
@@ -279,7 +541,7 @@ const ALL_COLLECTIONS = [
   'pledges', 'users', 'news', 'masjidConstruction', 'subscribers',
   'contactSubmissions', 'schedulingRequests', 'volunteers',
   'testimonials', 'activityLog', 'journal', 'inviteCodes', 'faq',
-  'aboutStats',
+  'aboutStats', 'userSettings',
 ];
 
 export async function GET() {
@@ -296,16 +558,10 @@ export async function GET() {
 }
 ```
 
-### 3.1 Every Write Route Updates the Metadata
-
-Every API route that writes data gets ONE LINE:
+Every write route that performs an **update or delete** (NOT create) adds one line:
 
 ```typescript
-// Inside app/api/rsvp/route.ts — after the write succeeds:
-
-await firestore.collection('rsvps').add(rsvpData);
-
-// ONE EXTRA LINE: Update metadata timestamp
+// Inside update/delete handler:
 await firestore.collection('metadata').doc('cacheTimestamps').update({
   rsvps: Date.now(),
   _updatedAt: Date.now(),
@@ -314,148 +570,228 @@ await firestore.collection('metadata').doc('cacheTimestamps').update({
 
 ---
 
-## 4. localStorage Cleanup Algorithm
-
-### 4.1 Why Cleanup Is Needed
-
-You asked about board members seeing lots of data filling up localStorage. Here's the reality:
-
-| Concern | Actual Situation |
-|---------|-----------------|
-| Max localStorage size | 5-10 MB per domain |
-| Our total cached data | ~1 MB (all 19 collections) |
-| How fast it fills | Very slowly: 1 MB even with thousands of records |
-| Risk of filling up | **Virtually zero** for MHMA's scale |
-
-But since you want a cleanup system, here's one built into the cache manager.
-
-### 4.2 Automatic Cleanup (Built-in)
-
-```typescript
-// These are already built into the cache manager above:
-
-// 1. 24-hour TTL: caches older than 24 hours are removed on access
-//    Every load checks: if (age >= TTL_24H) localStorage.removeItem(key)
-
-// 2. Corrupt data: if JSON.parse fails, cache is removed
-//    try { JSON.parse(raw) } catch { localStorage.removeItem(key) }
-```
-
-### 4.3 Periodic Cleanup (Runs Once Per Session)
+## 9. localStorage Cleanup & 30-Day Eviction
 
 ```typescript
 // lib/cache-cleanup.ts
-// Called ONCE when the app loads (in layout.tsx)
+// Runs ONCE when the app loads (in layout.tsx)
 'use client';
 
-import { PREFIX } from './cache-manager'; // or redefine
+import { PREFIX } from './cache-manager';
 
-const CACHE_PREFIX = 'mhma_v5_';
-const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_TOTAL_SIZE = 4 * 1024 * 1024;    // 4 MB safety limit (leave room)
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const TTL_24H = 24 * 60 * 60 * 1000;
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024; // 4 MB safety limit
 
 export function runCacheCleanup(): void {
-  const now = Date.now();
   let totalSize = 0;
+  const entries: { key: string; t: number; size: number }[] = [];
 
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const key = localStorage.key(i);
-    if (!key?.startsWith(CACHE_PREFIX)) continue;
+    if (!key?.startsWith(PREFIX)) continue;
 
-    const value = localStorage.getItem(key);
-    if (!value) { localStorage.removeItem(key!); continue; }
+    const val = localStorage.getItem(key);
+    if (!val) { localStorage.removeItem(key!); continue; }
 
-    // Size tracking
-    totalSize += value.length;
+    const size = val.length;
+    totalSize += size;
 
     try {
-      const entry = JSON.parse(value);
-      // Remove if older than 24 hours
-      if (now - entry.t > MAX_CACHE_AGE) {
+      const entry = JSON.parse(val);
+
+      // 24-hour TTL check (safety net)
+      if (Date.now() - entry.t > TTL_24H && entry.t > 0) {
         localStorage.removeItem(key);
-        console.log(`[CacheCleanup] Removed expired: ${key}`);
+        console.log(`[Cleanup] Expired (24h): ${key}`);
+        continue;
       }
+
+      // 30-day rolling window: remove old items from arrays
+      if (Array.isArray(entry.d) && !key.endsWith('_lastTs')) {
+        const cutoff = Date.now() - THIRTY_DAYS_MS;
+        const before = entry.d.length;
+        entry.d = entry.d.filter((item: any) => {
+          const date = item?.createdAt;
+          if (!date) return true;
+          const ts = date.toDate ? date.toDate().getTime() : new Date(date).getTime();
+          return !isNaN(ts) && ts > cutoff;
+        });
+        if (entry.d.length < before) {
+          entry.t = Date.now();
+          localStorage.setItem(key, JSON.stringify(entry));
+          console.log(`[Cleanup] 30-day eviction: ${key} (${before} → ${entry.d.length} items)`);
+        }
+      }
+
+      entries.push({ key, t: entry.t || 0, size });
     } catch {
-      // Corrupt entry — remove
-      localStorage.removeItem(key);
-      console.log(`[CacheCleanup] Removed corrupt: ${key}`);
+      localStorage.removeItem(key); // Corrupt
     }
   }
 
-  // If total size exceeds limit, remove oldest entries
+  // If total > 4 MB, evict oldest entries
   if (totalSize > MAX_TOTAL_SIZE) {
-    const entries: { key: string; t: number }[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (!key?.startsWith(CACHE_PREFIX)) continue;
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-      try {
-        const entry = JSON.parse(raw);
-        entries.push({ key, t: entry.t || 0 });
-      } catch {}
-    }
-    entries.sort((a, b) => a.t - b.t); // Oldest first
+    entries.sort((a, b) => a.t - b.t);
     while (totalSize > MAX_TOTAL_SIZE && entries.length > 0) {
       const oldest = entries.shift()!;
       localStorage.removeItem(oldest.key);
-      totalSize -= oldest.key.length; // approximate
-      console.log(`[CacheCleanup] Evicted oldest: ${oldest.key}`);
+      totalSize -= oldest.size;
+      console.log(`[Cleanup] Evicted oldest: ${oldest.key}`);
     }
   }
 
-  console.log(`[CacheCleanup] Complete. Total cache size: ~${(totalSize / 1024).toFixed(1)} KB`);
+  console.log(`[Cleanup] Done. Cache: ~${(totalSize / 1024).toFixed(1)} KB`);
 }
 ```
 
-> **This cleanup runs once per session** (called from `layout.tsx`). It's not a periodic task. It doesn't add reads. It just scans localStorage, removes expired/corrupt entries, and evicts oldest if total exceeds 4 MB.
+---
 
-### 4.4 What Board Members Should Actually Do
+## 10. CSV Export for Historical Data
 
-> **Board members don't need to manage localStorage manually.** The cleanup handles it automatically. Delete events/programs/users from the Dashboard as you normally would — that cleans up the Firebase data. The localStorage cache handles itself.
+### 10.1 The Feature
 
-If a board member ever sees a "localStorage full" warning in their browser (which they won't unless they have 5+ MB of unrelated data from other websites), they can:
-1. Open DevTools → Application → Local Storage
-2. Right-click on the domain → Clear
-3. Refresh the page
+Board members sometimes need to see data older than 30 days — for example, "how many people RSVP'd in the last year" or "total donations for 2025." Since the localStorage cache only keeps 30 days, they need a way to query Firestore directly and download the results.
 
-That clears all cache, and the app refetches fresh data on next load (same as first visit behavior).
+### 10.2 How It Works
+
+Each dashboard table page gets a "Download CSV" button that:
+1. Fetches data from Firestore for a date range (bypassing cache)
+2. Formats it as CSV
+3. Triggers a browser download
+4. Does NOT affect localStorage cache
+
+### 10.3 CSV Export Component
+
+```typescript
+// components/DownloadCsvButton.tsx
+'use client';
+
+import { useState } from 'react';
+import { Download } from 'lucide-react';
+
+interface Props {
+  filename: string;
+  fetchData: () => Promise<any[]>;
+  headers: string[];
+  mapRow: (item: any) => string[];
+}
+
+export default function DownloadCsvButton({ filename, fetchData, headers, mapRow }: Props) {
+  const [loading, setLoading] = useState(false);
+
+  const handleDownload = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchData(); // Direct Firestore fetch (no cache)
+      const csvRows = [
+        headers.join(','),
+        ...data.map(item =>
+          mapRow(item).map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+        ),
+      ];
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('CSV export failed:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button onClick={handleDownload} disabled={loading}
+      className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+      <Download className="w-4 h-4" />
+      {loading ? 'Exporting...' : 'Download CSV'}
+    </button>
+  );
+}
+```
+
+### 10.4 Where to Add CSV Export
+
+| Dashboard Page | Collection | Suggested CSV Columns |
+|---------------|-----------|---------------------|
+| `/dashboard/rsvps` | `rsvps` | fullName, email, phone, eventTitle, attendees, status, createdAt |
+| `/dashboard/enrollments` | `enrollments` | fullName, email, phone, program, status, createdAt |
+| `/dashboard/events` | `events` | title, date, location, rsvpCount, createdAt |
+| `/dashboard/donations` | `donations` | donorName, email, amount, method, status, createdAt |
+| `/dashboard/pledges` | `pledges` | name, email, amount, status, createdAt |
+| `/dashboard/activity` | `activityLog` | userName, action, details, createdAt |
+| `/dashboard/users` | `users` | firstName, lastName, email, role, createdAt |
+| `/dashboard/contact-submissions` | `contactSubmissions` | name, email, subject, read, createdAt |
+| `/dashboard/scheduling-requests` | `schedulingRequests` | eventTitle, organizerName, status, createdAt |
+
+### 10.5 API Route for CSV Data
+
+For large datasets, a dedicated API route is cleaner:
+
+```typescript
+// app/api/export-csv/route.ts
+import { firestore } from '@/lib/firebase-admin';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const collection = searchParams.get('collection');
+  const startDate = searchParams.get('start');
+  const endDate = searchParams.get('end');
+
+  if (!collection) {
+    return NextResponse.json({ error: 'collection required' }, { status: 400 });
+  }
+
+  let query: FirebaseFirestore.Query = firestore.collection(collection);
+  if (startDate) {
+    query = query.where('createdAt', '>=', new Date(startDate));
+  }
+  if (endDate) {
+    query = query.where('createdAt', '<=', new Date(endDate));
+  }
+  query = query.orderBy('createdAt', 'desc').limit(10000);
+
+  const snapshot = await query.get();
+  const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  return NextResponse.json(data);
+}
+```
 
 ---
 
-## 5. How the AI Uses localStorage (RAG Integration)
+## 11. How the AI Uses localStorage (RAG Integration)
 
-### 5.1 The AI's Data Sources (Priority Order)
+### 11.1 The AI's Data Sources (Priority Order)
 
 ```
-When the AI answers a question, it checks these sources IN ORDER.
-It NEVER reads from Firestore directly.
+Priority 1 — PageDataContext (React state, current page):
+  Data already displayed on screen. 0 reads.
+  Example: User is on Dashboard → asks "how many events?"
+    → pageData.events exists → answer instantly
 
-Priority 1: PageDataContext (React state — current page's displayed data)
-  → "How many events?" → pageData.events exists? YES → answer from it
-  → 0 reads, data is on screen RIGHT NOW
+Priority 2 — localStorage (cache from any page):
+  Data loaded by ANY page this session or earlier. 0 reads.
+  Example: User is on Programs page → asks "total donations?"
+    → pageData.donations missing
+    → localStorage.getItem('mhma_v5_donations') → FOUND → answer instantly
+    → No Firestore read needed
 
-Priority 2: localStorage (cached from ANY page visited this session or earlier)
-  → "Total donations?" → pageData.donations missing
-  → Check localStorage 'mhma_v5_donations' → FOUND → answer from it
-  → 0 reads (cache hit from earlier Dashboard visit)
+Priority 3 — Static knowledge base (assistant-knowledge.ts):
+  Q&A about website features. 0 reads (it's a .ts file).
+  Example: "How do I create an event?"
 
-Priority 3: Static knowledge base (assistant-knowledge.ts)
-  → "How do I create an event?" → no live data match
-  → Fall through to KB → answer from .ts file
-  → 0 reads (file in codebase, not Firestore)
-
-Priority 4: "I don't have that information"
-  → Nothing matched → tell user to visit the relevant page
-  → 0 reads
-
-══════════════════════════════════════════════════════════════════
-
-The AI NEVER calls fetch('/api/...') to answer a question.
-It reads from what's already loaded or cached.
+Priority 4 — Guidance to visit relevant page:
+  Nothing found. Tell user where to go.
+  Example: "Visit Dashboard → Donations to see that data."
 ```
 
-### 5.2 The AI's Cache-Aware Answering Function
+### 11.2 The AI's Cache-Aware Function
 
 ```typescript
 // In app/components/AiAssistant.tsx
@@ -467,23 +803,18 @@ export default function AiAssistant() {
   const { data: pageData } = usePageData();
   const { user } = useAuth();
 
-  // ─── Answer questions using cached/displayed data ONLY ───
-  function answerFromLiveData(query: string): string | null {
-    const lower = query.toLowerCase();
+  function answerFromCache(query: string): string | null {
+    const lower = query.toLowerCase().trim();
 
-    // ─── Helper: read from localStorage directly ───
+    // Helper: read from localStorage
     function fromCache<T>(key: string): T | null {
       try {
         const raw = localStorage.getItem('mhma_v5_' + key);
-        if (!raw) return null;
-        return JSON.parse(raw).d as T;
+        return raw ? JSON.parse(raw).d as T : null;
       } catch { return null; }
     }
 
-    // ═══════════════════════════════════════════════════════
-    // EVENTS
-    // ═══════════════════════════════════════════════════════
-
+    // ─── EVENTS ───
     if (lower.includes('how many event') || (lower.includes('event') && lower.includes('count'))) {
       const events = pageData.events || fromCache<any[]>('events');
       if (events) return `There are ${events.length} events loaded.`;
@@ -492,45 +823,35 @@ export default function AiAssistant() {
 
     if (lower.includes('upcoming event') || lower.includes('next event')) {
       const events = pageData.events || fromCache<any[]>('events');
-      if (events?.length) {
-        const now = new Date();
-        const upcoming = events.filter(e => new Date(e.date || e.createdAt) > now);
-        if (upcoming.length > 0) {
-          const next = upcoming[0];
-          return `Next event: ${next.title} on ${next.date || 'TBD'}.`;
-        }
-        return "No upcoming events found.";
-      }
-      return "Visit the Events page to see event data.";
+      const upcoming = events?.filter((e: any) => new Date(e.date || e.createdAt) > new Date());
+      if (upcoming?.length) return `Next event: ${upcoming[0].title} on ${upcoming[0].date || 'TBD'}.`;
+      return "No upcoming events found.";
     }
 
-    // ═══════════════════════════════════════════════════════
-    // DONATIONS / FUNDRAISING
-    // ═══════════════════════════════════════════════════════
-
-    if ((lower.includes('donat') || lower.includes('raised') || lower.includes('fund')) &&
-        (lower.includes('total') || lower.includes('how much') || lower.includes('amount'))) {
+    // ─── DONATIONS ───
+    if ((lower.includes('donat') || lower.includes('raised') || lower.includes('fund'))
+        && (lower.includes('total') || lower.includes('how much') || lower.includes('amount'))) {
       const donations = pageData.donations || fromCache<any[]>('donations');
       if (donations?.length) {
         const total = donations.reduce((s: number, d: any) => s + (d.amount || 0), 0);
         return `Total donations: $${total.toLocaleString()}.`;
       }
-      return "Visit Dashboard → Donations to see donation totals, then ask me.";
+      return "Visit Dashboard → Donations to see totals.";
     }
 
-    if (lower.includes('masjid') || lower.includes('construction') && lower.includes('progress')) {
-      const updates = pageData.masjidUpdates || fromCache<any[]>('masjidConstruction');
+    // ─── MASJID CONSTRUCTION ───
+    if (lower.includes('masjid') || (lower.includes('construction') && lower.includes('progress'))) {
+      const updates = fromCache<any[]>('masjidConstruction');
       if (updates?.length) {
         const latest = updates[0];
-        return `Latest construction update: ${latest.caption || 'No caption'}. Raised: $${(latest.raised || 0).toLocaleString()} of $${(latest.goal || 0).toLocaleString()}.`;
+        const raised = latest.raised?.toLocaleString() || 'N/A';
+        const goal = latest.goal?.toLocaleString() || 'N/A';
+        return `${latest.caption || 'Latest update'}. Raised: $${raised} of $${goal}. See the Masjid Construction page for photos.`;
       }
       return "Visit the Masjid Construction page to see progress.";
     }
 
-    // ═══════════════════════════════════════════════════════
-    // PROGRAMS / ENROLLMENTS
-    // ═══════════════════════════════════════════════════════
-
+    // ─── PROGRAMS / ENROLLMENTS ───
     if (lower.includes('how many program') || (lower.includes('program') && lower.includes('count'))) {
       const programs = pageData.programs || fromCache<any[]>('programs');
       if (programs) return `There are ${programs.length} programs.`;
@@ -539,427 +860,306 @@ export default function AiAssistant() {
 
     if (lower.includes('enroll') || lower.includes('how many student')) {
       const programs = pageData.programs || fromCache<any[]>('programs');
-      if (programs?.length) {
-        const total = programs.reduce((s: number, p: any) => s + (p.enrollmentCount || 0), 0);
-        return `Total enrollments across all programs: ${total}.`;
-      }
+      const total = programs?.reduce((s: number, p: any) => s + (p.enrollmentCount || 0), 0);
+      if (total !== undefined) return `Total enrollments: ${total}.`;
       return "Visit Dashboard → Programs to see enrollment data.";
     }
 
-    // ═══════════════════════════════════════════════════════
-    // RSVPs
-    // ═══════════════════════════════════════════════════════
-
+    // ─── RSVPs ───
     if (lower.includes('rsvp') || (lower.includes('how many people') && lower.includes('event'))) {
       const events = pageData.events || fromCache<any[]>('events');
-      if (events?.length) {
-        const totalRsvps = events.reduce((s: number, e: any) => s + (e.rsvpCount || 0), 0);
-        return `Total RSVPs across all events: ${totalRsvps}.`;
-      }
+      const total = events?.reduce((s: number, e: any) => s + (e.rsvpCount || 0), 0);
+      if (total !== undefined) return `Total RSVPs: ${total}.`;
       return "Visit Dashboard → Events to see RSVP data.";
     }
 
-    // ═══════════════════════════════════════════════════════
-    // USERS / MEMBERS
-    // ═══════════════════════════════════════════════════════
-
-    if (lower.includes('how many user') || lower.includes('how many member') || lower.includes('total member')) {
+    // ─── USERS / MEMBERS ───
+    if (lower.includes('how many user') || lower.includes('how many member')) {
       const users = pageData.users || fromCache<any[]>('users');
-      if (users) return `There are ${users.length} registered users.`;
+      if (users) return `${users.length} registered users.`;
       return "Visit Dashboard → Members to see user data.";
     }
 
-    // ═══════════════════════════════════════════════════════
-    // IDENTITY (from auth context — always available)
-    // ═══════════════════════════════════════════════════════
-
-    if (lower === 'who am i' || lower === 'whoami' || lower === 'who am i?') {
-      if (user?.displayName) {
-        return `You are ${user.displayName}. Role: ${user.role === 'board_member' || user.role === 'administrator' ? 'board member' : 'member'}.${user.email ? ` Email: ${user.email}.` : ''}`;
-      }
-      return "You're not logged in. Click 'Member Login' in the top nav.";
-    }
-
-    // ═══════════════════════════════════════════════════════
-    // CURRENT PAGE
-    // ═══════════════════════════════════════════════════════
-
-    if (lower.includes('what page') || lower.includes('where am i') || lower.includes('current page')) {
-      const path = pageData.currentPath || (typeof window !== 'undefined' ? window.location.pathname : '');
-      return `You're on the ${path || 'unknown'} page.`;
-    }
-
-    // ═══════════════════════════════════════════════════════
-    // NOTIFICATIONS
-    // ═══════════════════════════════════════════════════════
-
-    if (lower.includes('notification') || lower.includes('any updates') || lower.includes('anything new')) {
+    // ─── NOTIFICATIONS / PENDING ───
+    if (lower.includes('notification') || lower.includes('pending') || lower.includes('anything new')) {
       const enrollments = fromCache<any[]>('enrollments');
       const rsvps = fromCache<any[]>('rsvps');
       const contacts = fromCache<any[]>('contactSubmissions');
       const scheduling = fromCache<any[]>('schedulingRequests');
-
       const pending: string[] = [];
-      if (enrollments) { const n = enrollments.filter((e: any) => e.status === 'pending').length; if (n) pending.push(`${n} pending enrollments`); }
-      if (rsvps) { const n = rsvps.filter((r: any) => r.status === 'pending').length; if (n) pending.push(`${n} pending RSVPs`); }
-      if (contacts) { const n = contacts.filter((c: any) => !c.read).length; if (n) pending.push(`${n} unread messages`); }
-      if (scheduling) { const n = scheduling.filter((s: any) => s.status === 'pending').length; if (n) pending.push(`${n} pending scheduling requests`); }
-
+      const n = (arr: any[] | null, field: string, val: string) =>
+        arr ? arr.filter((x: any) => x[field] === val).length : -1;
+      const e = n(enrollments, 'status', 'pending');
+      const r = n(rsvps, 'status', 'pending');
+      const c = n(contacts, 'read', false);
+      const s = n(scheduling, 'status', 'pending');
+      if (e > 0) pending.push(`${e} pending enrollment${e > 1 ? 's' : ''}`);
+      if (r > 0) pending.push(`${r} pending RSVP${r > 1 ? 's' : ''}`);
+      if (c > 0) pending.push(`${c} unread message${c > 1 ? 's' : ''}`);
+      if (s > 0) pending.push(`${s} pending scheduling request${s > 1 ? 's' : ''}`);
       if (pending.length) return `You have: ${pending.join(', ')}.`;
       return "No pending items found.";
     }
 
-    // ═══════════════════════════════════════════════════════
-    // NOT A LIVE DATA QUESTION — let it fall through to KB
-    // ═══════════════════════════════════════════════════════
+    // ─── IDENTITY ───
+    if (lower === 'who am i' || lower === 'whoami') {
+      if (user?.displayName) {
+        const role = user.role === 'board_member' || user.role === 'administrator' ? 'board member' : 'member';
+        return `You are ${user.displayName}. Role: ${role}.${user.email ? ` Email: ${user.email}.` : ''}`;
+      }
+      return "You're not logged in. Click 'Member Login' in the top nav.";
+    }
 
-    return null;
+    // ─── ACTIVITY LOG ───
+    if (lower.includes('recent activity') || lower.includes('what changed') || lower.includes('what happened')) {
+      const log = fromCache<any[]>('activityLog');
+      if (log?.length) {
+        const recent = log.slice(0, 3).map((a: any) => `${a.action || a.type} on ${a.createdAt || 'recently'}`).join(', ');
+        return `Recent activity: ${recent}. Visit Dashboard → Activity Log for full history.`;
+      }
+      return "Visit Dashboard → Activity Log to see recent changes.";
+    }
+
+    return null; // Fall through to knowledge base
   }
-
-  // This function is called from askQuestion before the KB lookup:
-  // const liveAnswer = answerFromLiveData(query);
-  // if (liveAnswer) return { answer: liveAnswer };
 }
 ```
 
-### 5.3 How the AI Handles Missing Data
-
-```
-User asks: "How many donations?"
-
-Step 1: AI checks PageDataContext → donations? → NO
-Step 2: AI checks localStorage → 'mhma_v5_donations'? → NO
-Step 3: AI returns: "Visit Dashboard → Donations to see donation totals, then ask me."
-Step 4: User visits Dashboard → Dashboard fetches donations → cached in LS
-Step 5: User asks again → PageDataContext has it now → answers instantly
-```
-
-The AI **guides** the user to the right page, which loads + caches the data. Subsequent questions about the same data are answered instantly (0 reads).
-
 ---
 
-## 6. Phase 0: Create Infrastructure
+## 12. Phase 0: Create Infrastructure
 
 **Files to create:**
-- `lib/cache-manager.ts` — the combined cache manager (~80 lines)
-- `app/api/metadata-timestamps/route.ts` — metadata endpoint (~35 lines)
-- `lib/cache-cleanup.ts` — optional cleanup script (~50 lines)
+- `lib/cache-manager.ts` — complete cache manager
+- `app/api/metadata-timestamps/route.ts` — metadata endpoint
+- `lib/cache-cleanup.ts` — cleanup script
 
 **Files to modify:**
-- `app/layout.tsx` — import and run `runCacheCleanup()` once on mount
-
-**Estimated time: 1 hour**
+- `app/layout.tsx` — add `runCacheCleanup()` on mount
 
 ---
 
-## 7. Phase 1: Add Invalidation to Every Write Handler
+## 13. Phase 1: Add Cache Invalidation on Update/Delete
 
-**What to do:** After every successful write (form submit, admin action), add ONE line: `invalidateCache('collectionName')`.
+### Server-side (metadata timestamp update)
 
-**Files to modify: ~38 files, 1 line each.**
-
-### Public Form Submissions (10 files)
-
-| File | Line to Add After Success |
-|------|--------------------------|
-| `app/rsvp/page.tsx` | `invalidateCache(['rsvps', 'events'])` |
-| `app/enroll/page.tsx` | `invalidateCache(['enrollments', 'programs'])` |
-| `app/pledge/page.tsx` | `invalidateCache('pledges')` |
-| `app/contact/page.tsx` | `invalidateCache('contactSubmissions')` |
-| `app/event-scheduling-request/page.tsx` | `invalidateCache('schedulingRequests')` |
-| `app/volunteer/page.tsx` | `invalidateCache('volunteers')` |
-| `app/subscribe/page.tsx` | `invalidateCache('subscribers')` |
-| `app/register/page.tsx` | `invalidateCache(['inviteCodes', 'users'])` |
-| `app/components/RSVPModal.tsx` | `invalidateCache(['rsvps', 'events'])` |
-| `app/components/NewsletterSignup.tsx` | `invalidateCache('subscribers')` |
-
-### Dashboard Admin Actions (18 files)
-
-| Dashboard Page | Line to Add After Write |
-|----------------|------------------------|
-| `events/*` create/edit/delete | `invalidateCache('events')` |
-| `events/*` approve/reject RSVP | `invalidateCache(['rsvps', 'events'])` |
-| `programs/*` create/edit/delete | `invalidateCache('programs')` |
-| `programs/*` approve/reject enrollment | `invalidateCache(['enrollments', 'programs'])` |
-| `news/*` create/edit/delete | `invalidateCache('news')` |
-| `news/*` trigger notification | `invalidateCache('subscribers')` |
-| `users/*` edit/delete | `invalidateCache('users')` |
-| `donations/*` add/edit/delete | `invalidateCache('donations')` |
-| `pledges/*` edit/fulfill/cancel | `invalidateCache('pledges')` |
-| `masjid-construction/*` add/edit | `invalidateCache('masjidConstruction')` |
-| `analytics/*` edit about stats | `invalidateCache('aboutStats')` |
-| `contact-submissions/*` mark read | `invalidateCache('contactSubmissions')` |
-| `scheduling-requests/*` approve/reject | `invalidateCache('schedulingRequests')` |
-| `testimonials/*` add/edit/delete | `invalidateCache('testimonials')` |
-| `activity/*` revert action | `invalidateCache('activityLog')` |
-| `invite-codes/*` generate/delete | `invalidateCache('inviteCodes')` |
-| `subscribers/*` manage | `invalidateCache('subscribers')` |
-| `settings/*` change anything | `invalidateCache(['users', 'userSettings'])` |
-
-### Server-Side (Metadata Update — 15 API Routes)
-
-Every write API route gets ONE LINE after the write:
-
-| API Route | Line to Add After Write |
-|-----------|------------------------|
-| `app/api/rsvp/route.ts` | `update({ rsvps: Date.now() })` |
-| `app/api/enroll/route.ts` | `update({ enrollments: Date.now() })` |
-| `app/api/pledge/route.ts` | `update({ pledges: Date.now() })` |
-| `app/api/contact/route.ts` | `update({ contactSubmissions: Date.now() })` |
-| `app/api/event-scheduling/route.ts` | `update({ schedulingRequests: Date.now() })` |
-| `app/api/submit-volunteer/route.ts` | `update({ volunteers: Date.now() })` |
-| `app/api/subscribe/route.ts` | `update({ subscribers: Date.now() })` |
-| `app/api/unsubscribe/route.ts` | `update({ subscribers: Date.now() })` |
-| `app/api/news/route.ts` | `update({ news: Date.now() })` |
-| `app/api/stripe-webhook/route.ts` | `update({ donations: Date.now() })` |
-| `app/api/events/route.ts` (POST) | `update({ events: Date.now() })` |
-| `app/api/programs/route.ts` (POST) | `update({ programs: Date.now() })` |
-| `app/api/use-invite/route.ts` | `update({ inviteCodes: Date.now() })` |
-| `app/api/change-email/route.ts` | `update({ users: Date.now() })` |
-| `app/api/notify-event/route.ts` | `update({ subscribers: Date.now() })` |
-| `app/api/notify-news/route.ts` | `update({ subscribers: Date.now() })` |
-| `app/api/notify-program/route.ts` | `update({ subscribers: Date.now() })` |
-| `app/api/notify-quarterly/route.ts` | `update({ donations: Date.now() })` |
-| `app/api/notify-monthly/route.ts` | `update({ donations: Date.now() })` |
-
-**Estimated time: 2 hours**
-
----
-
-## 8. Phase 2: Wrap Fetches with Cache Manager
-
-**What to do:** Replace direct `fetch*()` calls with `getCachedData(key, fetchFn)`.
-
-**Files to modify: ~20 files, 2-3 lines each.**
-
-### Priority 1: Navigation (saves 6 reads per page load)
-
-```
-app/components/Navigation.tsx
-
-BEFORE:
-  const enrollSnap = await getDocs(query(collection(db, "enrollments"), where("status", "==", "pending")));
-  const contactSnap = await getDocs(query(collection(db, "contactSubmissions"), where("read", "==", false)));
-  // ... 4 more reads
-
-AFTER:
-  const { data: enrollments } = await getCachedData('enrollments', () => fetchEnrollments(500));
-  const { data: contacts } = await getCachedData('contactSubmissions', () => fetchContactSubmissions(500));
-  // ... 4 more, all wrapped with getCachedData
-  const pendingEnrollments = enrollments.filter((e: any) => e.status === 'pending');
-  const unreadContacts = contacts.filter((c: any) => !c.read);
-```
-
-### Priority 2: Dashboard (saves 17 reads per load)
-
-```
-app/dashboard/page.tsx
-→ Wrap all 17 fetch* calls with getCachedData()
-```
-
-### Priority 3: Key Public Pages
-
-```
-app/events/page.tsx        → getCachedData('events', () => fetchEvents(100))
-app/programs/page.tsx      → getCachedData('programs', () => fetchPrograms(20))
-app/page.tsx (home)        → getCachedData for events, programs, news, masjidConstruction
-app/masjid-construction/page.tsx → getCachedData('masjidConstruction', ...)
-app/donate/page.tsx        → getCachedData('donations', ...)
-app/about/page.tsx         → getCachedData('aboutStats', ...)
-app/impact-report/page.tsx → getCachedData for donations, enrollments
-app/news/page.tsx          → getCachedData('news', ...)
-```
-
-### Priority 4: Dashboard Detail Pages
-
-```
-app/dashboard/analytics/page.tsx           → wrap all data fetches
-app/dashboard/events/page.tsx              → getCachedData('events', ...)
-app/dashboard/programs/page.tsx            → getCachedData('programs', ...)
-app/dashboard/users/page.tsx               → getCachedData('users', ...)
-app/dashboard/donations/page.tsx           → getCachedData('donations', ...)
-app/dashboard/pledges/page.tsx             → getCachedData('pledges', ...)
-app/dashboard/news/page.tsx                → getCachedData('news', ...)
-app/dashboard/contact-submissions/page.tsx → getCachedData('contactSubmissions', ...)
-app/dashboard/masjid-construction/page.tsx → getCachedData('masjidConstruction', ...)
-app/dashboard/scheduling/page.tsx          → getCachedData('schedulingRequests', ...)
-app/dashboard/subscribers/page.tsx         → getCachedData('subscribers', ...)
-app/dashboard/testimonials/page.tsx        → getCachedData('testimonials', ...)
-app/dashboard/activity/page.tsx            → getCachedData('activityLog', ...)
-app/dashboard/invite-codes/page.tsx        → getCachedData('inviteCodes', ...)
-```
-
-### Priority 5: Auth and Theme
-
-| File | Change |
-|------|--------|
-| `lib/theme-context.tsx` | Cache `userSettings` in localStorage after first read |
-
-**Estimated time: 3 hours**
-
----
-
-## 9. Phase 3: Background Metadata Verification
-
-**What to do:** The cache manager already has `verifyInBackground()` built in. No extra files needed.
-
-**But:** Every write API route needs to update the metadata document. This was already listed in Phase 1 (server-side section).
-
-**No additional work beyond what's in Phase 1.** The `verifyInBackground()` function automatically:
-- Runs when cache > 30 seconds old
-- Fetches metadata (1 read)
-- Compares timestamps
-- Refetches if stale
-- Updates UI via CustomEvent
-
-**Estimated time: 0 hours (already built into the cache manager)**
-
----
-
-## 10. Phase 4: Connect AI to Cached Data (RAG)
-
-**What to do:** Add the `answerFromLiveData()` function to `AiAssistant.tsx`.
-
-**Files to modify: 1 file.**
-
-```
-app/components/AiAssistant.tsx
-
-Changes:
-1. Import usePageData from page-data-context
-2. Import getCachedData (for cases where AI needs to read from LS directly)
-3. Add answerFromLiveData() function (shown in Section 5)
-4. Call it in askQuestion() before falling through to KB:
-
-   const liveAnswer = answerFromLiveData(query);
-   if (liveAnswer) return { answer: liveAnswer };
-```
-
-**Not a single Firestore read.** The AI reads from:
-- PageDataContext (already displayed)
-- localStorage (cached from any page)
-- Static knowledge base
-
-**Estimated time: 1 hour**
-
----
-
-## 11. Phase 5: localStorage Cleanup & Maintenance
-
-**What to do:** Add the cleanup script and call it from layout.
-
-**Files to create:** `lib/cache-cleanup.ts` (~50 lines)
-**Files to modify:** `app/layout.tsx` (add 1 import + 1 call)
+Each API route that performs UPDATE or DELETE adds one line after the operation:
 
 ```typescript
-// In app/layout.tsx
-'use client'; // Only if not already at the top
-
-import { useEffect } from 'react';
-import { runCacheCleanup } from '@/lib/cache-cleanup';
-
-// Add inside the provider-wrapped component:
-useEffect(() => { runCacheCleanup(); }, []);
+await firestore.collection('metadata').doc('cacheTimestamps').update({
+  collectionName: Date.now(),
+  _updatedAt: Date.now(),
+});
 ```
 
-**Estimated time: 0.5 hours**
+**API routes to modify (update/delete only):**
+
+| Route | Collection | Operation |
+|-------|-----------|-----------|
+| `app/api/rsvp/route.ts` | `rsvps` | PUT (approve/reject) |
+| `app/api/enroll/route.ts` | `enrollments` | PUT (approve/reject) |
+| `app/api/pledge/route.ts` | `pledges` | PUT (fulfill/cancel) |
+| `app/api/unsubscribe/route.ts` | `subscribers` | PUT (unsubscribe) |
+| `app/api/use-invite/route.ts` | `inviteCodes` | PUT (mark used) |
+| `app/api/cleanup-activity/route.ts` | `activityLog` | DELETE (batch cleanup) |
+
+### Client-side invalidation (~20 dashboard files)
+
+Every dashboard file that does `updateDoc`/`deleteDoc` also calls `invalidateCache('collection')`.
+
+| Dashboard Action | Add After Write |
+|-----------------|-----------------|
+| Approve/reject RSVP | `invalidateCache('rsvps')` |
+| Approve/reject enrollment | `invalidateCache('enrollments')` |
+| Edit event | `invalidateCache('events')` |
+| Delete event | `invalidateCache('events')` |
+| Edit program | `invalidateCache('programs')` |
+| Delete program | `invalidateCache('programs')` |
+| Edit news | `invalidateCache('news')` |
+| Delete news | `invalidateCache('news')` |
+| Edit user | `invalidateCache('users')` |
+| Delete user | `invalidateCache('users')` |
+| Edit donation | `invalidateCache('donations')` |
+| Delete donation | `invalidateCache('donations')` |
+| Fulfill/cancel pledge | `invalidateCache('pledges')` |
+| Edit construction update | `invalidateCache('masjidConstruction')` |
+| Delete construction update | `invalidateCache('masjidConstruction')` |
+| Edit about stats | `invalidateCache('aboutStats')` |
+| Delete testimonial | `invalidateCache('testimonials')` |
+| Mark contact read | `invalidateCache('contactSubmissions')` |
+| Approve/reject scheduling | `invalidateCache('schedulingRequests')` |
+| Delete invite code | `invalidateCache('inviteCodes')` |
+| Remove subscriber | `invalidateCache('subscribers')` |
 
 ---
 
-## 12. Phase 6: Populate PageDataContext
+## 14. Phase 2: Add Cache Append on Create
 
-**What to do:** After every `getCachedData()` call, also call `setPageData({ ... })`.
+Every CREATE operation calls `appendToCache('key', newItem)`.
+
+| Create Action | File | Key |
+|--------------|------|-----|
+| Member RSVPs | `/rsvp` page or API route | `rsvps` |
+| Member enrolls | `/enroll` page or API route | `enrollments` |
+| Member pledges | `/pledge` page or API route | `pledges` |
+| Contact form submit | `/contact` page or API route | `contactSubmissions` |
+| Scheduling request | API route | `schedulingRequests` |
+| Volunteer signup | API route | `volunteers` |
+| Subscribe | API route | `subscribers` |
+| Register | `/register` page | `users` |
+| Board creates event | Dashboard | `events` |
+| Board creates program | Dashboard | `programs` |
+| Board creates news | Dashboard | `news` |
+| Board adds donation | Dashboard or Stripe webhook | `donations` |
+| Board adds pledge | Dashboard | `pledges` |
+| Board adds construction update | Dashboard | `masjidConstruction` |
+| Board adds testimonial | Dashboard | `testimonials` |
+| Board generates invite code | Dashboard | `inviteCodes` |
+| Admin action logged | Throughout dashboard | `activityLog` |
+| Journal entry created | Dashboard | `journal` |
+| FAQ added | Dashboard | `faq` |
+| User changes theme | Settings page | `userSettings` |
+
+---
+
+## 15. Phase 3: Wrap Reads with Cache Manager
+
+Replace direct `fetch*()` calls with `getCachedData(key, fetchFn)`.
+
+| Priority | File | Collections |
+|----------|------|-------------|
+| **1** | `app/components/Navigation.tsx` | enrollments, contactSubmissions, schedulingRequests, rsvps, events, programs |
+| **2** | `app/dashboard/page.tsx` | All 17 dashboard collections |
+| **3** | `app/events/page.tsx` | events |
+| **3** | `app/programs/page.tsx` | programs |
+| **3** | `app/page.tsx` (home) | events, programs, news, masjidConstruction |
+| **4** | `app/masjid-construction/page.tsx` | masjidConstruction |
+| **4** | `app/donate/page.tsx` | donations |
+| **4** | `app/about/page.tsx` | aboutStats |
+| **4** | `app/impact-report/page.tsx` | donations, enrollments |
+| **4** | `app/news/page.tsx` | news |
+| **5** | All dashboard detail pages | Their respective collections |
+| **5** | `app/profile/page.tsx` | users, donations, pledges |
+| **5** | `lib/theme-context.tsx` | userSettings |
+
+---
+
+## 16. Phase 4: Connect AI to Cached Data (RAG)
+
+**Files to modify:** 1 file — `app/components/AiAssistant.tsx`
+
+Add the `answerFromCache()` function (shown in Section 11) and call it in `askQuestion()` before KB lookup:
+
+```typescript
+const cachedAnswer = answerFromCache(query);
+if (cachedAnswer) return { answer: cachedAnswer };
+```
+
+**The AI answers 15+ types of questions from cache. 0 Firestore reads.**
+
+---
+
+## 17. Phase 5: Populate PageDataContext
+
+After every `getCachedData()` call, also call `setPageData()`:
+
+```typescript
+const { data: events } = await getCachedData('events', () => fetchEvents(100));
+setPageData({ events, currentPath: '/events' });
+```
 
 **Files to modify: ~15 files, 1 line each.**
 
-```
-app/events/page.tsx              → setPageData({ events: data, currentPath: '/events' })
-app/programs/page.tsx            → setPageData({ programs: data, currentPath: '/programs' })
-app/dashboard/page.tsx           → setPageData({ events, programs, donations, ... })
-app/page.tsx (home)              → setPageData({ events, programs, news, ... })
-app/masjid-construction/page.tsx → setPageData({ masjidUpdates: data })
-app/donate/page.tsx              → setPageData({ donations: data })
-app/about/page.tsx               → setPageData({ aboutStats: data })
-app/impact-report/page.tsx       → setPageData({ donations: data })
-app/news/page.tsx                → setPageData({ news: data })
-app/profile/page.tsx             → setPageData({ user: profileData })
-// All dashboard detail pages    → setPageData({ ...relevant data })
-```
-
-**Estimated time: 0.5 hours**
-
 ---
 
-## 13. Before vs After: The Numbers
+## 18. Before vs After: The Numbers
 
 ### Reads Per Page Load
 
-| Scenario | Before | After (Combined) |
-|----------|--------|-----------------|
-| Reload, no writes, cache < 30s | 529 | **2** (auth + theme only) |
-| Reload, no writes, cache > 30s | 529 | **3** (auth + theme + 1 metadata verify) |
-| Reload, 1 write, cache < 30s | 529 | **2 + N** (only changed collections) |
-| Reload, 1 write, cache > 30s | 529 | **3 + N** |
-| Cross-page nav, cache < 30s | 529 | **2** |
-| First visit ever (all cold) | 529 | **~25** (auth + theme + all collections) |
-| User clears browser data | 529 | **~25** (same as first visit) |
-| AI answers a question | ~20 (live-knowledge.ts) | **0** (reads from cache/screen) |
+| Scenario | Before | After |
+|----------|--------|-------|
+| **Reload, no writes, cache warm** | 529 | **2** (auth + theme) |
+| **Reload, 1 new RSVP created** | 529 | **2** (appendToCache — no refetch) |
+| **Reload, 1 RSVP approved (update)** | 529 | **2 + N** (invalidate → refetch) |
+| **Cross-page nav, same session** | 529 | **2** (all cached) |
+| **First visit (all cold)** | 529 | **~27** (auth + theme + meta + collections) |
+| **AI answers a question** | ~20 | **0** (reads from cache/screen) |
 
 ### Reads Per Day (500 Users, 10 Loads Each)
 
-| Metric | Before | After (Combined) |
-|--------|--------|-----------------|
-| Auth reads | 500 × 10 = 5,000 | 5,000 (unavoidable) |
-| Theme reads | 500 × 10 = 5,000 | 0 (cached in LS) |
-| Data reads (no writes) | 500 × 10 × 519 = 2,595,000 | **0** (all cached) |
-| Metadata reads (30s+ old) | 0 | ~500 × 5 = 2,500 (half of loads) |
-| Writes per day | ~50 | ~50 (unavoidable) |
-| **Total reads** | **~2,605,000** | **~7,550** |
-| Free tier limit | 50,000/day | ✅ **6.6× under limit** |
+| Source | Before | After |
+|--------|--------|-------|
+| Auth | 5,000 | 5,000 |
+| Theme | 5,000 | **0** (cached) |
+| Navigation | 30,000 | **0** (cached) |
+| Data reads (no changes) | 2,560,000 | **0** (all cached) |
+| Data reads (writes) | 50,000 | ~5,000 (only updates/deletes refetch) |
+| **Total** | **~2,650,000** | **~10,000** |
+| Free tier limit | 50,000/day | ✅ 5× under |
 
 ### User Capacity on Free Tier
 
-| Scenario | Max Users on Free Tier |
-|----------|----------------------|
-| Before cache | **~14 users/day** |
-| After (no background verify) | **~2,500 users/day** |
-| After (with background verify, 50% of loads) | **~1,666 users/day** |
+| Version | Max Users/Day |
+|---------|-------------|
+| Before cache | **~14** |
+| After (aggregate approach) | **~2,500** |
 
-### Cost on Blaze (Pay-as-You-Go)
+### Cost on Blaze (for 5,000 users)
 
-| Scenario | Reads/Day | Cost/Day | Cost/Month |
-|----------|-----------|----------|------------|
-| Before, 500 users | 2,605,000 | $1.56 | **$46.89** |
-| After, 500 users | 7,550 | **$0.005** | **$0.14** |
-| After, 5,000 users | 75,500 | **$0.045** | **$1.36** |
-| After, 50,000 users | 755,000 | **$0.45** | **$13.59** |
+| Version | Reads/Day | Cost/Month |
+|---------|-----------|-----------|
+| Before | 26,500,000 | **~$477** |
+| After | 100,000 | **~$1.80** |
 
 ---
 
-## Appendix: Summary of All Files
+## 19. Addressing Every Specific Concern
 
-### Files to Create (3)
+### Q: Does the metadata add a read on every page load?
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `lib/cache-manager.ts` | ~80 | Core caching logic (Choice 1 + Choice 2 combined) |
-| `app/api/metadata-timestamps/route.ts` | ~35 | Metadata endpoint for background verification |
-| `lib/cache-cleanup.ts` | ~50 | One-time cleanup of expired/overflowing caches |
+**No.** The metadata is only read as a FALLBACK when the cache key is missing. For 99.9% of page loads, the cache key exists → 0 reads → done.
 
-### Files to Modify (~55)
+### Q: What if a member RSVPs while a board member is looking at the table?
 
-| Category | Count | Change |
-|----------|-------|--------|
-| Public form pages | 10 | Add 1 line: `invalidateCache(...)` |
-| Dashboard admin pages | 18 | Add 1 line: `invalidateCache(...)` |
-| API routes (server-side) | 19 | Add 1 line: metadata timestamp update |
-| Fetch wrapper pages | 20 | Wrap `fetch*` with `getCachedData(...)` |
-| Navigation | 1 | Replace 6 reads with `getCachedData` |
-| Theme context | 1 | Cache userSettings in localStorage |
-| AI Assistant | 1 | Add `answerFromLiveData()` function |
-| Layout | 1 | Add cleanup call |
-| PageDataContext pages | 15 | Add `setPageData(...)` after cache read |
+The board member's React state still has the old data. `appendToCache` updates localStorage but doesn't affect React state. When the board member refreshes, the new RSVP is already in the cached array → 0 reads.
 
-**Total: 3 new files + ~55 modified files.**
-**Estimated total time: 8-10 hours.**
-**Result: 529 → ~2-3 reads per page reload (99.5% reduction).**
+### Q: How does the 30-day rolling window work?
+
+Three mechanisms:
+1. **On fetch**: records older than 30 days are dropped before saving to localStorage
+2. **On append**: the cache is filtered to keep only items within 30 days
+3. **On cleanup** (once per session): all cached entries are scanned and aged-out records removed
+
+### Q: What about activity log cleanup from Firestore?
+
+Already implemented via `app/api/cleanup-activity/route.ts` — batch deletes activity log entries older than 30 days from Firestore. localStorage cache also evicts them.
+
+### Q: What about notifications cleanup from Firestore?
+
+Notifications are **not a separate collection** — they are computed views from `enrollments`, `schedulingRequests`, `contactSubmissions`, `rsvps` (dashboard) and `events`, `programs`, `news` (members). These collections keep their data in Firestore indefinitely. Only the localStorage cache evicts them after 30 days.
+
+### Q: What about the construction images?
+
+Base64 images are STRIPPED before caching. Only text fields (caption, raised, goal, etc.) are stored.
+
+### Q: Don't we still read auth and theme on every page load?
+
+**Auth** (1 read) is unavoidable — Firebase's `onAuthStateChanged` runs once and caches the token. Subsequent page loads in the same session don't re-read.
+
+**Theme** (1 read) can be cached in localStorage. First load reads from Firestore. Subsequent loads from localStorage.
+
+### Q: Can board members see data older than 30 days?
+
+**Yes.** The data stays in Firestore forever (except activity log). Each dashboard table page gets a "Download CSV" button that queries Firestore directly for any date range, without affecting the localStorage cache.
+
+### Q: Is everything covered? All collections?
+
+**Yes.** The complete inventory in Section 6 covers all 22 collections, their Firestore retention rules, localStorage eviction rules, and every page/component that reads or writes them. The full codebase audit confirmed no missing collections.
+
+### Q: What if localStorage fills up?
+
+Even with 30 days of data from all 20 collections, the total is well under 1 MB (out of 5-10 MB available per domain). The cleanup function has a 4 MB safety limit that evicts oldest entries if exceeded.
+
+### Q: What about the metadata sentinel doc — doesn't that cost writes?
+
+The metadata doc is only written when an UPDATE or DELETE occurs (not CREATE). For a typical masjid, that's maybe 5-20 writes per day. At $0.18/100k writes on Blaze, this costs **~$0.0001/month** — essentially zero.

@@ -11,6 +11,8 @@ import Navigation from "@/app/components/Navigation";
 import { useAuth } from "@/lib/auth-context";
 import BoardMemberCard from "@/app/components/BoardMemberCard";
 import { boardOfDirectors } from "@/app/lib/board-data";
+import { getCachedData } from "@/lib/cache-manager";
+import { usePageData } from "@/lib/page-data-context";
 
 interface Program {
   id: string;
@@ -45,14 +47,15 @@ export default function ProgramsPage() {
   const [wpPrograms, setWpPrograms] = useState<Program[]>([]);
   const [firestorePrograms, setFirestorePrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { setPageData } = usePageData();
 
   useEffect(() => {
     const fetchAllPrograms = async () => {
       try {
         const timestamp = Date.now();
-        const [wpRes, fsPrograms] = await Promise.all([
+        const [wpRes, { data: fsPrograms }] = await Promise.all([
           fetch(`/api/programs?_=${timestamp}`, { cache: 'no-store' }),
-          import('@/lib/firebase').then(m => m.fetchPrograms(20)),
+          getCachedData('programs', () => import('@/lib/firebase').then(m => m.fetchPrograms(20))),
         ]);
 
         if (wpRes.ok) {
@@ -60,6 +63,7 @@ export default function ProgramsPage() {
           setWpPrograms(data);
         }
         setFirestorePrograms(fsPrograms || []);
+        setPageData({ programs: fsPrograms || [] });
       } catch (err) {
         console.error("Failed to fetch programs:", err);
       } finally {

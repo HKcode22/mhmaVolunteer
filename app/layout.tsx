@@ -7,6 +7,7 @@ import { PageDataProvider } from "@/lib/page-data-context";
 import dynamic from "next/dynamic";
 
 const AiAssistant = dynamic(() => import("@/app/components/AiAssistant"), { ssr: false });
+const CacheCleanup = dynamic(() => import("@/app/components/CacheCleanup"), { ssr: false });
 
 const dmsans = DM_Sans({
   subsets: ["latin"],
@@ -120,7 +121,7 @@ export default function RootLayout({
         )}
       </head>
       <body className="antialiased font-sans" style={{ color: 'var(--color-text)', backgroundColor: 'var(--color-bg)' }}>
-        <PageDataProvider><AuthProvider><ThemeProvider>{children}<AiAssistant /></ThemeProvider></AuthProvider></PageDataProvider>
+        <PageDataProvider><AuthProvider><ThemeProvider>{children}<AiAssistant /><CacheCleanup /></ThemeProvider></AuthProvider></PageDataProvider>
       </body>
     </html>
   );

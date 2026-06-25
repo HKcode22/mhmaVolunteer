@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
+import { invalidateCache } from "@/lib/cache-manager";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2, Bell, Mail, Globe, Shield, Sun, Moon } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
@@ -57,7 +58,8 @@ export default function SettingsPage() {
     setSaving(true);
     setSaved(false);
     try {
-      await setDoc(doc(db, "userSettings", user!.uid), settings);
+      await setDoc(doc(db, "userSettings", user!.uid), { ...settings, updatedAt: serverTimestamp() }, { merge: true });
+      invalidateCache('userSettings');
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {

@@ -5,6 +5,23 @@ import { createContext, useContext, useState, useCallback, ReactNode } from "rea
 export interface PageData {
   events?: any[];
   programs?: any[];
+  news?: any[];
+  masjidConstruction?: any[];
+  donations?: any[];
+  pledges?: any[];
+  enrollments?: any[];
+  rsvps?: any[];
+  contactSubmissions?: any[];
+  schedulingRequests?: any[];
+  users?: any[];
+  subscribers?: any[];
+  inviteCodes?: any[];
+  faq?: any[];
+  volunteers?: any[];
+  testimonials?: any[];
+  activityLog?: any[];
+  journalEntries?: any[];
+  knowledgeDocs?: any[];
   currentPath?: string;
 }
 

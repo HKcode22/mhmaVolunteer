@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
 import { Upload, Loader2, User, Eye, EyeOff, Smartphone } from "lucide-react";
 import { fetchDonationsByUser, fetchPledgesByUser, Donation, Pledge } from "@/lib/firebase";
+import { invalidateCache } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -116,6 +117,7 @@ export default function ProfilePage() {
     try {
       const displayName = `${profile.firstName} ${profile.lastName}`.trim() || undefined;
       await setDoc(doc(db, "users", user.uid), { ...profile, displayName, updatedAt: serverTimestamp() }, { merge: true });
+      invalidateCache('users');
       if (auth.currentUser && displayName) {
         await updateProfile(auth.currentUser, { displayName });
       }
@@ -278,6 +280,7 @@ export default function ProfilePage() {
       } catch (smsErr: any) {
         if (smsErr.message === "PHONE_AUTH_DISABLED") {
           await setDoc(doc(db, "users", user!.uid), { phone: newPhone }, { merge: true });
+          invalidateCache('users');
           setProfile(prev => ({ ...prev, phone: newPhone }));
           setSuccess("Phone number updated! (SMS verification not available — set up Phone Auth in Firebase Console)");
           setNewPhone("");
@@ -301,6 +304,7 @@ export default function ProfilePage() {
       await verifySmsCode(verificationId, phoneSmsCode);
 
       await setDoc(doc(db, "users", user!.uid), { phone: newPhone }, { merge: true });
+      invalidateCache('users');
       setProfile(prev => ({ ...prev, phone: newPhone }));
       setPhoneStep("done");
       setSuccess("Phone number updated to " + newPhone);

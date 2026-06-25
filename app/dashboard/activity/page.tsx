@@ -8,6 +8,7 @@ import { ArrowLeft, Clock, User, Activity, RotateCcw, Filter } from "lucide-reac
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchActivityLog, fetchVersions, restoreVersion, ActivityLogEntry } from "@/lib/firebase";
+import { invalidateCache } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function ActivityLogPage() {
@@ -43,6 +44,7 @@ export default function ActivityLogPage() {
     if (!user?.uid) return;
     try {
       await setDoc(doc(db, "users", user.uid), { activityLogPrefs: prefs }, { merge: true });
+      invalidateCache('users');
     } catch (err) {
       console.error("Failed to save activity log prefs:", err);
     }

@@ -5,7 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock, BookOpen, Heart, Users, MapPin, ChevronRight, BookText, Edit3 } from "lucide-react";
 import { fetchEvents, fetchPrograms, fetchMasjidUpdates, fetchNews } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { useAuth } from "@/lib/auth-context";
+import { usePageData } from "@/lib/page-data-context";
 import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import EventCalendar from "@/app/components/EventCalendar";
@@ -311,6 +313,7 @@ interface PrayerTime {
 
 export default function HomePage() {
   const { user, isBoardMember } = useAuth();
+  const { setPageData } = usePageData();
   const [events, setEvents] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
@@ -405,11 +408,11 @@ useEffect(() => {
   const loadData = async () => {
     try {
       const [eventsData, programs, masjidData, statsData, newsData] = await Promise.allSettled([
-        fetchEvents(3),
-        fetchPrograms(3),
-        fetchMasjidUpdates(3),
+        getCachedData('events', () => fetchEvents(3)).then(r => r.data),
+        getCachedData('programs', () => fetchPrograms(3)).then(r => r.data),
+        getCachedData('masjidConstruction', () => fetchMasjidUpdates(3)).then(r => r.data),
         fetch(`/api/about-stats?range=${statsRange}`).then(r => r.json()),
-        fetchNews(3),
+        getCachedData('news', () => fetchNews(3)).then(r => r.data),
       ]);
 
       const events = eventsData.status === "fulfilled" ? eventsData.value : [];
@@ -454,6 +457,7 @@ useEffect(() => {
       }
       setHeroImage(selectedImage);
       setHeroVideo(selectedVideo);
+      setPageData({ events, programs: prog, masjidConstruction: masjid, news: newsArr });
     } catch (error) {
       console.error("Failed to load homepage data:", error);
     } finally {

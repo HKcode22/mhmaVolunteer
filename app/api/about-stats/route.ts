@@ -148,8 +148,14 @@ export async function POST(req: NextRequest) {
     const update: Record<string, any> = {};
     if (yearsServing !== undefined) update.yearsServing = yearsServing;
     if (numberOfFamilies !== undefined) update.numberOfFamilies = numberOfFamilies;
+    update.updatedAt = new Date();
 
     await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).set(update, { merge: true });
+
+    await firestore.collection('metadata').doc('cacheTimestamps').set({
+      aboutStats: Date.now(),
+      _updatedAt: Date.now(),
+    }, { merge: true });
 
     return NextResponse.json({ success: true, ...update });
   } catch (err: any) {

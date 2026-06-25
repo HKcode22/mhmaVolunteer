@@ -5,9 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOut, Edit, Plus, Trash2, BookOpen, Bell, Key, Copy, Check, RefreshCw, Settings, ArrowUp, ArrowDown, X, BarChart3, ChevronDown, ChevronUp, Phone, Mail, MapPin, Calendar, Clock, MessageSquare, Users, Building2, Star, FileText, HandHeart, HandCoins } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { usePageData } from "@/lib/page-data-context";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import {
   fetchEvents, deleteEvent,
   fetchPrograms, deleteProgram,
@@ -30,6 +32,7 @@ import Navigation from "@/app/components/Navigation";
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isBoardMember, loading: authLoading, signOut } = useAuth();
+  const { setPageData } = usePageData();
   const [programs, setPrograms] = useState<FirebaseProgram[]>([]);
   const [events, setEvents] = useState<FirebaseEvent[]>([]);
   const [eventRequests, setEventRequests] = useState<FirebaseSchedulingRequest[]>([]);
@@ -132,6 +135,7 @@ export default function DashboardPage() {
     if (user?.uid) {
       try {
         await setDoc(doc(db, "users", user.uid), { dashboardOrder: layout, quickOrder: quick }, { merge: true });
+        invalidateCache('users');
       } catch (err) {
         console.error("Failed to save layout:", err);
       }
@@ -173,27 +177,29 @@ export default function DashboardPage() {
     }
 
     const loadAll = async () => {
-      const results = await Promise.allSettled([
-        timeout(fetchPrograms(100), 15000).catch(() => [] as FirebaseProgram[]),
-        timeout(fetchEvents(100), 15000).catch(() => [] as FirebaseEvent[]),
-        timeout(fetchSchedulingRequests(100), 15000).catch(() => [] as FirebaseSchedulingRequest[]),
-        timeout(fetchEnrollments(100), 15000).catch(() => [] as FirebaseEnrollment[]),
-        timeout(fetchRSVPs(100), 15000).catch(() => [] as FirebaseRSVP[]),
-        timeout(fetchContactSubmissions(100), 15000).catch(() => [] as FirebaseContactSubmission[]),
-        timeout(fetchInviteCodes(), 15000).catch(() => [] as InviteCode[]),
-        timeout(fetchUsers(100), 15000).catch(() => [] as FirebaseUser[]),
-        timeout(fetchSubscribers(100), 15000).catch(() => [] as Subscriber[]),
-        timeout(fetchPledges(100), 15000).catch(() => [] as Pledge[]),
-        timeout(fetchDonations(100), 15000).catch(() => [] as Donation[]),
-        timeout(fetchAllNews(100), 15000).catch(() => [] as any[]),
-        timeout(fetchFAQs(100), 15000).catch(() => [] as FAQItem[]),
-        timeout(fetchVolunteers(100), 15000).catch(() => [] as VolunteerSubmission[]),
-        timeout(fetchActivityLog(50), 15000).catch(() => [] as ActivityLogEntry[]),
-        timeout(fetchTestimonials(50), 15000).catch(() => [] as Testimonial[]),
-        timeout(fetchMasjidUpdates(20), 15000).catch(() => [] as FirebaseMasjidUpdate[]),
+      const [cachedSettled, stats] = await Promise.all([
+        Promise.allSettled([
+          timeout(getCachedData('programs', () => fetchPrograms(100)), 15000).catch(() => ({ data: [] as FirebaseProgram[] })),
+          timeout(getCachedData('events', () => fetchEvents(100)), 15000).catch(() => ({ data: [] as FirebaseEvent[] })),
+          timeout(getCachedData('schedulingRequests', () => fetchSchedulingRequests(100)), 15000).catch(() => ({ data: [] as FirebaseSchedulingRequest[] })),
+          timeout(getCachedData('enrollments', () => fetchEnrollments(100)), 15000).catch(() => ({ data: [] as FirebaseEnrollment[] })),
+          timeout(getCachedData('rsvps', () => fetchRSVPs(100)), 15000).catch(() => ({ data: [] as FirebaseRSVP[] })),
+          timeout(getCachedData('contactSubmissions', () => fetchContactSubmissions(100)), 15000).catch(() => ({ data: [] as FirebaseContactSubmission[] })),
+          timeout(getCachedData('inviteCodes', () => fetchInviteCodes()), 15000).catch(() => ({ data: [] as InviteCode[] })),
+          timeout(getCachedData('users', () => fetchUsers(100)), 15000).catch(() => ({ data: [] as FirebaseUser[] })),
+          timeout(getCachedData('subscribers', () => fetchSubscribers(100)), 15000).catch(() => ({ data: [] as Subscriber[] })),
+          timeout(getCachedData('pledges', () => fetchPledges(100)), 15000).catch(() => ({ data: [] as Pledge[] })),
+          timeout(getCachedData('donations', () => fetchDonations(100)), 15000).catch(() => ({ data: [] as Donation[] })),
+          timeout(getCachedData('news', () => fetchAllNews(100)), 15000).catch(() => ({ data: [] as any[] })),
+          timeout(getCachedData('faq', () => fetchFAQs(100)), 15000).catch(() => ({ data: [] as FAQItem[] })),
+          timeout(getCachedData('volunteers', () => fetchVolunteers(100)), 15000).catch(() => ({ data: [] as VolunteerSubmission[] })),
+          timeout(getCachedData('activityLog', () => fetchActivityLog(50)), 15000).catch(() => ({ data: [] as ActivityLogEntry[] })),
+          timeout(getCachedData('testimonials', () => fetchTestimonials(50)), 15000).catch(() => ({ data: [] as Testimonial[] })),
+          timeout(getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)), 15000).catch(() => ({ data: [] as FirebaseMasjidUpdate[] })),
+        ]),
         fetch("/api/about-stats").then(r => r.json()).catch(() => null),
       ]);
-      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, alog, t, mu, stats] = results.map(r => (r as any).value || (r as any).reason || []);
+      const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, alog, t, mu] = cachedSettled.map(r => ((r as any).value || (r as any).reason || { data: [] }).data);
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -213,6 +219,7 @@ export default function DashboardPage() {
       setTestimonials(t || []);
       setMasjidUpdates(mu || []);
       setAboutStats(stats);
+      setPageData({ events: e, programs: p, masjidConstruction: mu, enrollments: en, rsvps: rsvp, contactSubmissions: cs, schedulingRequests: er, users: u, subscribers: subs, pledges: pl, donations: d, news: n, faq: f, volunteers: v, testimonials: t, activityLog: alog, inviteCodes: codes });
       setLoading(false);
       if (user) logActivity({ userId: user.uid, userEmail: user.email || "", userName: user.displayName || user.email || "Board Member", action: "dashboard_view", details: "Viewed dashboard", targetType: "dashboard" });
     };

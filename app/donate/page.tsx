@@ -30,6 +30,8 @@ import {
 import Navigation from "@/app/components/Navigation";
 
 import { fetchMasjidUpdates, fetchDonationsByUser, FirebaseMasjidUpdate, Donation } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
+import { usePageData } from "@/lib/page-data-context";
 import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-stats";
 import BoardMemberCard from "@/app/components/BoardMemberCard";
 import { boardOfDirectors } from "@/app/lib/board-data";
@@ -46,6 +48,7 @@ const designations: { key: Designation; label: string; icon: any; description: s
 
 export default function DonatePage() {
   const { user } = useAuth();
+  const { setPageData } = usePageData();
   useEffect(() => { document.title = "Donate | MHMA | Mountain House"; }, []);
   const [latest, setLatest] = useState<FirebaseMasjidUpdate | null>(null);
   const [raisedFromDonations, setRaisedFromDonations] = useState(0);
@@ -66,7 +69,7 @@ export default function DonatePage() {
       setSuccess(true);
       window.history.replaceState({}, "", "/donate");
     }
-    fetchMasjidUpdates(1).then(d => { if (d.length > 0) setLatest(d[0]); setMasjidLoaded(true); }).catch(() => setMasjidLoaded(true));
+    getCachedData('masjidConstruction', () => fetchMasjidUpdates(1)).then(({ data }) => { if (data.length > 0) setLatest(data[0]); setMasjidLoaded(true); setPageData({ masjidConstruction: data }); }).catch(() => setMasjidLoaded(true));
     fetch("/api/donation-totals").then(r => r.json()).then(d => {
       setRaisedFromDonations(d.constructionTotal || 0);
       setDonorCount(d.donorCount || 0);
@@ -504,8 +507,8 @@ function DonationHistorySection({ userId, email }: { userId: string; email?: str
 
   useEffect(() => {
     setLoading(true);
-    fetchDonationsByUser(userId, email).then(d => {
-      setDonations(d);
+    getCachedData('donations', () => fetchDonationsByUser(userId, email)).then(({ data }) => {
+      setDonations(data);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [userId, email]);

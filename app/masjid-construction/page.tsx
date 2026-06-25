@@ -8,12 +8,15 @@ import Navigation from "@/app/components/Navigation";
 import NewsletterSignup from "@/app/components/NewsletterSignup";
 import GalleryLightbox from "@/app/components/GalleryLightbox";
 import { fetchMasjidUpdates, FirebaseMasjidUpdate } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
+import { usePageData } from "@/lib/page-data-context";
 import { formatCampaignDollars, normalizeCampaignDollars } from "@/lib/campaign-stats";
 import TestimonialsDisplay from "@/app/components/TestimonialsDisplay";
 import BoardMemberCard from "@/app/components/BoardMemberCard";
 import { boardOfDirectors } from "@/app/lib/board-data";
 
 export default function MasjidConstructionPage() {
+  const { setPageData } = usePageData();
   const toEmbedUrl = (url: string): string => {
     if (!url) return "";
     try {
@@ -41,10 +44,11 @@ export default function MasjidConstructionPage() {
     }, []);
 
     useEffect(() => {
-      fetchMasjidUpdates(20).then(data => { 
+      getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)).then(({ data }) => { 
         setUpdates(data); 
         setMasjidLoaded(true); 
         setLoading(false); 
+        setPageData({ masjidConstruction: data });
       }).catch(() => {
         setMasjidLoaded(true);
         setLoading(false);

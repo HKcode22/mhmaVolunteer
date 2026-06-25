@@ -4,15 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Calendar, Edit3, Clock, User } from "lucide-react";
 import { fetchNews, NewsItem } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
+import { usePageData } from "@/lib/page-data-context";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
 export default function NewsListPage() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { setPageData } = usePageData();
 
   useEffect(() => {
-    fetchNews(50).then(d => { setItems(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('news', () => fetchNews(50)).then(({ data }) => { setItems(data); setPageData({ news: data }); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
   const fmtDate = (d: any) => {

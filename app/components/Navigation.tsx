@@ -5,8 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, User, LogOut, MapPin, Mail, Bell, Settings, Instagram, Youtube } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { usePageData } from "@/lib/page-data-context";
 import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
+import { getCachedData } from "@/lib/cache-manager";
 
 interface NavigationProps {
   currentPage?: string;
@@ -16,6 +18,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isBoardMember, isLoggedIn, signOut } = useAuth();
   const [notifCount, setNotifCount] = useState(0);
+  const { setPageData } = usePageData();
 
   useEffect(() => {
     if (!user) return;
@@ -23,13 +26,26 @@ export default function Navigation({ currentPage }: NavigationProps) {
     if (isBoardMember) {
       const fetchCounts = async () => {
         try {
-          const [enrollSnap, contactSnap, schedSnap, rsvpSnap] = await Promise.all([
-            getDocs(query(collection(db, "enrollments"), where("status", "==", "pending"), limit(100))),
-            getDocs(query(collection(db, "contactSubmissions"), where("read", "==", false), limit(100))),
-            getDocs(query(collection(db, "schedulingRequests"), where("status", "==", "pending"), limit(100))),
-            getDocs(query(collection(db, "rsvps"), where("status", "==", "pending"), limit(100))),
+          const [enrollRes, contactRes, schedRes, rsvpRes] = await Promise.all([
+            getCachedData('enrollments', () =>
+              getDocs(query(collection(db, "enrollments"), where("status", "==", "pending"), limit(100)))
+                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+            ),
+            getCachedData('contactSubmissions', () =>
+              getDocs(query(collection(db, "contactSubmissions"), where("read", "==", false), limit(100)))
+                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+            ),
+            getCachedData('schedulingRequests', () =>
+              getDocs(query(collection(db, "schedulingRequests"), where("status", "==", "pending"), limit(100)))
+                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+            ),
+            getCachedData('rsvps', () =>
+              getDocs(query(collection(db, "rsvps"), where("status", "==", "pending"), limit(100)))
+                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+            ),
           ]);
-          setNotifCount(enrollSnap.size + contactSnap.size + schedSnap.size + rsvpSnap.size);
+          setNotifCount(enrollRes.data.length + contactRes.data.length + schedRes.data.length + rsvpRes.data.length);
+          setPageData({ enrollments: enrollRes.data, contactSubmissions: contactRes.data, schedulingRequests: schedRes.data, rsvps: rsvpRes.data });
         } catch {}
       };
       fetchCounts();
@@ -40,14 +56,21 @@ export default function Navigation({ currentPage }: NavigationProps) {
       const fetchNewContent = async () => {
         try {
           const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-          const [eventsSnap, programsSnap] = await Promise.all([
-            getDocs(query(collection(db, "events"), orderBy("createdAt", "desc"), limit(5))),
-            getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc"), limit(5))),
+          const [eventsRes, programsRes] = await Promise.all([
+            getCachedData('events', () =>
+              getDocs(query(collection(db, "events"), orderBy("createdAt", "desc"), limit(5)))
+                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+            ),
+            getCachedData('programs', () =>
+              getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc"), limit(5)))
+                .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
+            ),
           ]);
           let count = 0;
-          eventsSnap.forEach(d => { const c = d.data().createdAt?.toDate?.(); if (c && c > weekAgo) count++; });
-          programsSnap.forEach(d => { const c = d.data().createdAt?.toDate?.(); if (c && c > weekAgo) count++; });
+          eventsRes.data.forEach((d: any) => { const c = d.createdAt?.toDate?.(); if (c && c > weekAgo) count++; });
+          programsRes.data.forEach((d: any) => { const c = d.createdAt?.toDate?.(); if (c && c > weekAgo) count++; });
           setNotifCount(count);
+          setPageData({ events: eventsRes.data, programs: programsRes.data });
         } catch {}
       };
       fetchNewContent();

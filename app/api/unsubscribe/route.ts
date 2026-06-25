@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
     const doc = snap.docs[0];
     await doc.ref.update({ status: "unsubscribed", unsubscribedAt: new Date().toISOString() });
 
+    await firestore.collection('metadata').doc('cacheTimestamps').set({
+      subscribers: Date.now(),
+      _updatedAt: Date.now(),
+    }, { merge: true });
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("unsubscribe error:", err);

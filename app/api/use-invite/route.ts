@@ -25,6 +25,11 @@ export async function POST(req: NextRequest) {
       usedAt: Timestamp.now(),
     });
 
+    await firestore.collection('metadata').doc('cacheTimestamps').set({
+      inviteCodes: Date.now(),
+      _updatedAt: Date.now(),
+    }, { merge: true });
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("use-invite API error:", err);

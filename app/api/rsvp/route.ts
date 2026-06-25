@@ -25,6 +25,11 @@ export async function POST(req: NextRequest) {
 
     const rsvpId = rsvpRef.id;
 
+    await firestore.collection('metadata').doc('cacheTimestamps').set({
+      rsvps: Date.now(),
+      _updatedAt: Date.now(),
+    }, { merge: true });
+
     // Emails — await but never fail the request
     try {
       await Promise.allSettled([

@@ -31,6 +31,13 @@ export async function POST() {
     if (count > 0) batches.push(currentBatch.commit());
     await Promise.all(batches);
 
+    if (deleted > 0) {
+      await firestore.collection('metadata').doc('cacheTimestamps').set({
+        activityLog: Date.now(),
+        _updatedAt: Date.now(),
+      }, { merge: true });
+    }
+
     console.log(`Cleanup: deleted ${deleted} activity log entries older than 30 days`);
     return NextResponse.json({ deleted });
   } catch (err: any) {

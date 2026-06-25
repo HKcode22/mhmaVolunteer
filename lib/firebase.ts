@@ -1,4 +1,5 @@
 import { db } from "./firebase-client";
+import { invalidateCache, appendToCache } from "./cache-manager";
 import {
   collection,
   doc,
@@ -155,6 +156,7 @@ export async function addEvent(data: Omit<FirebaseEvent, "id" | "createdAt">): P
       "addEvent"
     );
     console.log("Firestore: addEvent success, id:", ref.id);
+    appendToCache('events', { id: ref.id, ...data });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addEvent FAILED:", err);
@@ -173,6 +175,7 @@ export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Pro
       updateDoc(doc(db, collections.events, id), { ...data, updatedAt: serverTimestamp() }),
       "updateEvent"
     );
+    invalidateCache('events');
     console.log("Firestore: updateEvent success, id:", id);
   } catch (err) {
     console.error("Firestore: updateEvent FAILED:", err);
@@ -183,6 +186,7 @@ export async function updateEvent(id: string, data: Partial<FirebaseEvent>): Pro
 export async function deleteEvent(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.events, id)), "deleteEvent");
+    invalidateCache('events');
     console.log("Firestore: deleteEvent success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteEvent FAILED:", err);
@@ -219,6 +223,7 @@ export async function addProgram(data: Omit<FirebaseProgram, "id" | "createdAt">
       "addProgram"
     );
     console.log("Firestore: addProgram success, id:", ref.id);
+    appendToCache('programs', { id: ref.id, ...data, slug });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addProgram FAILED:", err);
@@ -237,12 +242,14 @@ export async function updateProgram(id: string, data: Partial<FirebaseProgram>):
       const newData = { ...data, slug: newSlug, updatedAt: serverTimestamp() };
       await setDoc(doc(db, collections.programs, newSlug), { ...currentSnap.data(), ...newData });
       await deleteDoc(doc(db, collections.programs, id));
+      invalidateCache('programs');
       console.log("Firestore: updateProgram migrated from", id, "to", newSlug);
     } else {
       await withTimeout(
         updateDoc(doc(db, collections.programs, id), { ...data, updatedAt: serverTimestamp() }),
         "updateProgram"
       );
+      invalidateCache('programs');
       console.log("Firestore: updateProgram success, id:", id);
     }
   } catch (err) {
@@ -254,6 +261,7 @@ export async function updateProgram(id: string, data: Partial<FirebaseProgram>):
 export async function deleteProgram(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.programs, id)), "deleteProgram");
+    invalidateCache('programs');
     console.log("Firestore: deleteProgram success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteProgram FAILED:", err);
@@ -282,6 +290,7 @@ export async function addJournalEntry(data: Omit<FirebaseJournalEntry, "id" | "c
       "addJournalEntry"
     );
     console.log("Firestore: addJournalEntry success, id:", ref.id);
+    appendToCache('journal', { id: ref.id, ...data });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addJournalEntry FAILED:", err);
@@ -295,6 +304,7 @@ export async function updateJournalEntry(id: string, data: Partial<FirebaseJourn
       updateDoc(doc(db, collections.journal, id), { ...data, updatedAt: serverTimestamp() }),
       "updateJournalEntry"
     );
+    invalidateCache('journal');
     console.log("Firestore: updateJournalEntry success, id:", id);
   } catch (err) {
     console.error("Firestore: updateJournalEntry FAILED:", err);
@@ -305,6 +315,7 @@ export async function updateJournalEntry(id: string, data: Partial<FirebaseJourn
 export async function deleteJournalEntry(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.journal, id)), "deleteJournalEntry");
+    invalidateCache('journal');
     console.log("Firestore: deleteJournalEntry success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteJournalEntry FAILED:", err);
@@ -325,6 +336,7 @@ export async function addEnrollment(data: Omit<FirebaseEnrollment, "id" | "creat
       "addEnrollment"
     );
     console.log("Firestore: addEnrollment success, id:", ref.id);
+    appendToCache('enrollments', { id: ref.id, ...data });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addEnrollment FAILED:", err);
@@ -338,6 +350,7 @@ export async function updateEnrollment(id: string, data: Partial<FirebaseEnrollm
       updateDoc(doc(db, collections.enrollments, id), { ...data, updatedAt: serverTimestamp() }),
       "updateEnrollment"
     );
+    invalidateCache('enrollments');
     console.log("Firestore: updateEnrollment success, id:", id);
   } catch (err) {
     console.error("Firestore: updateEnrollment FAILED:", err);
@@ -348,6 +361,7 @@ export async function updateEnrollment(id: string, data: Partial<FirebaseEnrollm
 export async function deleteEnrollment(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.enrollments, id)), "deleteEnrollment");
+    invalidateCache('enrollments');
     console.log("Firestore: deleteEnrollment success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteEnrollment FAILED:", err);
@@ -368,6 +382,7 @@ export async function addSchedulingRequest(data: Omit<FirebaseSchedulingRequest,
       "addSchedulingRequest"
     );
     console.log("Firestore: addSchedulingRequest success, id:", ref.id);
+    appendToCache('schedulingRequests', { id: ref.id, ...data });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addSchedulingRequest FAILED:", err);
@@ -381,6 +396,7 @@ export async function updateSchedulingRequest(id: string, data: Partial<Firebase
       updateDoc(doc(db, collections.schedulingRequests, id), { ...data, updatedAt: serverTimestamp() }),
       "updateSchedulingRequest"
     );
+    invalidateCache('schedulingRequests');
     console.log("Firestore: updateSchedulingRequest success, id:", id);
   } catch (err) {
     console.error("Firestore: updateSchedulingRequest FAILED:", err);
@@ -391,6 +407,7 @@ export async function updateSchedulingRequest(id: string, data: Partial<Firebase
 export async function deleteSchedulingRequest(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.schedulingRequests, id)), "deleteSchedulingRequest");
+    invalidateCache('schedulingRequests');
     console.log("Firestore: deleteSchedulingRequest success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteSchedulingRequest FAILED:", err);
@@ -410,6 +427,7 @@ export async function markContactSubmissionRead(id: string): Promise<void> {
       updateDoc(doc(db, collections.contactSubmissions, id), { read: true }),
       "markContactSubmissionRead"
     );
+    invalidateCache('contactSubmissions');
   } catch (err) {
     console.error("Firestore: markContactSubmissionRead FAILED:", err);
     throw err;
@@ -419,6 +437,7 @@ export async function markContactSubmissionRead(id: string): Promise<void> {
 export async function deleteContactSubmission(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, collections.contactSubmissions, id)), "deleteContactSubmission");
+    invalidateCache('contactSubmissions');
     console.log("Firestore: deleteContactSubmission success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteContactSubmission FAILED:", err);
@@ -433,6 +452,7 @@ export async function addContactSubmission(data: Omit<FirebaseContactSubmission,
       "addContactSubmission"
     );
     console.log("Firestore: addContactSubmission success");
+    appendToCache('contactSubmissions', { id: ref.id, ...data, read: false });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addContactSubmission FAILED:", err);
@@ -466,6 +486,7 @@ export async function generateInviteCode(generatedBy: string): Promise<string> {
       "generateInviteCode"
     );
     console.log("Firestore: generateInviteCode success");
+    appendToCache('inviteCodes', { code, used: false, generatedBy, createdAt: new Date().toISOString() });
     return code;
   } catch (err) {
     console.error("Firestore: generateInviteCode FAILED:", err);
@@ -485,6 +506,7 @@ export async function markInviteCodeUsed(code: string, usedBy: string): Promise<
   if (!snap.empty) {
     const docRef = doc(db, INVITE_CODES, snap.docs[0].id);
     await updateDoc(docRef, { used: true, usedBy, usedAt: serverTimestamp() });
+    invalidateCache('inviteCodes');
   }
 }
 
@@ -497,6 +519,7 @@ export async function fetchInviteCodes(): Promise<InviteCode[]> {
 export async function deleteInviteCode(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, INVITE_CODES, id)), "deleteInviteCode");
+    invalidateCache('inviteCodes');
     console.log("Firestore: deleteInviteCode success");
   } catch (err) {
     console.error("Firestore: deleteInviteCode FAILED:", err);
@@ -548,15 +571,18 @@ export async function fetchTestimonials(limitCount = 50): Promise<Testimonial[]>
 
 export async function addTestimonial(data: Omit<Testimonial, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, TESTIMONIALS), { ...data, createdAt: serverTimestamp() });
+  appendToCache('testimonials', { id: ref.id, ...data });
   return ref.id;
 }
 
 export async function updateTestimonial(id: string, data: Partial<Testimonial>): Promise<void> {
   await updateDoc(doc(db, TESTIMONIALS, id), data);
+  invalidateCache('testimonials');
 }
 
 export async function deleteTestimonial(id: string): Promise<void> {
   await deleteDoc(doc(db, TESTIMONIALS, id));
+  invalidateCache('testimonials');
 }
 
 // ─── Activity Log ───
@@ -581,6 +607,7 @@ export async function logActivity(entry: Omit<ActivityLogEntry, "id" | "createdA
       addDoc(collection(db, ACTIVITY_LOG_COLLECTION), { ...entry, createdAt: serverTimestamp() }),
       "logActivity"
     );
+    appendToCache('activityLog', { id: ref.id, ...entry });
     return ref.id;
   } catch (err) {
     console.error("Firestore: logActivity FAILED:", err);
@@ -700,6 +727,7 @@ export async function addRSVP(data: Omit<FirebaseRSVP, "id" | "createdAt" | "sta
       "addRSVP"
     );
     console.log("Firestore: addRSVP success, id:", ref.id);
+    appendToCache('rsvps', { id: ref.id, ...data, status: "pending" });
     return ref.id;
   } catch (err) {
     console.error("Firestore: addRSVP FAILED:", err);
@@ -713,6 +741,7 @@ export async function updateRSVP(id: string, data: Partial<FirebaseRSVP>): Promi
       updateDoc(doc(db, RSVP_COLLECTION, id), { ...data, updatedAt: serverTimestamp() }),
       "updateRSVP"
     );
+    invalidateCache('rsvps');
     console.log("Firestore: updateRSVP success, id:", id);
   } catch (err) {
     console.error("Firestore: updateRSVP FAILED:", err);
@@ -723,6 +752,7 @@ export async function updateRSVP(id: string, data: Partial<FirebaseRSVP>): Promi
 export async function deleteRSVP(id: string): Promise<void> {
   try {
     await withTimeout(deleteDoc(doc(db, RSVP_COLLECTION, id)), "deleteRSVP");
+    invalidateCache('rsvps');
     console.log("Firestore: deleteRSVP success, id:", id);
   } catch (err) {
     console.error("Firestore: deleteRSVP FAILED:", err);
@@ -819,15 +849,18 @@ export async function fetchMasjidUpdates(limitCount = 10): Promise<FirebaseMasji
 
 export async function addMasjidUpdate(data: Omit<FirebaseMasjidUpdate, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, MASJID_CONSTRUCTION), { ...data, createdAt: serverTimestamp() });
+  appendToCache('masjidConstruction', { id: ref.id, ...data });
   return ref.id;
 }
 
 export async function updateMasjidUpdate(id: string, data: Partial<FirebaseMasjidUpdate>): Promise<void> {
   await updateDoc(doc(db, MASJID_CONSTRUCTION, id), { ...data, updatedAt: serverTimestamp() });
+  invalidateCache('masjidConstruction');
 }
 
 export async function deleteMasjidUpdate(id: string): Promise<void> {
   await deleteDoc(doc(db, MASJID_CONSTRUCTION, id));
+  invalidateCache('masjidConstruction');
 }
 
 // ─── Pledges ───
@@ -850,6 +883,7 @@ const PLEDGES = "pledges";
 
 export async function createPledge(data: Omit<Pledge, "id" | "createdAt" | "status">): Promise<string> {
   const ref = await addDoc(collection(db, PLEDGES), { ...data, status: "pending", createdAt: serverTimestamp() });
+  appendToCache('pledges', { id: ref.id, ...data, status: "pending" });
   return ref.id;
 }
 
@@ -892,10 +926,12 @@ export async function updatePledgeStatus(id: string, status: "fulfilled" | "canc
   if (status === "fulfilled") update.fulfilledAt = serverTimestamp();
   if (status === "cancelled") update.cancelledAt = serverTimestamp();
   await updateDoc(doc(db, PLEDGES, id), update);
+  invalidateCache('pledges');
 }
 
 export async function deletePledge(id: string): Promise<void> {
   await deleteDoc(doc(db, PLEDGES, id));
+  invalidateCache('pledges');
 }
 
 // ─── Subscribers / Newsletter ───
@@ -914,6 +950,7 @@ const SUBSCRIBERS = "subscribers";
 
 export async function addSubscriber(data: Omit<Subscriber, "id" | "createdAt" | "status">): Promise<string> {
   const ref = await addDoc(collection(db, SUBSCRIBERS), { ...data, status: "active", createdAt: serverTimestamp() });
+  appendToCache('subscribers', { id: ref.id, ...data, status: "active" });
   return ref.id;
 }
 
@@ -925,10 +962,12 @@ export async function fetchSubscribers(limitCount = 200): Promise<Subscriber[]> 
 
 export async function unsubscribeSubscriber(id: string): Promise<void> {
   await updateDoc(doc(db, SUBSCRIBERS, id), { status: "unsubscribed", unsubscribedAt: serverTimestamp() });
+  invalidateCache('subscribers');
 }
 
 export async function deleteSubscriber(id: string): Promise<void> {
   await deleteDoc(doc(db, SUBSCRIBERS, id));
+  invalidateCache('subscribers');
 }
 
 // ─── Volunteers ───
@@ -949,6 +988,7 @@ const VOLUNTEERS_COLLECTION = "volunteers";
 
 export async function addVolunteer(data: Omit<VolunteerSubmission, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, VOLUNTEERS_COLLECTION), { ...data, createdAt: serverTimestamp() });
+  appendToCache('volunteers', { id: ref.id, ...data });
   return ref.id;
 }
 
@@ -960,6 +1000,7 @@ export async function fetchVolunteers(limitCount = 200): Promise<VolunteerSubmis
 
 export async function deleteVolunteer(id: string): Promise<void> {
   await deleteDoc(doc(db, VOLUNTEERS_COLLECTION, id));
+  invalidateCache('volunteers');
 }
 
 // ─── Donations ───
@@ -1037,11 +1078,13 @@ export async function fetchDonationsByUser(userId: string, email?: string): Prom
 
 export async function addManualDonation(data: Omit<Donation, "id" | "createdAt" | "stripePaymentId" | "stripeSessionId"> & { showOnWall?: boolean; anonymous?: boolean }): Promise<string> {
   const ref = await addDoc(collection(db, DONATIONS_COLLECTION), { ...data, stripePaymentId: "", stripeSessionId: "", createdAt: serverTimestamp() });
+  appendToCache('donations', { id: ref.id, ...data, stripePaymentId: "", stripeSessionId: "" });
   return ref.id;
 }
 
 export async function deleteDonation(id: string): Promise<void> {
   await deleteDoc(doc(db, DONATIONS_COLLECTION, id));
+  invalidateCache('donations');
 }
 
 const FALLBACK_QUOTES = [
@@ -1106,15 +1149,18 @@ export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
 
 export async function addNews(data: Omit<NewsItem, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, NEWS_COLLECTION), { ...data, createdAt: serverTimestamp() });
+  appendToCache('news', { id: ref.id, ...data });
   return ref.id;
 }
 
 export async function updateNews(id: string, data: Partial<NewsItem>): Promise<void> {
   await updateDoc(doc(db, NEWS_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
+  invalidateCache('news');
 }
 
 export async function deleteNews(id: string): Promise<void> {
   await deleteDoc(doc(db, NEWS_COLLECTION, id));
+  invalidateCache('news');
 }
 
 // ─── FAQ ───
@@ -1165,15 +1211,18 @@ export async function addKnowledgeDoc(data: Omit<KnowledgeDoc, "id" | "createdAt
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  appendToCache('ai_knowledge', { id: ref.id, ...data });
   return ref.id;
 }
 
 export async function updateKnowledgeDoc(id: string, data: Partial<KnowledgeDoc>): Promise<void> {
   await updateDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
+  invalidateCache('ai_knowledge');
 }
 
 export async function deleteKnowledgeDoc(id: string): Promise<void> {
   await deleteDoc(doc(db, AI_KNOWLEDGE_COLLECTION, id));
+  invalidateCache('ai_knowledge');
 }
 
 export async function fetchFAQs(limitCount = 50): Promise<FAQItem[]> {
@@ -1184,15 +1233,18 @@ export async function fetchFAQs(limitCount = 50): Promise<FAQItem[]> {
 
 export async function addFAQ(data: Omit<FAQItem, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, FAQ_COLLECTION), { ...data, createdAt: serverTimestamp() });
+  appendToCache('faq', { id: ref.id, ...data });
   return ref.id;
 }
 
 export async function updateFAQ(id: string, data: Partial<FAQItem>): Promise<void> {
   await updateDoc(doc(db, FAQ_COLLECTION, id), { ...data, updatedAt: serverTimestamp() });
+  invalidateCache('faq');
 }
 
 export async function deleteFAQ(id: string): Promise<void> {
   await deleteDoc(doc(db, FAQ_COLLECTION, id));
+  invalidateCache('faq');
 }
 
 export { FALLBACK_QUOTES };

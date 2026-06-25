@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, GripVertical } from 'lucide-react';
 import { knowledgeBase, QAItem } from '@/app/lib/assistant-knowledge';
 import { useAuth } from '@/lib/auth-context';
-import { usePageData } from '@/lib/page-data-context';
+import { usePageData, PageData } from '@/lib/page-data-context';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -40,6 +40,114 @@ const STOP_WORDS = new Set([
   'only', 'other', 'out', 'over', 'same', 'some', 'such', 'there', 'through',
   'too', 'under', 'very', 'while', 'still',
 ]);
+
+/* ─── Cache-backed answers: reads from pageData or localStorage ─── */
+const CACHE_TAGS: Record<string, { label: string; collection: string; countLabel: string }> = {
+  events: { label: 'events', collection: 'events', countLabel: 'events planned' },
+  programs: { label: 'programs', collection: 'programs', countLabel: 'programs' },
+  news: { label: 'news', collection: 'news', countLabel: 'news articles' },
+  masjidConstruction: { label: 'construction', collection: 'masjidConstruction', countLabel: 'masjid updates' },
+  donations: { label: 'donations', collection: 'donations', countLabel: 'donations' },
+  pledges: { label: 'pledges', collection: 'pledges', countLabel: 'pledges' },
+  enrollments: { label: 'enrollments', collection: 'enrollments', countLabel: 'enrollments' },
+  rsvps: { label: 'rsvps', collection: 'rsvps', countLabel: 'RSVPs' },
+  contactSubmissions: { label: 'contact submissions', collection: 'contactSubmissions', countLabel: 'contact messages' },
+  schedulingRequests: { label: 'scheduling requests', collection: 'schedulingRequests', countLabel: 'scheduling requests' },
+  users: { label: 'users', collection: 'users', countLabel: 'users' },
+  subscribers: { label: 'subscribers', collection: 'subscribers', countLabel: 'subscribers' },
+  testimonials: { label: 'testimonials', collection: 'testimonials', countLabel: 'testimonials' },
+  volunteers: { label: 'volunteers', collection: 'volunteers', countLabel: 'volunteer signups' },
+  faq: { label: 'FAQs', collection: 'faq', countLabel: 'FAQ entries' },
+  activityLog: { label: 'activity log', collection: 'activityLog', countLabel: 'activity entries' },
+};
+
+const CACHE_PREFIX = 'mhma_v5_';
+
+function readCache(key: string): any[] | null {
+  try {
+    const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed.d)) return parsed.d;
+    return null;
+  } catch { return null; }
+}
+
+function answerFromCache(query: string, pageData: PageData): string | null {
+  const lower = query.toLowerCase().trim();
+  const pageKeys = Object.keys(pageData).filter(k => k !== 'currentPath');
+  console.log(`[AI Cache] scan query="${lower}" pageKeys=${pageKeys.join(',') || '(none)'}`);
+
+  // "How many / count / total" questions
+  const countMatch = lower.match(/(?:how many|count|total|number of|# of)\s+(\w+(?:\s+\w+)?)/);
+  if (countMatch) {
+    const subject = countMatch[1].trim();
+    for (const [key, tag] of Object.entries(CACHE_TAGS)) {
+      const words = tag.label.split(/\s+/);
+      if (words.some(w => subject.includes(w) || w.includes(subject))) {
+        const fromPage = pageData[key as keyof PageData];
+        const fromLS = readCache(key);
+        const source = fromPage ? 'pageData' : fromLS ? 'localStorage' : 'none';
+        const data = fromPage || fromLS || [];
+        console.log(`[AI Cache] countMatch key=${key} source=${source} length=${data.length}`);
+        if (data.length > 0) {
+          const count = Array.isArray(data) ? data.length : 0;
+          return `There ${count === 1 ? 'is' : 'are'} ${count} ${tag.countLabel} in the system.`;
+        }
+        return `No ${tag.label} found in the cache.`;
+      }
+    }
+    console.log(`[AI Cache] countMatch subject="${subject}" no matching tag`);
+  }
+
+  // "Show / list / what" questions about specific topics
+  const showMatch = lower.match(/(?:show|list|what|display|get|find|view)\s+(?:\w+\s+)?(me\s+)?(?:the\s+)?(\w+(?:\s+\w+)?)/);
+  if (showMatch) {
+    const subject = showMatch[showMatch.length - 1].trim();
+    for (const [key, tag] of Object.entries(CACHE_TAGS)) {
+      const words = tag.label.split(/\s+/);
+      if (words.some(w => subject.includes(w) || w.includes(subject))) {
+        const fromPage = pageData[key as keyof PageData];
+        const fromLS = readCache(key);
+        const source = fromPage ? 'pageData' : fromLS ? 'localStorage' : 'none';
+        const raw = fromPage || fromLS || [];
+        const data: any[] = Array.isArray(raw) ? raw : [];
+        console.log(`[AI Cache] showMatch key=${key} source=${source} length=${data.length}`);
+        if (data.length === 0) return `No ${tag.label} data available yet. View the ${tag.label} page to populate the cache first.`;
+        const items = data.slice(0, 5).map((item: any) => {
+          const name = item.title || item.name || item.fullName || item.email || item.type || `#${item.id?.slice?.(0, 6) || ''}`;
+          const status = item.status ? ` (${item.status})` : '';
+          const date = item.createdAt?.toDate?.() ? new Date(item.createdAt.toDate()).toLocaleDateString() : '';
+          return `  • ${name}${status}${date ? ` — ${date}` : ''}`;
+        });
+        let answer = `Found ${data.length} ${tag.countLabel}.`;
+        if (items.length > 0) answer += `\n${items.join('\n')}`;
+        if (data.length > 5) answer += `\n  … and ${data.length - 5} more.`;
+        return answer;
+      }
+    }
+  }
+
+  // Direct keyword match (single word = collection name)
+  const directKeys = Object.entries(CACHE_TAGS).filter(([, tag]) =>
+    lower.includes(tag.label) || tag.label.split(/\s+/).some(w => lower.includes(w))
+  );
+  if (directKeys.length > 0) {
+    const [key, tag] = directKeys[0];
+    const fromPage = pageData[key as keyof PageData];
+    const fromLS = readCache(key);
+    const source = fromPage ? 'pageData' : fromLS ? 'localStorage' : 'none';
+    console.log(`[AI Cache] directMatch key=${key} source=${source}`);
+    const data = fromPage || fromLS;
+    if (data && data.length > 0) {
+      return `There ${data.length === 1 ? 'is' : 'are'} ${data.length} ${tag.countLabel} in the system.`;
+    }
+    return `No ${tag.label} found in the cache.`;
+  }
+
+  console.log(`[AI Cache] no match — passing to RAG`);
+  return null;
+}
 
 /* ─── Canned responses for off-topic queries ─── */
 const IDENTITY_WORDS = ['who are you', 'who r u', 'who are u', 'what are you', 'what r u', 'what are u', 'tell me about yourself', 'your name', 'what is your name', 'what\'s your name', 'who am i speaking to'];
@@ -308,6 +416,13 @@ export default function AiAssistant() {
       return { answer: "You're not logged in. Click 'Member Login' in the top navigation bar to sign in." };
     }
 
+    // 1c. Cache-backed answers — reads from pageData or localStorage (0 Firestore reads)
+    const cached = answerFromCache(query, pageData);
+    if (cached) {
+      console.log('[AI] => Cache-backed answer:', cached.slice(0, 80) + '...');
+      return { answer: cached };
+    }
+
     // 2. Retrieve context with score
     const role = user?.role;
     const { context, score } = retrieveFromDocs(
@@ -364,7 +479,7 @@ export default function AiAssistant() {
       return { answer: context.slice(answerStart).replace(/^---\s*\n/, '') };
     }
     return { answer: context };
-  }, [user]);
+  }, [user, pageData]);
 
   const handleSend = async () => {
     const q = input.trim();

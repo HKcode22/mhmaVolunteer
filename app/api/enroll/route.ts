@@ -14,6 +14,11 @@ export async function POST(req: NextRequest) {
       status: "pending", createdAt: Timestamp.now(),
     });
 
+    await firestore.collection('metadata').doc('cacheTimestamps').set({
+      enrollments: Date.now(),
+      _updatedAt: Date.now(),
+    }, { merge: true });
+
     // Emails — await but never fail the request
     try {
       await Promise.allSettled([
