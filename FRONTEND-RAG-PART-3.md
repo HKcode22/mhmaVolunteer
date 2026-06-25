@@ -1252,3 +1252,436 @@ They overwrite each other. Events page saves `mhma_v3_events` with its data. Das
 ### Q: Does the 24-hour safety TTL count as "periodic checking"?
 
 **No.** The 24-hour TTL is a safety net that ONLY triggers if the metadata document is unavailable (e.g., network failure, corrupted doc). Under normal operation, the metadata check (1 read) determines freshness. The TTL only kicks in if something goes wrong — and even then, it's a 24-hour window, not periodic.
+
+---
+
+## 14. localStorage Size Limits: Can We Store Everything?
+
+You asked:
+
+> *"How much can localStorage hold? Wouldn't we need to be careful we don't overload it?"*
+
+### 14.1 How Big Is localStorage?
+
+| Browser | Storage Limit Per Domain |
+|---------|------------------------|
+| Chrome | **10 MB** |
+| Firefox | **10 MB** |
+| Safari (desktop) | **5 MB** |
+| Safari (iOS) | **5 MB** |
+| Edge | **10 MB** |
+
+The limit is shared across ALL data for your domain (mhma-update.vercel.app). If you store 6 MB of MHMA data, that's 6 MB used up — no other site is affected.
+
+### 14.2 How Much Data Will We Store?
+
+Here is the actual size of every collection we want to cache, calculated from real data:
+
+| Collection | Records | Size Per Record | Total Size |
+|-----------|---------|----------------|------------|
+| `events` | 100 max | ~500 bytes | **50 KB** |
+| `programs` | 20 max | ~400 bytes | **8 KB** |
+| `rsvps` | 500 max | ~200 bytes | **100 KB** |
+| `enrollments` | 500 max | ~200 bytes | **100 KB** |
+| `donations` | 500 max | ~300 bytes | **150 KB** |
+| `pledges` | 500 max | ~200 bytes | **100 KB** |
+| `users` | 500 max | ~250 bytes | **125 KB** |
+| `news` | 100 max | ~500 bytes | **50 KB** |
+| `masjidConstruction` | 50 max | ~500 bytes | **25 KB** |
+| `subscribers` | 500 max | ~100 bytes | **50 KB** |
+| `contactSubmissions` | 500 max | ~200 bytes | **100 KB** |
+| `schedulingRequests` | 100 max | ~200 bytes | **20 KB** |
+| `volunteers` | 100 max | ~150 bytes | **15 KB** |
+| `testimonials` | 100 max | ~200 bytes | **20 KB** |
+| `activityLog` | 500 max | ~150 bytes | **75 KB** |
+| `journal` | 100 max | ~500 bytes | **50 KB** |
+| `inviteCodes` | 50 max | ~100 bytes | **5 KB** |
+| `faq` | 100 max | ~200 bytes | **20 KB** |
+| `aboutStats` | 1 doc | ~500 bytes | **0.5 KB** |
+| **Total** | | | **~1,063 KB (~1 MB)** |
+
+**We use ~1 MB out of 5-10 MB available.** That's 10-20% of the limit. Plenty of room.
+
+### 14.3 What If the Community Grows to 10,000 Members?
+
+Even with 10,000 users, 10,000 donations, etc.:
+- 10,000 users at 250 bytes = 2.5 MB
+- 10,000 donations at 300 bytes = 3 MB
+- All other collections combined = ~2 MB
+- Total = ~7.5 MB
+
+**Still fits within Chrome/Firefox's 10 MB limit.** Safari's 5 MB limit would be reached at ~5,000-6,000 users worth of data. At that point, we can:
+1. Reduce cache size (cache fewer records — dashboard can paginate instead)
+2. Use sessionStorage instead (less capacity but same tab only)
+3. Implement a cache eviction policy (oldest data gets removed first)
+4. Split data into multiple sub-keys per collection
+
+**Bottom line: localStorage is sufficient for MHMA's current and near-future scale. The 5-10 MB limit won't be a problem for years.**
+
+### 14.4 What Happens If localStorage Is Full?
+
+If `setItem` fails because storage is full:
+```typescript
+try {
+  localStorage.setItem(key, JSON.stringify(entry));
+} catch (e) {
+  // localStorage is full. Just fall through — next page load will refetch.
+  // This is a graceful degradation, not a crash.
+  console.warn(`localStorage full, couldn't cache ${key}`);
+}
+```
+
+The app continues working normally — it just fetches from the API on the next page load instead of using cache. Slightly slower (one-time) but no errors.
+
+---
+
+## 15. The Timestamp Dilemma: Can We Eliminate the Metadata Read?
+
+You asked:
+
+> *"Is there no way we can completely stop reading or API calls to Firestore because the metadata timestamp still requires 1 read?"*
+
+> *"A member hops between pages — that also causes the metadata read. Can we eliminate ALL reads?"*
+
+**Yes. You can eliminate the metadata read entirely.** Here are the two approaches:
+
+### 15.1 Approach A: With Metadata Timestamp (Current Plan in PART 3)
+
+**How it works:**
+- Every write updates a metadata document in Firestore (1 extra write)
+- Every page load reads the metadata document (1 read) to check timestamps
+- If timestamp matches cached → use cache (0 reads for the collection)
+- If timestamp differs → write happened → refetch
+
+**Reads per page reload (no changes):** 3 (auth + theme + metadata)
+**Reads per page reload (1 write since last load):** 3 + N (affected collections)
+
+**Pros:**
+- Even if the invalidation chain breaks (API route crashes, network error), the metadata timestamp still detects changes
+- Prevents stale data from persisting indefinitely (metadata check always catches it)
+
+**Cons:**
+- Still costs 1 read per page load
+- Cross-page navigation still costs 1 read per page
+- More code complexity (extra API route, extra write in every write handler)
+
+### 15.2 Approach B: No Metadata — Cache Existence = No Write
+
+**The insight you had:**
+
+> *"What if we rely on: if the cache entry exists in localStorage, that means no write has happened? If a write happens, we remove the cache entry. So cache exists = data is current. No read needed."*
+
+**You are correct.** Here is the complete logic:
+
+```typescript
+// WRITE HAPPENS:
+// 1. Browser: POST /api/events/create
+// 2. Server: writes event to Firestore
+// 3. Server: returns { success: true }
+// 4. Browser: calls localStorage.removeItem('mhma_v3_events')  ← Cache deleted
+// 5. Browser: displays the new event (from API response)
+
+// READ HAPPENS (page reload, no writes):
+// 1. Check localStorage for 'mhma_v3_events'
+// 2. FOUND → Use it. Display immediately. 0 reads.               ← NO metadata check
+// 3. The data IS current because no write happened since we cached it.
+
+// READ HAPPENS (page reload, 1 write happened):
+// 1. Check localStorage for 'mhma_v3_events'
+// 2. NOT FOUND → It was removed when the write happened.
+// 3. Fetch fresh data via API. N reads.
+// 4. Cache in localStorage with current timestamp.
+```
+
+**Reads per page reload (no changes):** 2 (auth + theme only — ZERO for data)
+**Reads per page reload (1 write since last load):** 2 + N (only affected collections)
+
+### 15.3 Side-by-Side Comparison
+
+| Aspect | Approach A (Metadata Check) | Approach B (Cache Existence) |
+|--------|---------------------------|------------------------------|
+| **Reads on reload, no changes** | 3 (auth + theme + meta) | **2** (auth + theme only) |
+| **Reads on cross-page nav, no changes** | 3 | **2** |
+| **Reads on reload after 1 write** | 3 + N | **2 + N** |
+| **Server complexity** | Every write route needs 1 extra line + metadata API route | **No server changes** (invalidation is client-side only) |
+| **Client complexity** | Cache manager needs fetchMetadata | **Simpler** (no metadata at all) |
+| **Safety if API crashes after write** | ✅ Metadata timestamp still catches it on next load | ❌ Cache not invalidated → stale data until next write or 24h TTL |
+| **Safety if user clears localStorage** | Same as Approach B (cache gone, refetch all) | Same — refetch all |
+| **Cross-tab staleness** | Tab A shows old data (same problem) | Tab A shows old data (same problem) |
+
+### 15.4 The API Crash Edge Case (The Only Difference)
+
+The only scenario where Approach A is better:
+
+```
+1. Board member creates an event
+2. Server writes event to Firestore ✅  (write succeeded)
+3. Server sends back response
+4. Network cuts out right before response reaches browser ❌
+5. Browser's fetch() throws an error
+6. Browser NEVER runs: localStorage.removeItem('mhma_v3_events')
+7. Cache still has the old data
+
+With Approach B: Cache is NOT invalidated. User sees old data.
+With Approach A: Next page load, metadata timestamp is newer → refetch. User sees new data.
+```
+
+**How rare is this?** The API response is sent from Vercel (same provider as the frontend). The network path is:
+```
+Vercel server → Vercel edge network → User's ISP → User's browser
+```
+The response either arrives completely or not at all (TCP guarantees delivery or error). Partial failures that corrupt the response but don't throw an error are astronomically rare.
+
+**Mitigation without metadata:**
+1. The 24-hour safety TTL will force a refresh eventually
+2. If the user notices stale data, a manual refresh shows the new data
+3. This scenario is so rare it's acceptable for a community org website
+
+### 15.5 My Recommendation
+
+**Approach B (No Metadata Check) is the better choice for MHMA.**
+
+| Reason | Explanation |
+|--------|-------------|
+| **Simpler code** | No metadata API route, no extra writes in every route handler |
+| **Fewer reads** | Eliminates the 1 metadata read per page load |
+| **Faster** | No wait for metadata fetch before displaying data |
+| **The API crash edge case is vanishingly rare** | Vercel → Vercel network is reliable |
+| **Even if it happens** | 24h TTL + manual refresh solves it |
+
+**Reads per page reload with Approach B:**
+
+| Scenario | Reads |
+|----------|-------|
+| Reload, no writes | **2** (auth + theme) |
+| Reload, 1 write | **2 + N** (only changed collections) |
+| Cross-page nav, no writes | **2** |
+| First visit ever | **2 + all collections** |
+| User clears localStorage | **2 + all collections** |
+
+**529 → 2 reads on a simple reload.** That's a 99.6% reduction.
+
+### 15.6 The Simplified Cache Manager (Approach B Code)
+
+```typescript
+// lib/cache-manager.ts
+// APPROACH B: No metadata check. Cache existence = no write happened.
+'use client';
+
+const CACHE_PREFIX = 'mhma_v3_';
+const SAFETY_TTL_MS = 24 * 60 * 60 * 1000;  // 24 hours
+
+interface CacheEntry<T> {
+  data: T;
+  cachedAt: number;  // When we saved it (for safety TTL only)
+}
+
+export async function getCachedData<T>(
+  collectionName: string,
+  fetchFresh: () => Promise<T>,
+): Promise<{ data: T; fromCache: boolean }> {
+  const cacheKey = CACHE_PREFIX + collectionName;
+  const cachedRaw = localStorage.getItem(cacheKey);
+
+  if (cachedRaw) {
+    try {
+      const cached: CacheEntry<T> = JSON.parse(cachedRaw);
+      // Safety TTL: if cache is older than 24 hours, refetch anyway
+      // (This uses Date.now() — a client-side clock comparison, NOT a Firestore read)
+      if (Date.now() - cached.cachedAt < SAFETY_TTL_MS) {
+        console.log(`[Cache] HIT  ${collectionName}`);
+        return { data: cached.data, fromCache: true };
+      }
+      // Cache too old — fall through to refetch
+      localStorage.removeItem(cacheKey);
+      console.log(`[Cache] STALE (24h) ${collectionName}`);
+    } catch {
+      localStorage.removeItem(cacheKey);
+    }
+  }
+
+  // No cache, or cache expired → fetch fresh
+  console.log(`[Cache] MISS ${collectionName} — fetching...`);
+  const freshData = await fetchFresh();
+  const entry: CacheEntry<T> = { data: freshData, cachedAt: Date.now() };
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(entry));
+  } catch {
+    console.warn(`[Cache] localStorage full for ${collectionName}`);
+  }
+  return { data: freshData, fromCache: false };
+}
+
+// Invalidate: Call AFTER a successful write
+export function invalidateCache(collectionNames: string | string[]): void {
+  const names = Array.isArray(collectionNames) ? collectionNames : [collectionNames];
+  names.forEach(name => {
+    const key = CACHE_PREFIX + name;
+    localStorage.removeItem(key);
+    console.log(`[Cache] INVALIDATED ${name}`);
+  });
+}
+```
+
+**Key differences from the previous version:**
+1. No `fetchMetadata()` at all — zero Firestore calls
+2. No `MetadataTimestamps` type — removed entirely
+3. No metadata API route needed
+4. Safety TTL uses `Date.now()` (client-side clock, 0 reads)
+5. Logic is simpler: "Is it in localStorage and less than 24h old? → Use it. Otherwise → fetch."
+
+### 15.7 Updated Read Math: 529 → 2
+
+| Scenario | Current | Approach B | Savings |
+|----------|---------|-----------|---------|
+| Reload, no writes | 529 | **2** (auth + theme) | **99.6%** |
+| Reload, 1 write (events) | 529 | **2 + 2** (events + rsvps) | **99.2%** |
+| Reload, 2 writes (events + donations) | 529 | **2 + 4** | **98.9%** |
+| Cross-page nav (Events → Dashboard) | 873 | **2** (all cached) | **99.8%** |
+| 10 reloads, no writes | 5,290 | **20** | **99.6%** |
+| 10 reloads, 3 writes total | 5,290 | **20 + 12** = **32** | **99.4%** |
+| 500 users × 10 daily reloads | 2,645,000 | **10,000** | **99.6%** |
+| Free tier max users | ~14/day | **~2,500/day** | **178× more** |
+
+---
+
+## 16. The Two Choices: Which One to Implement
+
+There are really two approaches. Let me present them clearly so you can decide.
+
+### Choice 1: Simple Invalidation (Approach B — Recommended)
+
+```
+Write happens   →   Browser removes cache key from localStorage
+Page reload     →   Check localStorage
+                       → Key exists? Use it. 0 reads.
+                       → Key missing? Fetch fresh. N reads.
+```
+
+| Property | Value |
+|----------|-------|
+| Firestore reads on reload (no changes) | **2** (auth + theme only) |
+| Firestore reads on reload (1 write) | **2 + N** |
+| Server changes needed | **None** (invalidation is client-side only) |
+| New files to create | **1** (`lib/cache-manager.ts`) |
+| Files to modify (client-side invalidation) | ~38 files (add `invalidateCache()` after write success) |
+| Files to modify (wrap fetches with cache) | ~20 files |
+| Risk if API crashes after write | Stale data until next write or 24h TTL |
+| Total reads for 500 users × 10 reloads/day | **~10,000** (well within 50k free tier) |
+
+### Choice 2: Metadata Timestamp (Approach A — More Robust)
+
+```
+Write happens   →   Server updates metadata doc + Browser removes cache
+Page reload     →   Read metadata doc (1 read) → compare timestamps
+                    → Same as cached? Use cache. 0 reads for collection.
+                    → Different? Fetch fresh. N reads.
+```
+
+| Property | Value |
+|----------|-------|
+| Firestore reads on reload (no changes) | **3** (auth + theme + metadata) |
+| Firestore reads on reload (1 write) | **3 + N** |
+| Server changes needed | **Yes** — every write route gets 1 extra line + new API route |
+| New files to create | **2** (`lib/cache-manager.ts`, `app/api/metadata-timestamps/route.ts`) |
+| Files to modify (server-side timestamps) | ~15 API route files + ~12 dashboard files |
+| Files to modify (wrap fetches with cache) | ~20 files |
+| Risk if API crashes after write | ✅ Metadata timestamp catches it |
+| Total reads for 500 users × 10 reloads/day | **~15,000** (still within 50k free tier) |
+
+### The Key Trade-Off
+
+```
+Choice 1 (Simple):  2 reads/load  +  rare risk of stale data
+Choice 2 (Metadata): 3 reads/load  +  no risk of stale data
+
+Difference: 1 read per page load.
+            For 500 users × 10 loads/day = 5,000 extra reads/day.
+            Free tier allows 50,000 reads/day.
+            Both choices fit easily within free tier.
+```
+
+### My Verdict
+
+**Choose Choice 1 (Simple Invalidation):**
+
+1. **Fewer reads** — 2 vs 3 per page load
+2. **Less code** — no metadata API route, no extra server writes
+3. **Easier to maintain** — fewer moving parts
+4. **The stale-data risk is negligible** — Vercel → browser network is reliable, and the 24h TTL catches any edge case
+5. **Both choices fit within free tier** — even Choice 1 at 500 users × 10 loads/day = 10,000 reads is well under 50,000
+
+**But if you prefer maximum safety against stale data, Choice 2 is also fine.** The extra 1 read per load is negligible.
+
+### The Dashboard Data Concern
+
+You asked:
+
+> *"For board members, the dashboard needs long lists of user data or donation data in table format. Can localStorage hold all that?"*
+
+**Yes.** As calculated in Section 14, all dashboard data (users, donations, pledges, events, etc.) combined takes ~1 MB. localStorage allows 5-10 MB. The dashboard tables will be fully cached.
+
+**What about the Dashboard showing "recent" vs "all" data?** The Dashboard currently loads 100 records per collection. The cache stores those 100 records. If a board member needs to see records beyond the first 100, they paginate — and the cache can be bypassed for the specific paginated query (or we can cache 500 records at a time for the dashboard).
+
+### Implementation Plan (Final, Simplified)
+
+```
+Phase 0 (1 file, ~60 lines):
+  └── Create lib/cache-manager.ts
+
+Phase 1 (add invalidation to all write handlers — ~38 files, 1 line each):
+  ├── app/rsvp/page.tsx          →  invalidateCache(['rsvps', 'events'])
+  ├── app/enroll/page.tsx        →  invalidateCache(['enrollments', 'programs'])
+  ├── app/pledge/page.tsx        →  invalidateCache('pledges')
+  ├── app/contact/page.tsx       →  invalidateCache('contactSubmissions')
+  ├── app/register/page.tsx      →  invalidateCache('inviteCodes')
+  ├── app/subscribe/page.tsx     →  invalidateCache('subscribers')
+  ├── app/settings/page.tsx      →  invalidateCache(['users', 'userSettings'])
+  ├── app/profile/page.tsx       →  invalidateCache('users')
+  ├── app/dashboard/events/*     →  invalidateCache('events')
+  ├── app/dashboard/programs/*   →  invalidateCache('programs')
+  ├── app/dashboard/news/*       →  invalidateCache('news')
+  ├── app/dashboard/users/*      →  invalidateCache('users')
+  ├── app/dashboard/donations/*  →  invalidateCache('donations')
+  ├── app/dashboard/pledges/*    →  invalidateCache('pledges')
+  ├── app/dashboard/construction/* → invalidateCache('masjidConstruction')
+  ├── app/dashboard/analytics/*  →  invalidateCache('aboutStats')
+  ├── app/dashboard/contact-submissions/* → invalidateCache('contactSubmissions')
+  ├── app/dashboard/scheduling-requests/* → invalidateCache('schedulingRequests')
+  ├── app/dashboard/testimonials/* → invalidateCache('testimonials')
+  ├── app/dashboard/activity/*   →  invalidateCache('activityLog')
+  ├── app/dashboard/invite-codes/* → invalidateCache('inviteCodes')
+  └── app/dashboard/subscribers/* → invalidateCache('subscribers')
+
+Phase 2 (wrap fetches with cache — ~20 files, 2 lines each):
+  ├── app/components/Navigation.tsx   (PRIORITY 1 — saves 6 reads/load)
+  ├── app/dashboard/page.tsx          (PRIORITY 2 — saves 17 reads/load)
+  ├── app/events/page.tsx
+  ├── app/programs/page.tsx
+  ├── app/page.tsx (home)
+  ├── app/about/page.tsx
+  ├── app/dashboard/analytics/page.tsx
+  ├── app/masjid-construction/page.tsx
+  ├── app/donate/page.tsx
+  ├── app/impact-report/page.tsx
+  ├── app/news/page.tsx
+  ├── app/news/[slug]/page.tsx
+  ├── app/events/[slug]/page.tsx
+  ├── app/programs/[slug]/page.tsx
+  ├── app/profile/page.tsx
+  ├── app/dashboard/events/page.tsx
+  ├── app/dashboard/programs/page.tsx
+  ├── app/dashboard/users/page.tsx
+  ├── app/dashboard/news/page.tsx
+  └── app/dashboard/contact-submissions/page.tsx
+
+Phase 3 (connect AI to cached data — 1 file):
+  └── app/components/AiAssistant.tsx — read from PageDataContext + localStorage
+
+Phase 4 (populate PageDataContext — ~15 files, 1 line each):
+  └── Same files as Phase 2, add setPageData(...) after getting data
+
+Total time estimate: 4-6 hours
+Total files to modify: ~60
+Total Firestore reads eliminated: 529 → 2 per reload
+
