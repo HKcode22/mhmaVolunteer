@@ -22,6 +22,13 @@ export async function POST(req: Request) {
       createdAt: FieldValue.serverTimestamp(),
     });
 
+    // Touch metadata so other browsers invalidate cached `volunteers`.
+    const now = Date.now();
+    await firestore.collection("metadata").doc("cacheTimestamps").set(
+      { volunteers: now, _updatedAt: now },
+      { merge: true },
+    );
+
     // Emails — await but never fail the request
     try {
       await Promise.allSettled([

@@ -1,5 +1,7 @@
 'use client';
 
+import { auth } from "./firebase-client";
+
 const PREFIX = 'mhma_v5_';
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -60,22 +62,59 @@ function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
   });
 }
 
-// Keep localStorage safe by stripping very large base64 media blobs.
-// For now we only sanitize `events.poster` (board posters) for the events/RSVP test.
+// Keep localStorage safe by stripping base64 media (data URLs).
+// We only sanitize fields we know can contain base64 blobs.
 function sanitizeForCache(cacheKey: string, data: any): any {
-  if (cacheKey !== 'events') return data;
+  const MEDIA_KEYS = new Set(['events', 'programs', 'news', 'testimonials', 'masjidConstruction']);
+  if (!MEDIA_KEYS.has(cacheKey)) return data;
 
-  const sanitizeEvent = (ev: any) => {
-    if (!ev || typeof ev !== 'object') return ev;
-    if (typeof ev.poster === 'string' && ev.poster.startsWith('data:')) {
-      // Empty string keeps the render logic working (`poster || default`).
-      return { ...ev, poster: '' };
-    }
-    return ev;
+  const MAX_DATA_URL_CHARS = 200_000;
+
+  const stripBigDataUrl = (s: any) => {
+    if (typeof s !== 'string') return s;
+    if (!s.startsWith('data:')) return s;
+    return s.length > MAX_DATA_URL_CHARS ? '' : s;
   };
 
-  if (Array.isArray(data)) return data.map(sanitizeEvent);
-  return sanitizeEvent(data);
+  const stripAnyDataUrl = (s: any) => {
+    if (typeof s !== 'string') return s;
+    if (!s.startsWith('data:')) return s;
+    return '';
+  };
+
+  const sanitizeItem = (item: any) => {
+    if (!item || typeof item !== 'object') return item;
+
+    const out = { ...item };
+
+    if (cacheKey === 'events') {
+      out.poster = stripBigDataUrl(out.poster);
+    }
+
+    if (cacheKey === 'programs') {
+      out.image = stripBigDataUrl(out.image);
+      out.imagePoster = stripBigDataUrl(out.imagePoster);
+    }
+
+    if (cacheKey === 'news') {
+      out.image = stripBigDataUrl(out.image);
+    }
+
+    if (cacheKey === 'testimonials') {
+      out.photo = stripBigDataUrl(out.photo);
+    }
+
+    if (cacheKey === 'masjidConstruction') {
+      // Videos are usually huge; avoid storing base64 in localStorage.
+      out.image = stripAnyDataUrl(out.image);
+      out.video = stripAnyDataUrl(out.video);
+    }
+
+    return out;
+  };
+
+  if (Array.isArray(data)) return data.map(sanitizeItem);
+  return sanitizeItem(data);
 }
 
 // ─── Cache entry helpers ───
@@ -92,10 +131,8 @@ function getEntry<T>(key: string): CacheEntry<T> | null {
 
 function setEntry<T>(key: string, entry: CacheEntry<T>): void {
   try {
-    const sanitized: CacheEntry<T> =
-      key === 'events'
-        ? ({ ...entry, d: sanitizeForCache(key, entry.d) } as CacheEntry<T>)
-        : entry;
+    const sanitizedData = sanitizeForCache(key, entry.d);
+    const sanitized: CacheEntry<T> = { ...entry, d: sanitizedData } as CacheEntry<T>;
     localStorage.setItem(PREFIX + key, JSON.stringify(sanitized));
   } catch (err) {
     // localStorage quota exceeded (common if base64 media was cached).
@@ -172,6 +209,7 @@ async function fetchAndCache<T>(
 
 // ─── CREATE: prepend item to existing cache (0 reads, no invalidation) ───
 export function appendToCache<T>(key: string, newItem: T): void {
+  enqueueMetadataTouch([key]);
   const entry = getEntry<T[]>(key);
   if (!entry) {
     console.log(`[Cache] SKIP-APPEND ${key} (no cache to append to)`);
@@ -192,6 +230,7 @@ export function appendToCache<T>(key: string, newItem: T): void {
 
 // ─── UPDATE: merge partial data into specific cached item (no full invalidation) ───
 export function updateCachedItem(key: string, id: string, partialData: Record<string, any>): void {
+  enqueueMetadataTouch([key]);
   const entry = getEntry<any[]>(key);
   if (!entry || !Array.isArray(entry.d)) {
     console.log(`[Cache] SKIP-UPDATE ${key} (no cache or not an array)`);
@@ -212,6 +251,7 @@ export function updateCachedItem(key: string, id: string, partialData: Record<st
 
 // ─── DELETE: remove specific item from cached array (no full invalidation) ───
 export function removeCachedItem(key: string, id: string): void {
+  enqueueMetadataTouch([key]);
   const entry = getEntry<any[]>(key);
   if (!entry || !Array.isArray(entry.d)) {
     console.log(`[Cache] SKIP-REMOVE ${key} (no cache or not an array)`);
@@ -233,6 +273,7 @@ export function removeCachedItem(key: string, id: string): void {
 // ─── Full invalidation (only for major schema changes) ───
 export function invalidateCache(key: string | string[]): void {
   const keys = Array.isArray(key) ? key : [key];
+  enqueueMetadataTouch(keys);
   keys.forEach(k => {
     removeEntry(k);
     console.log(`[Cache] INVALIDATE ${k}`);
@@ -250,6 +291,93 @@ export function setCacheServerTimestamp(key: string, serverTs: number): void {
   setEntry(key, entry as CacheEntry<any>);
 }
 
+// ─── Metadata touch (cross-browser invalidation) ───
+// Any client-side cache mutation that corresponds to a Firestore write should
+// also bump `metadata/cacheTimestamps.<key>` so other browsers refresh on reload.
+const TOUCHABLE_KEYS = [
+  'events',
+  'programs',
+  'rsvps',
+  'enrollments',
+  'donations',
+  'pledges',
+  'users',
+  'news',
+  'masjidConstruction',
+  'subscribers',
+  'contactSubmissions',
+  'schedulingRequests',
+  'volunteers',
+  'testimonials',
+  'activityLog',
+  'journal',
+  'inviteCodes',
+  'faq',
+  'aboutStats',
+  'userSettings',
+] as const;
+
+type TouchableKey = (typeof TOUCHABLE_KEYS)[number];
+
+const TOUCHABLE_KEY_SET = new Set<string>(TOUCHABLE_KEYS as unknown as string[]);
+
+let touchTimer: ReturnType<typeof setTimeout> | null = null;
+let touchPending = new Set<TouchableKey>();
+
+function enqueueMetadataTouch(keys: string[]): void {
+  const now = Date.now();
+
+  let added = false;
+  keys.forEach(k => {
+    if (!TOUCHABLE_KEY_SET.has(k)) return;
+    const typed = k as TouchableKey;
+    touchPending.add(typed);
+    added = true;
+
+    // Optimistically bump local `s` so the writer doesn't refetch on next load.
+    setCacheServerTimestamp(typed as any, now);
+  });
+
+  if (!added) return;
+  if (touchTimer) return;
+
+  touchTimer = setTimeout(() => {
+    touchTimer = null;
+
+    const keysToTouch = Array.from(touchPending);
+    touchPending.clear();
+    if (keysToTouch.length === 0) return;
+
+    void (async () => {
+      const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) {
+        console.warn('[MetadataTouch] missing Firebase idToken; skipping:', keysToTouch);
+        return;
+      }
+
+      const res = await fetch('/api/metadata-timestamps-touch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ keys: keysToTouch }),
+      });
+
+      if (!res.ok) {
+        console.warn('[MetadataTouch] request failed:', res.status, keysToTouch);
+        return;
+      }
+
+      const json: any = await res.json().catch(() => null);
+      const updatedAt = json?.updatedAt;
+      if (typeof updatedAt === 'number') {
+        keysToTouch.forEach(k => setCacheServerTimestamp(k, updatedAt));
+      }
+    })().catch(err => console.warn('[MetadataTouch] request error:', err));
+  }, 250);
+}
+
 export function clearAllCaches(): void {
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const k = localStorage.key(i);
@@ -257,6 +385,10 @@ export function clearAllCaches(): void {
   }
   metaTsCache = null;
   metaTsPromise = null;
+
+  if (touchTimer) clearTimeout(touchTimer);
+  touchTimer = null;
+  touchPending.clear();
 }
 
 export { PREFIX, THIRTY_DAYS_MS };

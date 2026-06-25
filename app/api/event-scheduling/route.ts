@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
       createdAt: Timestamp.now(),
     });
 
+    // Touch metadata so other browsers invalidate cached `schedulingRequests`.
+    const now = Date.now();
+    await firestore.collection("metadata").doc("cacheTimestamps").set(
+      { schedulingRequests: now, _updatedAt: now },
+      { merge: true },
+    );
+
     const name = `${firstName} ${lastName}`;
     // Emails — await but never fail the request
     try {

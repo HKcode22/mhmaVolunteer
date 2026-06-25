@@ -3,7 +3,28 @@ import { firestore, auth as adminAuth } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_KEYS = ["events", "rsvps"] as const;
+const ALLOWED_KEYS = [
+  "events",
+  "programs",
+  "rsvps",
+  "enrollments",
+  "donations",
+  "pledges",
+  "users",
+  "news",
+  "masjidConstruction",
+  "subscribers",
+  "contactSubmissions",
+  "schedulingRequests",
+  "volunteers",
+  "testimonials",
+  "activityLog",
+  "journal",
+  "inviteCodes",
+  "faq",
+  "aboutStats",
+  "userSettings",
+] as const;
 
 type AllowedKey = (typeof ALLOWED_KEYS)[number];
 

@@ -46,14 +46,86 @@ export function runCacheCleanup(): void {
           return isNaN(ts) || ts > cutoff;
         });
 
-        // Reduce localStorage pressure by removing base64 posters from cached events.
-        // (Rendering still works because the UI already falls back to a default poster.)
+        // Reduce localStorage pressure by stripping base64 media blobs in-place.
         const logicalKey = key.slice(PREFIX.length);
-        if (logicalKey === 'events' && Array.isArray(entry.d)) {
+        const MAX_DATA_URL_CHARS = 200_000;
+
+        const stripBigDataUrl = (s: any) => {
+          if (typeof s !== 'string') return s;
+          if (!s.startsWith('data:')) return s;
+          return s.length > MAX_DATA_URL_CHARS ? '' : s;
+        };
+
+        const stripAnyDataUrl = (s: any) => {
+          if (typeof s !== 'string') return s;
+          if (!s.startsWith('data:')) return s;
+          return '';
+        };
+
+        if (logicalKey === 'events') {
           entry.d = entry.d.map((it: any) => {
-            if (it && typeof it.poster === 'string' && it.poster.startsWith('data:')) {
+            if (!it || typeof it !== 'object') return it;
+            if (typeof it.poster === 'string' && it.poster.startsWith('data:') && it.poster.length > MAX_DATA_URL_CHARS) {
               sanitizedChanged = true;
               return { ...it, poster: '' };
+            }
+            return it;
+          });
+        }
+
+        if (logicalKey === 'programs') {
+          entry.d = entry.d.map((it: any) => {
+            if (!it || typeof it !== 'object') return it;
+            let changed = false;
+            const next = { ...it };
+            next.image = stripBigDataUrl(next.image);
+            next.imagePoster = stripBigDataUrl(next.imagePoster);
+            changed = next.image !== it.image || next.imagePoster !== it.imagePoster;
+            if (changed) {
+              sanitizedChanged = true;
+              return next;
+            }
+            return it;
+          });
+        }
+
+        if (logicalKey === 'news') {
+          entry.d = entry.d.map((it: any) => {
+            if (!it || typeof it !== 'object') return it;
+            const next = { ...it };
+            next.image = stripBigDataUrl(next.image);
+            if (next.image !== it.image) {
+              sanitizedChanged = true;
+              return next;
+            }
+            return it;
+          });
+        }
+
+        if (logicalKey === 'testimonials') {
+          entry.d = entry.d.map((it: any) => {
+            if (!it || typeof it !== 'object') return it;
+            const next = { ...it };
+            next.photo = stripBigDataUrl(next.photo);
+            if (next.photo !== it.photo) {
+              sanitizedChanged = true;
+              return next;
+            }
+            return it;
+          });
+        }
+
+        if (logicalKey === 'masjidConstruction') {
+          entry.d = entry.d.map((it: any) => {
+            if (!it || typeof it !== 'object') return it;
+            const next = { ...it };
+            const oldImage = it.image;
+            const oldVideo = it.video;
+            next.image = stripAnyDataUrl(next.image);
+            next.video = stripAnyDataUrl(next.video);
+            if (next.image !== oldImage || next.video !== oldVideo) {
+              sanitizedChanged = true;
+              return next;
             }
             return it;
           });

@@ -52,18 +52,34 @@ export default function ProgramsPage() {
   useEffect(() => {
     const fetchAllPrograms = async () => {
       try {
-        const timestamp = Date.now();
-        const [wpRes, { data: fsPrograms }] = await Promise.all([
-          fetch(`/api/programs?_=${timestamp}`, { cache: 'no-store' }),
-          getCachedData('programs', () => import('@/lib/firebase').then(m => m.fetchPrograms(20))),
+        const [{ data: fsPrograms }, { data: enrollments }] = await Promise.all([
+          getCachedData('programs', () => import('@/lib/firebase').then(m => m.fetchPrograms(100))),
+          getCachedData('enrollments', () => import('@/lib/firebase').then(m => m.fetchEnrollments(1000))),
         ]);
 
-        if (wpRes.ok) {
-          const data = await wpRes.json();
-          setWpPrograms(data);
-        }
+        const enrollmentCounts: Record<string, { total: number; approved: number; pending: number }> = {};
+        (enrollments || []).forEach((d: any) => {
+          const key = d.program || 'unknown';
+          if (!enrollmentCounts[key]) enrollmentCounts[key] = { total: 0, approved: 0, pending: 0 };
+          enrollmentCounts[key].total++;
+          if (d.status === 'approved' || d.status === 'completed') enrollmentCounts[key].approved++;
+          else if (d.status === 'pending') enrollmentCounts[key].pending++;
+        });
+
+        const programsWithCounts: any[] = (fsPrograms || []).map((p: any) => {
+          const counts =
+            enrollmentCounts[p.title] ||
+            enrollmentCounts[p.slug] ||
+            ({ total: 0, approved: 0, pending: 0 } as any);
+          return {
+            ...p,
+            enrollmentCount: counts.total,
+          };
+        });
+
+        setWpPrograms(programsWithCounts as Program[]);
         setFirestorePrograms(fsPrograms || []);
-        setPageData({ programs: fsPrograms || [] });
+        setPageData({ programs: fsPrograms || [], currentPath: '/programs' });
       } catch (err) {
         console.error("Failed to fetch programs:", err);
       } finally {
@@ -76,18 +92,26 @@ export default function ProgramsPage() {
   // Merge programs from Firestore, WordPress API, and hardcoded fallback
   const allPrograms: Array<{ title: string; description: string; image: string; href: string; slug?: string; id?: string; isFirestore?: boolean; enrollmentCount?: number }> = [...hardcodedPrograms];
 
-  // Add WordPress API programs (which include enrollment counts from the API)
+  // Merge programs (FireStore) with hardcoded entries, applying enrollment counts and edit IDs when slugs match.
   wpPrograms.forEach(wpProgram => {
-    const existingSlugs = allPrograms.map(p => p.href.replace('/programs/', ''));
-    if (!existingSlugs.includes(wpProgram.slug)) {
-      allPrograms.push({
-        title: wpProgram.title || "Untitled",
-        description: wpProgram.description || "",
-        image: wpProgram.image || "",
-        href: `/programs/${wpProgram.slug}`,
-        slug: wpProgram.slug,
-        enrollmentCount: wpProgram.enrollmentCount || 0,
-      });
+    const slug = wpProgram.slug;
+    const idx = allPrograms.findIndex(p => p.href.replace('/programs/', '') === slug);
+
+    const nextItem = {
+      title: wpProgram.title || "Untitled",
+      description: wpProgram.description || "",
+      image: wpProgram.image || "",
+      href: `/programs/${slug}`,
+      slug,
+      id: (wpProgram as any).id,
+      isFirestore: true,
+      enrollmentCount: wpProgram.enrollmentCount || 0,
+    };
+
+    if (idx !== -1) {
+      allPrograms[idx] = { ...allPrograms[idx], ...nextItem };
+    } else {
+      allPrograms.push(nextItem);
     }
   });
 

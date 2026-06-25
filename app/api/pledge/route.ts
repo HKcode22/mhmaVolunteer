@@ -14,6 +14,13 @@ export async function POST(req: NextRequest) {
       timeframe: timeframe || "60", status: "pending", createdAt: Timestamp.now(),
     });
 
+    // Touch metadata so other browsers invalidate cached `pledges`.
+    const now = Date.now();
+    await firestore.collection("metadata").doc("cacheTimestamps").set(
+      { pledges: now, _updatedAt: now },
+      { merge: true },
+    );
+
     // Emails — await but never fail the request
     try {
       await Promise.allSettled([

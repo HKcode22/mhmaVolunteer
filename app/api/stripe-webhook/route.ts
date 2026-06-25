@@ -54,6 +54,13 @@ export async function POST(req: Request) {
     });
     console.log(`Donation recorded: $${(amount / 100).toFixed(2)} for ${designation}`);
 
+    // Touch metadata so other browsers invalidate cached `donations`.
+    const now = Date.now();
+    await firestore.collection("metadata").doc("cacheTimestamps").set(
+      { donations: now, _updatedAt: now },
+      { merge: true },
+    );
+
     // Emails — await but never fail the request
     try {
       const emailPromises: Promise<any>[] = [];

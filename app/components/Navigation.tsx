@@ -63,15 +63,15 @@ useEffect(() => {
           if (needsFetch) {
             const [enrollRes, contactRes, schedRes, rsvpRes] = await Promise.all([
               getCachedData('enrollments', () =>
-                getDocs(query(collection(db, "enrollments"), where("status", "==", "pending"), limit(100)))
+                getDocs(query(collection(db, "enrollments"), orderBy("createdAt", "desc"), limit(100)))
                   .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
               ),
               getCachedData('contactSubmissions', () =>
-                getDocs(query(collection(db, "contactSubmissions"), where("read", "==", false), limit(100)))
+                getDocs(query(collection(db, "contactSubmissions"), orderBy("createdAt", "desc"), limit(100)))
                   .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
               ),
               getCachedData('schedulingRequests', () =>
-                getDocs(query(collection(db, "schedulingRequests"), where("status", "==", "pending"), limit(100)))
+                getDocs(query(collection(db, "schedulingRequests"), orderBy("createdAt", "desc"), limit(100)))
                   .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })))
               ),
               getCachedData('rsvps', () =>

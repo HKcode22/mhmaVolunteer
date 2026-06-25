@@ -29,6 +29,13 @@ export async function POST(req: NextRequest) {
       createdAt: Timestamp.now(),
     });
 
+    // Touch metadata so other browsers invalidate cached `subscribers`.
+    const now = Date.now();
+    await firestore.collection("metadata").doc("cacheTimestamps").set(
+      { subscribers: now, _updatedAt: now },
+      { merge: true },
+    );
+
     // Emails — await but never fail the request
     try {
       await Promise.allSettled([
