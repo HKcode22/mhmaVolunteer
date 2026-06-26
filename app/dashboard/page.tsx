@@ -7,7 +7,7 @@ import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOu
 import { useAuth } from "@/lib/auth-context";
 import { usePageData } from "@/lib/page-data-context";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
 import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import {
@@ -103,31 +103,33 @@ export default function DashboardPage() {
     "members": { label: "Members", icon: "Users", href: "/dashboard/users" },
   };
 
+  // Use cached `users` array (loaded via getCachedData('users')) so we don't
+  // perform an extra uncached getDoc() on every dashboard load.
   useEffect(() => {
-    if (user?.uid) {
-      getDoc(doc(db, "users", user.uid)).then(snap => {
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.dashboardOrder) {
-            const saved = data.dashboardOrder as string[];
-            const merged = [...defaultOrder];
-            for (const item of saved) {
-              if (!merged.includes(item)) merged.push(item);
-            }
-            setLayoutOrder(merged);
-          }
-          if (data.quickOrder) {
-            const saved = data.quickOrder as string[];
-            const merged = [...defaultQuickOrder];
-            for (const item of saved) {
-              if (!merged.includes(item)) merged.push(item);
-            }
-            setQuickOrder(merged);
-          }
-        }
-      });
+    if (!user?.uid) return;
+    if (!users?.length) return;
+
+    const me = users.find(u => u.id === user.uid) as any | undefined;
+    if (!me) return;
+
+    if (me.dashboardOrder) {
+      const saved = me.dashboardOrder as string[];
+      const merged = [...defaultOrder];
+      for (const item of saved) {
+        if (!merged.includes(item)) merged.push(item);
+      }
+      setLayoutOrder(merged);
     }
-  }, [user?.uid]);
+
+    if (me.quickOrder) {
+      const saved = me.quickOrder as string[];
+      const merged = [...defaultQuickOrder];
+      for (const item of saved) {
+        if (!merged.includes(item)) merged.push(item);
+      }
+      setQuickOrder(merged);
+    }
+  }, [user?.uid, users]);
 
   const saveAllOrders = async (layout: string[], quick: string[]) => {
     setLayoutOrder(layout);
