@@ -30,8 +30,13 @@ export default function ActivityLogPage() {
 
   useEffect(() => {
     if (user?.uid) {
-      getDoc(doc(db, "users", user.uid)).then(snap => {
-        const prefs = snap.data()?.activityLogPrefs;
+      getCachedData(`user_${user.uid}`, () =>
+        getDoc(doc(db, "users", user.uid)).then(snap => {
+          if (!snap.exists()) return {};
+          return snap.data();
+        })
+      ).then(({ data }) => {
+        const prefs = (data as any)?.activityLogPrefs;
         if (prefs) {
           if (typeof prefs.myActivityOnly === "boolean") setMyActivityOnly(prefs.myActivityOnly);
           if (prefs.revertFilter) setRevertFilter(prefs.revertFilter);

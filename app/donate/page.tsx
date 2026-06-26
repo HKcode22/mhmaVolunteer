@@ -70,7 +70,8 @@ export default function DonatePage() {
       window.history.replaceState({}, "", "/donate");
     }
     getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)).then(({ data }) => { if (data.length > 0) setLatest(data[0]); setMasjidLoaded(true); setPageData({ masjidConstruction: data }); }).catch(() => setMasjidLoaded(true));
-    fetch("/api/donation-totals").then(r => r.json()).then(d => {
+    getCachedData('donations', () => fetch("/api/donation-totals").then(r => r.json())).then(({ data }) => {
+      const d = data as any;
       setRaisedFromDonations(d.constructionTotal || 0);
       setDonorCount(d.donorCount || 0);
       setStatsLoaded(true);

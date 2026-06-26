@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
-import { invalidateCache } from "@/lib/cache-manager";
+import { invalidateCache, getCachedData } from "@/lib/cache-manager";
 import { useAuth } from "@/lib/auth-context";
 import { Loader2, Bell, Mail, Globe, Shield, Sun, Moon } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
@@ -43,9 +43,14 @@ export default function SettingsPage() {
 
   async function loadSettings() {
     try {
-      const snap = await getDoc(doc(db, "userSettings", user!.uid));
-      if (snap.exists()) {
-        setSettings({ ...defaultSettings, ...snap.data() });
+      const { data } = await getCachedData(`userSettings_${user!.uid}`, () =>
+        getDoc(doc(db, "userSettings", user!.uid)).then(snap => {
+          if (snap.exists()) return snap.data();
+          return {};
+        })
+      );
+      if (data) {
+        setSettings({ ...defaultSettings, ...data as any });
       }
     } catch (e) {
       console.error("Failed to load settings", e);

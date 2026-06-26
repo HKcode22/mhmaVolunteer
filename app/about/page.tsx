@@ -9,6 +9,7 @@ import { ChevronRight } from "lucide-react";
 import PageBanner from "@/app/components/PageBanner";
 import StatCard from "@/app/components/StatCard";
 import { formatCompactAmount, formatCount } from "@/lib/stats-utils";
+import { getCachedData } from "@/lib/cache-manager";
 
 export default function AboutPage() {
   const [aboutStats, setAboutStats] = useState<any>(null);
@@ -17,7 +18,7 @@ export default function AboutPage() {
   useEffect(() => { document.title = "About MHMA | MHMA | Mountain House"; }, []);
 
   useEffect(() => {
-    fetch(`/api/about-stats?range=${range}`).then(r => r.json()).then(data => setAboutStats(data)).catch(() => {});
+    getCachedData(`aboutStats_${range}`, () => fetch(`/api/about-stats?range=${range}`).then(r => r.json())).then(({ data }) => setAboutStats(data)).catch(() => {});
   }, [range]);
   return (
     <div className="min-h-screen bg-mhma-cream font-sans">

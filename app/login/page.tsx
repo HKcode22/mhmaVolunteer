@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase-client";
 import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/lib/auth-context";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -56,8 +57,13 @@ export default function LoginPage() {
       // Fallback: check Firestore for role if custom claims aren't set
       let firestoreRole: string | undefined;
       try {
-        const snap = await getDoc(doc(db, "users", cred.user.uid));
-        if (snap.exists()) firestoreRole = snap.data().role;
+        const { data } = await getCachedData(`user_${cred.user.uid}`, () =>
+          getDoc(doc(db, "users", cred.user.uid)).then(snap => {
+            if (snap.exists()) return snap.data();
+            return {};
+          })
+        );
+        firestoreRole = (data as any)?.role;
       } catch {}
       const role = claimRole || firestoreRole || "member";
       const isBoard = role === "board_member" || role === "administrator";

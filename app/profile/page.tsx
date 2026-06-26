@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { uploadImage } from "@/lib/upload";
 import { Upload, Loader2, User, Eye, EyeOff, Smartphone } from "lucide-react";
 import { fetchDonationsByUser, fetchPledgesByUser, Donation, Pledge } from "@/lib/firebase";
-import { invalidateCache } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -55,12 +55,17 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
     if (!authLoading && user) {
-      getDoc(doc(db, "users", user.uid)).then(snap => {
-        if (snap.exists()) {
-          const data = snap.data();
-          const existingFirst = data.firstName || "";
-          const existingLast = data.lastName || "";
-          const existingDisplayName = data.displayName || user.displayName || "";
+      getCachedData(`user_${user.uid}`, () =>
+        getDoc(doc(db, "users", user.uid)).then(snap => {
+          if (!snap.exists()) return {};
+          return snap.data();
+        })
+      ).then(({ data }) => {
+        if (data) {
+          const d = data as any;
+          const existingFirst = d.firstName || "";
+          const existingLast = d.lastName || "";
+          const existingDisplayName = d.displayName || user.displayName || "";
           let firstName = existingFirst;
           let lastName = existingLast;
           if (!firstName && !lastName && existingDisplayName) {
@@ -71,7 +76,7 @@ export default function ProfilePage() {
           setProfile({
             firstName,
             lastName,
-            phone: data.phone || "",
+            phone: d.phone || "",
             address: data.address || "",
             emergencyContactName: data.emergencyContactName || "",
             emergencyContactPhone: data.emergencyContactPhone || "",

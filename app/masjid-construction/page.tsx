@@ -53,7 +53,8 @@ export default function MasjidConstructionPage() {
         setMasjidLoaded(true);
         setLoading(false);
       });
-      fetch("/api/donation-totals").then(r => r.json()).then(d => {
+      getCachedData('donations', () => fetch("/api/donation-totals").then(r => r.json())).then(({ data }) => {
+        const d = data as any;
         setRaisedFromDonations(d.constructionTotal || 0);
         setDonorCount(d.donorCount || 0);
         setStatsLoaded(true);

@@ -8,16 +8,18 @@ import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 import { formatCompactAmount } from "@/lib/stats-utils";
 
+import { getCachedData } from "@/lib/cache-manager";
+
 export default function ImpactReportPage() {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     Promise.allSettled([
-      fetch("/api/donation-totals").then(r => r.json()),
-      fetch("/api/enrollment-count").then(r => r.json()),
+      getCachedData('donations', () => fetch("/api/donation-totals").then(r => r.json())),
+      getCachedData('enrollments', () => fetch("/api/enrollment-count").then(r => r.json())),
     ]).then(([totals, enrollment]) => {
-      const t = totals.status === "fulfilled" ? totals.value : {};
-      const e = enrollment.status === "fulfilled" ? enrollment.value : {};
+      const t = totals.status === "fulfilled" ? (totals.value as any).data : {};
+      const e = enrollment.status === "fulfilled" ? (enrollment.value as any).data : {};
       setStats({ constructionTotal: t.constructionTotal || 0, donorCount: t.donorCount || 0, enrollmentCount: e.count || 0 });
     });
   }, []);
