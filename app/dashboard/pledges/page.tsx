@@ -6,7 +6,7 @@ import { ArrowLeft, Heart, Search, Mail, Phone, CheckCircle, XCircle, Clock, Ref
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchPledges, updatePledgeStatus, deletePledge, fetchDonations, Pledge, Donation } from "@/lib/firebase";
-import { getCachedData } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function DashboardPledgesPage() {
@@ -61,7 +61,8 @@ export default function DashboardPledgesPage() {
     const pending = pledges.filter(p => p.status === "pending" && p.id);
     if (pending.length === 0) return;
     await Promise.allSettled(pending.map(p => updatePledgeStatus(p.id!, status)));
-    const refreshed = await fetchPledges();
+    invalidateCache('pledges');
+    const { data: refreshed } = await getCachedData('pledges', () => fetchPledges());
     setPledges(refreshed);
   };
 

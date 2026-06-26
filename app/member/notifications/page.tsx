@@ -6,6 +6,7 @@ import { Bell, Calendar, BookOpen, ChevronRight, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchEvents, fetchPrograms, fetchNews, FirebaseEvent, FirebaseProgram, NewsItem } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 export default function MemberNotificationsPage() {
@@ -20,9 +21,9 @@ export default function MemberNotificationsPage() {
     if (!authLoading && !isLoggedIn) router.push("/login");
     if (authLoading) return;
     Promise.all([
-      fetchEvents(5),
-      fetchPrograms(5),
-      fetchNews(5),
+      getCachedData('events', () => fetchEvents(5)).then(r => r.data),
+      getCachedData('programs', () => fetchPrograms(5)).then(r => r.data),
+      getCachedData('news', () => fetchNews(5)).then(r => r.data),
     ]).then(([e, p, n]) => {
       setEvents(e);
       setPrograms(p);

@@ -18,9 +18,6 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  experimentalAutoDetectLongPolling: false,
-});
+export const db = initializeFirestore(app, {});
 
 export default app;

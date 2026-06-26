@@ -47,17 +47,17 @@ export default function AnalyticsPage() {
 
     const loadAll = async () => {
       const [enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges] = await Promise.all([
-        fetchEnrollments(500),
-        fetchSchedulingRequests(500),
-        fetchContactSubmissions(500),
-        fetchEvents(500),
-        fetchPrograms(500),
-        fetchJournalEntries(500),
-        fetchInviteCodes(),
-        fetchRSVPs(500),
-        fetchUsers(500),
-        fetchDonations(500),
-        fetchPledges(200),
+        getCachedData('enrollments', () => fetchEnrollments(500)).then(r => r.data),
+        getCachedData('schedulingRequests', () => fetchSchedulingRequests(500)).then(r => r.data),
+        getCachedData('contactSubmissions', () => fetchContactSubmissions(500)).then(r => r.data),
+        getCachedData('events', () => fetchEvents(500)).then(r => r.data),
+        getCachedData('programs', () => fetchPrograms(500)).then(r => r.data),
+        getCachedData('journalEntries', () => fetchJournalEntries(500)).then(r => r.data),
+        getCachedData('inviteCodes', () => fetchInviteCodes()).then(r => r.data),
+        getCachedData('rsvps', () => fetchRSVPs(500)).then(r => r.data),
+        getCachedData('users', () => fetchUsers(500)).then(r => r.data),
+        getCachedData('donations', () => fetchDonations(500)).then(r => r.data),
+        getCachedData('pledges', () => fetchPledges(200)).then(r => r.data),
       ]);
       setData({ enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges });
       setLoading(false);

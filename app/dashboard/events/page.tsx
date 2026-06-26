@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, Calendar, Mail, Phone, Clock, Users, CheckCircle, XCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchEvents, fetchEventsDirect, addEvent, updateEvent, deleteEvent, fetchRSVPs, deleteRSVP, updateRSVP, FirebaseEvent, FirebaseRSVP } from "@/lib/firebase";
-import { getCachedData } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 import CsvExportButton from "@/app/components/CsvExportButton";
@@ -95,7 +95,8 @@ export default function DashboardEventsPage() {
         }).catch(() => {});
       }
       resetForm();
-      const updated = await fetchEvents(100);
+      invalidateCache('events');
+      const { data: updated } = await getCachedData('events', () => fetchEvents(100));
       setEvents(updated);
     } catch { /* ignore */ }
     setSaving(false);

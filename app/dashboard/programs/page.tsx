@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Search, Edit3, Trash2, BookOpen, Mail, Phone, Clock, CheckCircle, XCircle, Image as ImageIcon, ChevronDown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchPrograms, addProgram, updateProgram, deleteProgram, fetchEnrollments, updateEnrollment, deleteEnrollment, FirebaseProgram, FirebaseEnrollment } from "@/lib/firebase";
-import { getCachedData } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import { compressImage } from "@/lib/compress-image";
 import Navigation from "@/app/components/Navigation";
 
@@ -117,7 +117,8 @@ export default function DashboardProgramsPage() {
         }).catch(() => {});
       }
       resetForm();
-      const updated = await fetchPrograms(50);
+      invalidateCache('programs');
+      const { data: updated } = await getCachedData('programs', () => fetchPrograms(50));
       setPrograms(updated);
     } catch (e: any) { setSaveError(e.message || "Failed to save"); }
     setSaving(false);

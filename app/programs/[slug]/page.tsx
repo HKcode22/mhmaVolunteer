@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/app/components/Navigation";
 import { fetchProgramBySlug, fetchPrograms } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { useAuth } from "@/lib/auth-context";
 
 interface ProgramData {
@@ -53,7 +54,7 @@ export default function DynamicProgramPage() {
       try {
         let program = await fetchProgramBySlug(slug);
         if (!program) {
-          const allPrograms = await fetchPrograms(50);
+          const { data: allPrograms } = await getCachedData('programs', () => fetchPrograms(50));
           program = allPrograms.find(p => p.slug === slug || p.id === slug) || null;
         }
         if (program) {

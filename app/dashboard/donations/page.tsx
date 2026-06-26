@@ -6,7 +6,7 @@ import { ArrowLeft, Heart, Search, Mail, DollarSign, Clock, Trash2, Plus, X, Use
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { fetchDonations, addManualDonation, deleteDonation, fetchUsers, fetchPledges, updatePledgeStatus, deletePledge, Donation, FirebaseUser, Pledge } from "@/lib/firebase";
-import { getCachedData } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 
 const designations = ["general", "construction", "zakat", "programs", "other"];
@@ -98,7 +98,8 @@ export default function DashboardDonationsPage() {
       });
       setManual({ donorName: "", donorEmail: "", amount: "", designation: "general", method: "cash", notes: "", showOnWall: true, anonymous: false });
       setShowManual(false);
-      const updated = await fetchDonations(500);
+      invalidateCache('donations');
+      const { data: updated } = await getCachedData('donations', () => fetchDonations(500));
       setDonations(updated);
     } catch (err) {
       console.error("Failed to save donation:", err);
@@ -126,7 +127,8 @@ export default function DashboardDonationsPage() {
     const pending = pledges.filter(p => p.status === "pending" && p.id);
     if (pending.length === 0) return;
     await Promise.allSettled(pending.map(p => updatePledgeStatus(p.id!, status)));
-    const refreshed = await fetchPledges();
+    invalidateCache('pledges');
+    const { data: refreshed } = await getCachedData('pledges', () => fetchPledges());
     setPledges(refreshed);
   };
 
