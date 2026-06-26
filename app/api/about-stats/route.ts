@@ -96,6 +96,12 @@ function computeRangeStats(
   };
 }
 
+async function recomputeAndStore(): Promise<Record<string, any>> {
+  const computed = await recomputeAllStats();
+  await firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).set(computed);
+  return computed;
+}
+
 async function recomputeAllStats(): Promise<Record<string, any>> {
   const [
     programsSnap,
@@ -140,10 +146,6 @@ async function recomputeAllStats(): Promise<Record<string, any>> {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const rangeParam = searchParams.get("range") || "30";
-    const rangeKey = `_${rangeParam === "all" ? "all" : rangeParam}`;
-
     const [computedSnap, statsSnap] = await Promise.all([
       firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).get(),
       firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get(),
@@ -151,30 +153,19 @@ export async function GET(req: NextRequest) {
 
     const statsData: Record<string, any> = statsSnap.exists ? statsSnap.data()! : {};
 
-    if (computedSnap.exists) {
-      const computed = computedSnap.data()!;
-      const rangeData = computed[rangeKey];
-      if (rangeData) {
-        return NextResponse.json({
-          yearsServing: statsData.yearsServing ?? null,
-          numberOfFamilies: statsData.numberOfFamilies ?? null,
-          ...rangeData,
-          range: rangeParam === "all" ? "all" : parseInt(rangeParam, 10),
-        }, {
-          headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
-        });
-      }
+    const computed = computedSnap.exists
+      ? computedSnap.data()!
+      : await recomputeAndStore();
+    const ranges: Record<string, any> = {};
+    for (const r of RANGES) {
+      const key = `_${r}`;
+      if (computed[key]) ranges[key] = computed[key];
     }
 
-    const computed = await recomputeAllStats();
-    await firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).set(computed);
-
-    const rangeData = computed[rangeKey] || computed._all;
     return NextResponse.json({
       yearsServing: statsData.yearsServing ?? null,
       numberOfFamilies: statsData.numberOfFamilies ?? null,
-      ...rangeData,
-      range: rangeParam === "all" ? "all" : parseInt(rangeParam, 10),
+      ranges,
     }, {
       headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
     });
@@ -218,10 +209,7 @@ export async function POST(req: NextRequest) {
 
     await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).set(update, { merge: true });
 
-    const computed = await recomputeAllStats();
-    computed.yearsServing = yearsServing ?? (await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get()).data()?.yearsServing ?? null;
-    computed.numberOfFamilies = numberOfFamilies ?? (await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get()).data()?.numberOfFamilies ?? null;
-    await firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).set(computed);
+    const computed = await recomputeAndStore();
 
     await firestore.collection("metadata").doc("cacheTimestamps").set({
       aboutStats: Date.now(),

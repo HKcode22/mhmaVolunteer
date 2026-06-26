@@ -47,6 +47,9 @@ export default function SettingsPage() {
         getDoc(doc(db, "userSettings", user!.uid)).then(snap => {
           if (snap.exists()) return snap.data();
           return {};
+        }).catch(err => {
+          console.warn(`userSettings fetch failed, caching fallback:`, err);
+          return {} as any;
         })
       );
       if (data) {

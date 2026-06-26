@@ -40,6 +40,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       getDoc(doc(db, "userSettings", user.uid)).then(snap => {
         if (snap.exists()) return snap.data();
         return {};
+      }).catch(err => {
+        console.warn(`userSettings fetch failed, caching fallback:`, err);
+        return {} as any;
       })
     ).then(({ data }) => {
       if (data.theme) setThemeState(data.theme as Theme);

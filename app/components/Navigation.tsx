@@ -93,8 +93,6 @@ useEffect(() => {
         } catch {}
       };
       fetchCounts();
-      const interval = setInterval(fetchCounts, 60000);
-      return () => clearInterval(interval);
     } else {
       // Regular members: check for new events/programs in last 7 days
       const fetchNewContent = async () => {

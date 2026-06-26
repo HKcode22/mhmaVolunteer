@@ -18,7 +18,10 @@ export default function AboutPage() {
   useEffect(() => { document.title = "About MHMA | MHMA | Mountain House"; }, []);
 
   useEffect(() => {
-    getCachedData(`aboutStats_${range}`, () => fetch(`/api/about-stats?range=${range}`).then(r => r.json())).then(({ data }) => setAboutStats(data)).catch(() => {});
+    getCachedData("aboutStats", () => fetch("/api/about-stats").then(r => r.json())).then(({ data }) => {
+      const rangeKey = `_${range === "all" ? "all" : range}`;
+      setAboutStats(data?.ranges?.[rangeKey] ?? null);
+    }).catch(() => {});
   }, [range]);
   return (
     <div className="min-h-screen bg-mhma-cream font-sans">
