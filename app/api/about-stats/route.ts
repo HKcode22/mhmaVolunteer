@@ -5,110 +5,176 @@ export const dynamic = "force-dynamic";
 
 const STATS_DOC = "stats";
 const STATS_COLLECTION = "aboutStats";
+const COMPUTED_DOC = "computed";
+
+const RANGES = [30, 365, "all"] as const;
+type Range = (typeof RANGES)[number];
+
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
+function isInRange(doc: FirebaseFirestore.DocumentSnapshot, since: Date | null): boolean {
+  if (!since) return true;
+  const ts = doc.data()?.createdAt?.toDate?.();
+  return !!ts && ts >= since;
+}
+
+function computeRangeStats(
+  programsSnap: FirebaseFirestore.QuerySnapshot,
+  eventsSnap: FirebaseFirestore.QuerySnapshot,
+  usersSnap: FirebaseFirestore.QuerySnapshot,
+  donationSnap: FirebaseFirestore.QuerySnapshot,
+  enrollmentSnap: FirebaseFirestore.QuerySnapshot,
+  rsvpSnap: FirebaseFirestore.QuerySnapshot,
+  subscriberSnap: FirebaseFirestore.QuerySnapshot,
+  contactSnap: FirebaseFirestore.QuerySnapshot,
+  pledgeSnap: FirebaseFirestore.QuerySnapshot,
+  volunteerSnap: FirebaseFirestore.QuerySnapshot,
+  newsSnap: FirebaseFirestore.QuerySnapshot,
+  since: Date | null,
+) {
+  let constructionTotal = 0;
+  let zakatTotal = 0;
+  let generalTotal = 0;
+  let programsTotal = 0;
+  let otherTotal = 0;
+  let zakatCount = 0;
+  let generalCount = 0;
+  const constructionDonors = new Set<string>();
+  let totalDonationAmount = 0;
+
+  donationSnap.docs.forEach((doc) => {
+    if (!isInRange(doc, since)) return;
+    const d = doc.data();
+    const amt = d.amount || 0;
+    totalDonationAmount += amt;
+    const des = (d.designation || "other").toLowerCase();
+    if (des === "construction") {
+      constructionTotal += amt;
+      constructionDonors.add(
+        (d.donorEmail as string | undefined)?.trim().toLowerCase() ||
+          (d.email as string | undefined)?.trim().toLowerCase() ||
+          doc.id,
+      );
+    } else if (des === "zakat" || des === "zakat-ul-mal" || des === "zakatulmal") {
+      zakatTotal += amt;
+      zakatCount++;
+    } else if (des === "general" || des === "general fund") {
+      generalTotal += amt;
+      generalCount++;
+    } else if (des === "programs") {
+      programsTotal += amt;
+    } else {
+      otherTotal += amt;
+    }
+  });
+
+  const docInRange = (d: FirebaseFirestore.DocumentSnapshot) => isInRange(d, since);
+
+  return {
+    programsCount: programsSnap.size,
+    eventsCount: eventsSnap.docs.filter(docInRange).length,
+    usersCount: usersSnap.docs.filter(docInRange).length,
+    youthInPrograms: enrollmentSnap.docs.filter(docInRange).length,
+    rsvpCount: rsvpSnap.docs.filter(docInRange).length,
+    subscriberCount: subscriberSnap.size,
+    contactCount: contactSnap.docs.filter(docInRange).length,
+    pledgeCount: pledgeSnap.docs.filter(docInRange).length,
+    volunteerCount: volunteerSnap.docs.filter(docInRange).length,
+    newsCount: newsSnap.docs.filter(docInRange).length,
+    totalDonationCount: donationSnap.docs.filter(docInRange).length,
+    donorCount: constructionDonors.size,
+    raisedForMasjid: Math.round(constructionTotal / 100),
+    raisedForPrograms: Math.round(programsTotal / 100),
+    raisedForZakat: Math.round(zakatTotal / 100),
+    zakatDonationCount: zakatCount,
+    raisedForGeneral: Math.round(generalTotal / 100),
+    generalDonationCount: generalCount,
+    raisedForOther: Math.round(otherTotal / 100),
+    totalRaised: Math.round(totalDonationAmount / 100),
+  };
+}
+
+async function recomputeAllStats(): Promise<Record<string, any>> {
+  const [
+    programsSnap,
+    eventsSnap,
+    usersSnap,
+    donationSnap,
+    enrollmentSnap,
+    rsvpSnap,
+    subscriberSnap,
+    contactSnap,
+    pledgeSnap,
+    volunteerSnap,
+    newsSnap,
+  ] = await Promise.all([
+    firestore.collection("programs").get(),
+    firestore.collection("events").get(),
+    firestore.collection("users").get(),
+    firestore.collection("donations").where("status", "==", "completed").get(),
+    firestore.collection("enrollments").get(),
+    firestore.collection("rsvps").get(),
+    firestore.collection("subscribers").where("status", "==", "active").get(),
+    firestore.collection("contactSubmissions").get(),
+    firestore.collection("pledges").get(),
+    firestore.collection("volunteers").get(),
+    firestore.collection("news").get(),
+  ]);
+
+  const computed: Record<string, any> = {};
+
+  for (const r of RANGES) {
+    const since = r === "all" ? null : daysAgo(r as number);
+    computed[`_${r}`] = computeRangeStats(
+      programsSnap, eventsSnap, usersSnap, donationSnap,
+      enrollmentSnap, rsvpSnap, subscriberSnap, contactSnap,
+      pledgeSnap, volunteerSnap, newsSnap, since,
+    );
+  }
+
+  computed._computedAt = Date.now();
+  return computed;
+}
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const rangeParam = searchParams.get('range') || '30';
-    const rangeDays = rangeParam === 'all' ? null : parseInt(rangeParam, 10);
-    const since = rangeDays ? new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000) : null;
+    const rangeParam = searchParams.get("range") || "30";
+    const rangeKey = `_${rangeParam === "all" ? "all" : rangeParam}`;
 
-    const inRange = (doc: any): boolean => {
-      if (!since) return true;
-      const ts = doc.data().createdAt?.toDate?.();
-      return ts && ts >= since;
-    };
-
-    const [
-      statsSnap,
-      programsSnap,
-      eventsSnap,
-      usersSnap,
-      donationSnap,
-      enrollmentSnap,
-      rsvpSnap,
-      subscriberSnap,
-      contactSnap,
-      pledgeSnap,
-      volunteerSnap,
-      newsSnap,
-    ] = await Promise.all([
+    const [computedSnap, statsSnap] = await Promise.all([
+      firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).get(),
       firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get(),
-      firestore.collection("programs").get(),
-      firestore.collection("events").get(),
-      firestore.collection("users").get(),
-      firestore.collection("donations").where("status", "==", "completed").get(),
-      firestore.collection("enrollments").get(),
-      firestore.collection("rsvps").get(),
-      firestore.collection("subscribers").where("status", "==", "active").get(),
-      firestore.collection("contactSubmissions").get(),
-      firestore.collection("pledges").get(),
-      firestore.collection("volunteers").get(),
-      firestore.collection("news").get(),
     ]);
 
     const statsData: Record<string, any> = statsSnap.exists ? statsSnap.data()! : {};
 
-    let constructionTotal = 0;
-    let zakatTotal = 0;
-    let generalTotal = 0;
-    let programsTotal = 0;
-    let otherTotal = 0;
-    let zakatCount = 0;
-    let generalCount = 0;
-    const constructionDonors = new Set<string>();
-
-    donationSnap.forEach((doc: any) => {
-      if (!inRange(doc)) return;
-      const d = doc.data();
-      const amt = d.amount || 0;
-      const des = (d.designation || "other").toLowerCase();
-      if (des === "construction") {
-        constructionTotal += amt;
-        const key =
-          (d.donorEmail as string | undefined)?.trim().toLowerCase() ||
-          (d.email as string | undefined)?.trim().toLowerCase() ||
-          doc.id;
-        constructionDonors.add(key);
-      } else if (des === "zakat" || des === "zakat-ul-mal" || des === "zakatulmal") {
-        zakatTotal += amt;
-        zakatCount++;
-      } else if (des === "general" || des === "general fund") {
-        generalTotal += amt;
-        generalCount++;
-      } else if (des === "programs") {
-        programsTotal += amt;
-      } else {
-        otherTotal += amt;
+    if (computedSnap.exists) {
+      const computed = computedSnap.data()!;
+      const rangeData = computed[rangeKey];
+      if (rangeData) {
+        return NextResponse.json({
+          yearsServing: statsData.yearsServing ?? null,
+          numberOfFamilies: statsData.numberOfFamilies ?? null,
+          ...rangeData,
+          range: rangeParam === "all" ? "all" : parseInt(rangeParam, 10),
+        }, {
+          headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
+        });
       }
-    });
+    }
 
+    const computed = await recomputeAllStats();
+    await firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).set(computed);
+
+    const rangeData = computed[rangeKey] || computed._all;
     return NextResponse.json({
       yearsServing: statsData.yearsServing ?? null,
       numberOfFamilies: statsData.numberOfFamilies ?? null,
-      programsCount: programsSnap.size,
-      eventsCount: [...eventsSnap.docs].filter(inRange).length,
-      usersCount: [...usersSnap.docs].filter(inRange).length,
-      youthInPrograms: [...enrollmentSnap.docs].filter(inRange).length,
-      rsvpCount: [...rsvpSnap.docs].filter(inRange).length,
-      subscriberCount: subscriberSnap.size,
-      contactCount: [...contactSnap.docs].filter(inRange).length,
-      pledgeCount: [...pledgeSnap.docs].filter(inRange).length,
-      volunteerCount: [...volunteerSnap.docs].filter(inRange).length,
-      newsCount: [...newsSnap.docs].filter(inRange).length,
-      totalDonationCount: [...donationSnap.docs].filter(inRange).length,
-      donorCount: constructionDonors.size,
-      raisedForMasjid: Math.round(constructionTotal / 100),
-      raisedForPrograms: Math.round(programsTotal / 100),
-      raisedForZakat: Math.round(zakatTotal / 100),
-      zakatDonationCount: zakatCount,
-      raisedForGeneral: Math.round(generalTotal / 100),
-      generalDonationCount: generalCount,
-      raisedForOther: Math.round(otherTotal / 100),
-      totalRaised: Math.round(
-        (donationSnap.docs.reduce((s, d) => s + (d.data().amount || 0), 0)) / 100
-      ),
-      range: rangeDays || 'all',
+      ...rangeData,
+      range: rangeParam === "all" ? "all" : parseInt(rangeParam, 10),
     }, {
       headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
     });
@@ -152,7 +218,12 @@ export async function POST(req: NextRequest) {
 
     await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).set(update, { merge: true });
 
-    await firestore.collection('metadata').doc('cacheTimestamps').set({
+    const computed = await recomputeAllStats();
+    computed.yearsServing = yearsServing ?? (await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get()).data()?.yearsServing ?? null;
+    computed.numberOfFamilies = numberOfFamilies ?? (await firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get()).data()?.numberOfFamilies ?? null;
+    await firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).set(computed);
+
+    await firestore.collection("metadata").doc("cacheTimestamps").set({
       aboutStats: Date.now(),
       _updatedAt: Date.now(),
     }, { merge: true });

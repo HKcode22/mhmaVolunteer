@@ -24,9 +24,13 @@ const inflightFetches: Map<string, Promise<{ data: unknown; fromCache: boolean }
 async function fetchAllTimestamps(): Promise<Record<string, number>> {
   try {
     const res = await fetch('/api/metadata-timestamps', { cache: 'no-cache' });
-    if (!res.ok) return {};
+    if (!res.ok) {
+      console.warn(`[Cache] METADATA-FAIL status=${res.status}`);
+      return {};
+    }
     return await res.json();
-  } catch {
+  } catch (err) {
+    console.warn(`[Cache] METADATA-FAIL exception=${err}`);
     return {};
   }
 }
@@ -197,6 +201,10 @@ export async function getCachedData<T>(
   const allTs = await getCurrentTimestamps();
   const serverTs = allTs[key] ?? 0;
 
+  if (serverTs === 0 && !allTs[key]) {
+    console.warn(`[Cache] NO-METADATA ${key} — key not found in metadata doc, cache will never go stale from server writes`);
+  }
+
   if (entry) {
     // Cache exists — check TTL
     const age = now - entry.t;
@@ -220,11 +228,20 @@ export async function getCachedData<T>(
   // Cache MISS — fetch fresh data
   const existing = inflightFetches.get(key);
   if (existing) {
+    console.log(`[Cache] DEDUP ${key} (reusing in-flight fetch)`);
     return existing as Promise<{ data: T; fromCache: boolean }>;
   }
 
   console.log(`[Cache] MISS ${key} (fetching from Firestore)`);
   const p = fetchAndCache(key, fetchFn, serverTs)
+    .then(result => {
+      console.log(`[Cache] FETCH-OK ${key} fromCache=${result.fromCache}`);
+      return result;
+    })
+    .catch(err => {
+      console.error(`[Cache] FETCH-ERR ${key}:`, err);
+      throw err;
+    })
     .finally(() => inflightFetches.delete(key));
   inflightFetches.set(key, p as Promise<{ data: unknown; fromCache: boolean }>);
   return p;
@@ -236,7 +253,15 @@ async function fetchAndCache<T>(
   fetchFn: () => Promise<T>,
   serverTs: number,
 ): Promise<{ data: T; fromCache: boolean }> {
-  let data = (await fetchFn()) as T;
+  const t0 = performance.now();
+  let data: T;
+  try {
+    data = (await fetchFn()) as T;
+  } catch (err) {
+    console.error(`[Cache] FETCH-FN-ERR ${key}: ${err}`);
+    throw err;
+  }
+  const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
 
   const preCount = Array.isArray(data) ? data.length : 0;
   if (Array.isArray(data)) {
@@ -247,11 +272,15 @@ async function fetchAndCache<T>(
     }
   }
 
+  if (serverTs === 0) {
+    console.warn(`[Cache] STORE-WARN ${key}: serverTs=0 (no metadata key) — cache will never go stale, TTL=${THIRTY_DAYS_MS/86400000}d`);
+  }
+
   const entry: CacheEntry<T> = { d: data, t: Date.now(), s: serverTs };
   setEntry(key, entry);
 
   const count = Array.isArray(data) ? data.length : 'N/A';
-  console.log(`[Cache] STORE ${key} items=${count} size=${JSON.stringify(entry).length}B`);
+  console.log(`[Cache] STORE ${key} items=${count} size=${JSON.stringify(entry).length}B elapsed=${elapsed}s`);
   return { data, fromCache: false };
 }
 

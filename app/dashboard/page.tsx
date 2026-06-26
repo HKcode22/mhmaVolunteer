@@ -198,7 +198,7 @@ export default function DashboardPage() {
         timeout(getCachedData('testimonials', () => fetchTestimonials(50)), 15000).catch(() => ({ data: [] as Testimonial[] })),
         timeout(getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)), 15000).catch(() => ({ data: [] as FirebaseMasjidUpdate[] })),
       ]);
-      const statsPromise = getCachedData('aboutStatsBasic', () =>
+      const statsPromise = getCachedData('aboutStats', () =>
         getDoc(doc(db, "aboutStats", "stats")).then(snap => {
           if (snap.exists()) return snap.data();
           return { yearsServing: null, numberOfFamilies: null };
