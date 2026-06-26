@@ -7,10 +7,10 @@ import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import {
   fetchEnrollments, fetchSchedulingRequests, fetchContactSubmissions,
-  fetchEvents, fetchPrograms, fetchJournalEntries, fetchInviteCodes, fetchRSVPs, fetchUsers,
+  fetchEvents, fetchPrograms, fetchInviteCodes, fetchRSVPs, fetchUsers,
   fetchDonations, fetchPledges,
   FirebaseEnrollment, FirebaseSchedulingRequest, FirebaseContactSubmission,
-  FirebaseEvent, FirebaseProgram, FirebaseJournalEntry, InviteCode, FirebaseRSVP, FirebaseUser,
+  FirebaseEvent, FirebaseProgram, InviteCode, FirebaseRSVP, FirebaseUser,
   Donation, Pledge,
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
@@ -23,7 +23,6 @@ interface AnalyticsData {
   submissions: FirebaseContactSubmission[];
   events: FirebaseEvent[];
   programs: FirebaseProgram[];
-  journals: FirebaseJournalEntry[];
   inviteCodes: InviteCode[];
   rsvps: FirebaseRSVP[];
   users: FirebaseUser[];
@@ -46,20 +45,19 @@ export default function AnalyticsPage() {
     if (authLoading) return;
 
     const loadAll = async () => {
-      const [enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges] = await Promise.all([
+      const [enrollments, requests, submissions, events, programs, inviteCodes, rsvps, users, donations, pledges] = await Promise.all([
         getCachedData('enrollments', () => fetchEnrollments(500)).then(r => r.data),
         getCachedData('schedulingRequests', () => fetchSchedulingRequests(500)).then(r => r.data),
         getCachedData('contactSubmissions', () => fetchContactSubmissions(500)).then(r => r.data),
         getCachedData('events', () => fetchEvents(500)).then(r => r.data),
         getCachedData('programs', () => fetchPrograms(500)).then(r => r.data),
-        getCachedData('journalEntries', () => fetchJournalEntries(500)).then(r => r.data),
         getCachedData('inviteCodes', () => fetchInviteCodes()).then(r => r.data),
         getCachedData('rsvps', () => fetchRSVPs(500)).then(r => r.data),
         getCachedData('users', () => fetchUsers(500)).then(r => r.data),
         getCachedData('donations', () => fetchDonations(500)).then(r => r.data),
         getCachedData('pledges', () => fetchPledges(200)).then(r => r.data),
       ]);
-      setData({ enrollments, requests, submissions, events, programs, journals, inviteCodes, rsvps, users, donations, pledges });
+      setData({ enrollments, requests, submissions, events, programs, inviteCodes, rsvps, users, donations, pledges });
       setLoading(false);
     };
     loadAll();
@@ -336,7 +334,6 @@ export default function AnalyticsPage() {
           <Card title="Quick Stats">
             <div className="space-y-3">
               <QuickStat label="Total Programs" value={data.programs.length} icon={<BookOpen className="w-4 h-4" />} />
-              <QuickStat label="Journal Entries" value={data.journals.length} icon={<TrendingUp className="w-4 h-4" />} />
               <QuickStat label="Pending Requests" value={requestsByStatus.pending} icon={<Clock className="w-4 h-4" />} />
               <QuickStat label="Unread Messages" value={data.submissions.filter(s => !s.read).length} icon={<Mail className="w-4 h-4" />} />
               <QuickStat label="Pending RSVPs" value={rsvpByStatus.pending} icon={<Calendar className="w-4 h-4" />} />
