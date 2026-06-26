@@ -9,6 +9,7 @@ import {
 import { auth } from "./firebase-client";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase-client";
+import { getCachedData } from "./cache-manager";
 
 interface AuthUser {
   uid: string;
@@ -44,9 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserData = async (uid: string): Promise<{ role: string; displayName: string; firstName: string; lastName: string; phone: string }> => {
     try {
-      const docSnap = await getDoc(doc(db, "users", uid));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+      const { data } = await getCachedData(`user_${uid}`, () =>
+        getDoc(doc(db, "users", uid)).then(snap => {
+          if (!snap.exists()) return {};
+          return snap.data();
+        })
+      );
+      if (data) {
         return {
           role: data.role || "member",
           displayName: data.displayName || (data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : ""),

@@ -8,6 +8,7 @@ import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 import { fetchEvents } from "@/lib/firebase";
 import { useAuth, fullName } from "@/lib/auth-context";
+import { getCachedData } from "@/lib/cache-manager";
 
 function RSVPForm() {
   const searchParams = useSearchParams();
@@ -40,7 +41,7 @@ function RSVPForm() {
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        const data = await fetchEvents(100);
+        const { data } = await getCachedData('events', () => fetchEvents(100));
         setEvents(data);
         const eventId = searchParams.get("eventId");
         if (eventId && data.some((ev: any) => ev.id === eventId)) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { PREFIX, THIRTY_DAYS_MS, MAX_ITEMS_BY_KEY } from './cache-manager';
+import { PREFIX, THIRTY_DAYS_MS, MAX_ITEMS_BY_KEY, setEntry } from './cache-manager';
 
 const MAX_TOTAL_SIZE = 4 * 1024 * 1024;
 
@@ -135,7 +135,7 @@ export function runCacheCleanup(): void {
 
         if (entry.d.length < before || sanitizedChanged) {
           entry.t = Date.now();
-          localStorage.setItem(key, JSON.stringify(entry));
+          setEntry(logicalKey, entry);
         }
       }
 

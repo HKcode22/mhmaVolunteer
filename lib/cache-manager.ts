@@ -440,4 +440,4 @@ export function clearAllCaches(): void {
   touchPending.clear();
 }
 
-export { PREFIX, THIRTY_DAYS_MS, MAX_ITEMS_BY_KEY };
+export { PREFIX, THIRTY_DAYS_MS, MAX_ITEMS_BY_KEY, setEntry };

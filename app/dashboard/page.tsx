@@ -7,7 +7,7 @@ import { Activity, Facebook, Instagram, Twitter, Linkedin, Youtube, Heart, LogOu
 import { useAuth } from "@/lib/auth-context";
 import { usePageData } from "@/lib/page-data-context";
 import { useRouter } from "next/navigation";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase-client";
 import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 import {
@@ -179,31 +179,33 @@ export default function DashboardPage() {
     }
 
     const loadAll = async () => {
-      const [cachedSettled, stats] = await Promise.all([
-        Promise.allSettled([
-          timeout(getCachedData('programs', () => fetchPrograms(50)), 15000).catch(() => ({ data: [] as FirebaseProgram[] })),
-          timeout(getCachedData('events', () => fetchEvents(100)), 15000).catch(() => ({ data: [] as FirebaseEvent[] })),
-          timeout(getCachedData('schedulingRequests', () => fetchSchedulingRequests(100)), 15000).catch(() => ({ data: [] as FirebaseSchedulingRequest[] })),
-          timeout(getCachedData('enrollments', () => fetchEnrollments(100)), 15000).catch(() => ({ data: [] as FirebaseEnrollment[] })),
-          timeout(getCachedData('rsvps', () => fetchRSVPs(100)), 15000).catch(() => ({ data: [] as FirebaseRSVP[] })),
-          timeout(getCachedData('contactSubmissions', () => fetchContactSubmissions(100)), 15000).catch(() => ({ data: [] as FirebaseContactSubmission[] })),
-          timeout(getCachedData('inviteCodes', () => fetchInviteCodes()), 15000).catch(() => ({ data: [] as InviteCode[] })),
-          timeout(getCachedData('users', () => fetchUsers(100)), 15000).catch(() => ({ data: [] as FirebaseUser[] })),
-          timeout(getCachedData('subscribers', () => fetchSubscribers(100)), 15000).catch(() => ({ data: [] as Subscriber[] })),
-          timeout(getCachedData('pledges', () => fetchPledges(100)), 15000).catch(() => ({ data: [] as Pledge[] })),
-          timeout(getCachedData('donations', () => fetchDonations(100)), 15000).catch(() => ({ data: [] as Donation[] })),
-          timeout(getCachedData('news', () => fetchAllNews(100)), 15000).catch(() => ({ data: [] as any[] })),
-          timeout(getCachedData('faq', () => fetchFAQs(100)), 15000).catch(() => ({ data: [] as FAQItem[] })),
-          timeout(getCachedData('volunteers', () => fetchVolunteers(100)), 15000).catch(() => ({ data: [] as VolunteerSubmission[] })),
-          timeout(getCachedData('activityLog', () => fetchActivityLog(50)), 15000).catch(() => ({ data: [] as ActivityLogEntry[] })),
-          timeout(getCachedData('testimonials', () => fetchTestimonials(50)), 15000).catch(() => ({ data: [] as Testimonial[] })),
-          timeout(getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)), 15000).catch(() => ({ data: [] as FirebaseMasjidUpdate[] })),
-        ]),
-        getCachedData('aboutStats', () => fetch("/api/about-stats").then(r => r.json()))
-          .then(r => r.data)
-          .catch(() => null),
+      const cachedSettled = await Promise.allSettled([
+        timeout(getCachedData('programs', () => fetchPrograms(50)), 15000).catch(() => ({ data: [] as FirebaseProgram[] })),
+        timeout(getCachedData('events', () => fetchEvents(100)), 15000).catch(() => ({ data: [] as FirebaseEvent[] })),
+        timeout(getCachedData('schedulingRequests', () => fetchSchedulingRequests(100)), 15000).catch(() => ({ data: [] as FirebaseSchedulingRequest[] })),
+        timeout(getCachedData('enrollments', () => fetchEnrollments(100)), 15000).catch(() => ({ data: [] as FirebaseEnrollment[] })),
+        timeout(getCachedData('rsvps', () => fetchRSVPs(100)), 15000).catch(() => ({ data: [] as FirebaseRSVP[] })),
+        timeout(getCachedData('contactSubmissions', () => fetchContactSubmissions(100)), 15000).catch(() => ({ data: [] as FirebaseContactSubmission[] })),
+        timeout(getCachedData('inviteCodes', () => fetchInviteCodes()), 15000).catch(() => ({ data: [] as InviteCode[] })),
+        timeout(getCachedData('users', () => fetchUsers(100)), 15000).catch(() => ({ data: [] as FirebaseUser[] })),
+        timeout(getCachedData('subscribers', () => fetchSubscribers(100)), 15000).catch(() => ({ data: [] as Subscriber[] })),
+        timeout(getCachedData('pledges', () => fetchPledges(100)), 15000).catch(() => ({ data: [] as Pledge[] })),
+        timeout(getCachedData('donations', () => fetchDonations(100)), 15000).catch(() => ({ data: [] as Donation[] })),
+        timeout(getCachedData('news', () => fetchAllNews(100)), 15000).catch(() => ({ data: [] as any[] })),
+        timeout(getCachedData('faq', () => fetchFAQs(100)), 15000).catch(() => ({ data: [] as FAQItem[] })),
+        timeout(getCachedData('volunteers', () => fetchVolunteers(100)), 15000).catch(() => ({ data: [] as VolunteerSubmission[] })),
+        timeout(getCachedData('activityLog', () => fetchActivityLog(50)), 15000).catch(() => ({ data: [] as ActivityLogEntry[] })),
+        timeout(getCachedData('testimonials', () => fetchTestimonials(50)), 15000).catch(() => ({ data: [] as Testimonial[] })),
+        timeout(getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)), 15000).catch(() => ({ data: [] as FirebaseMasjidUpdate[] })),
       ]);
+      const statsPromise = getCachedData('aboutStatsBasic', () =>
+        getDoc(doc(db, "aboutStats", "stats")).then(snap => {
+          if (snap.exists()) return snap.data();
+          return { yearsServing: null, numberOfFamilies: null };
+        })
+      ).then(r => r.data).catch(() => ({ yearsServing: null, numberOfFamilies: null }));
       const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, alog, t, mu] = cachedSettled.map(r => ((r as any).value || (r as any).reason || { data: [] }).data);
+      const stats = await statsPromise;
       setPrograms(p || []);
       setEvents(e || []);
       setEventRequests(er || []);
@@ -237,8 +239,8 @@ export default function DashboardPage() {
     try {
       const code = await generateInviteCode(user.uid);
       setCodeMsg(`Generated: ${code}`);
-      const codes = await fetchInviteCodes();
-      setInviteCodes(codes);
+      const { data: freshCodes } = await getCachedData('inviteCodes', () => fetchInviteCodes());
+      setInviteCodes(freshCodes);
     } catch (err: any) {
       setCodeMsg("Failed to generate code: " + err.message);
     } finally {

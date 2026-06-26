@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, fullName } from "@/lib/auth-context";
 import { fetchPrograms, FirebaseProgram } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Link from "next/link";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -22,10 +23,11 @@ function EnrollForm() {
   });
 
   useEffect(() => {
-    fetchPrograms(50).then(list => {
+    getCachedData('programs', () => fetchPrograms(50)).then(r => {
+      const list = r.data;
       const opts = list
-        .filter(p => p.title)
-        .map(p => ({ value: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/(^_|_$)/g, ""), label: p.title }));
+        .filter((p: FirebaseProgram) => p.title)
+        .map((p: FirebaseProgram) => ({ value: p.title!.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/(^_|_$)/g, ""), label: p.title! }));
       setPrograms(opts);
     }).catch(() => {});
   }, []);

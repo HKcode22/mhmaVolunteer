@@ -5,14 +5,18 @@ import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 import FAQAccordion from "@/app/components/FAQAccordion";
 import { fetchFAQs, FAQItem } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 
 export default function ContactFAQPage() {
   const [items, setItems] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchFAQs(100)
-      .then(data => setItems(data.filter(f => f.active !== false).sort((a, b) => (a.order || 0) - (b.order || 0))))
+    getCachedData('faq', () => fetchFAQs(100))
+      .then(r => {
+        const items = (r.data as FAQItem[]).filter(f => f.active !== false).sort((a, b) => (a.order || 0) - (b.order || 0));
+        setItems(items);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

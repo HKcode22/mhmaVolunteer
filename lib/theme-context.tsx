@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
-import { invalidateCache } from "@/lib/cache-manager";
+import { invalidateCache, getCachedData } from "@/lib/cache-manager";
 import { useAuth } from "@/lib/auth-context";
 
 export type Theme = "light" | "dark" | "night";
@@ -36,10 +36,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
-    getDoc(doc(db, "userSettings", user.uid)).then((snap) => {
-      if (snap.exists() && snap.data().theme) {
-        setThemeState(snap.data().theme as Theme);
-      }
+    getCachedData(`userSettings_${user.uid}`, () =>
+      getDoc(doc(db, "userSettings", user.uid)).then(snap => {
+        if (snap.exists()) return snap.data();
+        return {};
+      })
+    ).then(({ data }) => {
+      if (data.theme) setThemeState(data.theme as Theme);
     }).catch(() => {});
   }, [user]);
 
