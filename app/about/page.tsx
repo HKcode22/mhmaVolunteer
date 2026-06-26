@@ -20,7 +20,8 @@ export default function AboutPage() {
   useEffect(() => {
     getCachedData("aboutStats", () => fetch("/api/about-stats").then(r => r.json())).then(({ data }) => {
       const rangeKey = `_${range === "all" ? "all" : range}`;
-      setAboutStats(data?.ranges?.[rangeKey] ?? null);
+      const rangeData = data?.ranges?.[rangeKey];
+      setAboutStats(rangeData ?? data ?? null);
     }).catch(() => {});
   }, [range]);
   return (

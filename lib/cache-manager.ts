@@ -13,6 +13,27 @@ interface CacheEntry<T> {
   v?: number;
 }
 
+// ─── Session-level read counter ───
+// Tracks every Firestore document read in this browser session
+// so you can compare app reads vs Firebase Console reads.
+let sessionReadCounter = 0;
+let sessionReadLog: string[] = [];
+
+export function resetSessionReadCounter(): void {
+  sessionReadCounter = 0;
+  sessionReadLog = [];
+}
+
+export function getSessionReadStats(): { total: number; reads: string[] } {
+  return { total: sessionReadCounter, reads: sessionReadLog };
+}
+
+function trackRead(key: string, count: number): void {
+  sessionReadCounter += count;
+  sessionReadLog.push(`${key}:${count}`);
+  console.log(`[READ] ${key} => +${count} (session total=${sessionReadCounter})`);
+}
+
 // ─── Module-level batch metadata cache ───
 let metaTsPromise: Promise<Record<string, number>> | null = null;
 let metaTsCache: Record<string, number> | null = null;
@@ -21,6 +42,16 @@ let metaTsCache: Record<string, number> | null = null;
 // This matters when multiple components mount and request the same data on a cold start.
 const inflightFetches: Map<string, Promise<{ data: unknown; fromCache: boolean }>> = new Map();
 
+// Expose for debugging from browser console: window.__mhmaReads()
+if (typeof window !== 'undefined') {
+  (window as any).__mhmaReads = () => {
+    const stats = getSessionReadStats();
+    console.table(stats.reads.map(r => { const [k, c] = r.split(':'); return { key: k, reads: parseInt(c) }; }));
+    return stats;
+  };
+  (window as any).__mhmaReadsReset = resetSessionReadCounter;
+}
+
 async function fetchAllTimestamps(): Promise<Record<string, number>> {
   try {
     const res = await fetch('/api/metadata-timestamps', { cache: 'no-cache' });
@@ -28,7 +59,11 @@ async function fetchAllTimestamps(): Promise<Record<string, number>> {
       console.warn(`[Cache] METADATA-FAIL status=${res.status}`);
       return {};
     }
-    return await res.json();
+    const data = await res.json();
+    if (data._adminReads) {
+      trackRead('metadata-timestamps-api', data._adminReads);
+    }
+    return data;
   } catch (err) {
     console.warn(`[Cache] METADATA-FAIL exception=${err}`);
     return {};
@@ -197,32 +232,40 @@ export async function getCachedData<T>(
     entry = null;
   }
 
-  // Get current server timestamps (batched, fetched once per page load)
-  const allTs = await getCurrentTimestamps();
-  const serverTs = allTs[key] ?? 0;
+  const METADATA_TRACKED = new Set(['aboutStats', 'userSettings']);
+  const useMetadata = METADATA_TRACKED.has(key);
+  let serverTs = 0;
 
-  if (serverTs === 0 && !allTs[key]) {
-    console.warn(`[Cache] NO-METADATA ${key} — key not found in metadata doc, cache will never go stale from server writes`);
-  }
+  if (useMetadata) {
+    const allTs = await getCurrentTimestamps();
+    serverTs = allTs[key] ?? 0;
 
-  if (entry) {
-    // Cache exists — check TTL
+    if (serverTs === 0 && !allTs[key]) {
+      console.warn(`[Cache] NO-METADATA ${key} — key not found in metadata doc, cache will never go stale from server writes`);
+    }
+
+    if (entry) {
+      const age = now - entry.t;
+      if (age < THIRTY_DAYS_MS) {
+        if (entry.s >= serverTs) {
+          console.log(`[Cache] HIT  ${key} age=${(age / 1000 / 60).toFixed(0)}m`);
+          return { data: entry.d, fromCache: true };
+        }
+        console.log(`[Cache] STALE ${key} (server ts=${serverTs} > cache ts=${entry.s})`);
+        removeEntry(key);
+      } else {
+        console.log(`[Cache] EXP  ${key} age=${(age / 1000 / 60 / 60).toFixed(1)}h`);
+        removeEntry(key);
+      }
+    }
+  } else if (entry) {
     const age = now - entry.t;
     if (age < THIRTY_DAYS_MS) {
-      // Cache is fresh — check if server has newer data
-      if (entry.s >= serverTs) {
-        // ✓ No writes since cache — return cached data (0 reads)
-        console.log(`[Cache] HIT  ${key} age=${(age / 1000 / 60).toFixed(0)}m`);
-        return { data: entry.d, fromCache: true };
-      }
-      // Server has newer data — invalidate and refetch
-      console.log(`[Cache] STALE ${key} (server ts=${serverTs} > cache ts=${entry.s})`);
-      removeEntry(key);
-    } else {
-      // TTL expired
-      console.log(`[Cache] EXP  ${key} age=${(age / 1000 / 60 / 60).toFixed(1)}h`);
-      removeEntry(key);
+      console.log(`[Cache] HIT  ${key} age=${(age / 1000 / 60).toFixed(0)}m`);
+      return { data: entry.d, fromCache: true };
     }
+    console.log(`[Cache] EXP  ${key} age=${(age / 1000 / 60 / 60).toFixed(1)}h`);
+    removeEntry(key);
   }
 
   // Cache MISS — fetch fresh data
@@ -233,9 +276,16 @@ export async function getCachedData<T>(
   }
 
   console.log(`[Cache] MISS ${key} (fetching from Firestore)`);
+  trackRead(key, 1);
   const p = fetchAndCache(key, fetchFn, serverTs)
     .then(result => {
-      console.log(`[Cache] FETCH-OK ${key} fromCache=${result.fromCache}`);
+      const d = result.data as any;
+      if (d?._adminReads) {
+        trackRead(key, d._adminReads);
+        console.log(`[Cache] FETCH-OK ${key} fromCache=${result.fromCache} +${d._adminReads} admin reads`);
+      } else {
+        console.log(`[Cache] FETCH-OK ${key} fromCache=${result.fromCache}`);
+      }
       return result;
     })
     .catch(err => {
@@ -276,11 +326,14 @@ async function fetchAndCache<T>(
     console.warn(`[Cache] STORE-WARN ${key}: serverTs=0 (no metadata key) — cache will never go stale, TTL=${THIRTY_DAYS_MS/86400000}d`);
   }
 
+  const itemCount = Array.isArray(data) ? data.length : 'N/A';
+  if (typeof itemCount === 'number' && itemCount > 1) {
+    trackRead(key, itemCount - 1);
+  }
   const entry: CacheEntry<T> = { d: data, t: Date.now(), s: serverTs };
   setEntry(key, entry);
 
-  const count = Array.isArray(data) ? data.length : 'N/A';
-  console.log(`[Cache] STORE ${key} items=${count} size=${JSON.stringify(entry).length}B elapsed=${elapsed}s`);
+  console.log(`[Cache] STORE ${key} items=${itemCount} size=${JSON.stringify(entry).length}B elapsed=${elapsed}s`);
   return { data, fromCache: false };
 }
 

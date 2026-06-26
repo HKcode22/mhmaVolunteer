@@ -201,6 +201,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ─── About Stats ───
+    // Board members can read stats documents (used by dashboard for quick counts).
+    // Written server-side via admin SDK.
+    match /aboutStats/{doc} {
+      allow read: if isBoardMember();
+      allow create, update: if isBoardMember();
+      allow delete: if false;
+    }
+
     // ─── Volunteers ───
     // Anyone can submit a volunteer form. Board members can read and delete.
     match /volunteers/{submission} {

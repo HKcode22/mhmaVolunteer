@@ -146,16 +146,24 @@ async function recomputeAllStats(): Promise<Record<string, any>> {
 
 export async function GET(req: NextRequest) {
   try {
+    const t0 = Date.now();
     const [computedSnap, statsSnap] = await Promise.all([
       firestore.collection(STATS_COLLECTION).doc(COMPUTED_DOC).get(),
       firestore.collection(STATS_COLLECTION).doc(STATS_DOC).get(),
     ]);
+    let readCount = 2;
+    console.log(`[API-READ] /api/about-stats: computed${computedSnap.exists?' (hit)':' (miss)'}=1, stats${statsSnap.exists?' (hit)':' (miss)'}=1 took=${Date.now()-t0}ms`);
 
     const statsData: Record<string, any> = statsSnap.exists ? statsSnap.data()! : {};
 
-    const computed = computedSnap.exists
-      ? computedSnap.data()!
-      : await recomputeAndStore();
+    let computed: Record<string, any>;
+    if (computedSnap.exists) {
+      computed = computedSnap.data()!;
+    } else {
+      computed = await recomputeAndStore();
+      readCount += 11; // recompute reads 11 collections
+      console.log(`[API-READ] /api/about-stats: recomputeAllStats triggered — +11 collection reads = ${readCount} total`);
+    }
     const ranges: Record<string, any> = {};
     for (const r of RANGES) {
       const key = `_${r}`;
@@ -166,6 +174,7 @@ export async function GET(req: NextRequest) {
       yearsServing: statsData.yearsServing ?? null,
       numberOfFamilies: statsData.numberOfFamilies ?? null,
       ranges,
+      _adminReads: readCount,
     }, {
       headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
     });

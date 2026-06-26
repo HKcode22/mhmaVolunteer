@@ -202,6 +202,9 @@ export default function DashboardPage() {
         getDoc(doc(db, "aboutStats", "stats")).then(snap => {
           if (snap.exists()) return snap.data();
           return { yearsServing: null, numberOfFamilies: null };
+        }).catch(err => {
+          console.log("aboutStatsBasic fetch failed, caching fallback:", err.message);
+          return { yearsServing: null, numberOfFamilies: null };
         })
       ).then(r => r.data).catch(() => ({ yearsServing: null, numberOfFamilies: null }));
       const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, alog, t, mu] = cachedSettled.map(r => ((r as any).value || (r as any).reason || { data: [] }).data);

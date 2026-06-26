@@ -12,7 +12,9 @@ const ALL_COLLECTIONS = [
 ];
 
 export async function GET() {
+  const t0 = Date.now();
   const doc = await firestore.collection('metadata').doc('cacheTimestamps').get();
+  console.log(`[API-READ] /api/metadata-timestamps: 1 read (metadata/cacheTimestamps) took=${Date.now()-t0}ms`);
   if (!doc.exists) {
     const now = Date.now();
     const initial: Record<string, number> = {};
@@ -21,5 +23,6 @@ export async function GET() {
     await firestore.collection('metadata').doc('cacheTimestamps').set(initial);
     return NextResponse.json(initial);
   }
-  return NextResponse.json(doc.data());
+  const data = doc.data() || {};
+  return NextResponse.json({ ...data, _adminReads: 1 });
 }

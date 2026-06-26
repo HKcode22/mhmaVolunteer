@@ -413,7 +413,9 @@ useEffect(() => {
         getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)).then(r => r.data),
         getCachedData("aboutStats", () => fetch("/api/about-stats").then(r => r.json())).then(r => {
           const rangeKey = `_${statsRange === "all" ? "all" : statsRange}`;
-          return r.data?.ranges?.[rangeKey] ?? null;
+          const rangeData = r.data?.ranges?.[rangeKey];
+          if (rangeData) return rangeData;
+          return r.data ?? null;
         }),
         getCachedData('news', () => fetchNews(100)).then(r => r.data),
       ]);
