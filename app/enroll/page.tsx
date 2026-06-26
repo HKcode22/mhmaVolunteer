@@ -22,7 +22,7 @@ function EnrollForm() {
   });
 
   useEffect(() => {
-    fetchPrograms(100).then(list => {
+    fetchPrograms(50).then(list => {
       const opts = list
         .filter(p => p.title)
         .map(p => ({ value: p.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/(^_|_$)/g, ""), label: p.title }));

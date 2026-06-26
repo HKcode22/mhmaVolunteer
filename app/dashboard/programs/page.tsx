@@ -30,7 +30,7 @@ export default function DashboardProgramsPage() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (authLoading) return;
-    Promise.all([getCachedData('programs', () => fetchPrograms(100)).then(r => r.data), getCachedData('enrollments', () => fetchEnrollments(100)).then(r => r.data)]).then(([p, e]) => {
+    Promise.all([getCachedData('programs', () => fetchPrograms(50)).then(r => r.data), getCachedData('enrollments', () => fetchEnrollments(100)).then(r => r.data)]).then(([p, e]) => {
       setPrograms(p); setEnrollments(e); setLoading(false);
       const pend = e.filter(x => x.status === "pending").length;
       setPendingCount(pend);
@@ -117,7 +117,7 @@ export default function DashboardProgramsPage() {
         }).catch(() => {});
       }
       resetForm();
-      const updated = await fetchPrograms(100);
+      const updated = await fetchPrograms(50);
       setPrograms(updated);
     } catch (e: any) { setSaveError(e.message || "Failed to save"); }
     setSaving(false);

@@ -4,11 +4,13 @@ import { auth } from "./firebase-client";
 
 const PREFIX = 'mhma_v5_';
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const CACHE_SCHEMA_VERSION = 2;
 
 interface CacheEntry<T> {
   d: T;
   t: number;
   s: number;
+  v?: number;
 }
 
 // ─── Module-level batch metadata cache ───
@@ -42,24 +44,38 @@ export function resetTimestampsCache(): void {
   metaTsPromise = null;
 }
 
-// ─── Age filter (30-day rolling window) ───
-function filterByAge<T>(items: T[], dateField = 'createdAt'): T[] {
-  const cutoff = Date.now() - THIRTY_DAYS_MS;
-  return items.filter((item: any) => {
-    const date = item?.[dateField];
-    if (!date) return true;
-    // Handle Firestore timestamp objects (serialized as {seconds, nanoseconds} or {type: 'firestore/timestamp/...'})
-    if (typeof date === 'object' && date.seconds) {
-      const ts = date.seconds * 1000 + Math.floor((date.nanoseconds || 0) / 1000000);
-      return ts > cutoff;
-    }
-    if (typeof date === 'object' && date.type?.includes('firestore/timestamp')) {
-      const ts = (date as any).seconds * 1000 + Math.floor(((date as any).nanoseconds || 0) / 1000000);
-      return ts > cutoff;
-    }
-    const ts = date.toDate ? date.toDate().getTime() : new Date(date).getTime();
-    return isNaN(ts) || ts > cutoff;
-  });
+// LocalStorage safety: cap array sizes so we don't lose long-lived data
+// (like `programs`/`users`) just because their `createdAt` is old.
+// TTL still applies to the whole cache entry (30 days).
+const MAX_ITEMS_BY_KEY: Record<string, number> = {
+  events: 100,
+  programs: 50, // user requirement
+  rsvps: 1000,
+  enrollments: 500,
+  contactSubmissions: 500,
+  schedulingRequests: 500,
+  volunteers: 500,
+  donations: 500,
+  pledges: 500,
+  users: 500,
+  subscribers: 500,
+  news: 100,
+  masjidConstruction: 20,
+  testimonials: 100,
+  activityLog: 200,
+  inviteCodes: 200,
+  faq: 200,
+  journal: 500,
+  knowledgeDocs: 200,
+  ai_knowledge: 200,
+};
+
+function trimByMaxItems<T>(cacheKey: string, items: T[]): T[] {
+  const max = MAX_ITEMS_BY_KEY[cacheKey];
+  if (typeof max === 'number' && items.length > max) {
+    return items.slice(0, max);
+  }
+  return items;
 }
 
 // Keep localStorage safe by stripping base64 media (data URLs).
@@ -132,7 +148,11 @@ function getEntry<T>(key: string): CacheEntry<T> | null {
 function setEntry<T>(key: string, entry: CacheEntry<T>): void {
   try {
     const sanitizedData = sanitizeForCache(key, entry.d);
-    const sanitized: CacheEntry<T> = { ...entry, d: sanitizedData } as CacheEntry<T>;
+    const sanitized: CacheEntry<T> = {
+      ...entry,
+      d: sanitizedData,
+      v: CACHE_SCHEMA_VERSION,
+    } as CacheEntry<T>;
     localStorage.setItem(PREFIX + key, JSON.stringify(sanitized));
   } catch (err) {
     // localStorage quota exceeded (common if base64 media was cached).
@@ -150,8 +170,18 @@ export async function getCachedData<T>(
   key: string,
   fetchFn: () => Promise<T>,
 ): Promise<{ data: T; fromCache: boolean }> {
-  const entry = getEntry<T>(key);
+  let entry = getEntry<T>(key);
   const now = Date.now();
+
+  // If the cache entry was created by an older cache retention policy,
+  // throw it away so we don't show pruned/incomplete data.
+  if (entry && (entry.v ?? 0) !== CACHE_SCHEMA_VERSION) {
+    console.log(
+      `[Cache] SCHEMA-MISMATCH ${key}: cachedV=${entry.v ?? 'none'} currentV=${CACHE_SCHEMA_VERSION}`,
+    );
+    removeEntry(key);
+    entry = null;
+  }
 
   // Get current server timestamps (batched, fetched once per page load)
   const allTs = await getCurrentTimestamps();
@@ -192,10 +222,10 @@ async function fetchAndCache<T>(
 
   const preCount = Array.isArray(data) ? data.length : 0;
   if (Array.isArray(data)) {
-    data = filterByAge(data as any[]) as T;
+    data = trimByMaxItems(key, data as any[]) as T;
     const postCount = Array.isArray(data) ? data.length : 0;
     if (postCount < preCount) {
-      console.log(`[Cache] AGE-FILTER ${key}: dropped ${preCount - postCount} items`);
+      console.log(`[Cache] TRIM ${key}: ${preCount}→${postCount}`);
     }
   }
 
@@ -218,7 +248,7 @@ export function appendToCache<T>(key: string, newItem: T): void {
 
   try {
     const before = entry.d.length;
-    entry.d = filterByAge([newItem, ...entry.d]);
+    entry.d = trimByMaxItems(key, [newItem, ...entry.d]);
     entry.t = Date.now();
     setEntry(key, entry as CacheEntry<T>);
     console.log(`[Cache] APPEND ${key} items=${before}→${entry.d.length}`);
@@ -391,4 +421,4 @@ export function clearAllCaches(): void {
   touchPending.clear();
 }
 
-export { PREFIX, THIRTY_DAYS_MS };
+export { PREFIX, THIRTY_DAYS_MS, MAX_ITEMS_BY_KEY };

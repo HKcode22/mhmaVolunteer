@@ -32,7 +32,7 @@ export default function DashboardTestimonialsPage() {
     if (authLoading) return;
     Promise.all([
       getCachedData('testimonials', () => fetchTestimonials(100)).then(r => r.data),
-      getCachedData('programs', () => fetchPrograms(100)).then(r => r.data),
+      getCachedData('programs', () => fetchPrograms(50)).then(r => r.data),
       getCachedData('events', () => fetchEvents(100)).then(r => r.data),
     ]).then(([t, p, e]) => {
       setItems(t);

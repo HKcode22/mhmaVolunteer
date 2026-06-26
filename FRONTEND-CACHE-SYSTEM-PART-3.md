@@ -39,13 +39,14 @@ File: `lib/cache-manager.ts`
 
 High-level flow:
 1. Read localStorage entry `mhma_v5_<key>`
-2. Fetch current server timestamps (batched) from:
+2. If the cached entry was created by an older retention policy, discard it (schema version mismatch)
+3. Fetch current server timestamps (batched) from:
    - `/api/metadata-timestamps`
-3. If cache entry exists and:
+4. If cache entry exists and:
    - age < 30 days, and
    - `entry.s >= serverTs`
    => return cached data (0 Firestore reads)
-4. Otherwise:
+5. Otherwise:
    - remove the entry
    - fetch from Firestore via `fetchFn`
    - store `{ d, t, s }` with `s = serverTs`
@@ -190,7 +191,8 @@ File: `lib/cache-manager.ts`
 
 File: `lib/cache-cleanup.ts`
 - mirrors sanitization for existing cached entries
-- still enforces the 30-day window and evicts if total localStorage exceeds 4MB
+- trims cached arrays using `MAX_ITEMS_BY_KEY` (e.g. programs capped at 50)
+- enforces the 30-day TTL for the whole cache entry and evicts if total localStorage exceeds 4MB
 
 ## Public pages: remove remaining `no-store` heavy endpoints
 ### Events page
@@ -240,12 +242,30 @@ Expected console markers:
 Expected console markers on the other browser:
 - `[Cache] STALE events (server ts=... > cache ts=...)`
 
-### C) Member submits RSVP (public form)
-1. Member POSTs to `/api/rsvp`
-2. Route writes to `rsvps` and updates `metadata/cacheTimestamps.rsvps`
-3. Board browser refresh:
-   - `getCachedData('rsvps')` sees newer server timestamp
-   - refetches `rsvps`
+### C) Three members submit RSVP (public form) and board sees it
+Assume 3 different members submit RSVP around the same time.
+
+1. Each member POSTs to `/api/rsvp`
+2. The API route writes each RSVP to Firestore (`collection("rsvps").add(...)`)
+3. Each API request updates:
+   - `metadata/cacheTimestamps.rsvps = Date.now()`
+
+Board-member browser:
+4. On the next time the board page calls `getCachedData('rsvps')` (typically after a reload):
+   - `getCachedData()` reads the local `entry.s` from localStorage
+   - it fetches the latest server timestamp from `/api/metadata-timestamps`
+   - because server `rsvps` ts increased, `entry.s < serverTs`
+   - `getCachedData()` removes the local cache entry and refetches `rsvps`
+
+So in this scenario:
+- The RSVPs are **saved to Firestore** via the API (not written into localStorage at save time).
+- The board reads from localStorage only when the cache is a HIT.
+- After member writes, the *first* board reload will refetch `rsvps` from Firestore to stay fresh.
+
+Where the “append thing” happens:
+5. `appendToCache('rsvps', ...)` does **not** run for member submissions.
+   - Member submissions are server API writes, not client SDK writes.
+   - `appendToCache` is only used for board-dashboard client-side writes in `lib/firebase.ts`.
 
 ### D) Member submits Contact submission
 Same pattern as C, but for:
@@ -277,6 +297,50 @@ Same pattern as C, but for:
 2. When cached, `setEntry()` sanitizes media fields to prevent localStorage quota blowups
 3. `runCacheCleanup()` sanitizes old cached entries too
 4. If poster/media is stripped, UI falls back (and metadata invalidation ensures the next refetch gets fresh server data)
+
+## Detailed: update/delete writes and what happens in localStorage
+
+This addresses the common confusion in the older docs (“write empties localStorage”).
+
+### Board write (client SDK) path
+When a board member updates/creates/deletes a cached collection, the client-side Firestore helper updates **localStorage in-place**.
+
+Where it happens:
+- `lib/firebase.ts` calls cache mutation helpers after Firestore succeeds:
+  - CREATE: `appendToCache(<key>, newItem)`
+  - UPDATE: `updateCachedItem(<key>, id, patch)`
+  - DELETE: `removeCachedItem(<key>, id)`
+- Those helpers live in `lib/cache-manager.ts` and they:
+  1. read the cached entry (`mhma_v5_<key>`)
+  2. update `entry.d` (prepend/merge/remove)
+  3. bump `entry.t = Date.now()`
+  4. write back with `setEntry()` (also sanitizes + stamps `entry.v`)
+
+Important:
+- For UPDATE/DELETE, we do **not** wipe the whole cache key.
+- We only remove a cache key when `getCachedData()` determines it is stale.
+
+### Member write (server API route) path
+For public/member forms, there is no `appendToCache()` on the board client because the member writes happen in Next.js API routes.
+Instead, the API route updates:
+- Firestore collection (`rsvps`, `contactSubmissions`, etc.)
+- `metadata/cacheTimestamps.<key>`
+
+### Read path: how does `getCachedData()` decide to refetch?
+In `lib/cache-manager.ts`, `getCachedData(<key>)`:
+
+1. Reads local `entry` from `mhma_v5_<key>`
+2. If `entry.v` is missing/old, it discards the cache entry (prevents pruned/empty data from old retention rules)
+3. Checks TTL: if cache entry is older than `THIRTY_DAYS_MS`, it refetches
+4. Fetches server metadata timestamps from `/api/metadata-timestamps`
+5. Compares freshness:
+   - If `entry.s >= serverTs`: return cached data (0 reads from Firestore for that key)
+   - Else: `removeEntry(key)` and refetch via `fetchFn`
+
+So the “write empties localStorage then next read fetches” pattern is only true when:
+- a cache key is fully invalidated via `invalidateCache(key)`, or
+- `getCachedData()` removes it because it detected a newer server timestamp.
+
 
 ## Validation checklist (what to test locally)
 1. Build/compile:

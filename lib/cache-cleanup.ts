@@ -1,6 +1,6 @@
 'use client';
 
-import { PREFIX, THIRTY_DAYS_MS } from './cache-manager';
+import { PREFIX, THIRTY_DAYS_MS, MAX_ITEMS_BY_KEY } from './cache-manager';
 
 const MAX_TOTAL_SIZE = 4 * 1024 * 1024;
 
@@ -27,27 +27,15 @@ export function runCacheCleanup(): void {
       }
 
       if (Array.isArray(entry.d) && !key.endsWith('_lastTs')) {
-        const cutoff = Date.now() - THIRTY_DAYS_MS;
+        const logicalKey = key.slice(PREFIX.length);
         const before = entry.d.length;
         let sanitizedChanged = false;
-        entry.d = entry.d.filter((item: any) => {
-          const date = item?.createdAt;
-          if (!date) return true;
-          // Handle Firestore timestamp objects (serialized as {seconds, nanoseconds} or {type: 'firestore/timestamp/...'})
-          if (typeof date === 'object' && date.seconds) {
-            const ts = date.seconds * 1000 + Math.floor((date.nanoseconds || 0) / 1000000);
-            return ts > cutoff;
-          }
-          if (typeof date === 'object' && date.type?.includes('firestore/timestamp')) {
-            const ts = (date as any).seconds * 1000 + Math.floor(((date as any).nanoseconds || 0) / 1000000);
-            return ts > cutoff;
-          }
-          const ts = date.toDate ? date.toDate().getTime() : new Date(date).getTime();
-          return isNaN(ts) || ts > cutoff;
-        });
+        const maxItems = MAX_ITEMS_BY_KEY[logicalKey];
+        if (typeof maxItems === 'number' && entry.d.length > maxItems) {
+          entry.d = entry.d.slice(0, maxItems);
+        }
 
         // Reduce localStorage pressure by stripping base64 media blobs in-place.
-        const logicalKey = key.slice(PREFIX.length);
         const MAX_DATA_URL_CHARS = 200_000;
 
         const stripBigDataUrl = (s: any) => {

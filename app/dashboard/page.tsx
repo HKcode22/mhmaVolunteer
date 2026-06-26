@@ -179,7 +179,7 @@ export default function DashboardPage() {
     const loadAll = async () => {
       const [cachedSettled, stats] = await Promise.all([
         Promise.allSettled([
-          timeout(getCachedData('programs', () => fetchPrograms(100)), 15000).catch(() => ({ data: [] as FirebaseProgram[] })),
+          timeout(getCachedData('programs', () => fetchPrograms(50)), 15000).catch(() => ({ data: [] as FirebaseProgram[] })),
           timeout(getCachedData('events', () => fetchEvents(100)), 15000).catch(() => ({ data: [] as FirebaseEvent[] })),
           timeout(getCachedData('schedulingRequests', () => fetchSchedulingRequests(100)), 15000).catch(() => ({ data: [] as FirebaseSchedulingRequest[] })),
           timeout(getCachedData('enrollments', () => fetchEnrollments(100)), 15000).catch(() => ({ data: [] as FirebaseEnrollment[] })),

@@ -53,7 +53,7 @@ export default function ProgramsPage() {
     const fetchAllPrograms = async () => {
       try {
         const [{ data: fsPrograms }, { data: enrollments }] = await Promise.all([
-          getCachedData('programs', () => import('@/lib/firebase').then(m => m.fetchPrograms(100))),
+          getCachedData('programs', () => import('@/lib/firebase').then(m => m.fetchPrograms(50))),
           getCachedData('enrollments', () => import('@/lib/firebase').then(m => m.fetchEnrollments(1000))),
         ]);
 
