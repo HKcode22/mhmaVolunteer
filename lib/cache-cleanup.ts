@@ -119,6 +119,20 @@ export function runCacheCleanup(): void {
           });
         }
 
+        if (logicalKey === 'users') {
+          entry.d = entry.d.map((it: any) => {
+            if (!it || typeof it !== 'object') return it;
+            const next = { ...it };
+            const oldPhoto = next.photoUrl;
+            next.photoUrl = stripAnyDataUrl(next.photoUrl);
+            if (next.photoUrl !== oldPhoto) {
+              sanitizedChanged = true;
+              return next;
+            }
+            return it;
+          });
+        }
+
         if (entry.d.length < before || sanitizedChanged) {
           entry.t = Date.now();
           localStorage.setItem(key, JSON.stringify(entry));

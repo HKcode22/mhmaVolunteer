@@ -15,6 +15,7 @@ import {
 } from "@/lib/firebase";
 import Navigation from "@/app/components/Navigation";
 import { auth } from "@/lib/firebase-client";
+import { getCachedData } from "@/lib/cache-manager";
 
 interface AnalyticsData {
   enrollments: FirebaseEnrollment[];
@@ -527,10 +528,11 @@ function AboutStatsEditor() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/about-stats");
-      const data = await res.json();
-      setYearsServing(data.yearsServing ?? 0);
-      setNumberOfFamilies(data.numberOfFamilies ?? 0);
+      const { data } = await getCachedData("aboutStats", () =>
+        fetch("/api/about-stats").then(r => r.json())
+      );
+      setYearsServing(data?.yearsServing ?? 0);
+      setNumberOfFamilies(data?.numberOfFamilies ?? 0);
     } catch {
       setMessage("Failed to load stats");
     }

@@ -17,6 +17,10 @@ interface CacheEntry<T> {
 let metaTsPromise: Promise<Record<string, number>> | null = null;
 let metaTsCache: Record<string, number> | null = null;
 
+// Prevent duplicate concurrent fetches for the same cache key.
+// This matters when multiple components mount and request the same data on a cold start.
+const inflightFetches: Map<string, Promise<{ data: unknown; fromCache: boolean }>> = new Map();
+
 async function fetchAllTimestamps(): Promise<Record<string, number>> {
   try {
     const res = await fetch('/api/metadata-timestamps', { cache: 'no-cache' });
@@ -81,7 +85,7 @@ function trimByMaxItems<T>(cacheKey: string, items: T[]): T[] {
 // Keep localStorage safe by stripping base64 media (data URLs).
 // We only sanitize fields we know can contain base64 blobs.
 function sanitizeForCache(cacheKey: string, data: any): any {
-  const MEDIA_KEYS = new Set(['events', 'programs', 'news', 'testimonials', 'masjidConstruction']);
+  const MEDIA_KEYS = new Set(['events', 'programs', 'news', 'testimonials', 'masjidConstruction', 'users']);
   if (!MEDIA_KEYS.has(cacheKey)) return data;
 
   const MAX_DATA_URL_CHARS = 200_000;
@@ -124,6 +128,12 @@ function sanitizeForCache(cacheKey: string, data: any): any {
       // Videos are usually huge; avoid storing base64 in localStorage.
       out.image = stripAnyDataUrl(out.image);
       out.video = stripAnyDataUrl(out.video);
+    }
+
+    if (cacheKey === 'users') {
+      // Profile photos are often stored as base64 data URLs in Firestore.
+      // Strip them so localStorage doesn't exceed quota and evict other caches.
+      out.photoUrl = stripAnyDataUrl(out.photoUrl);
     }
 
     return out;
@@ -208,8 +218,16 @@ export async function getCachedData<T>(
   }
 
   // Cache MISS — fetch fresh data
+  const existing = inflightFetches.get(key);
+  if (existing) {
+    return existing as Promise<{ data: T; fromCache: boolean }>;
+  }
+
   console.log(`[Cache] MISS ${key} (fetching from Firestore)`);
-  return fetchAndCache(key, fetchFn, serverTs);
+  const p = fetchAndCache(key, fetchFn, serverTs)
+    .finally(() => inflightFetches.delete(key));
+  inflightFetches.set(key, p as Promise<{ data: unknown; fromCache: boolean }>);
+  return p;
 }
 
 // ─── Fetch from Firestore and store in cache ───
@@ -415,6 +433,7 @@ export function clearAllCaches(): void {
   }
   metaTsCache = null;
   metaTsPromise = null;
+  inflightFetches.clear();
 
   if (touchTimer) clearTimeout(touchTimer);
   touchTimer = null;

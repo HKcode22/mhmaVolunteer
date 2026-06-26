@@ -197,7 +197,9 @@ export default function DashboardPage() {
           timeout(getCachedData('testimonials', () => fetchTestimonials(50)), 15000).catch(() => ({ data: [] as Testimonial[] })),
           timeout(getCachedData('masjidConstruction', () => fetchMasjidUpdates(20)), 15000).catch(() => ({ data: [] as FirebaseMasjidUpdate[] })),
         ]),
-        fetch("/api/about-stats").then(r => r.json()).catch(() => null),
+        getCachedData('aboutStats', () => fetch("/api/about-stats").then(r => r.json()))
+          .then(r => r.data)
+          .catch(() => null),
       ]);
       const [p, e, er, en, rsvp, cs, codes, u, subs, pl, d, n, f, v, alog, t, mu] = cachedSettled.map(r => ((r as any).value || (r as any).reason || { data: [] }).data);
       setPrograms(p || []);
