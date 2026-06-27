@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Heart, CheckCircle, Loader2 } from "lucide-react";
 import { fetchPledgesByUser, Pledge } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { useAuth, fullName } from "@/lib/auth-context";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
@@ -166,8 +167,8 @@ function PledgeHistorySection({ userId, email }: { userId: string; email?: strin
 
   useEffect(() => {
     setLoading(true);
-    fetchPledgesByUser(userId, email).then(d => {
-      setPledges(d);
+    getCachedData('pledges_' + (userId || email), () => fetchPledgesByUser(userId, email)).then(({ data }) => {
+      setPledges(data);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [userId, email]);

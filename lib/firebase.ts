@@ -138,12 +138,14 @@ export const collections = {
 };
 
 export async function fetchEvents(limitCount = 10): Promise<FirebaseEvent[]> {
+  console.log('[FIRESTORE_READ] fetchEvents(' + limitCount + ')');
   const q = query(collection(db, collections.events), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<FirebaseEvent>(snap);
 }
 
 export async function fetchEventsDirect(limitCount = 10000, dateFrom?: string, dateTo?: string): Promise<FirebaseEvent[]> {
+  console.log('[FIRESTORE_READ] fetchEventsDirect(' + limitCount + (dateFrom ? ', ' + dateFrom : '') + (dateTo ? ', ' + dateTo : '') + ')');
   const constraints: any[] = [orderBy("createdAt", "desc")];
   if (dateFrom) constraints.push(where("createdAt", ">=", new Date(dateFrom)));
   if (dateTo) {
@@ -158,6 +160,7 @@ export async function fetchEventsDirect(limitCount = 10000, dateFrom?: string, d
 }
 
 export async function fetchEventById(id: string): Promise<FirebaseEvent | null> {
+  console.log('[FIRESTORE_READ] fetchEventById(' + id + ')');
   const snap = await getDoc(doc(db, collections.events, id));
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as FirebaseEvent;
@@ -215,6 +218,7 @@ export async function fetchPrograms(limitCount = 10): Promise<FirebaseProgram[]>
 }
 
 export async function fetchProgramBySlug(slug: string): Promise<FirebaseProgram | null> {
+  console.log('[FIRESTORE_READ] fetchProgramBySlug(' + slug + ')');
   const q = query(collection(db, collections.programs), where("slug", "==", slug), limit(1));
   const snap = await getDocs(q);
   if (snap.empty) return null;
@@ -223,6 +227,7 @@ export async function fetchProgramBySlug(slug: string): Promise<FirebaseProgram 
 }
 
 export async function fetchProgramById(id: string): Promise<FirebaseProgram | null> {
+  console.log('[FIRESTORE_READ] fetchProgramById(' + id + ')');
   const snap = await getDoc(doc(db, collections.programs, id));
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as FirebaseProgram;
@@ -339,6 +344,7 @@ export async function deleteJournalEntry(id: string): Promise<void> {
 }
 
 export async function fetchEnrollments(limitCount = 50): Promise<FirebaseEnrollment[]> {
+  console.log('[FIRESTORE_READ] fetchEnrollments(' + limitCount + ')');
   const q = query(collection(db, collections.enrollments), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<FirebaseEnrollment>(snap);
@@ -431,6 +437,7 @@ export async function deleteSchedulingRequest(id: string): Promise<void> {
 }
 
 export async function fetchContactSubmissions(limitCount = 50): Promise<FirebaseContactSubmission[]> {
+  console.log('[FIRESTORE_READ] fetchContactSubmissions(' + limitCount + ')');
   const q = query(collection(db, collections.contactSubmissions), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<FirebaseContactSubmission>(snap);
@@ -579,6 +586,7 @@ export interface Testimonial {
 const TESTIMONIALS = "testimonials";
 
 export async function fetchTestimonials(limitCount = 50): Promise<Testimonial[]> {
+  console.log('[FIRESTORE_READ] fetchTestimonials(' + limitCount + ')');
   const q = query(collection(db, TESTIMONIALS), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<Testimonial>(snap);
@@ -658,6 +666,7 @@ export async function saveVersion(targetType: string, targetId: string, data: an
 }
 
 export async function fetchVersions(targetType: string, targetId: string): Promise<any[]> {
+  console.log('[FIRESTORE_READ] fetchVersions(' + targetType + ', ' + targetId + ')');
   if (!targetId) return [];
   const q = query(
     collection(db, collections.versions),
@@ -724,6 +733,7 @@ export interface FirebaseRSVP {
 const RSVP_COLLECTION = "rsvps";
 
 export async function fetchRSVPs(limitCount = 100): Promise<FirebaseRSVP[]> {
+  console.log('[FIRESTORE_READ] fetchRSVPs(' + limitCount + ')');
   const q = query(collection(db, RSVP_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<FirebaseRSVP>(snap);
@@ -903,6 +913,7 @@ export async function createPledge(data: Omit<Pledge, "id" | "createdAt" | "stat
 }
 
 export async function fetchPledgesByUser(userId: string, email?: string): Promise<Pledge[]> {
+  console.log('[FIRESTORE_READ] fetchPledgesByUser(' + userId + ', ' + email + ')');
   const results: Pledge[] = [];
   if (userId) {
     try {
@@ -1064,6 +1075,7 @@ export async function fetchDonations(limitCount = 200): Promise<Donation[]> {
 }
 
 export async function fetchDonationsByUser(userId: string, email?: string): Promise<Donation[]> {
+  console.log('[FIRESTORE_READ] fetchDonationsByUser(' + userId + ', ' + email + ')');
   const results: Donation[] = [];
   // Try donorId first (avoids composite index — no orderBy needed)
   if (userId) {
@@ -1152,12 +1164,14 @@ export async function fetchNews(limitCount = 10): Promise<NewsItem[]> {
 }
 
 export async function fetchAllNews(limitCount = 50): Promise<NewsItem[]> {
+  console.log('[FIRESTORE_READ] fetchAllNews(' + limitCount + ')');
   const q = query(collection(db, NEWS_COLLECTION), orderBy("createdAt", "desc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<NewsItem>(snap);
 }
 
 export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
+  console.log('[FIRESTORE_READ] fetchNewsBySlug(' + slug + ')');
   const q = query(collection(db, NEWS_COLLECTION), where("slug", "==", slug), limit(1));
   const snap = await getDocs(q);
   if (snap.empty) return null;
@@ -1244,6 +1258,7 @@ export async function deleteKnowledgeDoc(id: string): Promise<void> {
 }
 
 export async function fetchFAQs(limitCount = 50): Promise<FAQItem[]> {
+  console.log('[FIRESTORE_READ] fetchFAQs(' + limitCount + ')');
   const q = query(collection(db, FAQ_COLLECTION), orderBy("order", "asc"), limit(limitCount));
   const snap = await getDocs(q);
   return collectionData<FAQItem>(snap);

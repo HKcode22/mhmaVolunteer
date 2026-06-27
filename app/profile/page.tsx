@@ -601,7 +601,7 @@ function PledgeHistory({ userId, email }: { userId?: string; email?: string }) {
   useEffect(() => {
     if (!userId && !email) return;
     setLoading(true);
-    fetchPledgesByUser(userId || "", email).then(d => { setPledges(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('pledges_' + (userId || email), () => fetchPledgesByUser(userId || "", email)).then(({ data }) => { setPledges(data); setLoading(false); }).catch(() => setLoading(false));
   }, [userId, email]);
 
   if (!userId && !email) return null;
@@ -641,7 +641,7 @@ function DonationHistory({ userId, email }: { userId?: string; email?: string })
   useEffect(() => {
     if (!userId && !email) return;
     setLoading(true);
-    fetchDonationsByUser(userId || "", email).then(d => { setDonations(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('donations_' + (userId || email), () => fetchDonationsByUser(userId || "", email)).then(({ data }) => { setDonations(data); setLoading(false); }).catch(() => setLoading(false));
   }, [userId, email]);
 
   if (!userId && !email) return null;

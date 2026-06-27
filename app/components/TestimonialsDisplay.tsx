@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { fetchTestimonials, Testimonial } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { Star } from "lucide-react";
 
 interface Props {
@@ -17,7 +18,7 @@ export default function TestimonialsDisplay({ page, limit: max = 6, className = 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTestimonials(50).then(data => {
+    getCachedData('testimonials', () => fetchTestimonials(50)).then(({ data }) => {
       setItems(data.filter(t => t.active && t.displayOn?.includes(page)).slice(0, max));
       setLoading(false);
     }).catch(() => setLoading(false));
