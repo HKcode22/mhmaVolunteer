@@ -232,7 +232,7 @@ export async function getCachedData<T>(
     entry = null;
   }
 
-  const METADATA_TRACKED = new Set(['aboutStats', 'userSettings']);
+  const METADATA_TRACKED = new Set(['aboutStats', 'userSettings', 'masjidConstruction', 'donations', 'rsvps', 'enrollments']);
   const useMetadata = METADATA_TRACKED.has(key);
   let serverTs = 0;
 

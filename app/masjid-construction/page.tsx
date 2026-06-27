@@ -376,13 +376,13 @@ export default function MasjidConstructionPage() {
 
         {/* Videos */}
         {updates.filter((u): u is FirebaseMasjidUpdate & { video: string } => !!u.video).length > 0 && (
-          <section className="py-12">
+          <section className="py-12 bg-mhma-cream">
             <div className="max-w-4xl mx-auto px-4">
               <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Video Updates</h2>
               <div className="space-y-6">
                 {updates.filter((u): u is FirebaseMasjidUpdate & { video: string } => !!u.video).map((u, i) => (
                   <div key={u.id || i} className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-200">
-                    <div className="aspect-video" dangerouslySetInnerHTML={{ __html: u.video }} />
+                    <div className="aspect-video bg-gray-100" dangerouslySetInnerHTML={{ __html: u.video }} />
                     {u.caption && <p className="p-4 text-sm text-gray-700">{u.caption}</p>}
                   </div>
                 ))}

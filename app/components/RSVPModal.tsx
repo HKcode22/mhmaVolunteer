@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Check, AlertCircle, Loader2 } from "lucide-react";
+import { invalidateCache } from "@/lib/cache-manager";
 
 interface RSVPModalProps {
   eventId?: string;
@@ -44,6 +45,7 @@ export default function RSVPModal({ eventId, eventTitle, isOpen, onClose }: RSVP
         throw new Error(data.error || "Failed to submit RSVP");
       }
 
+      invalidateCache(['rsvps', 'events']);
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message);

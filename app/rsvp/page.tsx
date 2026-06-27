@@ -8,7 +8,7 @@ import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 import { fetchEvents } from "@/lib/firebase";
 import { useAuth, fullName } from "@/lib/auth-context";
-import { getCachedData } from "@/lib/cache-manager";
+import { getCachedData, invalidateCache } from "@/lib/cache-manager";
 
 function RSVPForm() {
   const searchParams = useSearchParams();
@@ -80,6 +80,7 @@ function RSVPForm() {
         throw new Error(data.error || "Failed to submit RSVP");
       }
 
+      invalidateCache(['rsvps', 'events']);
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message);

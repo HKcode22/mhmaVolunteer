@@ -864,18 +864,18 @@ export async function fetchMasjidUpdates(limitCount = 10): Promise<FirebaseMasji
 
 export async function addMasjidUpdate(data: Omit<FirebaseMasjidUpdate, "id" | "createdAt">): Promise<string> {
   const ref = await addDoc(collection(db, MASJID_CONSTRUCTION), { ...data, createdAt: serverTimestamp() });
-  appendToCache('masjidConstruction', { id: ref.id, ...data });
+  invalidateCache('masjidConstruction');
   return ref.id;
 }
 
 export async function updateMasjidUpdate(id: string, data: Partial<FirebaseMasjidUpdate>): Promise<void> {
   await updateDoc(doc(db, MASJID_CONSTRUCTION, id), { ...data, updatedAt: serverTimestamp() });
-  updateCachedItem('masjidConstruction', id, data);
+  invalidateCache('masjidConstruction');
 }
 
 export async function deleteMasjidUpdate(id: string): Promise<void> {
   await deleteDoc(doc(db, MASJID_CONSTRUCTION, id));
-  removeCachedItem('masjidConstruction', id);
+  invalidateCache('masjidConstruction');
 }
 
 // ─── Pledges ───

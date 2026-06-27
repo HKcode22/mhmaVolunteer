@@ -64,7 +64,9 @@ export default function EventsPage() {
       try {
         const [{ data: events }, { data: rsvps }] = await Promise.all([
           getCachedData("events", () => fetchEvents(50)),
-          getCachedData("rsvps", () => fetchRSVPs(1000)),
+          isBoardMember
+            ? getCachedData("rsvps", () => fetchRSVPs(1000))
+            : Promise.resolve({ data: [] }),
         ]);
 
         const rsvpCounts: Record<
