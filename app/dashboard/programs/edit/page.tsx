@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProgramById, updateProgram, logActivity, FirebaseProgram } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/app/components/Navigation";
 
@@ -30,10 +31,10 @@ function EditProgramForm() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (!authLoading && id) {
-      fetchProgramById(id).then(p => {
-        if (p) {
-          setFormData(p);
-          const stats = p.stats || [];
+      getCachedData('program_' + id, () => fetchProgramById(id)).then(({ data }) => {
+        if (data) {
+          setFormData(data);
+          const stats = data.stats || [];
           const fields = [...stats];
           while (fields.length < 4) fields.push({ label: "", value: "" });
           setStatFields(fields.slice(0, 4));

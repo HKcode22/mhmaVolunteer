@@ -52,7 +52,7 @@ export default function DynamicProgramPage() {
   useEffect(() => {
     const fetchProgramData = async () => {
       try {
-        let program = await fetchProgramBySlug(slug);
+        let { data: program } = await getCachedData('program_' + slug, () => fetchProgramBySlug(slug));
         if (!program) {
           const { data: allPrograms } = await getCachedData('programs', () => fetchPrograms(50));
           program = allPrograms.find(p => p.slug === slug || p.id === slug) || null;

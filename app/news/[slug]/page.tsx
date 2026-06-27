@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import { fetchNewsBySlug, NewsItem } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import Navigation from "@/app/components/Navigation";
 import PageBanner from "@/app/components/PageBanner";
 
@@ -15,7 +16,7 @@ export default function NewsDetailPage() {
 
   useEffect(() => {
     if (!params.slug) return;
-    fetchNewsBySlug(params.slug as string).then(d => { setItem(d); setLoading(false); }).catch(() => setLoading(false));
+    getCachedData('news_' + params.slug, () => fetchNewsBySlug(params.slug as string)).then(({ data }) => { setItem(data); setLoading(false); }).catch(() => setLoading(false));
   }, [params.slug]);
 
   const fmtDate = (d: any) => {

@@ -4,29 +4,26 @@ import { firestore, auth as adminAuth } from "@/lib/firebase-admin";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_KEYS = [
-  "events",
-  "programs",
-  "rsvps",
-  "enrollments",
-  "donations",
-  "pledges",
-  "users",
-  "news",
-  "masjidConstruction",
-  "subscribers",
-  "contactSubmissions",
-  "schedulingRequests",
-  "volunteers",
-  "testimonials",
-  "activityLog",
-  "journal",
-  "inviteCodes",
-  "faq",
-  "aboutStats",
-  "userSettings",
+  "rsvps", "enrollments", "masjidConstruction", "donations",
+  "aboutStats", "userSettings",
 ] as const;
 
 type AllowedKey = (typeof ALLOWED_KEYS)[number];
+
+// In-memory role cache — lives in the server instance, avoids a Firestore read per call.
+const roleCache = new Map<string, { role: string; cachedAt: number }>();
+const ROLE_CACHE_TTL = 300_000; // 5 min
+
+async function getRole(uid: string): Promise<string> {
+  const cached = roleCache.get(uid);
+  if (cached && Date.now() - cached.cachedAt < ROLE_CACHE_TTL) {
+    return cached.role;
+  }
+  const snap = await firestore.collection("users").doc(uid).get();
+  const role = snap.data()?.role || "";
+  roleCache.set(uid, { role, cachedAt: Date.now() });
+  return role;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,9 +44,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing/invalid keys" }, { status: 400 });
     }
 
-    // Role guard: only board members should be able to trigger metadata invalidation.
-    const userSnap = await firestore.collection("users").doc(uid).get();
-    const role = userSnap.data()?.role;
+    // Role guard — cached to avoid reading users/{uid} on every call.
+    const role = await getRole(uid);
     if (!["board_member", "administrator"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

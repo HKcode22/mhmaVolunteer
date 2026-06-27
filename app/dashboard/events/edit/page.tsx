@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchEventById, updateEvent, logActivity, FirebaseEvent } from "@/lib/firebase";
+import { getCachedData } from "@/lib/cache-manager";
 import { uploadImage } from "@/lib/upload";
 import Navigation from "@/app/components/Navigation";
 import TimePicker from "@/app/components/TimePicker";
@@ -25,8 +26,8 @@ function EditEventForm() {
   useEffect(() => {
     if (!authLoading && !isBoardMember) router.push("/login");
     if (!authLoading && id) {
-      fetchEventById(id).then(e => {
-        if (e) setFormData(e);
+      getCachedData('event_' + id, () => fetchEventById(id)).then(({ data }) => {
+        if (data) setFormData(data);
         setLoading(false);
       }).catch(() => setLoading(false));
     }

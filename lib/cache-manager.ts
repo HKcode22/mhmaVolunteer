@@ -232,7 +232,6 @@ export async function getCachedData<T>(
     entry = null;
   }
 
-  const METADATA_TRACKED = new Set(['aboutStats', 'userSettings', 'masjidConstruction', 'donations', 'rsvps', 'enrollments']);
   const useMetadata = METADATA_TRACKED.has(key);
   let serverTs = 0;
 
@@ -451,6 +450,9 @@ type TouchableKey = (typeof TOUCHABLE_KEYS)[number];
 
 const TOUCHABLE_KEY_SET = new Set<string>(TOUCHABLE_KEYS as unknown as string[]);
 
+// Only keys that use metadata-driven staleness — touching metadata for other keys is wasted.
+const METADATA_TRACKED = new Set(['aboutStats', 'userSettings', 'masjidConstruction', 'donations', 'rsvps', 'enrollments']);
+
 let touchTimer: ReturnType<typeof setTimeout> | null = null;
 let touchPending = new Set<TouchableKey>();
 
@@ -460,6 +462,7 @@ function enqueueMetadataTouch(keys: string[]): void {
   let added = false;
   keys.forEach(k => {
     if (!TOUCHABLE_KEY_SET.has(k)) return;
+    if (!METADATA_TRACKED.has(k)) return; // only touch keys that use metadata staleness
     const typed = k as TouchableKey;
     touchPending.add(typed);
     added = true;
